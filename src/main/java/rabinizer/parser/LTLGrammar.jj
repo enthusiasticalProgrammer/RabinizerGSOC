@@ -1,0 +1,278 @@
+ /**
+ * The grammar of LTL formulas.
+ *
+ * @author Andreas & Ruslan
+ *
+ * JavaCC template file created by SF JavaCC 6.0
+ */
+options
+{
+  JDK_VERSION = "1.8";
+
+  LOOKAHEAD= 2;
+  FORCE_LA_CHECK = true;
+
+  STATIC = false;
+}
+
+PARSER_BEGIN(LTLParser)
+package rabinizer.parser;
+
+import rabinizer.ltl.*;
+import rabinizer.exec.*;
+
+public class LTLParser
+{
+  /**
+   * Parse with new bijection between identifiers and atoms.
+   */
+  public Formula parse() throws ParseException
+  {
+    BDDForVariables.bijectionIdAtom = new BijectionIdAtom();
+    return formula();
+  }
+
+ /**
+  * Parse using the previous bijection between identifiers and atoms.
+  * If there is no previous bijection, create a new bijection. 
+  */
+  public Formula parsePreviousAtoms() throws ParseException
+  {
+	if (BDDForVariables.bijectionIdAtom == null) BDDForVariables.bijectionIdAtom = new BijectionIdAtom();
+	return formula();
+  }
+}
+
+PARSER_END(LTLParser)
+
+SKIP :
+{
+  " "
+| "\r"
+| "\t"
+| "\n"
+}
+
+TOKEN : /* OPERATORS */
+{
+  < FOP : "F" >
+| < VOP : "V" >
+| < ROP : "R" >
+| < WOP : "W" >
+| < GOP : "G" >
+| < XOP : "X" >
+| < NEG : "!" >
+| < UOP : "U" >
+| < AND : "&" >
+| < OR : "|" >
+| < LPAR : "(" >
+| < RPAR : ")" >
+}
+
+TOKEN :
+{
+  < TRUE : ("true" | "1") >
+| < FALSE : ("false" | "0") >
+| < ID :
+    (
+      [ "A"-"Z" ]
+    | [ "a"-"z" ]
+    )
+    (
+      [ "0"-"9" ]
+    | [ "A"-"Z" ]
+    | [ "a"-"z" ]
+    )* >
+}
+
+Formula formula() :
+{
+  Formula f;
+}
+{
+  f = disjunction() < EOF >
+  {
+    return f;
+  }
+}
+
+Formula disjunction() :
+{
+  Formula r = null;
+  Formula result;
+}
+{
+  result = conjunction()
+  (
+    < OR > r = conjunction()
+    {
+      result = FormulaFactory.mkOr(result, r);
+    }
+  )*
+  {
+    return result;
+  }
+}
+
+Formula conjunction() :
+{
+  Formula result;
+  Formula r = null;
+}
+{
+  result = until()
+  (
+    < AND > r = until()
+    {
+      result = FormulaFactory.mkAnd(result, r);
+    }
+  )*
+  {
+    return result;
+  }
+}
+
+Formula until() :
+{
+  Formula result;
+  Formula r = null;
+}
+{
+  result = release()
+  (
+    < UOP > r = release()
+    {
+ 	  result = FormulaFactory.mkU(result, r);
+    }
+  )*
+  {
+    return result;
+  }
+}
+
+Formula release() :
+{
+  Formula result;
+  Formula r = null;
+}
+{
+  result = releasewithv()
+  (
+    < ROP > r = releasewithv()
+    {
+ 	  result = FormulaFactory.mkNot(FormulaFactory.mkU(FormulaFactory.mkNot(result),FormulaFactory.mkNot(r)));
+    }
+  )*
+  {
+    return result;
+  }
+}
+
+Formula releasewithv() :
+{
+  Formula result;
+  Formula r = null;
+}
+{
+  result = weak()
+  (
+    < VOP > r = weak()
+    {
+ 	  result = FormulaFactory.mkNot(FormulaFactory.mkU(FormulaFactory.mkNot(result),FormulaFactory.mkNot(r)));
+    }
+  )*
+  {
+    return result;
+  }
+}
+
+Formula weak() :
+{
+  Formula result;
+  Formula r = null;
+}
+{
+  result = unaryOp()
+  (
+    < WOP > r = unaryOp()
+    {
+ 	  result = FormulaFactory.mkOr(FormulaFactory.mkU(result,r),FormulaFactory.mkG(result));
+    }
+  )*
+  {
+    return result;
+  }
+}
+
+
+//Formula negation() :
+//{
+//  Formula f;
+//  boolean neg = false;
+//}
+//{
+///*  (< NEG >
+//  {
+//    neg = true;
+//  }
+//  )?
+//*/
+//  f = tempOp()
+//  {
+//    if (neg) return FormulaFactory.mkNot(f);
+//    else return f;
+//  }
+//}
+
+Formula unaryOp() :
+{
+  Formula f;
+}
+{
+  < FOP > f = unaryOp()
+  {
+    return FormulaFactory.mkF(f);
+  }
+| < GOP > f = unaryOp()
+  {
+    return FormulaFactory.mkG(f);
+  }
+| < XOP > f = unaryOp()
+  {
+    return FormulaFactory.mkX(f);
+  }
+| < NEG > f = unaryOp()
+  {
+    return FormulaFactory.mkNot(f);
+  }  
+| f = atom()
+  {
+    return f;
+  }
+}
+
+Formula atom() :
+{
+  String atomString;
+  int id;
+  Formula f;
+}
+{
+  < TRUE >
+  {
+	return FormulaFactory.mkConst(true);
+  }
+| < FALSE >
+  {
+	return FormulaFactory.mkConst(false);
+  }
+| atomString = < ID >.image
+  {
+	id = BDDForVariables.bijectionIdAtom.id(atomString);
+	return FormulaFactory.mkLit(atomString, id, false);
+  }
+| < LPAR > f = disjunction() < RPAR >
+  {
+    return f;
+  }
+}
