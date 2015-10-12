@@ -80,9 +80,12 @@ public class GOperator extends FormulaUnary {
     
     
     public BoolExpr toExpr(Context ctx){
-    	Sort U = ctx.mkBoolSort();
-    	FuncDecl g=ctx.mkFuncDecl("G",U,U);
-    	return (BoolExpr) g.apply(operand.toExpr(ctx));
+    	if(operand.toExpr(ctx).isTrue()){
+    		return ctx.mkTrue();
+    	}else if(operand.toExpr(ctx).isFalse()){
+    		return ctx.mkFalse();
+    	}
+    	return ctx.mkBoolConst(toZ3String(true));
     }
 
 	@Override

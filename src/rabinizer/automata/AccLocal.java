@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.*;
 
+import com.microsoft.z3.*;
 
 import rabinizer.formulas.*;
 import rabinizer.bdd.*;
@@ -193,78 +194,15 @@ public class AccLocal {
     //checks if antecedent =>consequent
     //Formula:
     public static boolean entails(Formula antecedent, Formula consequent) {
-    	//System.out.println("in entails:");
-    	//System.out.println("ant:"+antecedent.toString());
-    	//System.out.println("consequent:"+consequent.toString());
-    	//System.out.println("Result:"+ antecedent.bdd().imp(consequent.bdd()).isOne());
-    	//System.out.println("As bdd: ant:"+antecedent.bdd().toString());
-    	//System.out.println("con:"+consequent.bdd().toString());
     	
-    	//Context ctx=new Context();
-    	//BoolExpr ant=antecedent.toExpr(ctx);
-        //BoolExpr con=consequent.toExpr(ctx);
-        //BoolExpr contradicting=ctx.mkAnd(ant,ctx.mkNot(con));
-        //Solver s=ctx.mkSolver();
-        //s.check(contradicting);
-        //System.out.println("Real Result:"+!(s.check() == Status.SATISFIABLE));
-        try{
-        	VMID vm=new VMID();//to get sth unique with s.t. no two processes use the same file
-        	String filename="/home/ziegler/myZ3/bin/";
-        	//filename="/home/isolde/myZ3/bin/";
-        	Runtime r = Runtime.getRuntime();
-        	Process p=r.exec("rm "+filename+"example"+vm.hashCode());
-        	p.waitFor();
-        	ArrayList<String> a=antecedent.getAllPropositions();
-        	a.addAll(consequent.getAllPropositions());
-        	//remove duplicates:
-        	Set<String> setItems = new LinkedHashSet<String>(a);
-        	a.clear();
-        	a.addAll(setItems);
-        	
-        	PrintWriter writer = new PrintWriter(filename+"example"+vm.hashCode(), "UTF-8");
-        	for(String props: a){
-        		writer.println("(declare-const "+props+ " Bool)");
-        	}
-        	writer.println("(assert (and "+antecedent.toZ3String(false)+ "(not "+consequent.toZ3String(false)+") ) )");
-        	writer.println("(check-sat)");
-        	writer.close();
+    	Context ctx=new Context();
+    	BoolExpr ant=antecedent.toExpr(ctx);
+    	BoolExpr con=consequent.toExpr(ctx);
+    	Solver s=ctx.mkSolver();
+    	s.add(ctx.mkAnd(ant,ctx.mkNot(con)));
+    	return !(s.check()==Status.SATISFIABLE);
+    		
     	
-        	Process p1=r.exec(filename+"z3 "+filename+"example"+vm.hashCode());
-        	p1.waitFor();
-    	
-   
-        	BufferedReader b = new BufferedReader(new InputStreamReader(p1.getInputStream()));
-        	String line = "";
-
-        	if ((line = b.readLine()) == null) {
-        		throw new RuntimeException("couldn't read output of z3");
-        	}
-    	
-        	b.close();
-        	Process p2=r.exec("rm "+filename+"example"+vm.hashCode());
-        	p2.waitFor();
-        	if(line.equals("sat")){
-        		/*System.out.println("z3 said false");
-        		if(antecedent.bdd().imp(consequent.bdd()).isOne()){
-        			throw new RuntimeException("but z3 said false");
-        		}*/
-        		return false;
-        	}
-        	else{
-        		/*System.out.println("z3 said true");
-        		if(!antecedent.bdd().imp(consequent.bdd()).isOne()){
-        			throw new RuntimeException("but z3 said true");
-        		}*/
-        		return true;
-        	}
-
-        	}catch(IOException e){
-        		System.out.println(e.getMessage());
-        	}catch(InterruptedException e){
-        		System.out.println(e.getMessage());
-        	}
-        	throw new RuntimeException("Communication with z3 didn't work");
-            
     	
     	
     	

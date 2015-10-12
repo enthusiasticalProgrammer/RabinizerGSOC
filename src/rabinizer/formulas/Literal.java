@@ -99,7 +99,6 @@ public class Literal extends FormulaNullary {
     }
     
     public BoolExpr toExpr(Context ctx){
-    	ctx.mkUninterpretedSort(ctx.mkSymbol("U"));
     	if(negated){
     		return ctx.mkNot((BoolExpr) ctx.mkBoolConst(atom));
     	}else{

@@ -94,6 +94,16 @@ public class Disjunction extends FormulaBinaryBoolean {
     }
     
     public BoolExpr toExpr(Context ctx){
+    	BoolExpr l = left.toExpr(ctx);
+    	BoolExpr r = right.toExpr(ctx);
+    	
+    	if(l.isTrue()||r.isTrue()){
+    		return ctx.mkTrue();
+    	}else if(l.isFalse()){
+    		return r;
+    	}else if(r.isFalse()){
+    		return l;
+    	}
     	return ctx.mkOr(left.toExpr(ctx),right.toExpr(ctx));
     	
     }

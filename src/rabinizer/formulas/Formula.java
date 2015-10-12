@@ -38,6 +38,7 @@ public abstract class Formula {
 
     public abstract Formula toNNF();
     
+    //to be overwritten, side-effects: propositions will be inserted into ctx
     public abstract BoolExpr toExpr(Context ctx);
 
     public abstract Formula negationToNNF();

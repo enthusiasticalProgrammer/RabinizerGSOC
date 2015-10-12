@@ -3143,7 +3143,7 @@ public class MicroFactory extends BDDFactory {
     void allsat_rec(int r, List<TestBDD> result) {
         if (ISONE(r)) {
             //allsatHandler(allsatProfile, bddvarnum);
-            byte[] b = new byte[bddvarnum];
+            TestBDD b = new TestBDD(bddvarnum);
             System.arraycopy(allsatProfile, 0, b, 0, bddvarnum);
             result.add(b);
             return;

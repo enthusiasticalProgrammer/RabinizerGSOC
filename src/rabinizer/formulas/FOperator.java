@@ -42,9 +42,12 @@ public class FOperator extends FormulaUnary {
     }
 
     public BoolExpr toExpr(Context ctx){
-    	Sort U = ctx.mkBoolSort();
-    	FuncDecl f=ctx.mkFuncDecl("F",U,U);
-    	return (BoolExpr) f.apply(operand.toExpr(ctx));
+    	if(operand.toExpr(ctx).isTrue()){
+    		return ctx.mkTrue();
+    	}else if(operand.toExpr(ctx).isFalse()){
+    		return ctx.mkFalse();
+    	}
+    	return ctx.mkBoolConst(toZ3String(true));
     }
 
 	@Override

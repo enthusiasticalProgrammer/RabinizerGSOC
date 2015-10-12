@@ -47,9 +47,14 @@ public class XOperator extends FormulaUnary {
     }
     
     public BoolExpr toExpr(Context ctx){
-    	Sort U = ctx.mkUninterpretedSort(ctx.mkSymbol("U"));
-    	FuncDecl x=ctx.mkFuncDecl("X",U,U);
-    	return (BoolExpr) x.apply(operand.toExpr(ctx));
+    	BoolExpr o=operand.toExpr(ctx);
+    	if(o.isTrue()){
+    		return ctx.mkTrue();
+    	}else if(o.isFalse()){
+    		return ctx.mkFalse();
+    	}else{
+    		return ctx.mkBoolConst(toZ3String(true));
+    	}
     }
 
 	@Override

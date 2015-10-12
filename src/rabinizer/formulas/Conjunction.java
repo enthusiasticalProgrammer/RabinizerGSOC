@@ -95,6 +95,13 @@ public class Conjunction extends FormulaBinaryBoolean {
     public BoolExpr toExpr(Context ctx){
     	BoolExpr l=left.toExpr(ctx);
     	BoolExpr r=right.toExpr(ctx);
+    	if(l.isTrue()){
+    		return r;
+    	}else if(r.isTrue()){
+    		return l;
+    	}else if(l.isFalse()|| r.isFalse()){
+    		return ctx.mkFalse();
+    	}
     	return ctx.mkAnd(l,r);
     }
 

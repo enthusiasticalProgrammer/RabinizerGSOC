@@ -60,12 +60,19 @@ public class UOperator extends FormulaBinary {
     }
     
     public BoolExpr toExpr(Context ctx){
-    	BoolSort U = ctx.mkBoolSort();
-    	Sort[] so=new Sort[2];
-    	so[0]=U;
-    	so[1]=U;
-    	FuncDecl f=ctx.mkFuncDecl("U",so,U);
-    	return (BoolExpr) f.apply(left.toExpr(ctx),right.toExpr(ctx));
+    	BoolExpr l=left.toExpr(ctx);
+    	BoolExpr r=right.toExpr(ctx);
+    	if(l.isTrue()){
+    		return ctx.mkBoolConst("F"+right.toZ3String(true));
+    	}else if(l.isFalse()){
+    		return r;
+    	}else if(r.isTrue()){
+    		return ctx.mkTrue();
+    	}else if(r.isFalse()){
+    		return ctx.mkFalse();
+    	}
+    	
+    	return ctx.mkBoolConst(toZ3String(true));
     }
 
 	@Override

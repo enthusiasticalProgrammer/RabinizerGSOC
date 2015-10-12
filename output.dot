@@ -1,0 +1,11 @@
+digraph "Automaton for GFp:: Fp=1;" 
+{
+node [shape=oval, label="GFp:: Fp=1;"]"GFp:: Fp=1;";
+"GFp:: Fp=1;" -> "GFp:: Fp=1;" [label="true"];
+}
+Gen. Rabin acceptance condition
+Pair 1
+Fin:
+{}
+Inf: 1
+{GFp:: Fp=1;  ->  p}
