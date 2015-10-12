@@ -1,0 +1,273 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package rabinizer.automata;
+
+import java.rmi.dgc.VMID;
+import rabinizer.bdd.GSet;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.*;
+
+
+import rabinizer.formulas.*;
+import rabinizer.bdd.*;
+import rabinizer.exec.Main;
+
+
+/**
+ *
+ * @author jkretinsky & Christopher Ziegler
+ */
+public class AccLocal {
+
+    protected final Product product;
+    protected final Formula formula;
+    protected final Map<Formula, Integer> maxRank = new HashMap<Formula,Integer>();
+    final Map<Formula, GSet> topmostGs = new HashMap<Formula,GSet>(); // without the outer G
+    final TranSet<ProductState> allTrans = new TranSet<ProductState>();
+    // separate automata acceptance projected to the whole product
+    Map<Formula, Map<GSet, Map<Integer, RabinPair>>> accSlavesOptions = new HashMap<Formula, Map<GSet, Map<Integer, RabinPair>>>(); 
+    Map<GSet, Map<Map<Formula, Integer>, RabinPair>> accMasterOptions = new HashMap<GSet,Map<Map<Formula, Integer>, RabinPair>>();
+    			// actually just coBuchi
+
+    public AccLocal(Product product) {
+        this.product = product;
+        this.formula = product.master.formula;
+        for (Formula f : formula.gSubformulas()) {
+            int maxRankF = 0;
+            for (RankingState rs : product.slaves.get(f).states) {
+                maxRankF = maxRankF >= rs.size() ? maxRankF : rs.size();
+            }
+            maxRank.put(f, maxRankF);
+            topmostGs.put(f, new GSet(f.topmostGs()));
+            Map<GSet, Map<Integer, RabinPair>> optionForf = computeAccSlavesOptions(f);
+            accSlavesOptions.put(f, optionForf);
+        }
+        Main.verboseln("Acceptance for slaves:\n" + this.accSlavesOptions);
+        ValuationSet allVals = new ValuationSetBDD(BDDForVariables.getTrueBDD());
+        for (ProductState ps : product.states) {
+            allTrans.add(ps, allVals);
+        }
+        accMasterOptions = computeAccMasterOptions();
+        Main.verboseln("Acceptance for master:\n" + this.accMasterOptions);
+    }
+
+    protected Map<GSet, Map<Integer, RabinPair>> computeAccSlavesOptions(Formula f) {
+        Map<GSet, Map<Integer, RabinPair>> result = new HashMap<GSet, Map<Integer, RabinPair>>();
+        RabinSlave rSlave = product.slaves.get(f);
+        Set<GSet> gSets = powerset(new GSet(topmostGs.get(f)));
+        for (GSet gSet : gSets) {
+            Map<FormulaState, Boolean> finalStates = new HashMap<FormulaState, Boolean>();
+            for (FormulaState fs : rSlave.mojmir.states) {
+                finalStates.put(fs, gSet.entails(fs.formula));
+            }
+            result.put(gSet, new HashMap<Integer,RabinPair>());
+            for (int rank = 1; rank <= maxRank.get(f); rank++) {
+                result.get(gSet).put(rank, new RabinPair(rSlave, finalStates, rank, product));
+            }
+        }
+        return result;
+    }
+
+    protected Set<GSet> powerset(GSet gSet) {
+        Set<GSet> result = new HashSet<GSet>();
+        if (gSet.isEmpty()) {
+            result.add(new GSet());
+        } else {
+            Formula curr = gSet.iterator().next();
+            gSet.remove(curr);
+            for (GSet gs : powerset(gSet)) {
+                result.add(gs);
+                GSet gs2 = new GSet(gs);
+                gs2.add(curr);
+                result.add(gs2);
+            }
+        }
+        return result;
+    }
+
+    protected Map<GSet, Map<Map<Formula, Integer>, RabinPair>> computeAccMasterOptions() {
+        Map<GSet, Map<Map<Formula, Integer>, RabinPair>> result = new HashMap<GSet, Map<Map<Formula, Integer>, RabinPair>>();
+        GSet allGs = new GSet(formula.gSubformulas());
+        Set<GSet> gSets = powerset(new GSet(allGs));
+        for (GSet gSet : gSets) {
+            Main.verboseln("\tGSet " + gSet);
+            GSet gSetComplement = new GSet(allGs);
+            gSetComplement.removeAll(gSet);
+            Set<Map<Formula, Integer>> rankings = powersetRanks(new GSet(gSet));
+            for (Map<Formula, Integer> ranking : rankings) {
+                Main.verboseln("\t  Ranking " + ranking);
+                TranSet<ProductState> avoidP = new TranSet<ProductState>();
+                for (ProductState ps : product.states) {
+                    /*
+                     for (Valuation v : AllValuations.allValuations) { // TODO !!! expl vs bdd
+                     if (!slavesEntail(gSet, gSetComplement, ps, ranking, v, ps.masterState.formula)) {
+                     avoidP.add(ps, new ValuationSetExplicit(v));
+                     }
+                     }
+                     */
+                    avoidP.addAll(computeAccMasterForState(gSet, gSetComplement, ranking, ps));
+                }
+                if (avoidP.equals(allTrans)) {
+                    Main.verboseln("Skipping complete Avoid");
+                } else {
+                    if (!result.containsKey(gSet)) {
+                        result.put(gSet, new HashMap<Map<Formula,Integer>,RabinPair>());
+                    }
+                    if (!result.get(gSet).containsKey(ranking)) {
+                        result.get(gSet).put(ranking, new RabinPair<ProductState>(avoidP, null));
+                    }
+                    Main.verboseln("Avoid for " + gSet + ranking + "\n" + avoidP);
+                }
+            }
+        }
+        return result;
+    }
+
+    protected Set<Map<Formula, Integer>> powersetRanks(Set<Formula> gSet) {
+        Set<Map<Formula, Integer>> result = new HashSet<Map<Formula,Integer> >();
+        if (gSet.isEmpty()) {
+            result.add(new HashMap<Formula,Integer>());
+        } else {
+            Formula curr = gSet.iterator().next();
+            gSet.remove(curr);
+            for (Map<Formula, Integer> ranking : powersetRanks(gSet)) {
+                for (int rank = 1; rank <= maxRank.get(curr); rank++) {
+                    Map<Formula, Integer> rankingNew = new HashMap<Formula,Integer>(ranking);
+                    rankingNew.put(curr, rank);
+                    result.add(rankingNew);
+                }
+            }
+        }
+        return result;
+    }
+
+    // symbolic version
+    protected TranSet<ProductState> computeAccMasterForState(GSet gSet, GSet gSetComplement, Map<Formula, Integer> ranking, ProductState ps) {
+        TranSet<ProductState> result = new TranSet<ProductState>();
+        Set<ValuationSet> fineSuccVs = product.generateSuccTransitionsReflectingSinks(ps);
+        for (ValuationSet vs : fineSuccVs) {
+            if (!slavesEntail(gSet, gSetComplement, ps, ranking, vs.pickAny(), ps.masterState.formula)) {
+                result.add(ps, vs);
+            }
+        }
+        return result;
+    }
+
+    // unused: explicit version (simpler, likely slower)
+    protected TranSet<ProductState> computeAccMasterForState2(GSet gSet, GSet gSetComplement, Map<Formula, Integer> ranking, ProductState ps) {
+        TranSet<ProductState> result = new TranSet<ProductState>();
+        for (Valuation v : AllValuations.allValuations) { // TODO !!! expl vs bdd
+            if (!slavesEntail(gSet, gSetComplement, ps, ranking, v, ps.masterState.formula)) {
+                result.add(ps, new ValuationSetExplicit(v));
+            }
+        }
+        return result;
+    }
+
+    protected static boolean slavesEntail(GSet gSet, GSet gSetComplement, ProductState ps, Map<Formula, Integer> ranking, Valuation v, Formula consequent) {
+        Formula antecedent = new BooleanConstant(true);
+        for (Formula f : gSet) {
+            antecedent = new Conjunction(antecedent, new GOperator(f)); // TODO compute these lines once for all states
+            antecedent = new Conjunction(antecedent, f.substituteGsToFalse(gSetComplement));
+            Formula slaveAntecedent = new BooleanConstant(true);
+            if (ps.containsKey(f)) {
+                for (FormulaState s : ps.get(f).keySet()) {
+                    if (ps.get(f).get(s) >= ranking.get(f)) {
+                        slaveAntecedent = new Conjunction(slaveAntecedent, s.formula);
+                    }
+                }
+            }
+            slaveAntecedent = slaveAntecedent.temporalStep(v).substituteGsToFalse(gSetComplement);
+            antecedent = new Conjunction(antecedent, slaveAntecedent);
+        }
+        return entails(antecedent, consequent.temporalStep(v));
+    }
+
+    //checks if antecedent =>consequent
+    //Formula:
+    public static boolean entails(Formula antecedent, Formula consequent) {
+    	//System.out.println("in entails:");
+    	//System.out.println("ant:"+antecedent.toString());
+    	//System.out.println("consequent:"+consequent.toString());
+    	//System.out.println("Result:"+ antecedent.bdd().imp(consequent.bdd()).isOne());
+    	//System.out.println("As bdd: ant:"+antecedent.bdd().toString());
+    	//System.out.println("con:"+consequent.bdd().toString());
+    	
+    	//Context ctx=new Context();
+    	//BoolExpr ant=antecedent.toExpr(ctx);
+        //BoolExpr con=consequent.toExpr(ctx);
+        //BoolExpr contradicting=ctx.mkAnd(ant,ctx.mkNot(con));
+        //Solver s=ctx.mkSolver();
+        //s.check(contradicting);
+        //System.out.println("Real Result:"+!(s.check() == Status.SATISFIABLE));
+        try{
+        	VMID vm=new VMID();//to get sth unique with s.t. no two processes use the same file
+        	String filename="/home/ziegler/myZ3/bin/";
+        	//filename="/home/isolde/myZ3/bin/";
+        	Runtime r = Runtime.getRuntime();
+        	Process p=r.exec("rm "+filename+"example"+vm.hashCode());
+        	p.waitFor();
+        	ArrayList<String> a=antecedent.getAllPropositions();
+        	a.addAll(consequent.getAllPropositions());
+        	//remove duplicates:
+        	Set<String> setItems = new LinkedHashSet<String>(a);
+        	a.clear();
+        	a.addAll(setItems);
+        	
+        	PrintWriter writer = new PrintWriter(filename+"example"+vm.hashCode(), "UTF-8");
+        	for(String props: a){
+        		writer.println("(declare-const "+props+ " Bool)");
+        	}
+        	writer.println("(assert (and "+antecedent.toZ3String(false)+ "(not "+consequent.toZ3String(false)+") ) )");
+        	writer.println("(check-sat)");
+        	writer.close();
+    	
+        	Process p1=r.exec(filename+"z3 "+filename+"example"+vm.hashCode());
+        	p1.waitFor();
+    	
+   
+        	BufferedReader b = new BufferedReader(new InputStreamReader(p1.getInputStream()));
+        	String line = "";
+
+        	if ((line = b.readLine()) == null) {
+        		throw new RuntimeException("couldn't read output of z3");
+        	}
+    	
+        	b.close();
+        	Process p2=r.exec("rm "+filename+"example"+vm.hashCode());
+        	p2.waitFor();
+        	if(line.equals("sat")){
+        		/*System.out.println("z3 said false");
+        		if(antecedent.bdd().imp(consequent.bdd()).isOne()){
+        			throw new RuntimeException("but z3 said false");
+        		}*/
+        		return false;
+        	}
+        	else{
+        		/*System.out.println("z3 said true");
+        		if(!antecedent.bdd().imp(consequent.bdd()).isOne()){
+        			throw new RuntimeException("but z3 said true");
+        		}*/
+        		return true;
+        	}
+
+        	}catch(IOException e){
+        		System.out.println(e.getMessage());
+        	}catch(InterruptedException e){
+        		System.out.println(e.getMessage());
+        	}
+        	throw new RuntimeException("Communication with z3 didn't work");
+            
+    	
+    	
+    	
+        
+    }
+}

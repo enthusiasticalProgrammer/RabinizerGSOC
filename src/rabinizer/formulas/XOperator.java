@@ -1,0 +1,68 @@
+package rabinizer.formulas;
+
+import java.util.ArrayList;
+import com.microsoft.z3.*;
+
+
+public class XOperator extends FormulaUnary {
+
+    @Override
+    public String operator() {
+        return "X";
+    }
+
+    public XOperator(Formula f) {
+        super(f);
+    }
+
+    @Override
+    public XOperator ThisTypeUnary(Formula operand) {
+        return new XOperator(operand);
+    }
+
+    @Override
+    public Formula unfold() {
+        return this;
+    }
+
+    @Override
+    public Formula unfoldNoG() {
+        return this;
+    }
+
+    @Override
+    public Formula toNNF() {
+        return new XOperator(operand.toNNF());
+    }
+
+    @Override
+    public Formula negationToNNF() {
+        return new XOperator(operand.negationToNNF());
+    }
+
+    //============== OVERRIDE ====================
+    @Override
+    public Formula removeX() {
+        return operand;
+    }
+    
+    public BoolExpr toExpr(Context ctx){
+    	Sort U = ctx.mkUninterpretedSort(ctx.mkSymbol("U"));
+    	FuncDecl x=ctx.mkFuncDecl("X",U,U);
+    	return (BoolExpr) x.apply(operand.toExpr(ctx));
+    }
+
+	@Override
+	public String toZ3String(boolean is_atom) {
+		
+		return "X"+operand.toZ3String(true);
+	}
+
+	@Override
+	public ArrayList<String> getAllPropositions() {
+		ArrayList<String> a=new ArrayList<String>();
+		a.add(toZ3String(true));
+		return a;
+	}
+
+}

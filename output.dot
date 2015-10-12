@@ -1,0 +1,23 @@
+digraph "Automaton for (trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0))))):: !p0=1; G!p0=1;" 
+{
+node [shape=oval, label="(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0))))):: !p0=1; G!p0=1;"]"(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0))))):: !p0=1; G!p0=1;";
+node [shape=rectangle, label="(((G!p0&GG!p0)|(G!p0|(G!p0&(G!p0U(!p1&G!p0)))))|(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0)))))):: !p0=1; G!p0=1;"]"(((G!p0&GG!p0)|(G!p0|(G!p0&(G!p0U(!p1&G!p0)))))|(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0)))))):: !p0=1; G!p0=1;";
+"(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0))))):: !p0=1; G!p0=1;" -> "(((G!p0&GG!p0)|(G!p0|(G!p0&(G!p0U(!p1&G!p0)))))|(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0)))))):: !p0=1; G!p0=1;" [label="(!p0&!p1)"];
+"(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0))))):: !p0=1; G!p0=1;" -> "(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0))))):: !p0=1; G!p0=1;" [label="(p0|(!p0&p1))"];
+"(((G!p0&GG!p0)|(G!p0|(G!p0&(G!p0U(!p1&G!p0)))))|(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0)))))):: !p0=1; G!p0=1;" -> "(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0))))):: !p0=1; G!p0=1;" [label="p0"];
+"(((G!p0&GG!p0)|(G!p0|(G!p0&(G!p0U(!p1&G!p0)))))|(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0)))))):: !p0=1; G!p0=1;" -> "(((G!p0&GG!p0)|(G!p0|(G!p0&(G!p0U(!p1&G!p0)))))|(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0)))))):: !p0=1; G!p0=1;" [label="!p0"];
+}
+Gen. Rabin acceptance condition
+Pair 1
+Fin:
+{(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0))))):: !p0=1; G!p0=1;  ->  p0;
+(((G!p0&GG!p0)|(G!p0|(G!p0&(G!p0U(!p1&G!p0)))))|(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0)))))):: !p0=1; G!p0=1;  ->  p0}
+Inf: 1
+{(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0))))):: !p0=1; G!p0=1;  ->  !p0;
+(((G!p0&GG!p0)|(G!p0|(G!p0&(G!p0U(!p1&G!p0)))))|(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0)))))):: !p0=1; G!p0=1;  ->  !p0}
+Pair 2
+Fin:
+{(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0))))):: !p0=1; G!p0=1;  ->  true;
+(((G!p0&GG!p0)|(G!p0|(G!p0&(G!p0U(!p1&G!p0)))))|(trueU(!p0&(GG!p0|(G!p0U(!p1&G!p0)))))):: !p0=1; G!p0=1;  ->  p0}
+Inf: 0
+trivial
