@@ -197,7 +197,10 @@ public class AccLocal {
     	BoolExpr con=consequent.toExpr(ctx);
     	Solver s=ctx.mkSolver();
     	s.add(ctx.mkAnd(ant,ctx.mkNot(con)));
-    	return !(s.check()==Status.SATISFIABLE);
+    	boolean result=!(s.check()==Status.SATISFIABLE);
+    	ctx.dispose();
+    	return result;
+    	
     		
     	
     	
