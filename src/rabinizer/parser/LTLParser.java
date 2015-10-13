@@ -26,14 +26,16 @@ public class LTLParser implements LTLParserConstants {
         return formula();
   }
 
-  final public Formula formula() throws ParseException {Formula f;
+  @SuppressWarnings("unused")
+final public Formula formula() throws ParseException {Formula f;
     f = disjunction();
     jj_consume_token(0);
 {if ("" != null) return f;}
     throw new Error("Missing return statement in function");
   }
 
-  final public Formula disjunction() throws ParseException {Formula r = null;
+  @SuppressWarnings("unused")
+final public Formula disjunction() throws ParseException {Formula r = null;
   Formula result;
     result = conjunction();
     label_1:
@@ -51,7 +53,8 @@ result = new Disjunction(result, r);
     throw new Error("Missing return statement in function");
   }
 
-  final public Formula conjunction() throws ParseException {Formula result;
+  @SuppressWarnings("unused")
+final public Formula conjunction() throws ParseException {Formula result;
   Formula r = null;
     result = until();
     label_2:
@@ -69,7 +72,8 @@ result = new Conjunction(result, r);
     throw new Error("Missing return statement in function");
   }
 
-  final public Formula until() throws ParseException {Formula result;
+  @SuppressWarnings("unused")
+final public Formula until() throws ParseException {Formula result;
   Formula r = null;
     result = unaryOp();
     label_3:
@@ -105,7 +109,8 @@ result = new UOperator(result, r);
 //    else return f;
 //  }
 //}
-  final public 
+  @SuppressWarnings("unused")
+final public 
 Formula unaryOp() throws ParseException {Formula f;
     if (jj_2_4(2)) {
       jj_consume_token(FOP);
@@ -133,7 +138,8 @@ Formula unaryOp() throws ParseException {Formula f;
     throw new Error("Missing return statement in function");
   }
 
-  final public Formula atom() throws ParseException {String atomString;
+  @SuppressWarnings("unused")
+final public Formula atom() throws ParseException {String atomString;
   int id;
   Formula f;
     if (jj_2_9(2)) {
