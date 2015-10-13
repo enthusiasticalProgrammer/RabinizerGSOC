@@ -2783,42 +2783,7 @@ public class JFactory extends BDDFactory {
         allsatProfile = null;
     }
 
-    void allsat_rec(int r, List<byte[]> result) {
-        if (ISONE(r)) {
-            //allsatHandler(allsatProfile, bddvarnum);
-            byte[] b = new byte[bddvarnum];
-            System.arraycopy(allsatProfile, 0, b, 0, bddvarnum);
-            result.add(b);
-            return;
-        }
-
-        if (ISZERO(r))
-            return;
-
-        if (!ISZERO(LOW(r))) {
-            int v;
-
-            allsatProfile[bddlevel2var[LEVEL(r)]] = 0;
-
-            for (v = LEVEL(LOW(r)) - 1; v > LEVEL(r); --v) {
-                allsatProfile[bddlevel2var[v]] = -1;
-            }
-
-            allsat_rec(LOW(r), result);
-        }
-
-        if (!ISZERO(HIGH(r))) {
-            int v;
-
-            allsatProfile[bddlevel2var[LEVEL(r)]] = 1;
-
-            for (v = LEVEL(HIGH(r)) - 1; v > LEVEL(r); --v) {
-                allsatProfile[bddlevel2var[v]] = -1;
-            }
-
-            allsat_rec(HIGH(r), result);
-        }
-    }
+    
     double bdd_satcount(int r) {
         double size = 1;
 

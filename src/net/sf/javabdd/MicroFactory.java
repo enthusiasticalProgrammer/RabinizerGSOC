@@ -3130,44 +3130,7 @@ public class MicroFactory extends BDDFactory {
         allsatProfile = null;
     }
 
-    void allsat_rec(int r, List<TestBDD> result) {
-        if (ISONE(r)) {
-            //allsatHandler(allsatProfile, bddvarnum);
-            TestBDD b = new TestBDD(bddvarnum);
-            System.arraycopy(allsatProfile, 0, b, 0, bddvarnum);
-            result.add(b);
-            return;
-        }
-
-        if (ISZERO(r)) return;
-
-        int LOW_r = LOW(r);
-        int HIGH_r = HIGH(r);
-        int LEVEL_r = LEVEL(r);
-        if (!ISZERO(LOW_r)) {
-            int v;
-
-            allsatProfile[bddlevel2var[LEVEL_r]] = 0;
-
-            for (v = LEVEL(LOW_r) - 1; v > LEVEL_r; --v) {
-                allsatProfile[bddlevel2var[v]] = -1;
-            }
-
-            allsat_rec(LOW_r, result);
-        }
-
-        if (!ISZERO(HIGH_r)) {
-            int v;
-
-            allsatProfile[bddlevel2var[LEVEL_r]] = 1;
-
-            for (v = LEVEL(HIGH_r) - 1; v > LEVEL_r; --v) {
-                allsatProfile[bddlevel2var[v]] = -1;
-            }
-
-            allsat_rec(HIGH_r, result);
-        }
-    }
+    
     
     double bdd_satcount(int r) {
         double size = 1;
