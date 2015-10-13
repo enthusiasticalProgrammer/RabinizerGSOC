@@ -3113,24 +3113,7 @@ public class MicroFactory extends BDDFactory {
         return size;
     }
 
-    void bdd_allsat(int r, List<TestBDD> result) {
-        int v;
-
-        CHECK(r);
-
-        allsatProfile = new byte[bddvarnum];
-
-        for (v = LEVEL(r) - 1; v >= 0; --v)
-            allsatProfile[bddlevel2var[v]] = -1;
-
-        INITREF();
-
-        allsat_rec(r, result);
-
-        allsatProfile = null;
-    }
-
-    
+   
     
     double bdd_satcount(int r) {
         double size = 1;
