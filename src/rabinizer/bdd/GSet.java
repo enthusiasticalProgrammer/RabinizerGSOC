@@ -6,8 +6,10 @@
 package rabinizer.bdd;
 
 import java.util.*;
-import net.sf.javabdd.BDD;
-import rabinizer.bdd.BDDForFormulae;
+
+import com.microsoft.z3.*;
+
+
 import rabinizer.formulas.BooleanConstant;
 import rabinizer.formulas.Conjunction;
 import rabinizer.formulas.Formula;
@@ -24,7 +26,7 @@ public class GSet extends HashSet<Formula> {
 	 * 
 	 */
 	private static final long serialVersionUID = 6122181497119884736L;
-	private BDD gPremises = null;
+	private Formula gPremises = null;
 
     public GSet() {
         super();
@@ -41,10 +43,18 @@ public class GSet extends HashSet<Formula> {
                 premise = new Conjunction(premise, new GOperator(f));
 
             }
-            gPremises = premise.bdd();
+            gPremises = premise;
         }
         //checks if gPremises (as BDD) implies formula
-        return gPremises.imp(formula.bdd()).equals(BDDForFormulae.bddFactory.one());
+        Context ctx=new Context();
+        BoolExpr ant=gPremises.toExpr(ctx);
+        BoolExpr con=formula.toExpr(ctx);
+        Solver s=ctx.mkSolver();
+    	s.add(ctx.mkAnd(ant,ctx.mkNot(con)));
+    	boolean result=!(s.check()==Status.SATISFIABLE);
+        
+        ctx.dispose();
+        return result;
     }
 
 }

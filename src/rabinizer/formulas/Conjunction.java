@@ -11,7 +11,7 @@ import rabinizer.bdd.BDDForFormulae;
 
 /**
  * @author Andreas Gaiser & Ruslan Ledesma-Garza
- * & Christopher Ziegler
+ *
  *
  */
 public class Conjunction extends FormulaBinaryBoolean {

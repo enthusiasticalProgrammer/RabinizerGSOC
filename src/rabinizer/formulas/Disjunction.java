@@ -9,8 +9,8 @@ import com.microsoft.z3.*;
 
 /**
  * @author Andreas Gaiser & Ruslan Ledesma-Garza
- * 	& Christopher Ziegler
- * 
+ *
+ *
  *
  */
 public class Disjunction extends FormulaBinaryBoolean {
