@@ -28,7 +28,7 @@ public class DSRA extends Automaton<ProductDegenAccState> implements AccAutomato
         this.accTR = dtra.accTR;
         stateAcceptance = new HashMap<ProductDegenState,Set<Integer>>();
         for (ProductDegenState s : dtra.states) {
-            stateAcceptance.put(s, new HashSet<>());
+            stateAcceptance.put(s, new HashSet());
             for (int i = 0; i < accTR.size(); i++) {
                 RabinPair<ProductDegenState> rp = accTR.get(i);
                 if (ValuationSetBDD.getAllVals().equals(rp.left.get(s))) {
