@@ -11,7 +11,6 @@ import com.microsoft.z3.*;
 
 /**
  * @author Jan Kretinsky
- * 	and Christopher Ziegler
  *
  */
 public abstract class Formula {

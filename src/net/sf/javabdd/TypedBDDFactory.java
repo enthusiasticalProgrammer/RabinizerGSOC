@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -925,7 +926,7 @@ public class TypedBDDFactory extends BDDFactory {
             Set<BDDDomain> newDom = makeSet();
             newDom.addAll(dom);
             for (Iterator<?> i = tpair.domMap.entrySet().iterator(); i.hasNext(); ) {
-                Map.Entry e = (Map.Entry) i.next();
+                Map.Entry<BDDDomain,BDDDomain> e = (Entry<BDDDomain, BDDDomain>) i.next();
                 BDDDomain d_from = (BDDDomain) e.getKey();
                 BDDDomain d_to = (BDDDomain) e.getValue();
                 //System.out.println("Replace "+domainNames(dom)+" ("+d_from+"->"+d_to+")");
@@ -950,7 +951,7 @@ public class TypedBDDFactory extends BDDFactory {
         public BDD replaceWith(BDDPairing pair) {
             TypedBDDPairing tpair = (TypedBDDPairing) pair;
             for (Iterator<?> i = tpair.domMap.entrySet().iterator(); i.hasNext(); ) {
-                Map.Entry e = (Map.Entry) i.next();
+                Map.Entry<BDDDomain,BDDDomain> e = (Map.Entry<BDDDomain,BDDDomain>) i.next();
                 BDDDomain d_from = (BDDDomain) e.getKey();
                 BDDDomain d_to = (BDDDomain) e.getValue();
                 if (!dom.contains(d_from)) {

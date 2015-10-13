@@ -103,8 +103,8 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
                         for (FormulaState succ : slave.mojmir.states) {
                             ValuationSet vs1, vs2;
                             if (!finalStates.get(succ)
-                                && ((vs1 = slave.mojmir.edgeBetween.get(new Tuple(fs, succ))) != null)
-                                && ((vs2 = slave.mojmir.edgeBetween.get(new Tuple(fs2, succ))) != null)) {
+                                && ((vs1 = slave.mojmir.edgeBetween.get(new Tuple<FormulaState, FormulaState>(fs, succ))) != null)
+                                && ((vs2 = slave.mojmir.edgeBetween.get(new Tuple<FormulaState,FormulaState>(fs2, succ))) != null)) {
                                 if (!fs.equals(fs2)) {
                                     buyR.add(rs, vs1.and(vs2));
                                 } else if (succ.equals(slave.mojmir.initialState)) {
@@ -134,7 +134,7 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
          forbidden.addAll(succeedP);
          */
         Main.verboseln("\tAn acceptance pair for slave " + slave.mojmir.formula + ":\n" + failP + buyP + succeedP);
-        return new RabinPair(failP.addAll(buyP), succeedP);
+        return new RabinPair<ProductState>(failP.addAll(buyP), succeedP);
     }
 
     

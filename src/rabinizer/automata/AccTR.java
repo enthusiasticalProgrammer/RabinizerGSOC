@@ -37,7 +37,7 @@ public class AccTR extends ArrayList<RabinPair<ProductDegenState>> {
                     inf.add(s, ValuationSetBDD.getAllVals());
                 }
             }
-            this.add(new RabinPair(fin, inf));
+            this.add(new RabinPair<ProductDegenState>(fin, inf));
         }
     }
 

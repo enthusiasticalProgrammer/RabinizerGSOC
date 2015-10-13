@@ -43,6 +43,7 @@ public class GSet extends HashSet<Formula> {
             }
             gPremises = premise.bdd();
         }
+        //checks if gPremises (as BDD) implies formula
         return gPremises.imp(formula.bdd()).equals(BDDForFormulae.bddFactory.one());
     }
 

@@ -92,7 +92,7 @@ public class RabinSlave extends Automaton<RankingState> {
 
     private boolean noIncomingTransitions(RankingState in) {
         for (RankingState out : states) {
-            if (edgeBetween.containsKey(new Tuple(out, in))) {
+            if (edgeBetween.containsKey(new Tuple<RankingState, RankingState>(out, in))) {
                 return false;
             }
         }
