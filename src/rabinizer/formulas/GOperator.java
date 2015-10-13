@@ -7,8 +7,7 @@ import java.util.Set;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
-import com.microsoft.z3.FuncDecl;
-import com.microsoft.z3.Sort;
+
 
 import rabinizer.bdd.GSet;
 

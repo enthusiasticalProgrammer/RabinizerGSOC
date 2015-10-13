@@ -5,13 +5,10 @@
  */
 package rabinizer.automata;
 
-import java.rmi.dgc.VMID;
+
 import rabinizer.bdd.GSet;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+
 import java.util.*;
 
 import com.microsoft.z3.*;
