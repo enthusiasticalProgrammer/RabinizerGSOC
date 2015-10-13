@@ -915,12 +915,7 @@ public class TypedBDDFactory extends BDDFactory {
             return new TypedBDD(bdd.satOne(bdd1.bdd, pol), newDom);
         }
 
-        /* (non-Javadoc)
-         * @see net.sf.javabdd.BDD#allsat()
-         */
-        public List<?> allsat() {
-            return bdd.allsat();
-        }
+ 
 
         /* (non-Javadoc)
          * @see net.sf.javabdd.BDD#replace(net.sf.javabdd.BDDPairing)

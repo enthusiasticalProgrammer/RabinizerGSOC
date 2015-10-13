@@ -335,16 +335,6 @@ public class JFactory extends BDDFactory {
         }
 
         /* (non-Javadoc)
-         * @see net.sf.javabdd.BDD#allsat()
-         */
-        public List<TestBDD> allsat() {
-            int x = _index;
-            List<byte[]> result = new LinkedList<byte[]>();
-            bdd_allsat(x, result);
-            return result;
-        }
-
-        /* (non-Javadoc)
          * @see net.sf.javabdd.BDD#replace(net.sf.javabdd.BDDPairing)
          */
         public BDD replace(BDDPairing pair) {

@@ -558,16 +558,6 @@ public class MicroFactory extends BDDFactory {
         }
 
         /* (non-Javadoc)
-         * @see net.sf.javabdd.BDD#allsat()
-         */
-        public List<TestBDD> allsat() {
-            int x = _index;
-            List<TestBDD> result = new LinkedList<TestBDD>();
-            bdd_allsat(x, result);
-            return result;
-        }
-
-        /* (non-Javadoc)
          * @see net.sf.javabdd.BDD#replace(net.sf.javabdd.BDDPairing)
          */
         public BDD replace(BDDPairing pair) {

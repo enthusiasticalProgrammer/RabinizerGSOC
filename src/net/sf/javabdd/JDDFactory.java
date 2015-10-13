@@ -401,12 +401,6 @@ public class JDDFactory extends BDDFactory {
             throw new UnsupportedOperationException();
         }
 
-        /* (non-Javadoc)
-         * @see net.sf.javabdd.BDD#allsat()
-         */
-        public List<TestBDD> allsat() {
-            throw new BDDException();
-        }
 
         /* (non-Javadoc)
          * @see net.sf.javabdd.BDD#pathCount()

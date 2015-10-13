@@ -710,14 +710,7 @@ public class CUDDFactory extends BDDFactory {
             throw new UnsupportedOperationException();
         }
 
-        /* (non-Javadoc)
-         * @see net.sf.javabdd.BDD#allsat()
-         */
-        public List<TestBDD> allsat() {
-            // TODO Implement this.
-            throw new UnsupportedOperationException();
-        }
-
+  
         /* (non-Javadoc)
          * @see net.sf.javabdd.BDD#nodeCount()
          */

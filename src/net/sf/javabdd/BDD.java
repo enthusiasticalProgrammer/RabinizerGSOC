@@ -514,14 +514,6 @@ public abstract class BDD {
      */
     public abstract BDD satOne(BDD var, boolean pol);
 
-    /**
-     * <p>Finds all satisfying variable assignments.</p>
-     * 
-     * <p>Compare to bdd_allsat.</p>
-     * 
-     * @return all satisfying variable assignments
-     */
-    public abstract List<TestBDD> allsat();
 
     /**
      * <p>Scans this BDD to find all occurrences of BDD variables and returns an

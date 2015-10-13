@@ -885,12 +885,7 @@ public class BuDDyFactory extends BDDFactory {
         }
         private static native int satOne1(int b, int c, int d);
         
-        /* (non-Javadoc)
-         * @see net.sf.javabdd.BDD#allsat()
-         */
-        public List<TestBDD> allsat() {
-            return Arrays.asList(allsat0(_id));
-        }
+        
         private static native byte[][] allsat0(int b);
         
         /* (non-Javadoc)

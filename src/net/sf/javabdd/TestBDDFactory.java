@@ -372,23 +372,7 @@ public class TestBDDFactory extends BDDFactory {
             return new TestBDD(r1, r2);
         }
 
-        /* (non-Javadoc)
-         * @see net.sf.javabdd.BDD#allsat()
-         */
-        public List<TestBDD> allsat() {
-            List<TestBDD> r1 = b1.allsat();
-            List<TestBDD> r2 = b2.allsat();
-            assertSame(r1.size() == r2.size(), b1, b2, "allsat");
-            LinkedList<TestBDD> r = new LinkedList<TestBDD>();
-            Iterator<TestBDD> i = r1.iterator();
-            Iterator<TestBDD> j = r2.iterator();
-            while (i.hasNext()) {
-                BDD c1 = (BDD) i.next();
-                BDD c2 = (BDD) j.next();
-                r.add(new TestBDD(c1, c2));
-            }
-            return r;
-        }
+  
 
         /* (non-Javadoc)
          * @see net.sf.javabdd.BDD#replace(net.sf.javabdd.BDDPairing)
