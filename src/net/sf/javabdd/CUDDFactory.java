@@ -4,9 +4,6 @@
 package net.sf.javabdd;
 
 import java.util.Collection;
-import java.util.List;
-
-import net.sf.javabdd.TestBDDFactory.TestBDD;
 
 import java.math.BigInteger;
 
