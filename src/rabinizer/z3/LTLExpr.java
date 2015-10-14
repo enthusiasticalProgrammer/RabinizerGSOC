@@ -23,11 +23,13 @@ public class LTLExpr{
 	
 	//stores all Formulae, gets emptied in dispose-Method
 	private static Map<LTLExpr, Formula> LTLToRepresentative=new HashMap<LTLExpr, Formula>();
+
 	
 	//propositional formula, in order to have a representative
 	//with which you can compare two formulae propositionally
 	private BoolExpr prop_form;
 	
+
 	public LTLExpr(Formula f){
 		if(ctx==null){
 			ctx=new Context();
@@ -72,4 +74,14 @@ public class LTLExpr{
 	public int hashCode() {
 	   return 3141;
 	}
+
+	
+	
+	public static Context getContext(){
+		if(ctx==null){
+			ctx=new Context();
+		}
+		return ctx;
+	}
+
 }
