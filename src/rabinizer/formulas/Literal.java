@@ -6,8 +6,7 @@ import java.util.ArrayList;
 
 import com.microsoft.z3.*;
 
-import net.sf.javabdd.*;
-import rabinizer.bdd.BDDForFormulae;
+
 
 public class Literal extends FormulaNullary {
 
@@ -32,19 +31,6 @@ public class Literal extends FormulaNullary {
 
     public Literal negated() {
         return new Literal(atom, atomId, !negated);
-    }
-
-    @Override
-    public BDD bdd() { 
-        if (cachedBdd == null) { 
-            int bddVar = BDDForFormulae.bijectionBooleanAtomBddVar.id(this.positiveLiteral()); // R3: just "this"
-            if (BDDForFormulae.bddFactory.varNum() <= bddVar) {
-                BDDForFormulae.bddFactory.extVarNum(1);
-            }
-            cachedBdd = (negated ? BDDForFormulae.bddFactory.nithVar(bddVar) : BDDForFormulae.bddFactory.ithVar(bddVar));
-            BDDForFormulae.representativeOfBdd(cachedBdd, this);
-        } 
-        return cachedBdd;
     }
 
     @Override

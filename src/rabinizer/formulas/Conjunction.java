@@ -5,9 +5,6 @@ import java.util.ArrayList;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 
-import net.sf.javabdd.BDD;
-import rabinizer.bdd.BDDForFormulae;
-
 
 /**
  * @author Andreas Gaiser & Ruslan Ledesma-Garza
@@ -28,15 +25,6 @@ public class Conjunction extends FormulaBinaryBoolean {
     @Override
     public String operator() {
         return "&";
-    }
-
-    @Override
-    public BDD bdd() {
-        if (cachedBdd == null) {
-            cachedBdd = left.bdd().and(right.bdd());
-            BDDForFormulae.representativeOfBdd(cachedBdd, this);
-        }
-        return cachedBdd;
     }
 
     @Override

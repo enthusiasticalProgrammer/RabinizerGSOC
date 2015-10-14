@@ -21,7 +21,6 @@ import rabinizer.automata.DTGRA;
 import rabinizer.automata.DTGRARaw;
 import rabinizer.automata.DTRA;
 import rabinizer.bdd.AllValuations;
-import rabinizer.bdd.BDDForFormulae;
 import rabinizer.bdd.BDDForVariables;
 import rabinizer.formulas.Formula;
 import rabinizer.parser.LTLParser;
@@ -285,7 +284,7 @@ public class Main {
 		nonsilent("Enumeration of valuations");
 		BDDForVariables.init();
 		AllValuations.initializeValuations(BDDForVariables.bijectionIdAtom.size());
-		BDDForFormulae.init();
+
 
 		boolean unfoldedOn = true;
 		boolean sinksOn = true;

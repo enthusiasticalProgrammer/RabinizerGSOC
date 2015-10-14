@@ -1,7 +1,5 @@
 package rabinizer.formulas;
 
-import net.sf.javabdd.*;
-import rabinizer.bdd.BDDForFormulae;
 
 import java.util.ArrayList;
 
@@ -27,15 +25,6 @@ public class Disjunction extends FormulaBinaryBoolean {
     @Override
     public String operator() {
         return "|";
-    }
-
-    @Override
-    public BDD bdd() {
-        if (cachedBdd == null) {
-            cachedBdd = left.bdd().or(right.bdd());
-            BDDForFormulae.representativeOfBdd(cachedBdd, this);
-        }
-        return cachedBdd;
     }
 
     @Override
