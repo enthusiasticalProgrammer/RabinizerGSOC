@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package rabinizer.bdd;
+package rabinizer.z3;
 
 import java.util.*;
 
@@ -18,7 +18,7 @@ import rabinizer.formulas.GOperator;
 
 /**
  *
- * @author jkretinsky
+ * @author jkretinsky & Christopher Ziegler
  */
 public class GSet extends HashSet<Formula> {
 

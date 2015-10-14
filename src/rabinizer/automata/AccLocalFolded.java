@@ -5,11 +5,11 @@
  */
 package rabinizer.automata;
 
-import rabinizer.bdd.GSet;
 import java.util.Map;
 import rabinizer.bdd.Valuation;
 import rabinizer.bdd.ValuationSetBDD;
 import rabinizer.formulas.*;
+import rabinizer.z3.GSet;
 
 /**
  *
