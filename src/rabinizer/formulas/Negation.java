@@ -220,4 +220,13 @@ public class Negation extends FormulaUnary {
 		return a;
 	}
 
+	@Override
+	public Formula rmAllConstants() {
+		Formula child=operand.rmAllConstants();
+		if(child instanceof BooleanConstant){
+			return new BooleanConstant(!((BooleanConstant) child).value);
+		}
+		return new Negation(child);
+	}
+
 }

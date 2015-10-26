@@ -95,13 +95,6 @@ public class Conjunction extends FormulaBinaryBoolean {
     public BoolExpr toExpr(Context ctx){
     	BoolExpr l=left.toExpr(ctx);
     	BoolExpr r=right.toExpr(ctx);
-    	if(l.isTrue()){
-    		return r;
-    	}else if(r.isTrue()){
-    		return l;
-    	}else if(l.isFalse()|| r.isFalse()){
-    		return ctx.mkFalse();
-    	}
     	return ctx.mkAnd(l,r);
     }
 
@@ -145,6 +138,28 @@ public class Conjunction extends FormulaBinaryBoolean {
 			a.addAll(right.getAllPropositions());
 		}
 		return a;
+	}
+
+	@Override
+	public Formula rmAllConstants() {
+		Formula l=left.rmAllConstants();
+		Formula r=right.rmAllConstants();
+		if(l instanceof BooleanConstant){
+			if (((BooleanConstant) l).value){
+				return r;
+			}else{
+				return new BooleanConstant(false);
+			}
+		}
+		if(r instanceof BooleanConstant){
+			if( ((BooleanConstant)r).value){
+				return l;
+			}
+			else{
+				return new BooleanConstant(false);
+			}
+		}
+		return new Conjunction(l,r);
 	}
 
 }

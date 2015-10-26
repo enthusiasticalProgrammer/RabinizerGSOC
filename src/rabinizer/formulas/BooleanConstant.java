@@ -80,4 +80,9 @@ public class BooleanConstant extends FormulaNullary {
 		return new ArrayList<String>();
 	}
 
+	@Override
+	public Formula rmAllConstants() {
+		return new BooleanConstant(value);
+	}
+
 }

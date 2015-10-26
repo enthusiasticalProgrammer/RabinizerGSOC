@@ -97,13 +97,6 @@ public class Disjunction extends FormulaBinaryBoolean {
     	BoolExpr l = left.toExpr(ctx);
     	BoolExpr r = right.toExpr(ctx);
     	
-    	if(l.isTrue()||r.isTrue()){
-    		return ctx.mkTrue();
-    	}else if(l.isFalse()){
-    		return r;
-    	}else if(r.isFalse()){
-    		return l;
-    	}
     	return ctx.mkOr(left.toExpr(ctx),right.toExpr(ctx));
     	
     }
@@ -145,6 +138,28 @@ public class Disjunction extends FormulaBinaryBoolean {
 			a.addAll(right.getAllPropositions());
 		}
 		return a;
+	}
+
+	@Override
+	public Formula rmAllConstants() {
+		Formula l=left.rmAllConstants();
+		Formula r=right.rmAllConstants();
+		if(l instanceof BooleanConstant){
+			if (((BooleanConstant) l).value){
+				return new BooleanConstant(true);
+			}else{
+				return r;
+			}
+		}
+		if(r instanceof BooleanConstant){
+			if( ((BooleanConstant)r).value){
+				return new BooleanConstant(true);
+			}
+			else{
+				return l;
+			}
+		}
+		return new Disjunction(l,r);
 	}
 
 }

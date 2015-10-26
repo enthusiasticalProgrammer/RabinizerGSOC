@@ -194,8 +194,8 @@ public class AccLocal {
     public static boolean entails(Formula antecedent, Formula consequent) {
     	
     	Context ctx=LTLExpr.getContext();
-    	BoolExpr ant=antecedent.toExpr(ctx);
-    	BoolExpr con=consequent.toExpr(ctx);
+    	BoolExpr ant=antecedent.rmAllConstants().toExpr(ctx);
+    	BoolExpr con=consequent.rmAllConstants().toExpr(ctx);
     	Solver s=ctx.mkSolver();
     	s.add(ctx.mkAnd(ant,ctx.mkNot(con)));
     	return!(s.check()==Status.SATISFIABLE);

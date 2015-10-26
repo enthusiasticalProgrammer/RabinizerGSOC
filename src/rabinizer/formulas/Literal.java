@@ -126,4 +126,13 @@ public class Literal extends FormulaNullary {
 		return a;
 	}
 
+	@Override
+	public Formula rmAllConstants() {
+		negated=!negated;
+		Formula result=negated();
+		negated=!negated;
+		return result;
+		
+	}
+
 }

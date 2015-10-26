@@ -143,5 +143,10 @@ public abstract class Formula {
     //to be overridden by subclasses
     //gets all propositions such as Fa, a, GaUb, ...
     public abstract ArrayList<String> getAllPropositions();
+    
+    
+    //removeConstants did not remove boolean constants such as true/false
+    //so I write this method
+    public abstract Formula rmAllConstants();
 
 }

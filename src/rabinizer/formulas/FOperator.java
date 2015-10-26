@@ -42,11 +42,6 @@ public class FOperator extends FormulaUnary {
     }
 
     public BoolExpr toExpr(Context ctx){
-    	if(operand.toExpr(ctx).isTrue()){
-    		return ctx.mkTrue();
-    	}else if(operand.toExpr(ctx).isFalse()){
-    		return ctx.mkFalse();
-    	}
     	return ctx.mkBoolConst(toZ3String(true));
     }
 
@@ -67,5 +62,14 @@ public class FOperator extends FormulaUnary {
 		ArrayList<String> a=new ArrayList<String>();
 		a.add(toZ3String(true));
 		return a;
+	}
+
+	@Override
+	public Formula rmAllConstants() {
+		Formula child=operand.rmAllConstants();
+		if(child instanceof BooleanConstant){
+			return child;
+		}
+		return new FOperator(child);
 	}
 }

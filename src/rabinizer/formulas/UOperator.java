@@ -60,18 +60,7 @@ public class UOperator extends FormulaBinary {
     }
     
     public BoolExpr toExpr(Context ctx){
-    	BoolExpr l=left.toExpr(ctx);
-    	BoolExpr r=right.toExpr(ctx);
-    	if(l.isTrue()){
-    		return ctx.mkBoolConst("F"+right.toZ3String(true));
-    	}else if(l.isFalse()){
-    		return r;
-    	}else if(r.isTrue()){
-    		return ctx.mkTrue();
-    	}else if(r.isFalse()){
-    		return ctx.mkFalse();
-    	}
-    	
+  	
     	return ctx.mkBoolConst(toZ3String(true));
     }
 
@@ -98,6 +87,24 @@ public class UOperator extends FormulaBinary {
 		if(!toZ3String(true).equals("true") && !toZ3String(true).equals("true"))
 		a.add(toZ3String(true));
 		return a;
+	}
+
+	@Override
+	public Formula rmAllConstants() {
+		Formula l=left.rmAllConstants();
+		Formula r=right.rmAllConstants();
+		if(l instanceof BooleanConstant){
+			if(((BooleanConstant) l).value){
+				return new FOperator(r);
+			}else{
+				return r;
+			}
+		}
+		
+		if(r instanceof BooleanConstant){
+			return r;
+		}
+		return new UOperator(l,r);
 	}
 
 }

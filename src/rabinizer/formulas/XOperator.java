@@ -47,14 +47,7 @@ public class XOperator extends FormulaUnary {
     }
     
     public BoolExpr toExpr(Context ctx){
-    	BoolExpr o=operand.toExpr(ctx);
-    	if(o.isTrue()){
-    		return ctx.mkTrue();
-    	}else if(o.isFalse()){
-    		return ctx.mkFalse();
-    	}else{
-    		return ctx.mkBoolConst(toZ3String(true));
-    	}
+   		return ctx.mkBoolConst(toZ3String(true));
     }
 
 	@Override
@@ -68,6 +61,15 @@ public class XOperator extends FormulaUnary {
 		ArrayList<String> a=new ArrayList<String>();
 		a.add(toZ3String(true));
 		return a;
+	}
+
+	@Override
+	public Formula rmAllConstants() {
+		Formula child=operand.rmAllConstants();
+		if(child instanceof BooleanConstant){
+			return child;
+		}
+		return new XOperator(child);
 	}
 
 }
