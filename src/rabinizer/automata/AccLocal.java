@@ -16,6 +16,7 @@ import com.microsoft.z3.*;
 import rabinizer.formulas.*;
 import rabinizer.bdd.*;
 import rabinizer.exec.Main;
+import rabinizer.z3.LTLExpr;
 
 
 /**
@@ -192,14 +193,13 @@ public class AccLocal {
     //Formula:
     public static boolean entails(Formula antecedent, Formula consequent) {
     	
-    	Context ctx=new Context();
+    	Context ctx=LTLExpr.getContext();
     	BoolExpr ant=antecedent.toExpr(ctx);
     	BoolExpr con=consequent.toExpr(ctx);
     	Solver s=ctx.mkSolver();
     	s.add(ctx.mkAnd(ant,ctx.mkNot(con)));
-    	boolean result=!(s.check()==Status.SATISFIABLE);
-    	ctx.dispose();
-    	return result;
+    	return!(s.check()==Status.SATISFIABLE);
+    
     	
     		
     	
