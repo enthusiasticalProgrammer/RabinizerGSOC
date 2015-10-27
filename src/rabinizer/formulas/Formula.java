@@ -1,11 +1,11 @@
 package rabinizer.formulas;
 
 import java.util.ArrayList;
-import rabinizer.bdd.GSet;
+
 import rabinizer.bdd.Valuation;
-import rabinizer.bdd.BDDForFormulae;
+import rabinizer.z3.GSet;
+import rabinizer.z3.LTLExpr;
 import java.util.*;
-import net.sf.javabdd.*;
 import com.microsoft.z3.*;
 
 
@@ -17,14 +17,19 @@ public abstract class Formula {
 	static int curr_symbol=0;
 	
     protected String cachedString;
-    protected BDD cachedBdd = null;
+    protected LTLExpr cachedLTL=null;
 
     public abstract String operator();
-
-    public abstract BDD bdd();
+   
+    public LTLExpr ltl(){
+    	if(cachedLTL==null){
+    		cachedLTL=new LTLExpr(this);
+    	}
+    	return cachedLTL;
+    }
 
     public Formula representative() {
-        return BDDForFormulae.representativeOfBdd(bdd(), this);
+        return LTLExpr.representative_of_formula(ltl(),this);
     }
 
     @Override

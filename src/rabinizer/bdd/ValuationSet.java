@@ -21,8 +21,6 @@ public abstract class ValuationSet extends Object {
 
     public abstract ValuationSet add(ValuationSet vs);
 
-    public abstract ValuationSet add(Valuation v);
-
     @Override
     public abstract boolean equals(Object o);
 

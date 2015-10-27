@@ -7,11 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
-
-import net.sf.javabdd.TestBDDFactory.TestBDD;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

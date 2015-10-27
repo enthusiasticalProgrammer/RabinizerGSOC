@@ -3,7 +3,8 @@
 bin
 Z3
 lib
-.settings
 build/
-output.dot
 .gradle/
+.settings
+output.dot
+

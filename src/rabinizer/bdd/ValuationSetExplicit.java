@@ -71,11 +71,6 @@ public class ValuationSetExplicit extends ValuationSet {
         return this;
     }
 
-    @Override
-    public ValuationSet add(Valuation v) {
-        valuations.add(v);
-        return this;
-    }
 
     @Override
     public boolean equals(Object o) {

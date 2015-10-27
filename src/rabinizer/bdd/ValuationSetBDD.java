@@ -68,13 +68,7 @@ public class ValuationSetBDD extends ValuationSet {
         valuations = valuations.or(vs.toBdd());
         return this;
     }
-        
-    @Override
-    public ValuationSet add(Valuation v) {
-        valuations = valuations.or(v.toValuationBDD());
-        return this;
-    }
-
+ 
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof ValuationSet)) {

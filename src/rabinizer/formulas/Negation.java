@@ -3,8 +3,7 @@ package rabinizer.formulas;
 import java.util.ArrayList;
 
 import com.microsoft.z3.*;
-import net.sf.javabdd.BDD;
-import rabinizer.bdd.BDDForFormulae;
+
 
 public class Negation extends FormulaUnary {
 
@@ -21,19 +20,7 @@ public class Negation extends FormulaUnary {
         return new Negation(operand);
     }
 
-    public BDD bdd() {            // negation of ATOMIC PROPOSITIONS only
-        if (cachedBdd == null) {
-            Formula booleanAtom = new Negation(operand.representative());
-            int bddVar = BDDForFormulae.bijectionBooleanAtomBddVar.id(booleanAtom);
-            if (BDDForFormulae.bddFactory.varNum() <= bddVar) {
-                BDDForFormulae.bddFactory.extVarNum(1);
-            }
-            cachedBdd = BDDForFormulae.bddFactory.ithVar(bddVar);
-            BDDForFormulae.representativeOfBdd(cachedBdd, this);
-        }
-        return cachedBdd;
-    }
-    /*
+     /*
      @Override
      public int hashCode() {
      return operand.hashCode() * 2;

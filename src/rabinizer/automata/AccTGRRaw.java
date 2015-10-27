@@ -6,9 +6,10 @@
 package rabinizer.automata;
 
 import java.util.*;
-import rabinizer.bdd.GSet;
+
 import rabinizer.exec.Main;
 import rabinizer.formulas.Formula;
+import rabinizer.z3.GSet;
 
 /**
  *

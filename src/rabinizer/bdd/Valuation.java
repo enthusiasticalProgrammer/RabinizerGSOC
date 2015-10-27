@@ -97,15 +97,7 @@ public class Valuation extends HashMap<Integer, Boolean> {
         return result;
     }
 
-    public BDD toFormulaBDD() {
-        BDD result = BDDForVariables.getTrueBDD();  // BDD for True
-        for (Map.Entry<Integer, Boolean> e : this.entrySet()) {
-            Literal l = new Literal(BDDForVariables.bijectionIdAtom.atom(e.getKey()), e.getKey(), !e.getValue());
-            result = result.and(l.bdd());
-        }
-        return result;
-    }
-
+ 
     public BDD toValuationBDD() {
         BDD result = BDDForVariables.getTrueBDD();  // BDD for True
         for (Integer i : this.keySet()) {

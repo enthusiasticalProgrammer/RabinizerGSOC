@@ -7,8 +7,6 @@
 package rabinizer.formulas;
 
 import java.util.Set;
-import net.sf.javabdd.BDD;
-import rabinizer.bdd.BDDForFormulae;
 
 /**
  *
@@ -24,20 +22,7 @@ public abstract class FormulaUnary extends Formula {
     
     public abstract FormulaUnary ThisTypeUnary(Formula operand);
     
-    @Override
-    public BDD bdd() {
-        if (cachedBdd == null) {
-            Formula booleanAtom = ThisTypeUnary(operand.representative());
-            int bddVar = BDDForFormulae.bijectionBooleanAtomBddVar.id(booleanAtom);
-            if (BDDForFormulae.bddFactory.varNum() <= bddVar) {
-                BDDForFormulae.bddFactory.extVarNum(1);
-            }
-            cachedBdd = BDDForFormulae.bddFactory.ithVar(bddVar);
-            BDDForFormulae.representativeOfBdd(cachedBdd, this);
-        }
-        return cachedBdd;
-    }
-
+ 
     @Override
     public int hashCode() {
         return 3 * operand.hashCode() + operator().hashCode();

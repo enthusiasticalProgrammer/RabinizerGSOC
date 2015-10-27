@@ -8,12 +8,9 @@ package net.sf.javabdd;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.io.PrintStream;
 import java.math.BigInteger;
-
-import net.sf.javabdd.TestBDDFactory.TestBDD;
 
 /**
  * <p>Binary Decision Diagrams (BDDs) are used for efficient computation of many
