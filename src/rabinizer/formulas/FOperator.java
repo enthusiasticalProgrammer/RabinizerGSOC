@@ -72,4 +72,20 @@ public class FOperator extends FormulaUnary {
 		}
 		return new FOperator(child);
 	}
+
+	@Override
+	public Formula simplifyLocally() {
+		Formula child=operand.simplifyLocally();
+		if(child instanceof BooleanConstant){
+			return child;
+		}else if(child instanceof UOperator){
+			return new FOperator(((UOperator) child).right).simplifyLocally();
+		}else if(child instanceof FOperator){
+			return child;
+		}else if(child instanceof XOperator){
+			return new XOperator(new FOperator(((XOperator) child).operand));
+		}else{
+			return new FOperator(child);
+		}
+	}
 }

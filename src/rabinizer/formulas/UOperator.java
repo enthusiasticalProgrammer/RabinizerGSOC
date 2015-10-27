@@ -107,4 +107,35 @@ public class UOperator extends FormulaBinary {
 		return new UOperator(l,r);
 	}
 
+	@Override
+	public Formula simplifyLocally() {
+		Formula l=left.simplifyLocally();
+		Formula r=right.simplifyLocally();
+		
+		if(r instanceof BooleanConstant){
+			return r;
+		}else if(l instanceof BooleanConstant){
+			if(((BooleanConstant) l).value){
+				return new FOperator(r);
+			}else{
+				return r;
+			}
+		}else if(r instanceof FOperator){
+			return r;
+		}else if(l instanceof FOperator){
+			return new Disjunction(r,new FOperator(new Conjunction(new XOperator(r),l)));
+		}else if(l instanceof Literal && r instanceof Literal){
+			if(((Literal) l).atom.equals(((Literal) r).atom)){
+				if((((Literal) l).negated)==(((Literal) r).negated)){
+					return new BooleanConstant(true);
+				}
+			}
+		}else if(l instanceof GOperator){
+			return new Disjunction(new Conjunction(l,new FOperator(r)),r);
+		}else if(l instanceof XOperator && r instanceof XOperator){
+			return new XOperator(new UOperator(((XOperator) l).operand,((XOperator) r).operand));
+		}
+		return new UOperator(l,r);
+	}
+
 }

@@ -274,7 +274,10 @@ public class Main {
 		} catch (ParseException e) {
 			errorMessageAndExit("Exception when parsing: " + e.getLocalizedMessage());
 		}
-		// nonsilent("Input formula: " + formula);
+		nonsilent("Formula unsimplified: "+formula.toString());
+		formula=formula.simplifyLocally();
+		nonsilent("Formula simplified:"+formula.toString());
+		nonsilent("Input formula: " + formula);
 		if (postfix) {
 			System.out.println("Input formula in postfix format:\n" + formula.toReversePolishString());
 			return null;

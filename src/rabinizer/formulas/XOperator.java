@@ -72,4 +72,14 @@ public class XOperator extends FormulaUnary {
 		return new XOperator(child);
 	}
 
+	@Override
+	public Formula simplifyLocally() {
+		Formula child=operand.simplifyLocally();
+		if(child instanceof BooleanConstant){
+			return child;
+		}else{
+			return new XOperator(child);
+		}
+	}
+
 }

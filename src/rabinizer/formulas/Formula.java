@@ -148,5 +148,10 @@ public abstract class Formula {
     //removeConstants did not remove boolean constants such as true/false
     //so I write this method
     public abstract Formula rmAllConstants();
+    
+    
+    //simplifies a formula such that it is easier to compute for Rabinizer
+    //used as f=f.simplifyLocally()
+    public abstract Formula simplifyLocally();
 
 }

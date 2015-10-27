@@ -135,4 +135,9 @@ public class Literal extends FormulaNullary {
 		
 	}
 
+	@Override
+	public Formula simplifyLocally() {
+		return this;
+	}
+
 }

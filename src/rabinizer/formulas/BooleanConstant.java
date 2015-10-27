@@ -85,4 +85,9 @@ public class BooleanConstant extends FormulaNullary {
 		return new BooleanConstant(value);
 	}
 
+	@Override
+	public Formula simplifyLocally() {
+		return this;
+	}
+
 }

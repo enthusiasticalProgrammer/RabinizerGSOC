@@ -229,4 +229,33 @@ public class Negation extends FormulaUnary {
 		return new Negation(child);
 	}
 
+	@Override
+	public Formula simplifyLocally() {
+		if(operand instanceof Negation){
+			return ((Negation) operand).operand.simplifyLocally();
+		}else if(operand instanceof BooleanConstant){
+			return new BooleanConstant(!((BooleanConstant) operand).value);
+		}else if(operand instanceof Conjunction){
+			return (new Disjunction(new Negation(((Conjunction)operand).left),new Negation(((Conjunction)operand).right))).simplifyLocally();
+		}else if(operand instanceof Disjunction){
+			return (new Conjunction(new Negation(((Disjunction)operand).left),new Negation(((Disjunction)operand).right))).simplifyLocally();
+		}else if(operand instanceof FOperator){
+			return (new GOperator(new Negation(((FOperator) operand).operand))).simplifyLocally();
+		}else if(operand instanceof GOperator){
+			return (new FOperator(new Negation(((GOperator) operand).operand))).simplifyLocally();
+		}else if(operand instanceof Literal){
+			return (((Literal) operand).negated());
+		}else if(operand instanceof UOperator){
+			Formula child=operand.simplifyLocally();
+			if(! (child instanceof UOperator)){
+				
+				return new Negation(child).simplifyLocally();
+			}
+			return (new Disjunction(new UOperator(new Negation(((UOperator) child).right),new Conjunction(new Negation(((UOperator) child).left),new Negation(((UOperator) child).right))),new GOperator(new Negation(((UOperator) child).right)))).simplifyLocally();
+		}else if(operand instanceof XOperator){
+			return (new XOperator(new Negation(((XOperator) operand).operand))).simplifyLocally();
+		}
+		throw new RuntimeException("In simplifyLocally of Negation, forgot a case distinction");
+	}
+
 }

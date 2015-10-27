@@ -112,4 +112,19 @@ public class GOperator extends FormulaUnary {
 		return new GOperator(child);
 	}
 
+	@Override
+	public Formula simplifyLocally() {
+		Formula child=operand.simplifyLocally();
+		if(child instanceof BooleanConstant){
+			return child;
+		}else if(child instanceof GOperator){
+			return child;
+		}else if(child instanceof UOperator){
+			return new GOperator(new Conjunction(new FOperator(((UOperator) child).right),new Disjunction(((UOperator) child).left,((UOperator) child).right)));
+		}else if(child instanceof XOperator){
+			return new XOperator(new GOperator(((XOperator) child).operand));
+		}
+		else return new GOperator(child);
+	}
+
 }
