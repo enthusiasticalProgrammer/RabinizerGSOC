@@ -1,9 +1,8 @@
 package rabinizer.formulas;
 
 import java.util.ArrayList;
-
+import rabinizer.bdd.GSet;
 import rabinizer.bdd.Valuation;
-import rabinizer.z3.GSet;
 import rabinizer.z3.LTLExpr;
 import java.util.*;
 import com.microsoft.z3.*;

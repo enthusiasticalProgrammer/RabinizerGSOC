@@ -8,7 +8,8 @@ import java.util.Set;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 
-import rabinizer.z3.GSet;
+
+import rabinizer.bdd.GSet;
 
 public class GOperator extends FormulaUnary {
 

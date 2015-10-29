@@ -6,12 +6,14 @@
 package rabinizer.automata;
 
 
+import rabinizer.bdd.GSet;
+
+
 import java.util.*;
 
 import com.microsoft.z3.*;
 
 import rabinizer.formulas.*;
-import rabinizer.z3.GSet;
 import rabinizer.bdd.*;
 import rabinizer.exec.Main;
 import rabinizer.z3.LTLExpr;

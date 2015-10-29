@@ -6,8 +6,8 @@
 package rabinizer.formulas;
 
 
+import rabinizer.bdd.GSet;
 import rabinizer.bdd.Valuation;
-import rabinizer.z3.GSet;
 
 /**
  *
