@@ -2,6 +2,8 @@ package rabinizer.formulas;
 
 import java.util.*;
 import com.microsoft.z3.*;
+import net.sf.javabdd.*;
+import rabinizer.bdd.BDDForFormulae;
 
 /**
  * Represents a until formula.
@@ -20,7 +22,22 @@ public class UOperator extends FormulaBinary {
         super(left, right);
     }
 
- 
+    public BDD bdd() {
+        if (cachedBdd == null) {
+            Formula booleanAtom = new UOperator(
+                left.representative(),
+                right.representative()
+            );
+            int bddVar = BDDForFormulae.bijectionBooleanAtomBddVar.id(booleanAtom);
+            if (BDDForFormulae.bddFactory.varNum() <= bddVar) {
+                BDDForFormulae.bddFactory.extVarNum(bddVar);
+            }
+            cachedBdd = BDDForFormulae.bddFactory.ithVar(bddVar);
+            BDDForFormulae.representativeOfBdd(cachedBdd, this);
+        }
+        return cachedBdd;
+    }
+
     @Override
     public Formula unfold() {
         // unfold(a U b) = unfold(b) v (unfold(a) ^ X (a U b))
