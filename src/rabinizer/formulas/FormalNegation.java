@@ -5,6 +5,8 @@
  */
 package rabinizer.formulas;
 
+import net.sf.javabdd.BDD;
+import rabinizer.bdd.BDDForFormulae;
 
 /**
  *
@@ -14,6 +16,15 @@ public class FormalNegation extends Negation {
 
     public FormalNegation(Formula f) {
         super(f);
+    }
+
+    @Override
+    public BDD bdd() {            // negation of NON-ATOMIC PROPOSITIONS only
+        if (cachedBdd == null) {
+            cachedBdd = operand.bdd().not();
+            BDDForFormulae.representativeOfBdd(cachedBdd, this);
+        }
+        return cachedBdd;
     }
 
 }

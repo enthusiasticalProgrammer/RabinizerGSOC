@@ -136,7 +136,7 @@ public class MyBDD {
         if (valuationType) {
             return new Literal(BDDForVariables.bijectionIdAtom.atom(var), var, false);
         } else {
-            throw new RuntimeException("Not anymore implemented");
+            return BDDForFormulae.bijectionBooleanAtomBddVar.atom(var);
         }
     }
 }

@@ -1,5 +1,8 @@
 package rabinizer.formulas;
 
+import net.sf.javabdd.BDD;
+import rabinizer.bdd.BDDForFormulae;
+
 import java.util.ArrayList;
 
 import com.microsoft.z3.*;
@@ -15,6 +18,15 @@ public class BooleanConstant extends FormulaNullary {
     @Override
     public String operator() {
         return null;
+    }
+
+    @Override
+    public BDD bdd() {
+        if (cachedBdd == null) { 
+            cachedBdd = (this.value ? BDDForFormulae.bddFactory.one() : BDDForFormulae.bddFactory.zero());
+            BDDForFormulae.representativeOfBdd(cachedBdd, this);
+        } 
+        return cachedBdd;
     }
 
     @Override
