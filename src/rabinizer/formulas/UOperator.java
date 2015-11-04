@@ -4,6 +4,7 @@ import java.util.*;
 import com.microsoft.z3.*;
 import net.sf.javabdd.*;
 import rabinizer.bdd.BDDForFormulae;
+import rabinizer.bdd.Valuation;
 
 /**
  * Represents a until formula.
@@ -18,13 +19,10 @@ public class UOperator extends FormulaBinary {
         return "U";
     }
 
-    public UOperator(Formula left, Formula right) {
-        super(left, right);
-    }
 
     public BDD bdd() {
         if (cachedBdd == null) {
-            Formula booleanAtom = new UOperator(
+            Formula booleanAtom = FormulaFactory.mkU(
                 left.representative(),
                 right.representative()
             );
@@ -36,32 +34,44 @@ public class UOperator extends FormulaBinary {
             BDDForFormulae.representativeOfBdd(cachedBdd, this);
         }
         return cachedBdd;
+    } 
+       
+    UOperator(Formula left, Formula right,long id) {
+        super(left, right,id);
     }
 
     @Override
     public Formula unfold() {
         // unfold(a U b) = unfold(b) v (unfold(a) ^ X (a U b))
-        return new Disjunction(right.unfold(), new Conjunction(left.unfold(), /*new XOperator*/ (this)));
+        return FormulaFactory.mkOr(right.unfold(),FormulaFactory.mkAnd(left.unfold(), /*new XOperator*/ (this)));
     }
 
     @Override
     public Formula unfoldNoG() {
         // unfold(a U b) = unfold(b) v (unfold(a) ^ X (a U b))
-        return new Disjunction(right.unfoldNoG(), new Conjunction(left.unfoldNoG(), /*new XOperator*/ (this)));
+        return FormulaFactory.mkOr(right.unfoldNoG(),FormulaFactory.mkAnd(left.unfoldNoG(), /*new XOperator*/ (this)));
     }
 
     public Formula toNNF() {
-        return new UOperator(left.toNNF(), right.toNNF());
+        return FormulaFactory.mkU(left.toNNF(), right.toNNF());
     }
 
     public Formula negationToNNF() {
-        return new Disjunction(new GOperator(right.negationToNNF()),
-            new UOperator(right.negationToNNF(), new Conjunction(left.negationToNNF(), right.negationToNNF())));
+        return FormulaFactory.mkOr(FormulaFactory.mkG(right.negationToNNF()),
+        		FormulaFactory.mkU(right.negationToNNF(), FormulaFactory.mkAnd(
+        				left.negationToNNF(), right.negationToNNF())));
     }
     
     public BoolExpr toExpr(Context ctx){
-  	
-    	return ctx.mkBoolConst(toZ3String(true));
+    	if(cachedLTL==null){
+    		cachedLTL=ctx.mkBoolConst(toZ3String(true));
+    	}
+    	return cachedLTL;
+    }
+    
+    @Override
+    public int hashCode(){
+    	return ((left.hashCode() % 33767)*(right.hashCode() % 33049))% 999983;
     }
 
 	@Override
@@ -95,7 +105,7 @@ public class UOperator extends FormulaBinary {
 		Formula r=right.rmAllConstants();
 		if(l instanceof BooleanConstant){
 			if(((BooleanConstant) l).value){
-				return new FOperator(r);
+				return FormulaFactory.mkF(r);
 			}else{
 				return r;
 			}
@@ -104,7 +114,7 @@ public class UOperator extends FormulaBinary {
 		if(r instanceof BooleanConstant){
 			return r;
 		}
-		return new UOperator(l,r);
+		return FormulaFactory.mkU(l,r);
 	}
 
 	@Override
@@ -116,26 +126,42 @@ public class UOperator extends FormulaBinary {
 			return r;
 		}else if(l instanceof BooleanConstant){
 			if(((BooleanConstant) l).value){
-				return new FOperator(r);
+				return FormulaFactory.mkF(r);
 			}else{
 				return r;
 			}
 		}else if(r instanceof FOperator){
 			return r;
 		}else if(l instanceof FOperator){
-			return new Disjunction(r,new FOperator(new Conjunction(new XOperator(r),l)));
+			return FormulaFactory.mkOr(r,FormulaFactory.mkF(FormulaFactory.mkAnd(FormulaFactory.mkX(r),l)));
 		}else if(l instanceof Literal && r instanceof Literal){
 			if(((Literal) l).atom.equals(((Literal) r).atom)){
 				if((((Literal) l).negated)==(((Literal) r).negated)){
-					return new BooleanConstant(true);
+					return FormulaFactory.mkConst(true);
 				}
 			}
 		}else if(l instanceof GOperator){
-			return new Disjunction(new Conjunction(l,new FOperator(r)),r);
+			return FormulaFactory.mkOr(FormulaFactory.mkAnd(l,FormulaFactory.mkF(r)),r);
 		}else if(l instanceof XOperator && r instanceof XOperator){
-			return new XOperator(new UOperator(((XOperator) l).operand,((XOperator) r).operand));
+			return FormulaFactory.mkX(FormulaFactory.mkU(((XOperator) l).operand,((XOperator) r).operand));
 		}
-		return new UOperator(l,r);
+		
+		if(l==left && r==right){
+			return this;
+		}
+		return FormulaFactory.mkU(l,r);
+		
 	}
+
+	@Override
+	public Formula setToConst(long id, boolean constant) {
+		if(id==unique_id){
+			return FormulaFactory.mkConst(constant);
+		}else{
+			return this;
+		}
+			
+	}
+	
 
 }

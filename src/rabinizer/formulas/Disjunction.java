@@ -8,75 +8,65 @@ import java.util.ArrayList;
 import com.microsoft.z3.*;
 
 /**
- * @author Andreas Gaiser & Ruslan Ledesma-Garza
+ * @author Andreas Gaiser & Ruslan Ledesma-Garza & Christopher Ziegler
  *
  *
  *
  */
 public class Disjunction extends FormulaBinaryBoolean {
 
-    public Disjunction(Formula left, Formula right) {
-        super(left, right);
+    Disjunction(ArrayList<Formula> af,long id) {
+        super(af,id);
     }
 
-    public Disjunction(ArrayList<Formula> helper) {
-    	super(null,null);
-		if(helper.size()<2){
-			throw new IllegalArgumentException();
-		}else if(helper.size()==2){
-			this.left=helper.get(0);
-			this.right=helper.get(1);
-		}
-		else{
-			this.right=new Disjunction(new ArrayList<Formula>(helper.subList((helper.size()-1)/2, helper.size())));
-			if((helper.size()-1)/2==1){
-				this.left=helper.get(0);
-			}else{
-				this.right=new Disjunction((ArrayList<Formula>)helper.subList(0,(helper.size()-1)/2-1));
-			}
-		}
-	}
-
+   
 	@Override
-    public Disjunction ThisTypeBoolean(Formula left, Formula right) {
-        return new Disjunction(left, right);
+    public Formula ThisTypeBoolean(ArrayList<Formula> af) {
+        return FormulaFactory.mkOr(af);
     }
 
     @Override
     public String operator() {
         return "|";
     }
-
+ 
     @Override
-    public BDD bdd() {
-        if (cachedBdd == null) {
-            cachedBdd = left.bdd().or(right.bdd());
-            BDDForFormulae.representativeOfBdd(cachedBdd, this);
-        }
-        return cachedBdd;
+    public int hashCode(){
+    	int offset=31583;
+    	int hash=1;
+    	long last_id=-1;
+    	for(Formula child:children){
+    		if(!(last_id==child.unique_id)){
+    			hash%=offset;
+    			hash=hash*(child.hashCode()%34631);
+    			last_id=child.unique_id;
+    		}
+    	}
+    	return hash% 999983;    	
     }
-
+    
+    
     @Override
     public Formula removeConstants() {
-        Formula new_left = left.removeConstants();
-        if (new_left instanceof BooleanConstant) {
-            if (((BooleanConstant) new_left).value) {
-                return new BooleanConstant(true);
-            } else {
-                return right.removeConstants();
-            }
-        } else {
-            Formula new_right = right.removeConstants();
-            if (new_right instanceof BooleanConstant) {
-                if (((BooleanConstant) new_right).value) {
-                    return new BooleanConstant(true);
-                } else {
-                    return new_left;
-                }
-            } else {
-                return new Disjunction(new_left, new_right);
-            }
-        }
+    	ArrayList<Formula> new_children=new ArrayList<Formula>();
+    	for(Formula child:children){
+    		Formula new_child=child.removeConstants();
+    		if(new_child instanceof BooleanConstant){
+    			if(((BooleanConstant) new_child).value){
+    				return FormulaFactory.mkConst(true);
+    			}
+    		}else{
+    			new_children.add(new_child);
+    		}
+    	}
+    	if(new_children.size()==0){
+    		return FormulaFactory.mkConst(false);
+    	}
+    	if(new_children.size()==1){
+    		return new_children.get(0);
+    	}else{
+    		return FormulaFactory.mkOr(new_children);
+    	}
     }
 
     @Override
@@ -86,98 +76,133 @@ public class Disjunction extends FormulaBinaryBoolean {
         if (!hasSubformula(f)) {
             return true;
         } else {
-            return left.ignoresG(f) && right.ignoresG(f);
+        	boolean ign=true;
+        	for(Formula child:children){
+        		ign=ign && child.ignoresG(f);
+        	}
+            return ign;
         }
     }
 
     @Override
     public Formula toNNF() {
-        return new Disjunction(left.toNNF(), right.toNNF());
+    	ArrayList<Formula> new_children=new ArrayList<Formula>();
+    	for(Formula child:children){
+    		new_children.add(child.toNNF());
+    	}
+        return FormulaFactory.mkOr(new_children);
     }
 
     @Override
     public Formula negationToNNF() {
-        return new Conjunction(left.negationToNNF(), right.negationToNNF());
+    	ArrayList<Formula> new_children=new ArrayList<Formula>();
+    	for(Formula child:children){
+    		new_children.add(child.negationToNNF());
+    	}
+        return FormulaFactory.mkAnd(new_children);
     }
 
     // ============================================================
     @Override
     public boolean isUnfoldOfF() {
-        if (right instanceof XOperator) {
-            if (((XOperator) right).operand instanceof FOperator) {
-                return true;
-            }
-        }
+    	for(Formula child:children){
+    		if(child instanceof XOperator){
+    			if(((XOperator) child).operand instanceof FOperator){
+    				return true;
+    			}
+    		}
+    	}
         return false;
     }
     
     public BoolExpr toExpr(Context ctx){
-    	BoolExpr l = left.toExpr(ctx);
-    	BoolExpr r = right.toExpr(ctx);
-    	
-    	return ctx.mkOr(left.toExpr(ctx),right.toExpr(ctx));
+    	if(cachedLTL==null){
+    		ArrayList<BoolExpr> exprs=new ArrayList<BoolExpr>();
+    		for(Formula child: children){
+    			exprs.add(child.toExpr(ctx));
+    		}
+    		BoolExpr[] helper=new BoolExpr[exprs.size()];
+    		exprs.toArray(helper);
+    		cachedLTL=ctx.mkOr(helper);
+    	}
+    	return cachedLTL;
     	
     }
 
 	@Override
 	public String toZ3String(boolean is_atom){
-		String l=left.toZ3String(is_atom);
-		String r= right.toZ3String(is_atom);
-		if(l.equals("false")){
-			if(r.equals("false")){
+		ArrayList<String> al=new ArrayList<String>();
+		for(Formula child: children){
+			al.add(child.toZ3String(is_atom));
+		}
+		
+		String result="";
+		if(is_atom){
+			for(String prop: al){
+				if(prop.equals("true")){
+					return "true";
+				}else if(!prop.equals("false")){
+					result=result+(result.equals("")?prop :" &"+prop);
+				}
+			}
+			if(result==""){
 				return "false";
 			}else{
-				return r;
+				return result;
 			}
-		}else if(l.equals("true")){
-			return "true";
-		}else if(r.equals("true")){
-			return "true";
-		}else if(r.equals("false")){
-			return l;
-		}
-		else if(is_atom){
-			return l+"_or_"+r;
 		}else{
-			return "(or " +l+" "+r+")";
+			result="(or ";
+			for(String prop: al){
+				if(prop.equals("true")){
+					return "true";
+				}else if(!prop.equals("false")){
+					result=result+prop+" ";
+				}
+			}
+			if(result.equals("(or ")){
+				return "false";
+			}else{
+				return result+" )";
+			}
 		}
+	}
+	
+	
+	@Override
+	public BDD bdd() {
+		if (cachedBdd == null) {
+    		cachedBdd = BDDForFormulae.bddFactory.zero();
+    		for(Formula child : children){
+    			cachedBdd = cachedBdd.or(child.bdd());
+    		}
+    		BDDForFormulae.representativeOfBdd(cachedBdd, this);
+    	}
+    	return cachedBdd;
+	    
 	}
 
-	@Override
-	public ArrayList<String> getAllPropositions() {
-		String l=left.toZ3String(true);
-		String r= right.toZ3String(true);
-		
-		ArrayList<String> a=new ArrayList<String>();
-		if(!l.equals("true")&& ! l.equals("false")){
-			a.addAll(left.getAllPropositions());
-		}
-		if(!r.equals("true") && !r.equals("false")){
-			a.addAll(right.getAllPropositions());
-		}
-		return a;
-	}
 
 	@Override
 	public Formula rmAllConstants() {
-		Formula l=left.rmAllConstants();
-		Formula r=right.rmAllConstants();
-		if(l instanceof BooleanConstant){
-			if (((BooleanConstant) l).value){
-				return new BooleanConstant(true);
+		ArrayList<Formula> new_children=new ArrayList<Formula>();
+		Formula fm;
+		for(Formula child: children){
+			fm=child.rmAllConstants();
+			if(fm instanceof BooleanConstant){
+				if(((BooleanConstant) fm).value){
+					return FormulaFactory.mkConst(true);
+				}
 			}else{
-				return r;
+				new_children.add(fm);
 			}
 		}
-		if(r instanceof BooleanConstant){
-			if( ((BooleanConstant)r).value){
-				return new BooleanConstant(true);
-			}
-			else{
-				return l;
-			}
+		if(new_children.size()==0){
+			return FormulaFactory.mkConst(false);
+		}else if(new_children.size()==1){
+			return new_children.get(0);
+		}else{
+			return FormulaFactory.mkOr(new_children);
 		}
-		return new Disjunction(l,r);
 	}
 	
 	@Override
@@ -187,58 +212,47 @@ public class Disjunction extends FormulaBinaryBoolean {
 		
 		ArrayList<Formula> list=getAllChildrenOfDisjunction();
 		ArrayList<Formula> helper=new ArrayList<Formula>();
+		
+		//simplify formulae
 		for(int i=0;i<list.size();i++){
 			list.set(i,list.get(i).simplifyLocally());
+
 		}
+		
+		
+		//remove dublicates
+		/*for(int i=0;i<list.size();i++){
+			for(int j=list.size()-1;j>i;j--){
+				if(list.get(i).get_id()==list.get(j).get_id()){
+					list.remove(j);
+				}
+			}
+		}*/
+		
 		
 		for(int i=list.size()-1;i>=0;i--){
 			
 			if(list.get(i) instanceof BooleanConstant){
 				
 				if(((BooleanConstant) list.get(i)).value){
-					return new BooleanConstant(true);
+					return FormulaFactory.mkConst(true);
 				}
 				list.remove(i);
 			}
 		}
 		
-		//put all F's together
-		for(int i=list.size()-1;i>=0;i--){
-			if(list.get(i) instanceof FOperator){
-				helper.add(list.get(i));
-				list.remove(i);
-				
-			}
-		}
+		
 		if(helper.size()>1){
 			for(int i=0;i<helper.size();i++){
 				helper.set(i, ((FOperator) helper.get(i)).operand);
 			}
-			list.add(new FOperator(new Disjunction(helper)).simplifyLocally());
+			list.add(FormulaFactory.mkF(FormulaFactory.mkOr(helper)).simplifyLocally());
 		}else if(helper.size()==1){
 			list.add(helper.get(0));
 		}
 		helper.clear();
 		
-		//put all X's together
-		for(int i=list.size()-1;i>=0;i--){
-			if(list.get(i) instanceof XOperator){
-				helper.add(list.get(i));
-				list.remove(i);
 				
-			}
-		}
-		if(helper.size()>1){
-			for(int i=0;i<helper.size();i++){
-				helper.set(i, ((XOperator) helper.get(i)).operand);
-			}
-			list.add(new XOperator(new Disjunction(helper)).simplifyLocally());
-		}else if(helper.size()==1){
-			list.add(helper.get(0).simplifyLocally());
-		}
-		helper.clear();
-		
-		
 		//put all Literals together (and check for trivial tautologies/contradictions like a and a /a and !a
 		for(int i=list.size()-1;i>=0;i--){
 			if(list.get(i) instanceof Literal){
@@ -254,7 +268,7 @@ public class Disjunction extends FormulaBinaryBoolean {
 					if(((Literal) helper.get(i)).negated==(((Literal) helper.get(j)).negated)){
 						helper.remove(j);
 					}else{
-						return new BooleanConstant(true);
+						return FormulaFactory.mkConst(true);
 					}
 				}
 			}
@@ -262,46 +276,67 @@ public class Disjunction extends FormulaBinaryBoolean {
 		list.addAll(helper);
 		//System.out.println("Children: "+list.toString());
 		if(list.size()==0){
-			return new BooleanConstant(true);
+			return FormulaFactory.mkConst(false);
 		}else if(list.size()==1){
 			return list.get(0);
 		}else{
-			return new Disjunction(list);
+			//compare list and children and only make a new dis-
+			//junction if both are different (circumventing a stackoverflow)
+			if(list.size()!=children.size()){
+				return FormulaFactory.mkOr(list);
+			}
+			
+			//Therefore list has to be ordered
+			for(int i=0;i<list.size();i++){
+				for(int j=i+1;j<list.size();j++){
+					if(list.get(i).get_id()>list.get(j).get_id()){
+						Formula swap=list.get(i);
+						list.set(i,list.get(j));
+						list.set(j, swap);
+					}
+				}
+				
+			}
+			
+			for(int i=0;i<list.size();i++){
+				if(list.get(i).get_id()!=children.get(i).get_id()){
+					return FormulaFactory.mkOr(list);
+				}
+			}
+			
+			return this;
 		}
 		
 	}
 
 	private ArrayList<Formula> getAllChildrenOfDisjunction() {
-		ArrayList<Formula> l=new ArrayList<Formula>();
-		if(left instanceof Disjunction){
-			l.addAll(((Disjunction)left).getAllChildrenOfDisjunction());
-		}else{
-			if(left instanceof Negation){
-				if(((Negation)left).operand instanceof Conjunction){
-					left=new Disjunction(new Negation(((Conjunction)((Negation) left).operand).left),new Negation(((Conjunction)((Negation) left).operand).right));
-					l.addAll(((Disjunction)left).getAllChildrenOfDisjunction());
-				}else{
-					l.add(left);
-				}
+		ArrayList<Formula> al=new ArrayList<Formula>();
+		for(Formula child: children){
+			if(child instanceof Disjunction){
+				al.addAll(((Disjunction) child).getAllChildrenOfDisjunction());
 			}else{
-				l.add(left);
+				al.add(child);
 			}
 		}
-		if(right instanceof Disjunction){
-			l.addAll(((Disjunction) right).getAllChildrenOfDisjunction());
-		}else{
-			if(right instanceof Negation){
-				if(((Negation)right).operand instanceof Conjunction){
-					right=new Disjunction(new Negation(((Conjunction)((Negation) right).operand).left),new Negation(((Conjunction)((Negation) right).operand).right));
-					l.addAll(((Disjunction)right).getAllChildrenOfDisjunction());
-				}else{
-					l.add(right);
+		
+		//sort them according to unique_id:
+		Formula swap;
+		for(int i=0;i<al.size();i++){
+			for(int j=0;j<al.size();j++){
+				if(al.get(i).unique_id>al.get(j).unique_id){
+					swap=al.get(i);
+					al.set(i,al.get(j));
+					al.set(j,swap);
 				}
-			}else{
-				l.add(right);
 			}
 		}
-		return l;
+		
+		return al;
+		
 	}
+
+
+
+
 
 }

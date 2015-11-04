@@ -11,13 +11,13 @@ public class XOperator extends FormulaUnary {
         return "X";
     }
 
-    public XOperator(Formula f) {
-        super(f);
+    XOperator(Formula f,long id) {
+        super(f,id);
     }
 
     @Override
-    public XOperator ThisTypeUnary(Formula operand) {
-        return new XOperator(operand);
+    public Formula ThisTypeUnary(Formula operand) {
+        return FormulaFactory.mkX(operand);
     }
 
     @Override
@@ -32,12 +32,12 @@ public class XOperator extends FormulaUnary {
 
     @Override
     public Formula toNNF() {
-        return new XOperator(operand.toNNF());
+        return FormulaFactory.mkX(operand.toNNF());
     }
 
     @Override
     public Formula negationToNNF() {
-        return new XOperator(operand.negationToNNF());
+        return FormulaFactory.mkX(operand.negationToNNF());
     }
 
     //============== OVERRIDE ====================
@@ -47,9 +47,17 @@ public class XOperator extends FormulaUnary {
     }
     
     public BoolExpr toExpr(Context ctx){
-   		return ctx.mkBoolConst(toZ3String(true));
+    	if(cachedLTL==null){
+    		cachedLTL=ctx.mkBoolConst(toZ3String(true));
+    	}
+   		return cachedLTL;
     }
 
+    @Override
+    public int hashCode(){
+    	return ((operand.hashCode() % 33791) *32687) % 999983;
+    }
+    
 	@Override
 	public String toZ3String(boolean is_atom) {
 		
@@ -69,7 +77,7 @@ public class XOperator extends FormulaUnary {
 		if(child instanceof BooleanConstant){
 			return child;
 		}
-		return new XOperator(child);
+		return FormulaFactory.mkX(child);
 	}
 
 	@Override
@@ -78,7 +86,10 @@ public class XOperator extends FormulaUnary {
 		if(child instanceof BooleanConstant){
 			return child;
 		}else{
-			return new XOperator(child);
+			if(operand==child)
+				return this;
+			else
+				return FormulaFactory.mkX(child);
 		}
 	}
 

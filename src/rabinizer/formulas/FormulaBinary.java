@@ -14,16 +14,12 @@ import java.util.Set;
  */
 public abstract class FormulaBinary extends Formula {
 
-    public Formula left, right;
+    final Formula left, right;
     
-    public FormulaBinary(Formula left, Formula right) {
+    FormulaBinary(Formula left, Formula right, long id) {
+    	super(id);
         this.left = left;
         this.right = right;
-    }
-
-    @Override
-    public int hashCode() {
-        return 7 * left.hashCode() + 5 * right.hashCode() + operator().hashCode();
     }
 
     @Override
@@ -31,7 +27,7 @@ public abstract class FormulaBinary extends Formula {
         if (!(o instanceof FormulaBinary)) {
             return false;
         } else {
-            return o.getClass().equals(getClass()) && ((FormulaBinary) o).left.equals(left) && ((FormulaBinary) o).right.equals(right);
+            return o.getClass().equals(getClass()) && ((FormulaBinary) o).left.unique_id==left.unique_id && ((FormulaBinary) o).right.unique_id==right.unique_id;
         }
     }
     

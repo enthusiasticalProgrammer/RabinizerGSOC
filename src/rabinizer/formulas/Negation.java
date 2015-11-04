@@ -1,6 +1,7 @@
 package rabinizer.formulas;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.microsoft.z3.*;
 import net.sf.javabdd.BDD;
@@ -13,17 +14,17 @@ public class Negation extends FormulaUnary {
         return "!";
     }
 
-    public Negation(Formula f) {
-        super(f);
+    Negation(Formula f,long id) {
+        super(f,id);
     }
 
-    public Negation ThisTypeUnary(Formula operand) {
-        return new Negation(operand);
+    public Formula ThisTypeUnary(Formula operand) {
+        return FormulaFactory.mkNot(operand);
     }
 
     public BDD bdd() {            // negation of ATOMIC PROPOSITIONS only
         if (cachedBdd == null) {
-            Formula booleanAtom = new Negation(operand.representative());
+            Formula booleanAtom = FormulaFactory.mkNot(operand.representative());
             int bddVar = BDDForFormulae.bijectionBooleanAtomBddVar.id(booleanAtom);
             if (BDDForFormulae.bddFactory.varNum() <= bddVar) {
                 BDDForFormulae.bddFactory.extVarNum(1);
@@ -137,7 +138,10 @@ public class Negation extends FormulaUnary {
      */
     
     public BoolExpr toExpr(Context ctx){
-      	return ctx.mkNot(operand.toExpr(ctx));
+      	if(cachedLTL==null){
+      		cachedLTL=ctx.mkNot(operand.toExpr(ctx));
+      	}
+    	return cachedLTL;
     }
     
 
@@ -196,6 +200,11 @@ public class Negation extends FormulaUnary {
      }
      */
 
+    @Override
+    public int hashCode(){
+    	return ((operand.hashCode() % 38867) *33317) % 999983;
+    }
+    
 	@Override
 	public String toZ3String(boolean is_atom) {
 		String child=operand.toZ3String(is_atom);
@@ -224,9 +233,9 @@ public class Negation extends FormulaUnary {
 	public Formula rmAllConstants() {
 		Formula child=operand.rmAllConstants();
 		if(child instanceof BooleanConstant){
-			return new BooleanConstant(!((BooleanConstant) child).value);
+			return FormulaFactory.mkConst(!((BooleanConstant) child).value);
 		}
-		return new Negation(child);
+		return FormulaFactory.mkNot(child);
 	}
 
 	@Override
@@ -234,26 +243,37 @@ public class Negation extends FormulaUnary {
 		if(operand instanceof Negation){
 			return ((Negation) operand).operand.simplifyLocally();
 		}else if(operand instanceof BooleanConstant){
-			return new BooleanConstant(!((BooleanConstant) operand).value);
+			return FormulaFactory.mkConst(!((BooleanConstant) operand).value);
 		}else if(operand instanceof Conjunction){
-			return (new Disjunction(new Negation(((Conjunction)operand).left),new Negation(((Conjunction)operand).right))).simplifyLocally();
+			ArrayList<Formula> children=new ArrayList<Formula>();
+			for(Formula child: ((Conjunction)operand).children){
+				children.add(FormulaFactory.mkNot(child));
+			}
+			return (FormulaFactory.mkOr(children)).simplifyLocally();
 		}else if(operand instanceof Disjunction){
-			return (new Conjunction(new Negation(((Disjunction)operand).left),new Negation(((Disjunction)operand).right))).simplifyLocally();
+			ArrayList<Formula> children=new ArrayList<Formula>();
+			for(Formula child: ((Disjunction)operand).children){
+				children.add(FormulaFactory.mkNot(child));
+			}
+			return (FormulaFactory.mkAnd(children)).simplifyLocally();
 		}else if(operand instanceof FOperator){
-			return (new GOperator(new Negation(((FOperator) operand).operand))).simplifyLocally();
+			return (FormulaFactory.mkG(FormulaFactory.mkNot(((FOperator) operand).operand))).simplifyLocally();
 		}else if(operand instanceof GOperator){
-			return (new FOperator(new Negation(((GOperator) operand).operand))).simplifyLocally();
+			return (FormulaFactory.mkF(FormulaFactory.mkNot(((GOperator) operand).operand))).simplifyLocally();
 		}else if(operand instanceof Literal){
 			return (((Literal) operand).negated());
 		}else if(operand instanceof UOperator){
 			Formula child=operand.simplifyLocally();
 			if(! (child instanceof UOperator)){
 				
-				return new Negation(child).simplifyLocally();
+				return FormulaFactory.mkNot(child).simplifyLocally();
 			}
-			return (new Disjunction(new UOperator(new Negation(((UOperator) child).right),new Conjunction(new Negation(((UOperator) child).left),new Negation(((UOperator) child).right))),new GOperator(new Negation(((UOperator) child).right)))).simplifyLocally();
+			return (FormulaFactory.mkOr(FormulaFactory.mkU(FormulaFactory.mkNot(((UOperator) child).right)
+					,FormulaFactory.mkAnd(FormulaFactory.mkNot(((UOperator) child).left),FormulaFactory.mkNot(
+							((UOperator) child).right))),FormulaFactory.mkG(
+									FormulaFactory.mkNot(((UOperator) child).right)))).simplifyLocally();
 		}else if(operand instanceof XOperator){
-			return (new XOperator(new Negation(((XOperator) operand).operand))).simplifyLocally();
+			return (FormulaFactory.mkX(FormulaFactory.mkNot(((XOperator) operand).operand))).simplifyLocally();
 		}
 		throw new RuntimeException("In simplifyLocally of Negation, forgot a case distinction");
 	}

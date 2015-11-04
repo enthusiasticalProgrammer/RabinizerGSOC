@@ -12,19 +12,11 @@ import rabinizer.bdd.BDDForFormulae;
  *
  * @author jkretinsky
  */
-public class FormalNegation extends Negation {
+public class FormalNegation extends Negation { //used?
 
-    public FormalNegation(Formula f) {
-        super(f);
+    FormalNegation(Formula f,long id) {
+        super(f,id);
     }
 
-    @Override
-    public BDD bdd() {            // negation of NON-ATOMIC PROPOSITIONS only
-        if (cachedBdd == null) {
-            cachedBdd = operand.bdd().not();
-            BDDForFormulae.representativeOfBdd(cachedBdd, this);
-        }
-        return cachedBdd;
-    }
 
 }

@@ -6,6 +6,9 @@
 package rabinizer.automata;
 
 import rabinizer.bdd.GSet;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import rabinizer.bdd.Valuation;
 import rabinizer.bdd.ValuationSetBDD;
@@ -31,20 +34,20 @@ public class AccLocalFolded extends AccLocal {
     }
 
     protected static boolean slavesEntail(GSet gSet, GSet gSetComplement, ProductState ps, Map<Formula, Integer> ranking, Valuation v, Formula consequent) {
-        Formula antecedent = new BooleanConstant(true);
+        Formula antecedent = FormulaFactory.mkConst(true);
         for (Formula f : gSet) {
-            antecedent = new Conjunction(antecedent, new GOperator(f)); // TODO relevant for Folded version
+            antecedent = FormulaFactory.mkAnd(antecedent, FormulaFactory.mkG(f)); // TODO relevant for Folded version
             //antecedent = new Conjunction(antecedent, new XOperator(new GOperator(f))); // TODO:remove; relevant for Xunfolding
-            Formula slaveAntecedent = new BooleanConstant(true);
+            Formula slaveAntecedent = FormulaFactory.mkConst(true);
             if (ps.containsKey(f)) {
                 for (FormulaState s : ps.get(f).keySet()) {
                     if (ps.get(f).get(s) >= ranking.get(f)) {
-                        slaveAntecedent = new Conjunction(slaveAntecedent, s.formula);
+                        slaveAntecedent = FormulaFactory.mkAnd(slaveAntecedent, s.formula);
                     }
                 }
             }
             slaveAntecedent = slaveAntecedent.substituteGsToFalse(gSetComplement);
-            antecedent = new Conjunction(antecedent, slaveAntecedent);
+            antecedent = FormulaFactory.mkAnd(antecedent, slaveAntecedent);
         }
         return entails(antecedent, consequent);
     }

@@ -9,6 +9,8 @@ import net.sf.javabdd.BDD;
 import rabinizer.formulas.BooleanConstant;
 import rabinizer.formulas.Disjunction;
 import rabinizer.formulas.Formula;
+import rabinizer.formulas.FormulaFactory;
+
 import java.util.*;
 import rabinizer.formulas.Literal;
 
@@ -39,9 +41,9 @@ public class ValuationSetExplicit extends ValuationSet {
 
     @Override
     public Formula toFormula() {
-        Formula result = new BooleanConstant(false);
+        Formula result = FormulaFactory.mkConst(false);
         for (Valuation v : valuations) {
-            result = (new Disjunction(result, v.toFormula())).representative();
+            result = (FormulaFactory.mkOr(result, v.toFormula())).representative();
         }
         return result.representative();
     }

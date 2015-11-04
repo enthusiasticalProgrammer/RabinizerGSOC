@@ -2,6 +2,7 @@ package rabinizer.formulas;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -10,6 +11,7 @@ import com.microsoft.z3.Context;
 
 
 import rabinizer.bdd.GSet;
+import rabinizer.bdd.Valuation;
 
 public class GOperator extends FormulaUnary {
 
@@ -18,19 +20,19 @@ public class GOperator extends FormulaUnary {
         return "G";
     }
 
-    public GOperator(Formula f) {
-        super(f);
+    GOperator(Formula f,long id) {
+        super(f,id);
     }
 
     @Override
-    public GOperator ThisTypeUnary(Formula operand) {
-        return new GOperator(operand);
+    public Formula ThisTypeUnary(Formula operand) {
+        return FormulaFactory.mkG(operand);
     }
 
     @Override
     public Formula unfold() {
         // U(F phi) = U(phi) \/ X F U(phi)
-        return new Conjunction(operand.unfold(), /*new XOperator*/ (this));
+        return FormulaFactory.mkAnd(operand.unfold(), /*new XOperator*/ (this));
     }
 
     @Override
@@ -40,12 +42,12 @@ public class GOperator extends FormulaUnary {
 
     @Override
     public Formula toNNF() {
-        return new GOperator(operand.toNNF());
+        return FormulaFactory.mkG(operand.toNNF());
     }
 
     @Override
     public Formula negationToNNF() {
-        return new FOperator(operand.negationToNNF());
+        return FormulaFactory.mkF(operand.negationToNNF());
     }
 
     //============== OVERRIDE ====================
@@ -71,7 +73,7 @@ public class GOperator extends FormulaUnary {
     @Override
     public Formula substituteGsToFalse(GSet gSet) {
         if (gSet.contains(operand)) {
-            return new BooleanConstant(false);
+            return FormulaFactory.mkConst(false);
         } else {
             return this;
         }
@@ -79,9 +81,17 @@ public class GOperator extends FormulaUnary {
     
     
     public BoolExpr toExpr(Context ctx){
-    	return ctx.mkBoolConst(toZ3String(true));
+    	if(cachedLTL==null){
+    		cachedLTL = ctx.mkBoolConst(toZ3String(true));
+    	}
+    	return cachedLTL;
     }
 
+    @Override
+    public int hashCode(){
+    	return ((operand.hashCode() % 35023) *31277) % 999983;
+    }
+    
 	@Override
 	public String toZ3String(boolean is_atom) {
 		
@@ -109,7 +119,7 @@ public class GOperator extends FormulaUnary {
 		if(child instanceof BooleanConstant){
 			return child;
 		}
-		return new GOperator(child);
+		return FormulaFactory.mkG(child);
 	}
 
 	@Override
@@ -119,12 +129,26 @@ public class GOperator extends FormulaUnary {
 			return child;
 		}else if(child instanceof GOperator){
 			return child;
-		}else if(child instanceof UOperator){
-			return new GOperator(new Conjunction(new FOperator(((UOperator) child).right),new Disjunction(((UOperator) child).left,((UOperator) child).right)));
 		}else if(child instanceof XOperator){
-			return new XOperator(new GOperator(((XOperator) child).operand));
+			return FormulaFactory.mkX(FormulaFactory.mkG(((XOperator) child).operand));
+		}else {
+			if(child==operand){
+				return this;
+			}else{
+				return FormulaFactory.mkG(child);
+			}
 		}
-		else return new GOperator(child);
+	}
+	
+	@Override
+	public Formula setToConst(long id,boolean constant){
+		if(id==unique_id){
+			return FormulaFactory.mkConst(constant);
+		}else if(!constant){
+			return FormulaFactory.mkG(operand.setToConst(id, constant)).simplifyLocally();
+		}else{
+			return this;
+		}
 	}
 
 }

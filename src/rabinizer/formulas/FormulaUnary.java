@@ -16,13 +16,16 @@ import rabinizer.bdd.BDDForFormulae;
  */
 public abstract class FormulaUnary extends Formula {
     
-    public Formula operand;
+    final Formula operand;
     
-    public FormulaUnary(Formula operand) {
+    FormulaUnary(Formula operand,long id) {
+    	super(id);
         this.operand = operand;
     }
     
-    public abstract FormulaUnary ThisTypeUnary(Formula operand);
+    //might also be a Boolean constant or sth else,
+    //since FormulaFactory simplifies upon creation
+    public abstract Formula ThisTypeUnary(Formula operand);
     
     @Override
     public BDD bdd() {
@@ -38,17 +41,13 @@ public abstract class FormulaUnary extends Formula {
         return cachedBdd;
     }
 
-    @Override
-    public int hashCode() {
-        return 3 * operand.hashCode() + operator().hashCode();
-    }
 
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof FormulaUnary)) {
             return false;
         } else {
-            return o.getClass().equals(getClass()) && ((FormulaUnary) o).operand.equals(operand);
+            return o.getClass().equals(getClass()) && ((FormulaUnary) o).operand.unique_id==operand.unique_id;
         }
     }
     
@@ -87,6 +86,16 @@ public abstract class FormulaUnary extends Formula {
     public Set<Formula> topmostGs() {
         return operand.topmostGs();
     }
-
+    
+    
+    @Override
+    //to be overridden by FOperator
+    public Formula setToConst(long id, boolean constant){
+    	if(unique_id==id){
+    		return FormulaFactory.mkConst(constant);
+    	}else{
+    		return this;
+    	}
+    }
     
 }

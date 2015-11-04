@@ -17,23 +17,22 @@ import com.microsoft.z3.*;
 public abstract class Formula {
 	static int curr_symbol=0;
 	
-    protected String cachedString;
-    protected BDD cachedBdd = null;
-    protected LTLExpr cachedLTL=null;
+    String cachedString;
+    BDD cachedBdd = null;
+    BoolExpr cachedLTL=null;
+    final long unique_id;
 
     public abstract String operator();
 
     public abstract BDD bdd();
-    
-    public LTLExpr ltl(){
-    	if(cachedLTL==null){
-    		cachedLTL=new LTLExpr(this);
-    	}
-    	return cachedLTL;
-    }
 
     public Formula representative() {
-        return LTLExpr.representative_of_formula(ltl(),this);
+        return BDDForFormulae.representativeOfBdd(bdd(), this);
+    }
+        
+        
+    Formula(long id){
+    	unique_id=id;
     }
 
     @Override
@@ -67,6 +66,11 @@ public abstract class Formula {
 
     public Formula temporalStep(Valuation valuation) {
         return this.assertValuation(valuation).removeX();
+    }
+    
+    //for testing
+    public long get_id(){
+    	return unique_id;
     }
 
     public Formula assertValuation(Valuation valuation) {
@@ -162,5 +166,13 @@ public abstract class Formula {
     //simplifies a formula such that it is easier to compute for Rabinizer
     //used as f=f.simplifyLocally()
     public abstract Formula simplifyLocally();
+    
+    //a.setToConst(id,true), return a if id is not a subformula of a
+    //		and if id is a subformula of a, it replaces id with const
+    //this is used to minimize expressions as a&phi(a) -->a&phi.setToConst(a.unique_id,true)
+    // and a|phi(a)--> a|phi.setToConst(a.unique_id,false)
+    public abstract Formula setToConst(long id,boolean constant);
+
+    
 
 }

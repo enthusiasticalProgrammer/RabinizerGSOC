@@ -4,6 +4,9 @@ package rabinizer.parser;
 
 import rabinizer.formulas.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import rabinizer.bdd.*;
 
 public class LTLParser implements LTLParserConstants {
@@ -47,7 +50,7 @@ final public Formula disjunction() throws ParseException {Formula r = null;
       }
       jj_consume_token(OR);
       r = conjunction();
-result = new Disjunction(result, r);
+result = FormulaFactory.mkOr(result, r);
     }
 {if ("" != null) return result;}
     throw new Error("Missing return statement in function");
@@ -66,7 +69,7 @@ final public Formula conjunction() throws ParseException {Formula result;
       }
       jj_consume_token(AND);
       r = until();
-result = new Conjunction(result, r);
+result = FormulaFactory.mkAnd(result, r);
     }
 {if ("" != null) return result;}
     throw new Error("Missing return statement in function");
@@ -85,7 +88,7 @@ final public Formula until() throws ParseException {Formula result;
       }
       jj_consume_token(UOP);
       r = unaryOp();
-result = new UOperator(result, r);
+result = FormulaFactory.mkU(result, r);
     }
 {if ("" != null) return result;}
     throw new Error("Missing return statement in function");
@@ -115,19 +118,19 @@ Formula unaryOp() throws ParseException {Formula f;
     if (jj_2_4(2)) {
       jj_consume_token(FOP);
       f = unaryOp();
-{if ("" != null) return new FOperator(f);}
+{if ("" != null) return FormulaFactory.mkF(f);}
     } else if (jj_2_5(2)) {
       jj_consume_token(GOP);
       f = unaryOp();
-{if ("" != null) return new GOperator(f);}
+{if ("" != null) return FormulaFactory.mkG(f);}
     } else if (jj_2_6(2)) {
       jj_consume_token(XOP);
       f = unaryOp();
-{if ("" != null) return new XOperator(f);}
+{if ("" != null) return FormulaFactory.mkX(f);}
     } else if (jj_2_7(2)) {
       jj_consume_token(NEG);
       f = unaryOp();
-{if ("" != null) return new Negation(f);}
+{if ("" != null) return FormulaFactory.mkNot(f);}
     } else if (jj_2_8(2)) {
       f = atom();
 {if ("" != null) return f;}
@@ -144,14 +147,14 @@ final public Formula atom() throws ParseException {String atomString;
   Formula f;
     if (jj_2_9(2)) {
       jj_consume_token(TRUE);
-{if ("" != null) return new BooleanConstant(true);}
+{if ("" != null) return FormulaFactory.mkConst(true);}
     } else if (jj_2_10(2)) {
       jj_consume_token(FALSE);
-{if ("" != null) return new BooleanConstant(false);}
+{if ("" != null) return FormulaFactory.mkConst(false);}
     } else if (jj_2_11(2)) {
       atomString = jj_consume_token(ID).image;
 id = BDDForVariables.bijectionIdAtom.id(atomString);
-        {if ("" != null) return new Literal(atomString, id, false);}
+        {if ("" != null) return FormulaFactory.mkLit(atomString, id, false);}
     } else if (jj_2_12(2)) {
       jj_consume_token(LPAR);
       f = disjunction();

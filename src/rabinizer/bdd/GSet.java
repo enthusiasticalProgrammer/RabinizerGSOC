@@ -14,6 +14,8 @@ import rabinizer.formulas.BooleanConstant;
 import rabinizer.formulas.Conjunction;
 import rabinizer.formulas.Formula;
 import rabinizer.formulas.GOperator;
+import rabinizer.z3.LTLExpr;
+import rabinizer.formulas.FormulaFactory;
 
 
 /**
@@ -38,23 +40,21 @@ public class GSet extends HashSet<Formula> {
 
     public boolean entails(Formula formula) { // used???
         if (gPremises == null) {
-            Formula premise = new BooleanConstant(true);
+            Formula premise = FormulaFactory.mkConst(true);
             for (Formula f : this) {
-                premise = new Conjunction(premise, new GOperator(f));
+                premise = FormulaFactory.mkAnd(premise, FormulaFactory.mkG(f));
 
             }
             gPremises = premise;
         }
         //checks if gPremises (as BDD) implies formula
-        Context ctx=new Context();
+        Context ctx=LTLExpr.getContext();
         BoolExpr ant=gPremises.toExpr(ctx);
         BoolExpr con=formula.toExpr(ctx);
         Solver s=ctx.mkSolver();
     	s.add(ctx.mkAnd(ant,ctx.mkNot(con)));
-    	boolean result=!(s.check()==Status.SATISFIABLE);
+    	return !(s.check()==Status.SATISFIABLE);
         
-        ctx.dispose();
-        return result;
     }
 
 }

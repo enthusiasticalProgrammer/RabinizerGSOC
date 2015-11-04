@@ -56,10 +56,10 @@ public class BDDForVariables {
     }
 
     public static BDD literalToBDD(Literal l) {
-        if (!l.negated) {
-            return bf.ithVar(bijectionIdAtom.id(l.atom));
+        if (!l.getNegated()) {
+            return bf.ithVar(bijectionIdAtom.id(l.getAtom()));
         } else {
-            return bf.nithVar(bijectionIdAtom.id(l.atom));
+            return bf.nithVar(bijectionIdAtom.id(l.getAtom()));
         }
     }
 

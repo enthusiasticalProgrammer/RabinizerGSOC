@@ -14,8 +14,8 @@ import java.util.Set;
  */
 public abstract class FormulaNullary extends Formula {
 
-    public FormulaNullary() {
-        super();
+    FormulaNullary(long id) {
+        super(id);
     }
 
     @Override

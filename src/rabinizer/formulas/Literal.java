@@ -11,11 +11,12 @@ import rabinizer.bdd.BDDForFormulae;
 
 public class Literal extends FormulaNullary {
 
-    public String atom;
-    public int atomId;
-    public boolean negated;
+    final String atom;
+    final int atomId;
+    final boolean negated;
 
-    public Literal(String atom, int atomId, boolean negated) {
+    Literal(String atom, int atomId, boolean negated,long id) {
+    	super(id);
         this.atom = atom;
         this.atomId = atomId;
         this.negated = negated;
@@ -25,13 +26,16 @@ public class Literal extends FormulaNullary {
     public String operator() {
         return null;
     }
-
+    
+    public boolean getNegated(){
+    	return negated;
+    }
     public Literal positiveLiteral() {
-        return new Literal(this.atom, this.atomId, false);
+        return (Literal) FormulaFactory.mkLit(this.atom, this.atomId, false);
     }
 
     public Literal negated() {
-        return new Literal(atom, atomId, !negated);
+    	return (Literal) FormulaFactory.mkLit(atom, atomId, !negated);
     }
 
     @Override
@@ -45,11 +49,12 @@ public class Literal extends FormulaNullary {
             BDDForFormulae.representativeOfBdd(cachedBdd, this);
         } 
         return cachedBdd;
+        
     }
 
     @Override
-    public int hashCode() {
-        return atomId;
+    public int hashCode(){
+    	return ((atom.hashCode() % 34483) *32363)+(negated? 1 : 0) % 999983;
     }
 
     @Override
@@ -76,7 +81,7 @@ public class Literal extends FormulaNullary {
 
     @Override
     public Formula evaluateValuation(Valuation valuation) {
-        return new BooleanConstant(valuation.get(atomId) ^ negated);
+        return FormulaFactory.mkConst(valuation.get(atomId) ^ negated);
     }
 
     @Override
@@ -84,7 +89,7 @@ public class Literal extends FormulaNullary {
         if (literal.atomId != this.atomId) {
             return this;
         } else {
-            return new BooleanConstant(literal.negated == this.negated);
+            return FormulaFactory.mkConst(literal.negated == this.negated);
         }
     }
 
@@ -99,11 +104,14 @@ public class Literal extends FormulaNullary {
     }
     
     public BoolExpr toExpr(Context ctx){
-    	if(negated){
-    		return ctx.mkNot((BoolExpr) ctx.mkBoolConst(atom));
-    	}else{
-    		return (BoolExpr) ctx.mkBoolConst(atom);
+    	
+    	if(cachedLTL==null){
+    		cachedLTL=ctx.mkBoolConst(atom);
+    		if(negated){
+    			cachedLTL=ctx.mkNot(cachedLTL);
+    		}
     	}
+    	return cachedLTL;
     }
 
 	@Override
@@ -128,10 +136,7 @@ public class Literal extends FormulaNullary {
 
 	@Override
 	public Formula rmAllConstants() {
-		negated=!negated;
-		Formula result=negated();
-		negated=!negated;
-		return result;
+		return FormulaFactory.mkLit(getAtom(), atomId, negated);
 		
 	}
 
@@ -139,5 +144,15 @@ public class Literal extends FormulaNullary {
 	public Formula simplifyLocally() {
 		return this;
 	}
+
+	public String getAtom() {
+		return atom;
+	}
+
+	@Override
+	public Formula setToConst(long id, boolean constant) {
+		return (id==unique_id?FormulaFactory.mkConst(constant) : this);
+	}
+
 
 }

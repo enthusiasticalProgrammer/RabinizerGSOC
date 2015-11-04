@@ -9,9 +9,10 @@ import com.microsoft.z3.*;
 
 public class BooleanConstant extends FormulaNullary {
 
-    public boolean value;
+    public final boolean value;
 
-    public BooleanConstant(boolean value) {
+    BooleanConstant(boolean value,long id) {
+    	super(id);
         this.value = value;
     }
 
@@ -31,7 +32,7 @@ public class BooleanConstant extends FormulaNullary {
 
     @Override
     public int hashCode() {
-        return value ? 0 : 1;
+        return value ? 1 : 2;
     }
 
     @Override
@@ -58,15 +59,14 @@ public class BooleanConstant extends FormulaNullary {
 
     @Override
     public Formula negationToNNF() {
-        return new BooleanConstant(!value);
+        return FormulaFactory.mkConst(!value);
     }
     
     public BoolExpr toExpr(Context ctx){
-    	if(toString().equals("true")){
-    		return ctx.mkTrue();
-    	}else{
-    		return ctx.mkFalse();
+    	if(cachedLTL==null){
+    		cachedLTL=(value? ctx.mkTrue() : ctx.mkFalse());
     	}
+    	return cachedLTL;
     		
     }
 
@@ -82,12 +82,18 @@ public class BooleanConstant extends FormulaNullary {
 
 	@Override
 	public Formula rmAllConstants() {
-		return new BooleanConstant(value);
+		return FormulaFactory.mkConst(value);
 	}
 
 	@Override
 	public Formula simplifyLocally() {
 		return this;
 	}
+
+	@Override
+	public Formula setToConst(long id, boolean constant) {
+		return this;
+	}
+
 
 }
