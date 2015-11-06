@@ -15,6 +15,9 @@ import rabinizer.bdd.Valuation;
 
 public class GOperator extends FormulaUnary {
 
+ final int cachedHash;
+
+
     @Override
     public String operator() {
         return "G";
@@ -22,6 +25,7 @@ public class GOperator extends FormulaUnary {
 
     GOperator(Formula f,long id) {
         super(f,id);
+        this.cachedHash = init_hash();
     }
 
     @Override
@@ -89,7 +93,7 @@ public class GOperator extends FormulaUnary {
 
     @Override
     public int hashCode(){
-    	return ((operand.hashCode() % 35023) *31277) % 999983;
+    	return cachedHash;
     }
     
 	@Override
@@ -116,7 +120,7 @@ public class GOperator extends FormulaUnary {
 	@Override
 	public Formula rmAllConstants() {
 		Formula child=operand.rmAllConstants();
-		if(child instanceof BooleanConstant){
+		if(child instanceof BooleanConstant) {
 			return child;
 		}
 		return FormulaFactory.mkG(child);
@@ -124,24 +128,19 @@ public class GOperator extends FormulaUnary {
 
 	@Override
 	public Formula simplifyLocally() {
-		Formula child=operand.simplifyLocally();
-		if(child instanceof BooleanConstant){
-			return child;
-		}else if(child instanceof GOperator){
-			return child;
-		}else if(child instanceof XOperator){
-			return FormulaFactory.mkX(FormulaFactory.mkG(((XOperator) child).operand));
+		if(operand instanceof BooleanConstant) {
+			return operand;
+		}else if(operand instanceof GOperator) {
+			return operand;
+		}else if(operand instanceof XOperator) {
+			return FormulaFactory.mkX(FormulaFactory.mkG(((XOperator) operand).operand));
 		}else {
-			if(child==operand){
-				return this;
-			}else{
-				return FormulaFactory.mkG(child);
-			}
+			return this;
 		}
 	}
 	
 	@Override
-	public Formula setToConst(long id,boolean constant){
+	public Formula setToConst(long id,boolean constant) {
 		if(id==unique_id){
 			return FormulaFactory.mkConst(constant);
 		}else if(!constant){
@@ -149,6 +148,12 @@ public class GOperator extends FormulaUnary {
 		}else{
 			return this;
 		}
+	}
+
+
+	
+	private int init_hash() {
+		return (((operand.hashCode() % 35023) * 31277)+ 3109) % 999983;
 	}
 
 }

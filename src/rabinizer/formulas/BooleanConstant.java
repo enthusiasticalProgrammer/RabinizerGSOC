@@ -9,11 +9,15 @@ import com.microsoft.z3.*;
 
 public class BooleanConstant extends FormulaNullary {
 
-    public final boolean value;
+
+    private final boolean value;
+
+    private final int cachedHash;
 
     BooleanConstant(boolean value,long id) {
     	super(id);
         this.value = value;
+        this.cachedHash = init_hash();
     }
 
     @Override
@@ -32,7 +36,11 @@ public class BooleanConstant extends FormulaNullary {
 
     @Override
     public int hashCode() {
-        return value ? 1 : 2;
+        return cachedHash;
+    }
+    
+    public boolean get_value() {
+    	return value;
     }
 
     @Override
@@ -95,5 +103,10 @@ public class BooleanConstant extends FormulaNullary {
 		return this;
 	}
 
+
+	
+	private int init_hash() {
+		return value ? 1 : 2;
+	}
 
 }

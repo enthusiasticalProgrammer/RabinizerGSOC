@@ -116,7 +116,7 @@ public class TestFormula {
 		Formula f1=FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
 		Formula f2=FormulaFactory.mkX(f1);
 		Formula f3=FormulaFactory.mkF(f2);
-		assertEquals(f3.toString(),"FXp1");
+		assertEquals(f3.toString(),"XFp1");
 	}
 
 	

@@ -15,11 +15,14 @@ public class Literal extends FormulaNullary {
     final int atomId;
     final boolean negated;
 
+    private final int cachedHash;
+
     Literal(String atom, int atomId, boolean negated,long id) {
     	super(id);
-        this.atom = atom;
-        this.atomId = atomId;
-        this.negated = negated;
+        this.atom         = atom;
+        this.atomId       = atomId;
+        this.negated      = negated;
+        this.cachedHash   = init_hash();
     }
 
     @Override
@@ -54,7 +57,7 @@ public class Literal extends FormulaNullary {
 
     @Override
     public int hashCode(){
-    	return ((atom.hashCode() % 34483) *32363)+(negated? 1 : 0) % 999983;
+    	return cachedHash;
     }
 
     @Override
@@ -152,6 +155,12 @@ public class Literal extends FormulaNullary {
 	@Override
 	public Formula setToConst(long id, boolean constant) {
 		return (id==unique_id?FormulaFactory.mkConst(constant) : this);
+	}
+
+
+	
+	private int init_hash(){
+		return ((atom.hashCode() % 34483) *32363)+(negated? 97 : 167) % 999983;
 	}
 
 

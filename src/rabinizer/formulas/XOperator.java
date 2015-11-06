@@ -6,13 +6,16 @@ import com.microsoft.z3.*;
 
 public class XOperator extends FormulaUnary {
 
-    @Override
+	private final int cachedHash;
+	
+
     public String operator() {
         return "X";
     }
 
     XOperator(Formula f,long id) {
         super(f,id);
+        this.cachedHash = init_hash();
     }
 
     @Override
@@ -55,7 +58,7 @@ public class XOperator extends FormulaUnary {
 
     @Override
     public int hashCode(){
-    	return ((operand.hashCode() % 33791) *32687) % 999983;
+    	return cachedHash;
     }
     
 	@Override
@@ -82,15 +85,16 @@ public class XOperator extends FormulaUnary {
 
 	@Override
 	public Formula simplifyLocally() {
-		Formula child=operand.simplifyLocally();
-		if(child instanceof BooleanConstant){
-			return child;
+		if(operand instanceof BooleanConstant){
+			return operand;
 		}else{
-			if(operand==child)
-				return this;
-			else
-				return FormulaFactory.mkX(child);
+			return this;
 		}
 	}
+	
+	private int init_hash() {
+		return (((operand.hashCode() % 33791) * 32687) + 701) % 999983;
+	}
+
 
 }

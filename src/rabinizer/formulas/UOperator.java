@@ -5,6 +5,7 @@ import com.microsoft.z3.*;
 import net.sf.javabdd.*;
 import rabinizer.bdd.BDDForFormulae;
 import rabinizer.bdd.Valuation;
+import rabinizer.z3.LTLExpr;
 
 /**
  * Represents a until formula.
@@ -14,11 +15,21 @@ import rabinizer.bdd.Valuation;
  */
 public class UOperator extends FormulaBinary {
 
+
+	private final int cachedHash;
+	
     @Override
     public String operator() {
         return "U";
     }
 
+    
+    
+    UOperator(Formula left, Formula right,long id) {
+        super(left, right,id);
+        this.cachedHash = init_hash();
+    }
+    
 
     public BDD bdd() {
         if (cachedBdd == null) {
@@ -35,10 +46,6 @@ public class UOperator extends FormulaBinary {
         }
         return cachedBdd;
     } 
-       
-    UOperator(Formula left, Formula right,long id) {
-        super(left, right,id);
-    }
 
     @Override
     public Formula unfold() {
@@ -71,7 +78,7 @@ public class UOperator extends FormulaBinary {
     
     @Override
     public int hashCode(){
-    	return ((left.hashCode() % 33767)*(right.hashCode() % 33049))% 999983;
+    	return cachedHash;
     }
 
 	@Override
@@ -104,7 +111,7 @@ public class UOperator extends FormulaBinary {
 		Formula l=left.rmAllConstants();
 		Formula r=right.rmAllConstants();
 		if(l instanceof BooleanConstant){
-			if(((BooleanConstant) l).value){
+			if(((BooleanConstant) l).get_value()){
 				return FormulaFactory.mkF(r);
 			}else{
 				return r;
@@ -119,38 +126,31 @@ public class UOperator extends FormulaBinary {
 
 	@Override
 	public Formula simplifyLocally() {
-		Formula l=left.simplifyLocally();
-		Formula r=right.simplifyLocally();
 		
-		if(r instanceof BooleanConstant){
-			return r;
-		}else if(l instanceof BooleanConstant){
-			if(((BooleanConstant) l).value){
-				return FormulaFactory.mkF(r);
+		if(right instanceof BooleanConstant){
+			return right;
+		}else if(left instanceof BooleanConstant){
+			if(((BooleanConstant) left).get_value()){
+				return FormulaFactory.mkF(right);
 			}else{
-				return r;
+				return right;
 			}
-		}else if(r instanceof FOperator){
-			return r;
-		}else if(l instanceof FOperator){
-			return FormulaFactory.mkOr(r,FormulaFactory.mkF(FormulaFactory.mkAnd(FormulaFactory.mkX(r),l)));
-		}else if(l instanceof Literal && r instanceof Literal){
-			if(((Literal) l).atom.equals(((Literal) r).atom)){
-				if((((Literal) l).negated)==(((Literal) r).negated)){
+		}else if(right instanceof FOperator){
+			return right;
+		}else if(left instanceof FOperator){
+			return FormulaFactory.mkOr(right,FormulaFactory.mkF(FormulaFactory.mkAnd(FormulaFactory.mkX(right),left)));
+		}else if(left instanceof Literal && right instanceof Literal){
+			if(((Literal) left).atom.equals(((Literal) right).atom)){
+				if((((Literal) left).negated)==(((Literal) right).negated)){
 					return FormulaFactory.mkConst(true);
 				}
 			}
-		}else if(l instanceof GOperator){
-			return FormulaFactory.mkOr(FormulaFactory.mkAnd(l,FormulaFactory.mkF(r)),r);
-		}else if(l instanceof XOperator && r instanceof XOperator){
-			return FormulaFactory.mkX(FormulaFactory.mkU(((XOperator) l).operand,((XOperator) r).operand));
+		}else if(left instanceof GOperator){
+			return FormulaFactory.mkOr(FormulaFactory.mkAnd(left,FormulaFactory.mkF(right)),right);
+		}else if(left instanceof XOperator && right instanceof XOperator){
+			return FormulaFactory.mkX(FormulaFactory.mkU(((XOperator) left).operand,((XOperator) right).operand));
 		}
-		
-		if(l==left && r==right){
-			return this;
-		}
-		return FormulaFactory.mkU(l,r);
-		
+		return this;
 	}
 
 	@Override
@@ -163,5 +163,30 @@ public class UOperator extends FormulaBinary {
 			
 	}
 	
+
+	private BDD init_bdd() {
+		BDD helper;
+		Formula booleanAtom = FormulaFactory.mkU(
+				left.representative(),
+				right.representative());
+		int bddVar = BDDForFormulae.bijectionBooleanAtomBddVar.id(booleanAtom);
+		if (BDDForFormulae.bddFactory.varNum() <= bddVar) {
+			BDDForFormulae.bddFactory.extVarNum(bddVar);
+		}
+		helper = BDDForFormulae.bddFactory.ithVar(bddVar);
+		BDDForFormulae.representativeOfBdd(helper, this);
+		return helper;
+	}
+	
+	private BoolExpr init_ltl() {
+		Context ctx = LTLExpr.getContext();
+		return ctx.mkBoolConst(toZ3String(true));
+	}
+	
+	private int init_hash() {
+		return (((left.hashCode() % 33767) * (right.hashCode() % 33049)) + 2141)% 999983;
+	}
+	
+
 
 }

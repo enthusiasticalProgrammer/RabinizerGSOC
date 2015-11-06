@@ -7,6 +7,8 @@ import rabinizer.bdd.Valuation;
 
 public class FOperator extends FormulaUnary {
 
+	private final int cachedHash;
+	
     @Override
     public String operator() {
         return "F";
@@ -14,6 +16,7 @@ public class FOperator extends FormulaUnary {
 
     FOperator(Formula f,long id) {
         super(f,id);
+        this.cachedHash = init_hash();
     }
 
     @Override
@@ -52,7 +55,7 @@ public class FOperator extends FormulaUnary {
 
     @Override
     public int hashCode(){
-    	return ((operand.hashCode() % 34211) *32213) % 999983;
+    	return cachedHash;
     }
     
     
@@ -102,19 +105,24 @@ public class FOperator extends FormulaUnary {
 
 	@Override
 	public Formula simplifyLocally() {
-		Formula child=operand.simplifyLocally();
-		if(child instanceof BooleanConstant){
-			return child;
-		}else if(child instanceof UOperator){
-			return FormulaFactory.mkF(((UOperator) child).right).simplifyLocally();
-		}else if(child instanceof FOperator){
-			return child;
-		}else{
-			if(child==operand){
-				return this;
-			}else{
-				return FormulaFactory.mkF(child);
-			}
+		if(operand instanceof BooleanConstant){
+			return operand;
+		}else if(operand instanceof UOperator){
+			return FormulaFactory.mkF(((UOperator) operand).right).simplifyLocally();
+		}else if(operand instanceof FOperator){
+			return operand;
+		}else if(operand instanceof XOperator){
+			return FormulaFactory.mkX(FormulaFactory.mkF(((XOperator)operand).operand));
+		}
+		else{
+			return this;
 		}
 	}
+
+	
+	private int init_hash() {
+		return (((operand.hashCode() % 34211) * 32213) + 3499) % 999983;
+	}
+
+
 }

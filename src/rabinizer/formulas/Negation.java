@@ -9,6 +9,9 @@ import rabinizer.bdd.BDDForFormulae;
 
 public class Negation extends FormulaUnary {
 
+
+	private final int cachedHash;
+	
     @Override
     public String operator() {
         return "!";
@@ -16,6 +19,7 @@ public class Negation extends FormulaUnary {
 
     Negation(Formula f,long id) {
         super(f,id);
+        this.cachedHash = init_hash(); 
     }
 
     public Formula ThisTypeUnary(Formula operand) {
@@ -34,12 +38,8 @@ public class Negation extends FormulaUnary {
         }
         return cachedBdd;
     }
+    
     /*
-     @Override
-     public int hashCode() {
-     return operand.hashCode() * 2;
-     }
-
      @Override
      public boolean equals(Object o) {
      if (!(o instanceof Negation)) {
@@ -202,7 +202,7 @@ public class Negation extends FormulaUnary {
 
     @Override
     public int hashCode(){
-    	return ((operand.hashCode() % 38867) *33317) % 999983;
+    	return cachedHash;
     }
     
 	@Override
@@ -233,7 +233,7 @@ public class Negation extends FormulaUnary {
 	public Formula rmAllConstants() {
 		Formula child=operand.rmAllConstants();
 		if(child instanceof BooleanConstant){
-			return FormulaFactory.mkConst(!((BooleanConstant) child).value);
+			return FormulaFactory.mkConst(!((BooleanConstant) child).get_value());
 		}
 		return FormulaFactory.mkNot(child);
 	}
@@ -243,23 +243,23 @@ public class Negation extends FormulaUnary {
 		if(operand instanceof Negation){
 			return ((Negation) operand).operand.simplifyLocally();
 		}else if(operand instanceof BooleanConstant){
-			return FormulaFactory.mkConst(!((BooleanConstant) operand).value);
+			return FormulaFactory.mkConst(!((BooleanConstant) operand).get_value());
 		}else if(operand instanceof Conjunction){
 			ArrayList<Formula> children=new ArrayList<Formula>();
 			for(Formula child: ((Conjunction)operand).children){
 				children.add(FormulaFactory.mkNot(child));
 			}
-			return (FormulaFactory.mkOr(children)).simplifyLocally();
+			return (FormulaFactory.mkOr(children));
 		}else if(operand instanceof Disjunction){
 			ArrayList<Formula> children=new ArrayList<Formula>();
 			for(Formula child: ((Disjunction)operand).children){
 				children.add(FormulaFactory.mkNot(child));
 			}
-			return (FormulaFactory.mkAnd(children)).simplifyLocally();
+			return (FormulaFactory.mkAnd(children));
 		}else if(operand instanceof FOperator){
-			return (FormulaFactory.mkG(FormulaFactory.mkNot(((FOperator) operand).operand))).simplifyLocally();
+			return (FormulaFactory.mkG(FormulaFactory.mkNot(((FOperator) operand).operand)));
 		}else if(operand instanceof GOperator){
-			return (FormulaFactory.mkF(FormulaFactory.mkNot(((GOperator) operand).operand))).simplifyLocally();
+			return (FormulaFactory.mkF(FormulaFactory.mkNot(((GOperator) operand).operand)));
 		}else if(operand instanceof Literal){
 			return (((Literal) operand).negated());
 		}else if(operand instanceof UOperator){
@@ -271,11 +271,14 @@ public class Negation extends FormulaUnary {
 			return (FormulaFactory.mkOr(FormulaFactory.mkU(FormulaFactory.mkNot(((UOperator) child).right)
 					,FormulaFactory.mkAnd(FormulaFactory.mkNot(((UOperator) child).left),FormulaFactory.mkNot(
 							((UOperator) child).right))),FormulaFactory.mkG(
-									FormulaFactory.mkNot(((UOperator) child).right)))).simplifyLocally();
+									FormulaFactory.mkNot(((UOperator) child).right))));
 		}else if(operand instanceof XOperator){
-			return (FormulaFactory.mkX(FormulaFactory.mkNot(((XOperator) operand).operand))).simplifyLocally();
+			return (FormulaFactory.mkX(FormulaFactory.mkNot(((XOperator) operand).operand)));
 		}
 		throw new RuntimeException("In simplifyLocally of Negation, forgot a case distinction");
 	}
 
+	private int init_hash() {
+		return (((operand.hashCode() % 38867) * 33317) + 3449) % 999983;
+	}
 }

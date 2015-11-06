@@ -8,6 +8,7 @@ package rabinizer.formulas;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import rabinizer.bdd.GSet;
@@ -19,8 +20,8 @@ import rabinizer.bdd.Valuation;
  */
 public abstract class FormulaBinaryBoolean extends Formula{
 
-	final ArrayList<Formula> children;
-    FormulaBinaryBoolean(ArrayList<Formula> children, long id) {
+	final List<Formula> children;
+    FormulaBinaryBoolean(List<Formula> children, long id) {
         super(id);
         this.children=children;
     }
@@ -158,26 +159,13 @@ public abstract class FormulaBinaryBoolean extends Formula{
         		return false;
         	}
         	boolean eq=true;
-        	for(Formula child:children){
-        		boolean pendant=false;
-        		for(Formula child2:((FormulaBinaryBoolean)o).children){
-        			if(child.equals(child2)){
-        				pendant=true;
-        			}
-        		}
-        		if(!pendant){
-        			return false;
-        		}
+        	
+        	if(((FormulaBinaryBoolean)o).children.size()!=this.children.size()){
+        		return false;
         	}
         	
-        	for(Formula child2:((FormulaBinaryBoolean)o).children){
-        		boolean pendant=false;
-        		for(Formula child:children){
-        			if(child.equals(child2)){
-        				pendant=true;
-        			}
-        		}
-        		if(!pendant){
+        	for(int i=0;i<this.children.size();i++){
+        		if(this.children.get(i).get_id()!=((FormulaBinaryBoolean)o).children.get(i).get_id()){
         			return false;
         		}
         	}

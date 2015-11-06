@@ -44,13 +44,7 @@ public class FormulaFactory {
 		}
 		
 		Formula z=(new Conjunction(helper,next_identifier++)).simplifyLocally();
-		Formula inMap=formulae.get(z);
-		if(inMap==null){
-			formulae.put(z,z);
-			return z;
-		}else{
-			return inMap;
-		}
+		return probe(z);
 
 	}
 	
@@ -82,13 +76,7 @@ public class FormulaFactory {
 			return helper.get(0);
 		}
 		Formula z=(new Disjunction(helper,next_identifier++)).simplifyLocally();
-		Formula inMap=formulae.get(z);
-		if(inMap==null){
-			formulae.put(z,z);
-			return z;
-		}else{
-			return inMap;
-		}
+		return probe(z);
 
 	}
 	
@@ -107,75 +95,42 @@ public class FormulaFactory {
 	
 	
 	public static Formula mkConst(boolean t){
-		Formula z=new BooleanConstant(t,next_identifier);
-		Formula inMap=formulae.get(z);
-		if(inMap==null){
-			formulae.put(z,z);
-			next_identifier++;
-			return z;
-		}else{
-			return inMap;
-		}
+		Formula z=new BooleanConstant(t,next_identifier++);
+		return probe(z);
 	}
 	
 	public static Formula mkF(Formula child){
 		Formula z=new FOperator(child,next_identifier++).simplifyLocally();
-		Formula inMap=formulae.get(z);
-		if(inMap==null){
-			formulae.put(z, z);
-			return z;
-		}else{
-			return inMap;
-		}
+		return probe(z);
 	}
 	
 	public static Formula mkG(Formula child){
 		Formula z=new GOperator(child,next_identifier++).simplifyLocally();
-		Formula inMap=formulae.get(z);
-		if(inMap==null){
-			formulae.put(z, z);
-			return z;
-		}else{
-			return inMap;
-		}
+		return probe(z);
 	}
 	
 	public static Formula mkLit(String proposition, int atomId,boolean negated){
-		Formula z=new Literal(proposition,atomId,negated,next_identifier);
-		Formula inMap=formulae.get(z);
-		if(inMap==null){
-			formulae.put(z, z);
-			next_identifier++;
-			return z;
-		}else{
-			return inMap;
-		}
+		Formula z=new Literal(proposition,atomId,negated,next_identifier++);
+		return probe(z);
 	}
 	
 	public static Formula mkNot(Formula child){
 		Formula z=new Negation(child,next_identifier++).simplifyLocally();
-		Formula inMap=formulae.get(z);
-		if(inMap==null){
-			formulae.put(z, z);
-			return z;
-		}else{
-			return inMap;
-		}
+		return probe(z);
 	}
 	
 	public static Formula mkU(Formula l, Formula r){
-		Formula z=new UOperator(l,r,next_identifier++).simplifyLocally();
-		Formula inMap=formulae.get(z);
-		if(inMap==null){
-			formulae.put(z, z);
-			return z;
-		}else{
-			return inMap;
-		}
+		Formula z = new UOperator(l,r,next_identifier++).simplifyLocally();
+		return probe(z);
+		
 	}
 	
 	public static Formula mkX(Formula child){
-		Formula z=new XOperator(child,next_identifier++).simplifyLocally();
+		Formula z = new XOperator(child,next_identifier++).simplifyLocally();
+		return probe(z);
+	}
+	
+	private static Formula probe(Formula z) {
 		Formula inMap=formulae.get(z);
 		if(inMap==null){
 			formulae.put(z, z);

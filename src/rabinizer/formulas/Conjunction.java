@@ -1,6 +1,7 @@
 package rabinizer.formulas;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -17,9 +18,14 @@ import rabinizer.exec.Main;
  */
 public class Conjunction extends FormulaBinaryBoolean {
 
-    Conjunction(ArrayList<Formula> af, long id) {
+
+	private final int cachedHash;
+	
+    Conjunction(List<Formula> af, long id) {
         super(af,id);
+        this.cachedHash = init_hash();
     }
+        
 
 	@Override
     public Formula ThisTypeBoolean(ArrayList<Formula> af) {
@@ -47,17 +53,7 @@ public class Conjunction extends FormulaBinaryBoolean {
 
     @Override
     public int hashCode(){
-    	int offset=31607;
-    	int hash=1;
-    	long last_id=-1;
-    	for(Formula child:children){
-    		if(!(last_id==child.unique_id)){
-    			hash%=offset;
-    			hash=hash*(child.hashCode()%31601);
-    			last_id=child.unique_id;
-    		}
-    	}
-    	return hash% 999983;
+    	return cachedHash;
     }
     
     
@@ -67,7 +63,7 @@ public class Conjunction extends FormulaBinaryBoolean {
     	for(Formula child:children){
     		Formula new_child=child.removeConstants();
     		if(new_child instanceof BooleanConstant){
-    			if(!((BooleanConstant) new_child).value){
+    			if(!((BooleanConstant) new_child).get_value()){
     				return FormulaFactory.mkConst(false);
     			}
     		}else{
@@ -195,7 +191,7 @@ public class Conjunction extends FormulaBinaryBoolean {
 		for(Formula child: children){
 			fm=child.rmAllConstants();
 			if(fm instanceof BooleanConstant){
-				if(!((BooleanConstant) fm).value){
+				if(!((BooleanConstant) fm).get_value()){
 					return FormulaFactory.mkConst(false);
 				}
 			}else{
@@ -222,10 +218,12 @@ public class Conjunction extends FormulaBinaryBoolean {
 			list.set(i,list.get(i).simplifyLocally());
 		}
 		
+		
+		//should be already simplified
 		//simplify formulae
-		for(int i=0;i<list.size();i++){
+		/*for(int i=0;i<list.size();i++){
 			list.set(i,list.get(i).simplifyLocally());
-		}
+		}*/
 		
 		//remove dublicates
 		/*for(int i=0;i<list.size();i++){
@@ -239,7 +237,7 @@ public class Conjunction extends FormulaBinaryBoolean {
 		
 		for(int i=list.size()-1;i>=0;i--){
 			if(list.get(i) instanceof BooleanConstant){	
-				if(!((BooleanConstant) list.get(i)).value){
+				if(!((BooleanConstant) list.get(i)).get_value()){
 					return FormulaFactory.mkConst(false);
 				}
 				list.remove(i);
@@ -247,17 +245,7 @@ public class Conjunction extends FormulaBinaryBoolean {
 		}
 		
 		
-		if(helper.size()>1){
-			for(int i=0;i<helper.size();i++){
-				helper.set(i, ((GOperator) helper.get(i)).operand);
-			}
-			list.add(FormulaFactory.mkG(FormulaFactory.mkAnd(helper)).simplifyLocally());
-		}else if(helper.size()==1){
-			list.add(helper.get(0));
-		}
-		helper.clear();
-		
-				
+						
 		//put all Literals together (and check for trivial tautologies/contradictions like a and a /a and !a
 		for(int i=list.size()-1;i>=0;i--){
 			if(list.get(i) instanceof Literal){
@@ -268,7 +256,7 @@ public class Conjunction extends FormulaBinaryBoolean {
 		}
 		for(int i=0;i<helper.size();i++){
 			
-			for(int j=i+1;j<helper.size();j++){
+			for(int j=helper.size()-1;j>i;j--){
 				if(((Literal) helper.get(i)).atom.equals(((Literal) helper.get(j)).atom)){
 					if(((Literal) helper.get(i)).negated==(((Literal) helper.get(j)).negated)){
 						helper.remove(j);
@@ -341,6 +329,15 @@ public class Conjunction extends FormulaBinaryBoolean {
 		
 	}
 
-
+	private int init_hash() {
+		int offset=31607;
+    	int hash=1;
+    	for(Formula child:children){
+    		hash %= offset;
+    		hash = hash*(child.hashCode()%31601);
+    	}
+    	
+    	return (hash + 1103) % 999983;
+	}
 
 }
