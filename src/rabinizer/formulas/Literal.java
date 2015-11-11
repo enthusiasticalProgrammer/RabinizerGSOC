@@ -143,11 +143,6 @@ public class Literal extends FormulaNullary {
 		
 	}
 
-	@Override
-	public Formula simplifyLocally() {
-		return this;
-	}
-
 	public String getAtom() {
 		return atom;
 	}
@@ -161,6 +156,21 @@ public class Literal extends FormulaNullary {
 	
 	private int init_hash(){
 		return ((atom.hashCode() % 34483) *32363)+(negated? 97 : 167) % 999983;
+	}
+
+	@Override
+	public Formula acceptFormula(Formula_Visitor v) {
+		return v.visitL(this);
+	}
+
+	@Override
+	public boolean acceptBool(Attribute_Visitor v) {
+		return v.visitL(this);
+	}
+
+	@Override
+	public boolean acceptBinarybool(Attribute_Binary_Visitor v, Formula f) {
+		return v.visitL(this, f);
 	}
 
 

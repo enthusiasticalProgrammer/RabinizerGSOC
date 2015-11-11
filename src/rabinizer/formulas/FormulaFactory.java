@@ -11,6 +11,10 @@ public class FormulaFactory {
 	private static HashMap<Formula,Formula> formulae=new HashMap<Formula,Formula>();
 	private static long next_identifier=0;
 	
+	private static Simplify_Boolean_Visitor get_vis(){
+		return Simplify_Boolean_Visitor.getVisitor();
+	}
+	
 	
 	//For and/or, the output of the formula can be reverted
 	// because this makes Comparable easier
@@ -43,7 +47,7 @@ public class FormulaFactory {
 			return helper.get(0);
 		}
 		
-		Formula z=(new Conjunction(helper,next_identifier++)).simplifyLocally();
+		Formula z=(new Conjunction(helper,next_identifier++)).acceptFormula(get_vis());
 		return probe(z);
 
 	}
@@ -75,7 +79,7 @@ public class FormulaFactory {
 		}else if(helper.size()==1){
 			return helper.get(0);
 		}
-		Formula z=(new Disjunction(helper,next_identifier++)).simplifyLocally();
+		Formula z=(new Disjunction(helper,next_identifier++)).acceptFormula(get_vis());
 		return probe(z);
 
 	}
@@ -100,12 +104,12 @@ public class FormulaFactory {
 	}
 	
 	public static Formula mkF(Formula child){
-		Formula z=new FOperator(child,next_identifier++).simplifyLocally();
+		Formula z=new FOperator(child,next_identifier++).acceptFormula(get_vis());
 		return probe(z);
 	}
 	
 	public static Formula mkG(Formula child){
-		Formula z=new GOperator(child,next_identifier++).simplifyLocally();
+		Formula z=new GOperator(child,next_identifier++).acceptFormula(get_vis());
 		return probe(z);
 	}
 	
@@ -115,18 +119,18 @@ public class FormulaFactory {
 	}
 	
 	public static Formula mkNot(Formula child){
-		Formula z=new Negation(child,next_identifier++).simplifyLocally();
+		Formula z=new Negation(child,next_identifier++).acceptFormula(get_vis());
 		return probe(z);
 	}
 	
 	public static Formula mkU(Formula l, Formula r){
-		Formula z = new UOperator(l,r,next_identifier++).simplifyLocally();
+		Formula z = new UOperator(l,r,next_identifier++).acceptFormula(get_vis());
 		return probe(z);
 		
 	}
 	
 	public static Formula mkX(Formula child){
-		Formula z = new XOperator(child,next_identifier++).simplifyLocally();
+		Formula z = new XOperator(child,next_identifier++).acceptFormula(get_vis());
 		return probe(z);
 	}
 	

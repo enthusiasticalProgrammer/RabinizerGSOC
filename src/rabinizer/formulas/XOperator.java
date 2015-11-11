@@ -83,18 +83,26 @@ public class XOperator extends FormulaUnary {
 		return FormulaFactory.mkX(child);
 	}
 
-	@Override
-	public Formula simplifyLocally() {
-		if(operand instanceof BooleanConstant){
-			return operand;
-		}else{
-			return this;
-		}
-	}
-	
 	private int init_hash() {
 		return (((operand.hashCode() % 33791) * 32687) + 701) % 999983;
 	}
+
+	@Override
+	public Formula acceptFormula(Formula_Visitor v) {
+		return v.visitX(this);
+	}
+
+	@Override
+	public boolean acceptBool(Attribute_Visitor v) {
+		return v.visitX(this);
+	}
+
+	@Override
+	public boolean acceptBinarybool(Attribute_Binary_Visitor v, Formula f) {
+		return v.visitX(this, f);
+	}
+	
+	
 
 
 }

@@ -24,6 +24,7 @@ import rabinizer.bdd.AllValuations;
 import rabinizer.bdd.BDDForFormulae;
 import rabinizer.bdd.BDDForVariables;
 import rabinizer.formulas.Formula;
+import rabinizer.formulas.Simplify_Aggressively_Visitor;
 import rabinizer.parser.LTLParser;
 import rabinizer.parser.ParseException;
 
@@ -275,7 +276,7 @@ public class Main {
 			errorMessageAndExit("Exception when parsing: " + e.getLocalizedMessage());
 		}
 		nonsilent("Formula unsimplified: "+formula.toString());
-		formula=formula.simplifyLocally();
+		formula=formula.acceptFormula(Simplify_Aggressively_Visitor.getVisitor());
 		nonsilent("Formula simplified:"+formula.toString());
 		nonsilent("Input formula: " + formula);
 		if (postfix) {

@@ -57,6 +57,9 @@ SKIP :
 TOKEN : /* OPERATORS */
 {
   < FOP : "F" >
+| < VOP : "V" >
+| < ROP : "R" >
+| < WOP : "W" >
 | < GOP : "G" >
 | < XOP : "X" >
 | < NEG : "!" >
@@ -104,7 +107,7 @@ Formula disjunction() :
   (
     < OR > r = conjunction()
     {
-      result = new Disjunction(result, r);
+      result = FormulaFactory.mkOr(result, r);
     }
   )*
   {
@@ -122,7 +125,7 @@ Formula conjunction() :
   (
     < AND > r = until()
     {
-      result = new Conjunction(result, r);
+      result = FormulaFactory.mkAnd(result, r);
     }
   )*
   {
@@ -136,17 +139,72 @@ Formula until() :
   Formula r = null;
 }
 {
-  result = unaryOp()
+  result = release()
   (
-    < UOP > r = unaryOp()
+    < UOP > r = release()
     {
- 	  result = new UOperator(result, r);
+ 	  result = FormulaFactory.mkU(result, r);
     }
   )*
   {
     return result;
   }
 }
+
+Formula release() :
+{
+  Formula result;
+  Formula r = null;
+}
+{
+  result = releasewithv()
+  (
+    < ROP > r = releasewithv()
+    {
+ 	  result = FormulaFactory.mkNot(FormulaFactory.mkU(FormulaFactory.mkNot(result),FormulaFactory.mkNot(r)));
+    }
+  )*
+  {
+    return result;
+  }
+}
+
+Formula releasewithv() :
+{
+  Formula result;
+  Formula r = null;
+}
+{
+  result = weak()
+  (
+    < VOP > r = weak()
+    {
+ 	  result = FormulaFactory.mkNot(FormulaFactory.mkU(FormulaFactory.mkNot(result),FormulaFactory.mkNot(r)));
+    }
+  )*
+  {
+    return result;
+  }
+}
+
+Formula weak() :
+{
+  Formula result;
+  Formula r = null;
+}
+{
+  result = unaryOp()
+  (
+    < WOP > r = unaryOp()
+    {
+ 	  result = FormulaFactory.mkOr(FormulaFactory.mkU(result,r),FormulaFactory.mkG(result));
+    }
+  )*
+  {
+    return result;
+  }
+}
+
 
 //Formula negation() :
 //{
@@ -162,7 +220,7 @@ Formula until() :
 //*/
 //  f = tempOp()
 //  {
-//    if (neg) return f.negated();
+//    if (neg) return FormulaFactory.mkNot(f);
 //    else return f;
 //  }
 //}
@@ -174,19 +232,19 @@ Formula unaryOp() :
 {
   < FOP > f = unaryOp()
   {
-    return new FOperator(f);
+    return FormulaFactory.mkF(f);
   }
 | < GOP > f = unaryOp()
   {
-    return new GOperator(f);
+    return FormulaFactory.mkG(f);
   }
 | < XOP > f = unaryOp()
   {
-    return new XOperator(f);
+    return FormulaFactory.mkX(f);
   }
 | < NEG > f = unaryOp()
   {
-    return new Negation(f);
+    return FormulaFactory.mkNot(f);
   }  
 | f = atom()
   {
@@ -203,16 +261,16 @@ Formula atom() :
 {
   < TRUE >
   {
-	return new BooleanConstant(true);
+	return FormulaFactory.mkConst(true);
   }
 | < FALSE >
   {
-	return new BooleanConstant(false);
+	return FormulaFactory.mkConst(false);
   }
 | atomString = < ID >.image
   {
 	id = BDDForVariables.bijectionIdAtom.id(atomString);
-	return new Literal(atomString, id, false);
+	return FormulaFactory.mkLit(atomString, id, false);
   }
 | < LPAR > f = disjunction() < RPAR >
   {

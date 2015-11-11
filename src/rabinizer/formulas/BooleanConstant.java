@@ -94,19 +94,28 @@ public class BooleanConstant extends FormulaNullary {
 	}
 
 	@Override
-	public Formula simplifyLocally() {
-		return this;
-	}
-
-	@Override
 	public Formula setToConst(long id, boolean constant) {
 		return this;
 	}
 
-
 	
 	private int init_hash() {
 		return value ? 1 : 2;
+	}
+
+	@Override
+	public Formula acceptFormula(Formula_Visitor v) {
+		return v.visitB(this);
+	}
+
+	@Override
+	public boolean acceptBool(Attribute_Visitor v) {
+		return v.visitB(this);
+	}
+
+	@Override
+	public boolean acceptBinarybool(Attribute_Binary_Visitor v, Formula f) {
+		return v.visitB(this, f);
 	}
 
 }

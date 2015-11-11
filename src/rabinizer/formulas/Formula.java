@@ -162,17 +162,19 @@ public abstract class Formula {
     //so I write this method
     public abstract Formula rmAllConstants();
     
-    
-    //simplifies a formula such that it is easier to compute for Rabinizer
-    //used as f=f.simplifyLocally()
-    public abstract Formula simplifyLocally();
+
     
     //a.setToConst(id,true), return a if id is not a subformula of a
     //		and if id is a subformula of a, it replaces id with const
     //this is used to minimize expressions as a&phi(a) -->a&phi.setToConst(a.unique_id,true)
     // and a|phi(a)--> a|phi.setToConst(a.unique_id,false)
     public abstract Formula setToConst(long id,boolean constant);
-
+    
+    
+    //to realize the visitor pattern for different method signatures
+    public abstract Formula acceptFormula(Formula_Visitor v);
+    public abstract boolean acceptBool(Attribute_Visitor v);
+    public abstract boolean acceptBinarybool(Attribute_Binary_Visitor v,Formula f);
     
 
 }

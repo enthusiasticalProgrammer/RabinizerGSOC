@@ -126,34 +126,24 @@ public class GOperator extends FormulaUnary {
 		return FormulaFactory.mkG(child);
 	}
 
-	@Override
-	public Formula simplifyLocally() {
-		if(operand instanceof BooleanConstant) {
-			return operand;
-		}else if(operand instanceof GOperator) {
-			return operand;
-		}else if(operand instanceof XOperator) {
-			return FormulaFactory.mkX(FormulaFactory.mkG(((XOperator) operand).operand));
-		}else {
-			return this;
-		}
-	}
-	
-	@Override
-	public Formula setToConst(long id,boolean constant) {
-		if(id==unique_id){
-			return FormulaFactory.mkConst(constant);
-		}else if(!constant){
-			return FormulaFactory.mkG(operand.setToConst(id, constant)).simplifyLocally();
-		}else{
-			return this;
-		}
-	}
-
-
 	
 	private int init_hash() {
 		return (((operand.hashCode() % 35023) * 31277)+ 3109) % 999983;
+	}
+
+	@Override
+	public Formula acceptFormula(Formula_Visitor v) {
+		return v.visitG(this);
+	}
+
+	@Override
+	public boolean acceptBool(Attribute_Visitor v) {
+		return v.visitG(this);
+	}
+
+	@Override
+	public boolean acceptBinarybool(Attribute_Binary_Visitor v, Formula f) {
+		return v.visitG(this, f);
 	}
 
 }

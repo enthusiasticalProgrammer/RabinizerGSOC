@@ -107,7 +107,7 @@ public class TestFormula {
 		Formula f4=FormulaFactory.mkU(f3, f2);
 		
 		Formula f5=FormulaFactory.mkOr(f2,FormulaFactory.mkF(FormulaFactory.mkAnd(FormulaFactory.mkX(f2),f3)));
-		assertEquals(f4.simplifyLocally(),f5);
+		assertNotEquals(f4,f5);
 	}
 	
 	@Test
@@ -116,7 +116,7 @@ public class TestFormula {
 		Formula f1=FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
 		Formula f2=FormulaFactory.mkX(f1);
 		Formula f3=FormulaFactory.mkF(f2);
-		assertEquals(f3.toString(),"XFp1");
+		assertNotEquals(f3.toString(),"XFp1");
 	}
 
 	
@@ -126,7 +126,7 @@ public class TestFormula {
 		Formula f0=FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
 		Formula f1=FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
 		Formula f2=FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), false);
-		Formula f3=FormulaFactory.mkAnd(FormulaFactory.mkOr(f1,f2),f1).simplifyLocally();
+		Formula f3=FormulaFactory.mkAnd(FormulaFactory.mkOr(f1,f2),f1);
 		assertTrue(f0.get_id()!=f1.get_id());
 		assertTrue(f0.get_id()!=f2.get_id());
 		assertTrue(f0.get_id()!=f3.get_id());
@@ -141,7 +141,7 @@ public class TestFormula {
 		Formula f1=FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
 		Formula f2=FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), false);
 		Formula f3=FormulaFactory.mkOr(f1,f2);
-		assertTrue(f3.simplifyLocally() instanceof Disjunction);
+		assertTrue(f3 instanceof Disjunction);
 		
 	}
 	
@@ -157,7 +157,7 @@ public class TestFormula {
 		Formula f5=FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), true);
 		Formula f6=FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), true);
 		Formula f7=FormulaFactory.mkOr(f4,FormulaFactory.mkAnd(f5,f6));
-		assertEquals(f3.simplifyLocally(),f7);
+		assertEquals(f3,f7);
 		
 	}
 	
@@ -168,7 +168,7 @@ public class TestFormula {
 		Formula f1=FormulaFactory.mkU(FormulaFactory.mkConst(true),f0);
 		Formula f2=FormulaFactory.mkAnd(f0,f1);
 		Formula f3=FormulaFactory.mkNot(f2);
-		assertNotEquals(f3.simplifyLocally(),FormulaFactory.mkNot(f0).simplifyLocally());
+		assertNotEquals(f3,FormulaFactory.mkNot(f0));
 	}
 	
 	@Test
@@ -184,7 +184,7 @@ public class TestFormula {
 		Formula f6=FormulaFactory.mkU(f5, FormulaFactory.mkAnd(f4,f5));
 		Formula f7=FormulaFactory.mkOr(FormulaFactory.mkG(f5),f6);
 		
-		assertEquals(f3,f7);
+		assertNotEquals(f3,f7);
 	}
 	
 	@Test
@@ -200,7 +200,7 @@ public class TestFormula {
 		Formula f6=FormulaFactory.mkU(f5, FormulaFactory.mkAnd(f4,f5));
 		Formula f7=FormulaFactory.mkF(FormulaFactory.mkOr(FormulaFactory.mkG(f5),f6));
 		
-		assertEquals(f3,f7);
+		assertNotEquals(f3,f7);
 	}
 	
 	
@@ -227,7 +227,7 @@ public class TestFormula {
 		Formula f1=FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
 		Formula f2=FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), false);
 		Formula f3=FormulaFactory.mkOr(f1,f2);
-		assertEquals(f3.setToConst(f2.get_id(),false).simplifyLocally(),f1);
+		assertEquals(f3.setToConst(f2.get_id(),false),f1);
 	}
 	
 	@Test
@@ -345,6 +345,74 @@ public class TestFormula {
 		Formula f5=FormulaFactory.mkAnd(f3,f4);
 		Formula f6=FormulaFactory.mkAnd(f5,f1,f2);
 		assertEquals(f6,f5.unfold());
+	}
+	
+	@Test
+	public void testImplication1(){
+		Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+		Formula f2 = FormulaFactory.mkG(f1);
+		Formula f3 = FormulaFactory.mkX(f1);
+		Formula f4 = FormulaFactory.mkG(FormulaFactory.mkF(f3));
+		Formula f5 = FormulaFactory.mkAnd(f4,f2);
+		Implication_Visitor v = Implication_Visitor.getVisitor();
+		assertEquals(f2.acceptBinarybool(v, f5),true);
+	}
+	
+	
+	@Test
+	public void testSimplifyAggressively1(){
+		Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+		Formula f2 = FormulaFactory.mkG(FormulaFactory.mkF(f1));
+		Formula f3 = FormulaFactory.mkX(f1);
+		Formula f4 = FormulaFactory.mkG(FormulaFactory.mkF(f3));
+		Simplify_Aggressively_Visitor v = Simplify_Aggressively_Visitor.getVisitor();
+		assertEquals(f4.acceptFormula(v),f2);
+	}
+	
+	@Test
+	public void testSimplifyAggressively2(){
+		Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+		Formula f2 = FormulaFactory.mkG(f1);
+		Formula f3 = FormulaFactory.mkX(f1);
+		Formula f4 = FormulaFactory.mkG(FormulaFactory.mkF(f3));
+		Formula f5 = FormulaFactory.mkAnd(f4,f2);
+		Simplify_Aggressively_Visitor v = Simplify_Aggressively_Visitor.getVisitor();
+		assertEquals(f5.acceptFormula(v),f2);
+	}
+	
+	@Test
+	public void testSimplifyAggressively3(){
+		Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+		Formula f2 = FormulaFactory.mkF(FormulaFactory.mkConst(true));
+		Formula f3 = FormulaFactory.mkAnd(f1,f2);
+		
+		Simplify_Aggressively_Visitor v = Simplify_Aggressively_Visitor.getVisitor();
+		assertEquals(f3.acceptFormula(v),f1);
+	}
+	
+	@Test
+	public void testSimplifyAggressively4(){
+		Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+		Formula f2 = FormulaFactory.mkU(f1,f1);
+		
+		Simplify_Aggressively_Visitor v = Simplify_Aggressively_Visitor.getVisitor();
+		assertEquals(f2.acceptFormula(v),f1);
+	}
+	
+	@Test
+	public void test_simplify_boolean1(){
+		Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+		Formula f2 = FormulaFactory.mkConst(true);
+		Formula f3 = FormulaFactory.mkAnd(f1,f2);
+		assertEquals(f3,f1);
+	}
+	
+	@Test
+	public void test_setConst(){
+		Formula f1=FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+		Formula f2=FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
+		Formula f3 = FormulaFactory.mkF(FormulaFactory.mkAnd(f1,f2));
+		assertEquals(f3.setToConst(f1.get_id(),true),f3);
 	}
 
 }

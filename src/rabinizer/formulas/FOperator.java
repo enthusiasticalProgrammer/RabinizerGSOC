@@ -92,36 +92,33 @@ public class FOperator extends FormulaUnary {
     		return FormulaFactory.mkConst(constant);
     	}else{
     		if(constant){
-    			Formula child=operand.setToConst(id, constant);
-    			if(child==operand){
-    				return this;
-    			}else{
-    				return FormulaFactory.mkF(child);
+    			if(operand.get_id()==id){
+    				return FormulaFactory.mkConst(constant);
     			}
     		}
     		return this;
     	}
     }
 
-	@Override
-	public Formula simplifyLocally() {
-		if(operand instanceof BooleanConstant){
-			return operand;
-		}else if(operand instanceof UOperator){
-			return FormulaFactory.mkF(((UOperator) operand).right).simplifyLocally();
-		}else if(operand instanceof FOperator){
-			return operand;
-		}else if(operand instanceof XOperator){
-			return FormulaFactory.mkX(FormulaFactory.mkF(((XOperator)operand).operand));
-		}
-		else{
-			return this;
-		}
-	}
 
 	
 	private int init_hash() {
 		return (((operand.hashCode() % 34211) * 32213) + 3499) % 999983;
+	}
+
+	@Override
+	public Formula acceptFormula(Formula_Visitor v) {
+		return v.visitF(this);
+	}
+
+	@Override
+	public boolean acceptBool(Attribute_Visitor v) {
+		return v.visitF(this);
+	}
+
+	@Override
+	public boolean acceptBinarybool(Attribute_Binary_Visitor v, Formula f) {
+		return v.visitF(this, f);
 	}
 
 

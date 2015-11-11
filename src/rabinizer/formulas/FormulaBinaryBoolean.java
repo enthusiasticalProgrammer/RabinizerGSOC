@@ -158,7 +158,6 @@ public abstract class FormulaBinaryBoolean extends Formula{
         	if(!o.getClass().equals(getClass())||o.hashCode()!=this.hashCode()){
         		return false;
         	}
-        	boolean eq=true;
         	
         	if(((FormulaBinaryBoolean)o).children.size()!=this.children.size()){
         		return false;

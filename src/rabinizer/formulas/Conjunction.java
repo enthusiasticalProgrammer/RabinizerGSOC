@@ -1,6 +1,8 @@
 package rabinizer.formulas;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.microsoft.z3.BoolExpr;
@@ -80,20 +82,7 @@ public class Conjunction extends FormulaBinaryBoolean {
 
     @Override
     public boolean ignoresG(Formula f) {
-//        if (!left.isVeryDifferentFrom(right)) {
-//            //System.out.println("$$$$$$not very different$$$$"+this);
-//            return false;
-//        }
-//        if (left.equals(f.unfold()) && right.isUnfoldOfF() && !right.containsG()
-//            || right.equals(f.unfold()) && left.isUnfoldOfF() && !left.containsG()) {
-//            //System.out.println("$$$$$$"+left+"$$$$"+right+"$$$susp "+f);
-//            return true;					// independent waiting formula
-//        } else {
-//            return left.ignoresG(f) && right.ignoresG(f); 	// don't know yet
-//        }
-    	Main.verboseln("in ignoresG(Conjunction), me: "+this);
     	boolean isTransientwrt=!hasSubformula(f);
-    	Main.verboseln("i don't have the subformula: "+isTransientwrt);
     	boolean result=true;
     	for(int i=0;i<children.size();i++){
     		for(int j=i+1;j<children.size();j++){
@@ -207,103 +196,9 @@ public class Conjunction extends FormulaBinaryBoolean {
 		}
 	}
 
-	@Override
-	public Formula simplifyLocally() {
-		//first of all, get all subformulae beyound Conjunction(e.g. for c and (a and b)
-		//I want a,b, and c, because you can simplify it more
 		
-		ArrayList<Formula> list=getAllChildrenOfConjunction();
-		ArrayList<Formula> helper=new ArrayList<Formula>();
-		for(int i=0;i<list.size();i++){
-			list.set(i,list.get(i).simplifyLocally());
-		}
-		
-		
-		//should be already simplified
-		//simplify formulae
-		/*for(int i=0;i<list.size();i++){
-			list.set(i,list.get(i).simplifyLocally());
-		}*/
-		
-		//remove dublicates
-		/*for(int i=0;i<list.size();i++){
-			for(int j=list.size()-1;j>i;j--){
-				if(list.get(i).get_id()==list.get(j).get_id()){
-					list.remove(j);
-				}
-			}
-		}*/
-		
-		
-		for(int i=list.size()-1;i>=0;i--){
-			if(list.get(i) instanceof BooleanConstant){	
-				if(!((BooleanConstant) list.get(i)).get_value()){
-					return FormulaFactory.mkConst(false);
-				}
-				list.remove(i);
-			}
-		}
-		
-		
-						
-		//put all Literals together (and check for trivial tautologies/contradictions like a and a /a and !a
-		for(int i=list.size()-1;i>=0;i--){
-			if(list.get(i) instanceof Literal){
-				helper.add(list.get(i));
-				list.remove(i);
-				
-			}
-		}
-		for(int i=0;i<helper.size();i++){
-			
-			for(int j=helper.size()-1;j>i;j--){
-				if(((Literal) helper.get(i)).atom.equals(((Literal) helper.get(j)).atom)){
-					if(((Literal) helper.get(i)).negated==(((Literal) helper.get(j)).negated)){
-						helper.remove(j);
-					}else{
-						return FormulaFactory.mkConst(false);
-					}
-				}
-			}
-		}
-		list.addAll(helper);
-		
-		if(list.size()==0){
-			return FormulaFactory.mkConst(true);
-		}else if(list.size()==1){
-			return list.get(0);
-		}else{
-			//compare list and children and only make a new con-
-			//junction if both are different (circumventing a stackoverflow)
-			if(list.size()!=children.size()){
-				return FormulaFactory.mkAnd(list);
-			}
-			
-			//Therefore list has to be ordered
-			for(int i=0;i<list.size();i++){
-				for(int j=i+1;j<list.size();j++){
-					if(list.get(i).get_id()>list.get(j).get_id()){
-						Formula swap=list.get(i);
-						list.set(i,list.get(j));
-						list.set(j, swap);
-					}
-				}
-				
-			}
-			
-			for(int i=0;i<list.size();i++){
-				if(list.get(i).get_id()!=children.get(i).get_id()){
-					return FormulaFactory.mkAnd(list);
-				}
-			}
-			
-			return this;
-		}
-		
-	}
-	
-	//helps for simplifyLocally()
-	private ArrayList<Formula> getAllChildrenOfConjunction(){
+	//helps the Simplify_Boolean_Visitor
+	protected ArrayList<Formula> getAllChildrenOfConjunction(){
 		ArrayList<Formula> al=new ArrayList<Formula>();
 		for(Formula child: children){
 			if(child instanceof Conjunction){
@@ -314,16 +209,11 @@ public class Conjunction extends FormulaBinaryBoolean {
 		}
 		
 		//sort them according to unique_id:
-		Formula swap;
-		for(int i=0;i<al.size();i++){
-			for(int j=0;j<al.size();j++){
-				if(al.get(i).unique_id>al.get(j).unique_id){
-					swap=al.get(i);
-					al.set(i,al.get(j));
-					al.set(j,swap);
-				}
-			}
-		}
+		Collections.sort(al, new Comparator<Formula>(){
+		    public int compare(Formula f1, Formula f2) {
+		        return Long.compare(f1.get_id(),f2.get_id());
+		    }
+		});
 		
 		return al;
 		
@@ -338,6 +228,24 @@ public class Conjunction extends FormulaBinaryBoolean {
     	}
     	
     	return (hash + 1103) % 999983;
+	}
+
+
+	@Override
+	public Formula acceptFormula(Formula_Visitor v) {
+		return v.visitC(this);
+	}
+
+
+	@Override
+	public boolean acceptBool(Attribute_Visitor v) {
+		return v.visitC(this);
+	}
+
+
+	@Override
+	public boolean acceptBinarybool(Attribute_Binary_Visitor v, Formula f) {
+		return v.visitC(this, f);
 	}
 
 }

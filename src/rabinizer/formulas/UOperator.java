@@ -124,34 +124,6 @@ public class UOperator extends FormulaBinary {
 		return FormulaFactory.mkU(l,r);
 	}
 
-	@Override
-	public Formula simplifyLocally() {
-		
-		if(right instanceof BooleanConstant){
-			return right;
-		}else if(left instanceof BooleanConstant){
-			if(((BooleanConstant) left).get_value()){
-				return FormulaFactory.mkF(right);
-			}else{
-				return right;
-			}
-		}else if(right instanceof FOperator){
-			return right;
-		}else if(left instanceof FOperator){
-			return FormulaFactory.mkOr(right,FormulaFactory.mkF(FormulaFactory.mkAnd(FormulaFactory.mkX(right),left)));
-		}else if(left instanceof Literal && right instanceof Literal){
-			if(((Literal) left).atom.equals(((Literal) right).atom)){
-				if((((Literal) left).negated)==(((Literal) right).negated)){
-					return FormulaFactory.mkConst(true);
-				}
-			}
-		}else if(left instanceof GOperator){
-			return FormulaFactory.mkOr(FormulaFactory.mkAnd(left,FormulaFactory.mkF(right)),right);
-		}else if(left instanceof XOperator && right instanceof XOperator){
-			return FormulaFactory.mkX(FormulaFactory.mkU(((XOperator) left).operand,((XOperator) right).operand));
-		}
-		return this;
-	}
 
 	@Override
 	public Formula setToConst(long id, boolean constant) {
@@ -185,6 +157,27 @@ public class UOperator extends FormulaBinary {
 	
 	private int init_hash() {
 		return (((left.hashCode() % 33767) * (right.hashCode() % 33049)) + 2141)% 999983;
+	}
+
+
+
+	@Override
+	public Formula acceptFormula(Formula_Visitor v) {
+		return v.visitU(this);
+	}
+
+
+
+	@Override
+	public boolean acceptBool(Attribute_Visitor v) {
+		return v.visitU(this);
+	}
+
+
+
+	@Override
+	public boolean acceptBinarybool(Attribute_Binary_Visitor v, Formula f) {
+		return v.visitU(this, f);
 	}
 	
 
