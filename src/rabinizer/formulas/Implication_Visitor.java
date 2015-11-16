@@ -29,6 +29,9 @@ private static Implication_Visitor instance = new Implication_Visitor();
 
 	@Override
 	public boolean visitC(Conjunction c, Formula fo) {
+		if(c.get_id()==fo.get_id()){
+			return true;
+		}
 		if(fo instanceof Conjunction){
 			boolean imp=true;
 			for(Formula fochild:((Conjunction) fo).children){
@@ -50,6 +53,9 @@ private static Implication_Visitor instance = new Implication_Visitor();
 
 	@Override
 	public boolean visitD(Disjunction d, Formula fo) {
+		if(d.get_id()==fo.get_id()){
+			return true;
+		}
 		boolean imp=true;
 		for(Formula child: d.children){
 			imp=imp && child.acceptBinarybool(this, fo);
@@ -59,6 +65,9 @@ private static Implication_Visitor instance = new Implication_Visitor();
 
 	@Override
 	public boolean visitF(FOperator f, Formula fo) {
+		if(f.get_id()==fo.get_id()){
+			return true;
+		}
 		if(fo instanceof FOperator){
 			return f.operand.acceptBinarybool(this, ((FOperator) fo).operand);
 		}
@@ -67,6 +76,9 @@ private static Implication_Visitor instance = new Implication_Visitor();
 
 	@Override
 	public boolean visitG(GOperator g, Formula fo) {
+		if(g.get_id()==fo.get_id()){
+			return true;
+		}
 		if(fo.get_id()==g.operand.get_id()){
 			return true;
 		}
@@ -130,16 +142,26 @@ private static Implication_Visitor instance = new Implication_Visitor();
 
 	@Override
 	public boolean visitU(UOperator u, Formula fo) {
+		if(u.get_id()==fo.get_id()){
+			return true;
+		}
 		if(fo instanceof UOperator){
 			return u.left.acceptBinarybool(this,((UOperator) fo).left)
 					&& u.right.acceptBinarybool(this, ((UOperator) fo).right);
+		}else if (fo instanceof FOperator){
+			return u.right.acceptBinarybool(this,((FOperator) fo).operand);
+		}else{
+			return FormulaFactory.mkAnd(u.left,u.right).acceptFormula(Simplify_Aggressively_Visitor.getVisitor()).
+					acceptBinarybool(this,fo);
 		}
-		Formula F=FormulaFactory.mkF(u.right).acceptFormula(Simplify_Aggressively_Visitor.getVisitor());
-		return F.acceptBinarybool(this, fo);
+		
 	}
 
 	@Override
 	public boolean visitX(XOperator x, Formula fo) {
+		if(x.get_id()==fo.get_id()){
+			return true;
+		}
 		if(fo instanceof BooleanConstant){
 			return ((BooleanConstant) fo).get_value();
 		}else if(fo instanceof Conjunction){
