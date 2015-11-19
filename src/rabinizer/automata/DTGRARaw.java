@@ -91,26 +91,6 @@ public class DTGRARaw /*implements AccAutomatonInterface*/ {
         }
     }
 
-    /*
-    public String accTGR() {
-        return accTGR.toString();
-    }
-
-    public String toDotty() {
-        return automaton.toDotty();
-    }
     
-    public String toHOA() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    public String acc() {
-        return accTGR.toString();
-    }
-
-    public int size() {
-        return automaton.size();
-    }  
-    */
     
 }

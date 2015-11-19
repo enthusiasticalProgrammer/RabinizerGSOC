@@ -226,5 +226,8 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
         }
         return result;
     }
+    
+    
+
 
 }

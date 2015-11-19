@@ -45,8 +45,8 @@ public class Main {
 	}
 
 	public static boolean verbose = false;
-	public static boolean silent = false;
-	private static long clock = 0, clock2;
+	public static boolean silent  = false;
+	private static long clock     = 0, clock2;
 
 	public static void verboseln(String s) {
 		if (verbose) {
@@ -67,24 +67,34 @@ public class Main {
 
 	public static void printUsage() {
 		System.out.println("\n" + "Usage: rabinizer [options] <ltlfile>\n" + "Options:\n"
-				+ "   -help         : print this help and exit\n"
-				+ "   -postfix      : dump formula in reverse Polish notation and exit\n"
-				+ "   -silent       : silent terminal output, no messages, only the result\n\n"
+				+ "   -help                       : print this help and exit\n"
+				+ "   -postfix                    : dump formula in reverse Polish notation and exit\n"
+				+ "   -silent                     : silent terminal output, no messages, only the result\n\n"
 				// + " -verbose : verbose terminal output for debugging\n"
-				+ "   -auto=tgr     : creates generalized Rabin automaton with condition on transitions (default)\n"
-				+ "   -auto=sgr     : creates generalized Rabin automaton with condition on states\n"
-				+ "   -auto=tr      : creates Rabin automaton with condition on transitions\n"
-				+ "   -auto=sr      : creates Rabin automaton with condition on states\n"
+				+ "   -auto=tgr                   : creates generalized Rabin automaton with condition on transitions (default)\n"
+				+ "   -auto=sgr                   : creates generalized Rabin automaton with condition on states\n"
+				+ "   -auto=tr                    : creates Rabin automaton with condition on transitions\n"
+				+ "   -auto=sr                    : creates Rabin automaton with condition on states\n"
 				// + " -auto=buchi : creates Rabin automaton with condition on
 				// states\n"
-				+ "   -format=hoa   : HOA (Hanoi omega-automata) format \n"
-				+ "   -format=dot   : dotty format (default)\n" + "   -format=size  : print only size of automaton\n"
-				+ "   -how=isabelle : stick to mechanically proven construction\n"
-				+ "   -how=optimize : use optimizations (default) \n"
-				+ "   -in=formula   : formula is input as an argument (default)\n"
-				+ "   -in=file      : batch processing of one or more formula per line in the file passed as an argument\n"
-				+ "   -out=file     : print automaton to file(s) (default)\n"
-				+ "   -out=std      : print automaton to terminal\n\n");
+				+ "   -format=hoa                 : HOA (Hanoi omega-automata) format \n"
+				+ "   -format=dot                 : dotty format (default)\n" + "   -format=size  : print only size of automaton\n"
+				+ "   -how=isabelle               : stick to mechanically proven construction\n"
+				+ "   -how=optimize               : use optimizations (default) \n"
+				+ "   -eager                      : use eager optimizations, default if optimize\n"
+				+ "   -not-eager                  : do not use eager optimizations, default if isabelle \n"
+				+ "   -simplify-formula           : simplify the formula, default \n"
+				+ "   -not-simplify-formula       : do not simplify the formula \n"
+				+ "   -relevant-slaves-only       : computes only relevant slaves, default if optimize \n"
+				+ "   -all-slaves                 : computes all slaves, default if isabelle \n"
+				+ "   -sinks-on                   : uses the sink-optimization for Mojmir slaves, default if optimize\n"
+				+ "   -sinks-off                  : does not use the sink-optimization, default if isabelle \n"
+				+ "   -optimize-initial-state     : remove transient pair in Rabin Slave, default if optimize\n"
+				+ "   -not-optimize-initial-state : does not remove transient pair in Rabin Slave, default if isabelle \n"
+				+ "   -in=formula                 : formula is input as an argument (default)\n"
+				+ "   -in=file                    : batch processing of one or more formula per line in the file passed as an argument\n"
+				+ "   -out=file                   : print automaton to file(s) (default)\n"
+				+ "   -out=std                    : print automaton to terminal\n\n");
 	}
 
 	public static double stopwatch() {
@@ -104,11 +114,15 @@ public class Main {
 		// Parsing arguments
 		AutomatonType type = AutomatonType.TGR;
 		Format format = Format.DOT;
-		boolean optimize = true;
 		boolean inFormula = true;
 		boolean outFile = true;
 		String argument = null;
 		boolean postfix = false;
+		boolean simplifyFormula = true;
+		boolean eager = true;
+		boolean relSlavesOnly = true;
+		boolean sinks_on = true; 
+		boolean opt_init = true;
 
 		for (String arg : args) {
 			if (arg.equals("-h") || arg.equals("--h") || arg.equals("-help") || arg.equals("--help")) {
@@ -137,9 +151,12 @@ public class Main {
 			} else if (arg.equals("-format=sizeacc") || arg.equals("--format=sizeacc")) {
 				format = Format.SIZEACC;
 			} else if (arg.equals("-how=isabelle") || arg.equals("--how=isabelle")) {
-				optimize = false;
+				eager = false;
+				sinks_on = false;
+				relSlavesOnly = false;
+				opt_init = false;
 			} else if (arg.equals("-how=optimize") || arg.equals("--how=optimize")) {
-				optimize = true;
+				eager = true;
 			} else if (arg.equals("-in=formula") || arg.equals("--in=formula")) {
 				inFormula = true;
 			} else if (arg.equals("-in=file") || arg.equals("--in=file")) {
@@ -150,6 +167,26 @@ public class Main {
 				outFile = false;
 			} else if (arg.equals("-postfix") || arg.equals("--postfix")) {
 				postfix = true;
+			}else if (arg.equals("-simplify-formula") || arg.equals("--simplify-formula")) {
+				simplifyFormula = true;
+			}else if (arg.equals("-not-simplify-formula") || arg.equals("--not-simplify-formula")) {
+				simplifyFormula = false;
+			}else if (arg.equals("-eager") || arg.equals("--eager")) {
+				eager = true;
+			}else if (arg.equals("-not-eager") || arg.equals("--not-eager")) {
+				eager = false;
+			}else if (arg.equals("-relevant-slaves-only") || arg.equals("--relevant-slaves-only")) {
+				relSlavesOnly = true;
+			}else if (arg.equals("-all-slaves") || arg.equals("--all-slaves")) {
+				relSlavesOnly = false;
+			}else if (arg.equals("-sinks-on") || arg.equals("--sinks-on")) {
+				sinks_on = true;
+			}else if (arg.equals("-sinks-off") || arg.equals("--sinks-off")) {
+				sinks_on = false;
+			}else if (arg.equals("-optimize-initial-state") || arg.equals("--optimize-initial-state")) {
+				opt_init = true;
+			}else if (arg.equals("-not-optimize-initial-state") || arg.equals("--not-optimize-initial-state")) {
+				opt_init = false;
 			} else if (arg.substring(0, 1).equals("-")) {
 				System.out.println("\n\nERROR: unknown option " + arg);
 				printUsage();
@@ -223,7 +260,7 @@ public class Main {
 			stopwatch();
 
 			AccAutomatonInterface automaton = computeAutomaton(input, type,
-					format != Format.SIZE || type != AutomatonType.TGR, postfix, optimize);
+					format != Format.SIZE || type != AutomatonType.TGR, postfix, eager, simplifyFormula, sinks_on, relSlavesOnly, opt_init);
 
 			nonsilent("Time for construction: " + stopwatch() + " s");
 			nonsilent("Outputting DGRA");
@@ -264,7 +301,8 @@ public class Main {
 	}
 
 	public static AccAutomatonInterface computeAutomaton(String input, AutomatonType type, boolean computeAcc,
-			boolean postfix, boolean optimize) {
+			boolean postfix, boolean eager, boolean simplify,
+			boolean sinks_on, boolean relSlavesOnly, boolean opt_init) {
 		// BDDForVariables.bijectionIdAtom = new BijectionIdAtom(); // fresh
 		// variables for each formula
 
@@ -275,10 +313,13 @@ public class Main {
 		} catch (ParseException e) {
 			errorMessageAndExit("Exception when parsing: " + e.getLocalizedMessage());
 		}
-		nonsilent("Formula unsimplified: "+formula.toString());
-		formula=formula.acceptFormula(Simplify_Aggressively_Visitor.getVisitor());
-		nonsilent("Formula simplified:"+formula.toString());
-		nonsilent("Input formula: " + formula);
+		if(simplify){
+			nonsilent("Formula unsimplified: "+formula.toString());
+			formula=formula.acceptFormula(Simplify_Aggressively_Visitor.getVisitor());
+			nonsilent("Formula simplified:"+formula.toString());
+		}else{
+			nonsilent("Input formula: " + formula);
+		}
 		if (postfix) {
 			System.out.println("Input formula in postfix format:\n" + formula.toReversePolishString());
 			return null;
@@ -291,21 +332,14 @@ public class Main {
 		AllValuations.initializeValuations(BDDForVariables.bijectionIdAtom.size());
 		BDDForFormulae.init();
 
-		boolean unfoldedOn = true;
-		boolean sinksOn = true;
-		boolean optimizeInitialStatesOn = true;
-		boolean relevantSlavesOnlyOn = true;
+		boolean unfoldedOn = eager;
 		boolean slowerIsabelleAccForUnfolded = false;
 
-		if (!optimize) {
-			unfoldedOn = false;
-			optimizeInitialStatesOn = false;
-			relevantSlavesOnlyOn = false;
-		}
+		
 
 		// DGRA dgra = new DTGRA(phi); for optimized
-		DTGRARaw dtgra = new DTGRARaw(formula, computeAcc, unfoldedOn, sinksOn, optimizeInitialStatesOn,
-				relevantSlavesOnlyOn, slowerIsabelleAccForUnfolded);
+		DTGRARaw dtgra = new DTGRARaw(formula, computeAcc, unfoldedOn, sinks_on, opt_init,
+				relSlavesOnly, slowerIsabelleAccForUnfolded);
 		switch (type) {
 			case TGR:
 				return new DTGRA(dtgra);
