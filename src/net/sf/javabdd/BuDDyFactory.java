@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -144,10 +145,10 @@ public class BuDDyFactory extends BDDFactory {
      * @param c  collection of BuDDyBDD's
      * @return  int array of indices
      */
-    private static int[] toBuDDyArray(Collection c) {
+    private static int[] toBuDDyArray(Collection<BDD> c) {
         int[] a = new int[c.size()];
         int k = 0;
-        for (Iterator i = c.iterator(); k < a.length; ++k) {
+        for (Iterator<BDD> i = c.iterator(); k < a.length; ++k) {
             BuDDyBDD b = (BuDDyBDD) i.next();
             a[k] = b._id;
         }
@@ -157,7 +158,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDFactory#buildCube(int, java.util.List)
      */
-    public BDD buildCube(int value, List var) {
+    public BDD buildCube(int value, List<BDD> var) {
         int[] a = toBuDDyArray(var);
         int id = buildCube0(value, a);
         return makeBDD(id);
@@ -546,7 +547,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDFactory#nodeCount(java.util.Collection)
      */
-    public int nodeCount(Collection r) {
+    public int nodeCount(Collection<BDD> r) {
         int[] a = toBuDDyArray(r);
         return nodeCount0(a);
     }
@@ -882,12 +883,7 @@ public class BuDDyFactory extends BDDFactory {
         }
         private static native int satOne1(int b, int c, int d);
         
-        /* (non-Javadoc)
-         * @see net.sf.javabdd.BDD#allsat()
-         */
-        public List allsat() {
-            return Arrays.asList(allsat0(_id));
-        }
+        
         private static native byte[][] allsat0(int b);
         
         /* (non-Javadoc)

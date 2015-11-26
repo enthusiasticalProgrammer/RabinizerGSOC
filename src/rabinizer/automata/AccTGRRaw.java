@@ -16,7 +16,11 @@ import rabinizer.formulas.Formula;
  */
 public class AccTGRRaw extends HashSet<GRabinPairRaw> {
 
-    private final TranSet<ProductState> allTrans;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 245172601429256815L;
+	private final TranSet<ProductState> allTrans;
 
     public AccTGRRaw() {
         super();
@@ -40,8 +44,8 @@ public class AccTGRRaw extends HashSet<GRabinPairRaw> {
             Main.verboseln("\tGSet " + gSet);
             for (Map<Formula, Integer> ranking : accLocal.accMasterOptions.get(gSet).keySet()) {
                 Main.verboseln("\t  Ranking " + ranking);
-                TranSet<ProductState> Fin = new TranSet();
-                Set<TranSet<ProductState>> Infs = new HashSet();
+                TranSet<ProductState> Fin = new TranSet<ProductState>();
+                Set<TranSet<ProductState>> Infs = new HashSet<TranSet<ProductState>>();
                 Fin.addAll((TranSet<ProductState>) accLocal.accMasterOptions.get(gSet).get(ranking).left);
                 for (Formula f : gSet) {
                     GSet localGSet = new GSet(gSet);
@@ -98,9 +102,9 @@ public class AccTGRRaw extends HashSet<GRabinPairRaw> {
         Main.verboseln(phase + ". Removing complete Ii in (F, {I1,...,In}), i.e. Ii U F = Q \n");
         temp = new AccTGRRaw();
         for (GRabinPairRaw pair : this) {
-            copy = new HashSet(pair.right);
+            copy = new HashSet<TranSet<ProductState>>(pair.right);
             for (TranSet<ProductState> i : pair.right) {
-                TranSet<ProductState> iUf = new TranSet();
+                TranSet<ProductState> iUf = new TranSet<ProductState>();
                 if (iUf.addAll(i).addAll(pair.left).equals(allTrans)) {
                     copy.remove(i);
                     break;
@@ -116,10 +120,10 @@ public class AccTGRRaw extends HashSet<GRabinPairRaw> {
         Main.verboseln(phase + ". Removing F from each Ii: (F, {I1,...,In}) |-> (F, {I1\\F,...,In\\F})\n");
         temp = new AccTGRRaw();
         for (GRabinPairRaw pair : this) {
-            copy = new HashSet(pair.right);
+            copy = new HashSet<TranSet<ProductState>>(pair.right);
             for (TranSet<ProductState> i : pair.right) {
                 copy.remove(i);         //System.out.println("101:::::::"+i);
-                TranSet<ProductState> inew = new TranSet();
+                TranSet<ProductState> inew = new TranSet<ProductState>();
                 inew.addAll(i);          //System.out.println("105TEMP-BEFORE"+temp+"\n=====");
                 inew.removeAll(pair.left); //System.out.println("105TEMP-BETWEEN"+temp+"\n=====");
                 copy.add(inew);         //System.out.println("103TEMP-AFTER"+temp);
@@ -148,7 +152,7 @@ public class AccTGRRaw extends HashSet<GRabinPairRaw> {
         Main.verboseln(phase + ". Removing redundant Ii: (F, I) |-> (F, { i | i in I and !\\exists j in I : Ij <= Ii })\n");
         temp = new AccTGRRaw();
         for (GRabinPairRaw pair : this) {
-            copy = new HashSet(pair.right);
+            copy = new HashSet<TranSet<ProductState>>(pair.right);
             for (TranSet<ProductState> i : pair.right) {
                 for (TranSet<ProductState> j : pair.right) {
                     if (!j.equals(i) && j.subsetOf(i)) {

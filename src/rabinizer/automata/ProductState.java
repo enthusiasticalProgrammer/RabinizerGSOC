@@ -14,7 +14,11 @@ import rabinizer.formulas.Formula;
  */
 public class ProductState extends HashMap<Formula, RankingState> {
 
-    public FormulaState masterState;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -6381479732194884618L;
+	public FormulaState masterState;
 
     public ProductState(FormulaState masterState) {
         super();

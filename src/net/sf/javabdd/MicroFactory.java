@@ -6,12 +6,11 @@ package net.sf.javabdd;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
-import java.util.Set;
+
+
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -54,7 +53,6 @@ public class MicroFactory extends BDDFactory {
     public static BDDFactory init(int nodenum, int cachesize) {
         BDDFactory f = new MicroFactory();
         f.initialize(nodenum, cachesize);
-        if (CACHESTATS > 0) addShutdownHook(f);
         return f;
     }
 
@@ -132,7 +130,6 @@ public class MicroFactory extends BDDFactory {
     private final boolean HASREF(int node) {
         int a = bddnodes[node*__node_size + offset__lref] & REF_LMASK;
         if (a != 0) return true;
-        if (REF_HMASK == 0) return false;
         int b = bddnodes[node*__node_size + offset__href] & REF_HMASK;
         return (b != 0);
     }
@@ -152,7 +149,6 @@ public class MicroFactory extends BDDFactory {
     private final void INCREF(int node) {
         int a = bddnodes[node*__node_size + offset__lref] & REF_LMASK;
         if (a == REF_LMASK) {
-            if (REF_HMASK == 0) return;
             int b = bddnodes[node*__node_size + offset__href] & REF_HMASK;
             if (b == REF_HMASK) return;
             bddnodes[node*__node_size + offset__href] += REF_HINC;
@@ -172,14 +168,12 @@ public class MicroFactory extends BDDFactory {
 
     private final int GETREF(int node) {
         int a = bddnodes[node*__node_size + offset__lref] & REF_LMASK;
-        if (REF_HMASK == 0) return a >>> REF_LPOS;
         int b = bddnodes[node*__node_size + offset__href] & REF_HMASK;
         return a >>> REF_LPOS | b >>> (REF_HPOS-REF_LBITS);
     }
 
     private final int LEVEL(int node) {
         int a = bddnodes[node*__node_size + offset__llev] & LEV_LMASK;
-        if (LEV_HMASK == 0) return a >>> LEV_LPOS;
         int b = bddnodes[node*__node_size + offset__hlev] & LEV_HMASK;
         int lev = a >>> LEV_LPOS | b >>> (LEV_HPOS-LEV_LBITS);
         return lev;
@@ -190,7 +184,6 @@ public class MicroFactory extends BDDFactory {
         int a = bddnodes[node*__node_size + offset__llev] & ~LEV_LMASK;
         a |= (val << LEV_LPOS);
         bddnodes[node*__node_size + offset__llev] = a;
-        if (LEV_HMASK == 0) return;
         int b = bddnodes[node*__node_size + offset__hlev] & ~LEV_HMASK;
         b |= (val << (LEV_HPOS-LEV_LBITS)) & LEV_HMASK;
         bddnodes[node*__node_size + offset__hlev] = b;
@@ -256,8 +249,7 @@ public class MicroFactory extends BDDFactory {
         bddnodes[r*__node_size + offset__next] = next;
         bddnodes[r*__node_size + offset__low] = lo | (lev << LEV_LPOS);
         int k;
-        if (LEV_HMASK == 0) k = hi;
-        else k = hi | ((lev << (LEV_HPOS-LEV_LBITS)) & LEV_HMASK);
+        k = hi | ((lev << (LEV_HPOS-LEV_LBITS)) & LEV_HMASK);
         bddnodes[r*__node_size + offset__high] = k;
     }
     
@@ -267,13 +259,6 @@ public class MicroFactory extends BDDFactory {
     private final void SETVARr(int n, int val) {
         SETLEVEL(n, val);
     }
-    private final int LEVELANDMARK(int r) {
-        return LEVEL(r);
-    }
-    private final void SETLEVELANDMARK(int n, int val) {
-        SETLEVEL(n, val);
-    }
-    
     private static final void _assert(boolean b) {
         if (!b)
             throw new InternalError();
@@ -571,16 +556,6 @@ public class MicroFactory extends BDDFactory {
         }
 
         /* (non-Javadoc)
-         * @see net.sf.javabdd.BDD#allsat()
-         */
-        public List allsat() {
-            int x = _index;
-            List result = new LinkedList();
-            bdd_allsat(x, result);
-            return result;
-        }
-
-        /* (non-Javadoc)
          * @see net.sf.javabdd.BDD#replace(net.sf.javabdd.BDDPairing)
          */
         public BDD replace(BDDPairing pair) {
@@ -679,75 +654,13 @@ public class MicroFactory extends BDDFactory {
         int cacheHit;
         int cacheMiss;
         int compulsoryMiss;
-        Set cache;
-        
         OpCache() {
-            if (CACHESTATS > 1) cache = new HashSet();
         }
         
         public String toString() {
             return "\tHit: "+cacheHit+"\tMiss: "+cacheMiss
                 +" ("+compulsoryMiss+" compulsory)"
                 +"\t("+((float)cacheHit/((float) cacheHit+cacheMiss))*100+"%)";
-        }
-        
-        void checkCompulsory(int a) {
-            if (!cache.contains(new Integer(a)))
-                ++compulsoryMiss;
-        }
-        void checkCompulsory(int a, int b) {
-            if (!cache.contains(new PairOfInts(a, b)))
-                ++compulsoryMiss;
-        }
-        void checkCompulsory(int a, int b, int c) {
-            if (!cache.contains(new TripleOfInts(a, b, c)))
-                ++compulsoryMiss;
-        }
-        void checkCompulsory(int a, int b, int c, int d) {
-            if (!cache.contains(new QuadOfInts(a, b, c, d)))
-                ++compulsoryMiss;
-        }
-        void addCompulsory(int a) {
-            cache.add(new Integer(a));
-        }
-        void addCompulsory(int a, int b) {
-            cache.add(new PairOfInts(a, b));
-        }
-        void addCompulsory(int a, int b, int c) {
-            cache.add(new TripleOfInts(a, b, c));
-        }
-        void addCompulsory(int a, int b, int c, int d) {
-            cache.add(new QuadOfInts(a, b, c, d));
-        }
-        void removeCompulsory(int a) {
-            cache.remove(new Integer(a));
-        }
-        void removeCompulsory(int a, int b) {
-            cache.remove(new PairOfInts(a, b));
-        }
-        void removeCompulsory(int a, int b, int c) {
-            cache.remove(new TripleOfInts(a, b, c));
-        }
-        void removeCompulsory(int a, int b, int c, int d) {
-            cache.remove(new QuadOfInts(a, b, c, d));
-        }
-        void removeAll(int n) {
-            for (Iterator i = cache.iterator(); i.hasNext(); ) {
-                Object o = i.next();
-                if (o instanceof Integer) {
-                    Integer a = (Integer) o;
-                    if (n == a.intValue()) i.remove();
-                } else if (o instanceof PairOfInts) {
-                    PairOfInts a = (PairOfInts) o;
-                    if (n == a.a || n == a.b) i.remove();
-                } else if (o instanceof TripleOfInts) {
-                    TripleOfInts a = (TripleOfInts) o;
-                    if (n == a.a || n == a.b || n == a.c) i.remove();
-                } else if (o instanceof QuadOfInts) {
-                    QuadOfInts a = (QuadOfInts) o;
-                    if (n == a.a || n == a.b || n == a.c || n == a.d) i.remove();
-                }
-            }
         }
     }
     
@@ -810,7 +723,6 @@ public class MicroFactory extends BDDFactory {
             for (int i = 0; i < table.length; ++i) {
                 table[i].a = -1;
             }
-            if (CACHESTATS > 1) cache.clear();
         }
         final void clean() {
             for (int i = 0; i < table.length; ++i) {
@@ -818,24 +730,9 @@ public class MicroFactory extends BDDFactory {
                 if (a == -1) continue;
                 if (LOW(a & NODE_MASK) == INVALID_BDD ||
                     LOW(table[i].res) == INVALID_BDD) {
-                    if (CACHESTATS > 1) removeCompulsory(table[i].a);
                     table[i].a = -1;
                 }
             }
-        }
-        final OpCache1 copy() {
-            OpCache1 that = new OpCache1(this.table.length);
-            for (int i = 0; i < this.table.length; ++i) {
-                that.table[i].a = this.table[i].a;
-                that.table[i].res = this.table[i].res;
-            }
-            if (CACHESTATS > 0) {
-                that.cacheHit = this.cacheHit;
-                that.cacheMiss = this.cacheMiss;
-                if (CACHESTATS > 1)
-                    that.cache.addAll(this.cache);
-            }
-            return that;
         }
         final int get_sid(OpCache1Entry e, int node, int id) {
             if (VERIFY_ASSERTIONS) {
@@ -844,11 +741,8 @@ public class MicroFactory extends BDDFactory {
             }
             int k = node | id;
             if (e.a != k) {
-                if (CACHESTATS > 0) cacheMiss++;
-                if (CACHESTATS > 1) checkCompulsory(k);
                 return -1;
             }
-            if (CACHESTATS > 0) cacheHit++;
             return e.res;
         }
         final void set_sid(OpCache1Entry e, int node, int id, int r) {
@@ -858,7 +752,6 @@ public class MicroFactory extends BDDFactory {
             }
             e.a = node | id;
             e.res = r;
-            if (CACHESTATS > 1) addCompulsory(e.a);
         }
         
     }
@@ -885,7 +778,6 @@ public class MicroFactory extends BDDFactory {
             for (int i = 0; i < table.length; ++i) {
                 table[i].a = -1;
             }
-            if (CACHESTATS > 1) cache.clear();
         }
         final void clean() {
             for (int i = 0; i < table.length; ++i) {
@@ -894,7 +786,6 @@ public class MicroFactory extends BDDFactory {
                 if (LOW(a & NODE_MASK) == INVALID_BDD ||
                     LOW(table[i].b) == INVALID_BDD ||
                     LOW(table[i].res) == INVALID_BDD) {
-                    if (CACHESTATS > 1) removeCompulsory(table[i].a, table[i].b);
                     table[i].a = -1;
                 }
             }
@@ -906,30 +797,7 @@ public class MicroFactory extends BDDFactory {
                 that.table[i].b = this.table[i].b;
                 that.table[i].res = this.table[i].res;
             }
-            if (CACHESTATS > 0) {
-                that.cacheHit = this.cacheHit;
-                that.cacheMiss = this.cacheMiss;
-                if (CACHESTATS > 1)
-                    that.cache.addAll(this.cache);
-            }
             return that;
-        }
-        
-        final int get_id(OpCache2Entry e, int node1, int node2, int id) {
-            if (VERIFY_ASSERTIONS) {
-                _assert(node1 == (node1 & NODE_MASK));
-                _assert(node2 == (node2 & NODE_MASK));
-                _assert(id >= 0 && id < (1 << (LEV_LBITS + LEV_HBITS)));
-            }
-            int k1 = node1 | (id << LEV_LPOS);
-            if (e.a != k1 ||
-                e.b != (node2 | ((id << (LEV_HPOS-LEV_LBITS)) & LEV_HMASK))) {
-                if (CACHESTATS > 0) cacheMiss++;
-                if (CACHESTATS > 1) checkCompulsory(k1, node2 | ((id << (LEV_HPOS-LEV_LBITS)) & LEV_HMASK));
-                return -1;
-            }
-            if (CACHESTATS > 0) cacheHit++;
-            return e.res;
         }
         
         final int get_sid(OpCache2Entry e, int node1, int node2, int id) {
@@ -940,11 +808,8 @@ public class MicroFactory extends BDDFactory {
             }
             int k = node1 | id;
             if (e.a != k || e.b != node2) {
-                if (CACHESTATS > 0) cacheMiss++;
-                if (CACHESTATS > 1) checkCompulsory(k, node2);
                 return -1;
             }
-            if (CACHESTATS > 0) cacheHit++;
             return e.res;
         }
         
@@ -954,24 +819,9 @@ public class MicroFactory extends BDDFactory {
                 _assert(node2 == (node2 & NODE_MASK));
             }
             if (e.a != node1 || e.b != node2) {
-                if (CACHESTATS > 0) cacheMiss++;
-                if (CACHESTATS > 1) checkCompulsory(node1, node2);
                 return -1;
             }
-            if (CACHESTATS > 0) cacheHit++;
             return e.res;
-        }
-        
-        final void set_id(OpCache2Entry e, int node1, int node2, int id, int r) {
-            if (VERIFY_ASSERTIONS) {
-                _assert(node1 == (node1 & NODE_MASK));
-                _assert(node2 == (node2 & NODE_MASK));
-                _assert(id >= 0 && id < (1 << (LEV_LBITS + LEV_HBITS)));
-            }
-            e.a = node1 | (id << LEV_LPOS);
-            e.b = node2 | ((id << (LEV_HPOS-LEV_LBITS)) & LEV_HMASK);
-            e.res = r;
-            if (CACHESTATS > 1) addCompulsory(e.a, e.b);
         }
         
         final void set_sid(OpCache2Entry e, int node1, int node2, int id, int r) {
@@ -983,14 +833,12 @@ public class MicroFactory extends BDDFactory {
             e.a = node1 | id;
             e.b = node2;
             e.res = r;
-            if (CACHESTATS > 1) addCompulsory(e.a, e.b);
         }
         
         final void set(OpCache2Entry e, int node1, int node2, int r) {
             e.a = node1;
             e.b = node2;
             e.res = r;
-            if (CACHESTATS > 1) addCompulsory(e.a, e.b);
         }
     }
 
@@ -1016,7 +864,6 @@ public class MicroFactory extends BDDFactory {
             for (int i = 0; i < table.length; ++i) {
                 table[i].a = -1;
             }
-            if (CACHESTATS > 1) cache.clear();
         }
         final void clean() {
             for (int i = 0; i < table.length; ++i) {
@@ -1026,7 +873,6 @@ public class MicroFactory extends BDDFactory {
                     LOW(table[i].b) == INVALID_BDD ||
                     LOW(table[i].c) == INVALID_BDD ||
                     LOW(table[i].res) == INVALID_BDD) {
-                    if (CACHESTATS > 1) removeCompulsory(table[i].a, table[i].b, table[i].c);
                     table[i].a = -1;
                 }
             }
@@ -1039,22 +885,13 @@ public class MicroFactory extends BDDFactory {
                 that.table[i].c = this.table[i].c;
                 that.table[i].res = this.table[i].res;
             }
-            if (CACHESTATS > 0) {
-                that.cacheHit = this.cacheHit;
-                that.cacheMiss = this.cacheMiss;
-                if (CACHESTATS > 1)
-                    that.cache.addAll(this.cache);
-            }
             return that;
         }
         
         final int get(OpCache3Entry e, int node1, int node2, int node3) {
             if (e.a != node1 || e.b != node2 || e.c != node3) {
-                if (CACHESTATS > 0) cacheMiss++;
-                if (CACHESTATS > 1) checkCompulsory(node1, node2, node3);
                 return -1;
             }
-            if (CACHESTATS > 0) cacheHit++;
             return e.res;
         }
         
@@ -1063,7 +900,6 @@ public class MicroFactory extends BDDFactory {
             e.b = node2;
             e.c = node3;
             e.res = r;
-            if (CACHESTATS > 1) addCompulsory(e.a, e.b, e.c);
         }
     }
     
@@ -1089,21 +925,6 @@ public class MicroFactory extends BDDFactory {
             for (int i = 0; i < table.length; ++i) {
                 table[i].a = -1;
             }
-            if (CACHESTATS > 1) cache.clear();
-        }
-        final void clean() {
-            for (int i = 0; i < table.length; ++i) {
-                int a = table[i].a;
-                if (a == -1) continue;
-                if (LOW(a & NODE_MASK) == INVALID_BDD ||
-                    LOW(table[i].b) == INVALID_BDD ||
-                    LOW(table[i].c) == INVALID_BDD ||
-                    LOW(table[i].d) == INVALID_BDD ||
-                    LOW(table[i].res) == INVALID_BDD) {
-                    if (CACHESTATS > 1) removeCompulsory(table[i].a, table[i].b, table[i].c, table[i].d);
-                    table[i].a = -1;
-                }
-            }
         }
         final OpCache4 copy() {
             OpCache4 that = new OpCache4(this.table.length);
@@ -1114,22 +935,13 @@ public class MicroFactory extends BDDFactory {
                 that.table[i].d = this.table[i].d;
                 that.table[i].res = this.table[i].res;
             }
-            if (CACHESTATS > 0) {
-                that.cacheHit = this.cacheHit;
-                that.cacheMiss = this.cacheMiss;
-                if (CACHESTATS > 1)
-                    that.cache.addAll(this.cache);
-            }
             return that;
         }
         
         final int get(OpCache4Entry e, int node1, int node2, int node3, int node4) {
             if (e.a != node1 || e.b != node2 || e.c != node3 || e.d != node4) {
-                if (CACHESTATS > 0) cacheMiss++;
-                if (CACHESTATS > 1) checkCompulsory(node1, node2, node3, node4);
                 return -1;
             }
-            if (CACHESTATS > 0) cacheHit++;
             return e.res;
         }
         
@@ -1139,7 +951,6 @@ public class MicroFactory extends BDDFactory {
             e.c = node3;
             e.d = node4;
             e.res = r;
-            if (CACHESTATS > 1) addCompulsory(e.a, e.b, e.c, e.d);
         }
     }
     
@@ -1165,14 +976,12 @@ public class MicroFactory extends BDDFactory {
             for (int i = 0; i < table.length; ++i) {
                 table[i].a = -1;
             }
-            if (CACHESTATS > 1) cache.clear();
         }
         final void clean() {
             for (int i = 0; i < table.length; ++i) {
                 int a = table[i].a;
                 if (a == -1) continue;
                 if (LOW(a & NODE_MASK) == INVALID_BDD) {
-                    if (CACHESTATS > 1) removeCompulsory(table[i].a);
                     table[i].a = -1;
                 }
             }
@@ -1182,12 +991,6 @@ public class MicroFactory extends BDDFactory {
             for (int i = 0; i < this.table.length; ++i) {
                 that.table[i].a = this.table[i].a;
                 that.table[i].res = this.table[i].res;
-            }
-            if (CACHESTATS > 0) {
-                that.cacheHit = this.cacheHit;
-                that.cacheMiss = this.cacheMiss;
-                if (CACHESTATS > 1)
-                    that.cache.addAll(this.cache);
             }
             return that;
         }
@@ -1199,11 +1002,8 @@ public class MicroFactory extends BDDFactory {
             }
             int k = node | id;
             if (e.a != k) {
-                if (CACHESTATS > 0) cacheMiss++;
-                if (CACHESTATS > 1) checkCompulsory(k);
                 return -1;
             }
-            if (CACHESTATS > 0) cacheHit++;
             return e.res;
         }
         
@@ -1214,7 +1014,6 @@ public class MicroFactory extends BDDFactory {
             }
             e.a = node | id;
             e.res = r;
-            if (CACHESTATS > 1) addCompulsory(e.a);
         }
     }
     
@@ -3312,61 +3111,7 @@ public class MicroFactory extends BDDFactory {
         return size;
     }
 
-    void bdd_allsat(int r, List result) {
-        int v;
-
-        CHECK(r);
-
-        allsatProfile = new byte[bddvarnum];
-
-        for (v = LEVEL(r) - 1; v >= 0; --v)
-            allsatProfile[bddlevel2var[v]] = -1;
-
-        INITREF();
-
-        allsat_rec(r, result);
-
-        allsatProfile = null;
-    }
-
-    void allsat_rec(int r, List result) {
-        if (ISONE(r)) {
-            //allsatHandler(allsatProfile, bddvarnum);
-            byte[] b = new byte[bddvarnum];
-            System.arraycopy(allsatProfile, 0, b, 0, bddvarnum);
-            result.add(b);
-            return;
-        }
-
-        if (ISZERO(r)) return;
-
-        int LOW_r = LOW(r);
-        int HIGH_r = HIGH(r);
-        int LEVEL_r = LEVEL(r);
-        if (!ISZERO(LOW_r)) {
-            int v;
-
-            allsatProfile[bddlevel2var[LEVEL_r]] = 0;
-
-            for (v = LEVEL(LOW_r) - 1; v > LEVEL_r; --v) {
-                allsatProfile[bddlevel2var[v]] = -1;
-            }
-
-            allsat_rec(LOW_r, result);
-        }
-
-        if (!ISZERO(HIGH_r)) {
-            int v;
-
-            allsatProfile[bddlevel2var[LEVEL_r]] = 1;
-
-            for (v = LEVEL(HIGH_r) - 1; v > LEVEL_r; --v) {
-                allsatProfile[bddlevel2var[v]] = -1;
-            }
-
-            allsat_rec(HIGH_r, result);
-        }
-    }
+   
     
     double bdd_satcount(int r) {
         double size = 1;
@@ -3496,7 +3241,6 @@ public class MicroFactory extends BDDFactory {
             return bdd_error(BDD_ILLBDD);
 
         INCREF(root);
-        if (false) System.out.println("INCREF("+root+") = "+GETREF(root));
         return root;
     }
 
@@ -3515,7 +3259,6 @@ public class MicroFactory extends BDDFactory {
             bdd_error(BDD_BREAK); /* distinctive */
 
         DECREF(root);
-        if (false) System.out.println("DECREF("+root+") = "+GETREF(root));
         return root;
     }
 
@@ -3557,8 +3300,6 @@ public class MicroFactory extends BDDFactory {
         int hash2;
         int res;
 
-        if (CACHESTATS > 0) cachestats.uniqueAccess++;
-
         /* check whether childs are equal */
         if (low == high) return low;
 
@@ -3572,16 +3313,11 @@ public class MicroFactory extends BDDFactory {
             do {
                 if (bddnodes[res*__node_size + offset__low] == m1 &&
                     bddnodes[res*__node_size + offset__high] == m2) {
-                    if (CACHESTATS > 0) cachestats.uniqueHit++;
                     return res;
                 }
                 res = NEXT(res);
-                if (CACHESTATS > 0) cachestats.uniqueChain++;
             } while (res != 0);
         }
-
-        /* No existing node => build one */
-        if (CACHESTATS > 0) cachestats.uniqueMiss++;
 
         /* Any free nodes to use ? */
         if (bddfreepos == 0) {
@@ -4653,7 +4389,7 @@ public class MicroFactory extends BDDFactory {
         }
 
         /* Sort according to the number of nodes at each level */
-        Arrays.sort(p, 0, num, new Comparator() {
+        Arrays.sort(p, 0, num, new Comparator<Object>() {
 
             public int compare(Object o1, Object o2) {
                 return siftTestCmp(o1, o2);
@@ -4745,8 +4481,6 @@ public class MicroFactory extends BDDFactory {
     BddTree reorder_win2ite(BddTree t) {
         BddTree dis, first = t;
         int lastsize;
-        int c = 1;
-
         if (t == null)
             return t;
 
@@ -4776,7 +4510,6 @@ public class MicroFactory extends BDDFactory {
 
             if (verbose > 1)
                 System.out.println(" " + reorder_nodenum() + " nodes");
-            c++;
         }
         while (reorder_nodenum() != lastsize);
 
@@ -5708,7 +5441,7 @@ public class MicroFactory extends BDDFactory {
         int hash;
         int res;
 
-        if (CACHESTATS > 0) cachestats.uniqueAccess++;
+        
 
         /* Note: We know that low,high has a refcou greater than zero, so
         there is no need to add reference *recursively* */
@@ -5725,17 +5458,11 @@ public class MicroFactory extends BDDFactory {
 
         while (res != 0) {
             if (LOW(res) == low && HIGH(res) == high) {
-                if (CACHESTATS > 0) cachestats.uniqueHit++;
                 INCREF(res);
                 return res;
             }
             res = NEXT(res);
-
-            if (CACHESTATS > 0) cachestats.uniqueChain++;
         }
-
-        /* No existing node -> build one */
-        if (CACHESTATS > 0) cachestats.uniqueMiss++;
 
         /* Any free nodes to use ? */
         if (bddfreepos == 0) {
@@ -6108,10 +5835,10 @@ public class MicroFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDFactory#nodeCount(java.util.Collection)
      */
-    public int nodeCount(Collection r) {
+    public int nodeCount(Collection<BDD> r) {
         int[] a = new int[r.size()];
         int j = 0;
-        for (Iterator i = r.iterator(); i.hasNext();) {
+        for (Iterator<BDD> i = r.iterator(); i.hasNext();) {
             bdd b = (bdd) i.next();
             a[j++] = b._index;
         }

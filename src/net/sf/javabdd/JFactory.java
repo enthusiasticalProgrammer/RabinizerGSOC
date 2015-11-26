@@ -10,6 +10,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+
+import net.sf.javabdd.TestBDDFactory.TestBDD;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -329,16 +332,6 @@ public class JFactory extends BDDFactory {
             int y = ((bdd) var)._index;
             int z = pol ? 1 : 0;
             return makeBDD(bdd_satoneset(x, y, z));
-        }
-
-        /* (non-Javadoc)
-         * @see net.sf.javabdd.BDD#allsat()
-         */
-        public List allsat() {
-            int x = _index;
-            List result = new LinkedList();
-            bdd_allsat(x, result);
-            return result;
         }
 
         /* (non-Javadoc)
@@ -2772,60 +2765,7 @@ public class JFactory extends BDDFactory {
         return size;
     }
 
-    void bdd_allsat(int r, List result) {
-        int v;
-
-        CHECK(r);
-
-        allsatProfile = new byte[bddvarnum];
-
-        for (v = LEVEL(r) - 1; v >= 0; --v)
-            allsatProfile[bddlevel2var[v]] = -1;
-
-        INITREF();
-
-        allsat_rec(r, result);
-
-        free(allsatProfile);
-        allsatProfile = null;
-    }
-
-    void allsat_rec(int r, List result) {
-        if (ISONE(r)) {
-            //allsatHandler(allsatProfile, bddvarnum);
-            byte[] b = new byte[bddvarnum];
-            System.arraycopy(allsatProfile, 0, b, 0, bddvarnum);
-            result.add(b);
-            return;
-        }
-
-        if (ISZERO(r))
-            return;
-
-        if (!ISZERO(LOW(r))) {
-            int v;
-
-            allsatProfile[bddlevel2var[LEVEL(r)]] = 0;
-
-            for (v = LEVEL(LOW(r)) - 1; v > LEVEL(r); --v) {
-                allsatProfile[bddlevel2var[v]] = -1;
-            }
-
-            allsat_rec(LOW(r), result);
-        }
-
-        if (!ISZERO(HIGH(r))) {
-            int v;
-
-            allsatProfile[bddlevel2var[LEVEL(r)]] = 1;
-
-            for (v = LEVEL(HIGH(r)) - 1; v > LEVEL(r); --v) {
-                allsatProfile[bddlevel2var[v]] = -1;
-            }
-
-            allsat_rec(HIGH(r), result);
-        }
-    }
+    
     double bdd_satcount(int r) {
         double size = 1;
 
@@ -2960,7 +2900,6 @@ public class JFactory extends BDDFactory {
             return bdd_error(BDD_ILLBDD);
 
         INCREF(root);
-        if (false) System.out.println("INCREF("+root+") = "+GETREF(root));
         return root;
     }
 
@@ -2979,7 +2918,6 @@ public class JFactory extends BDDFactory {
             bdd_error(BDD_BREAK); /* distinctive */
 
         DECREF(root);
-        if (false) System.out.println("DECREF("+root+") = "+GETREF(root));
         return root;
     }
 
@@ -3304,16 +3242,6 @@ public class JFactory extends BDDFactory {
     byte[] allsatProfile; /* Variable profile for bdd_allsat() */
 
     void bdd_operator_init(int cachesize) {
-        if (false) {
-            applycache = BddCacheI_init(cachesize);
-            itecache = BddCacheI_init(cachesize);
-            quantcache = BddCacheI_init(cachesize);
-            appexcache = BddCacheI_init(cachesize);
-            replacecache = BddCacheI_init(cachesize);
-            misccache = BddCacheI_init(cachesize);
-            countcache = BddCacheD_init(cachesize);
-        }
-
         quantvarsetID = 0;
         quantvarset = null;
         cacheratio = 0;
@@ -4302,7 +4230,7 @@ public class JFactory extends BDDFactory {
         }
 
         /* Sort according to the number of nodes at each level */
-        Arrays.sort(p, 0, num, new Comparator() {
+        Arrays.sort(p, 0, num, new Comparator<Object>() {
 
             public int compare(Object o1, Object o2) {
                 return siftTestCmp(o1, o2);
@@ -4397,8 +4325,6 @@ public class JFactory extends BDDFactory {
     BddTree reorder_win2ite(BddTree t) {
         BddTree dis, first = t;
         int lastsize;
-        int c = 1;
-
         if (t == null)
             return t;
 
@@ -4428,7 +4354,6 @@ public class JFactory extends BDDFactory {
 
             if (verbose > 1)
                 System.out.println(" " + reorder_nodenum() + " nodes");
-            c++;
         }
         while (reorder_nodenum() != lastsize);
 
@@ -5784,10 +5709,10 @@ public class JFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDFactory#nodeCount(java.util.Collection)
      */
-    public int nodeCount(Collection r) {
+    public int nodeCount(Collection<BDD> r) {
         int[] a = new int[r.size()];
         int j = 0;
-        for (Iterator i = r.iterator(); i.hasNext();) {
+        for (Iterator<BDD> i = r.iterator(); i.hasNext();) {
             bdd b = (bdd) i.next();
             a[j++] = b._index;
         }

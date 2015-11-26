@@ -1,19 +1,26 @@
 package rabinizer.formulas;
 
+import java.util.ArrayList;
 import rabinizer.bdd.GSet;
 import rabinizer.bdd.Valuation;
+import rabinizer.z3.LTLExpr;
 import rabinizer.bdd.BDDForFormulae;
 import java.util.*;
 import net.sf.javabdd.*;
+import com.microsoft.z3.*;
+
 
 /**
  * @author Jan Kretinsky
  *
  */
 public abstract class Formula {
-
-    protected String cachedString;
-    protected BDD cachedBdd = null;
+	static int curr_symbol=0;
+	
+    String cachedString;
+    BDD cachedBdd = null;
+    BoolExpr cachedLTL=null;
+    final long unique_id;
 
     public abstract String operator();
 
@@ -21,6 +28,11 @@ public abstract class Formula {
 
     public Formula representative() {
         return BDDForFormulae.representativeOfBdd(bdd(), this);
+    }
+        
+        
+    Formula(long id){
+    	unique_id=id;
     }
 
     @Override
@@ -32,6 +44,9 @@ public abstract class Formula {
     public abstract String toReversePolishString();
 
     public abstract Formula toNNF();
+    
+    //to be overwritten, side-effects: propositions will be inserted into ctx
+    public abstract BoolExpr toExpr(Context ctx);
 
     public abstract Formula negationToNNF();
 
@@ -52,6 +67,11 @@ public abstract class Formula {
     public Formula temporalStep(Valuation valuation) {
         return this.assertValuation(valuation).removeX();
     }
+    
+    //for testing
+    public long get_id(){
+    	return unique_id;
+    }
 
     public Formula assertValuation(Valuation valuation) {
         return evaluateValuation(valuation).removeConstants();
@@ -62,7 +82,7 @@ public abstract class Formula {
     }
 
     public Set<Formula> relevantGFormulas(Set<Formula> candidates) { // TODO: is with the outer G (not GSet)
-        Set<Formula> result = new HashSet();
+        Set<Formula> result = new HashSet<Formula>();
         for (Formula subFormula : candidates) {
             if (hasSubformula(subFormula) && !unfold().representative().ignoresG(subFormula)) {
                 result.add(subFormula);
@@ -124,5 +144,37 @@ public abstract class Formula {
     public boolean isUnfoldOfF() {
         return false;
     }
+    
+    //to be overridden,
+    //writes it to a string s.t. it can be interpreted by Z3
+    //hint: this is not the only string the Z3 needs (also some preamble etc)
+    //and this is only the first version.
+    //it is likely not needed when calling the Z3 from the java interface
+    public abstract String toZ3String(boolean is_atom);
+    
+    
+    //to be overridden by subclasses
+    //gets all propositions such as Fa, a, GaUb, ...
+    public abstract ArrayList<String> getAllPropositions();
+    
+    
+    //removeConstants did not remove boolean constants such as true/false
+    //so I write this method
+    public abstract Formula rmAllConstants();
+    
+
+    
+    //a.setToConst(id,true), return a if id is not a subformula of a
+    //		and if id is a subformula of a, it replaces id with const
+    //this is used to minimize expressions as a&phi(a) -->a&phi.setToConst(a.unique_id,true)
+    // and a|phi(a)--> a|phi.setToConst(a.unique_id,false)
+    public abstract Formula setToConst(long id,boolean constant);
+    
+    
+    //to realize the visitor pattern for different method signatures
+    public abstract Formula acceptFormula(Formula_Visitor v);
+    public abstract boolean acceptBool(Attribute_Visitor v);
+    public abstract boolean acceptBinarybool(Attribute_Binary_Visitor v,Formula f);
+    
 
 }

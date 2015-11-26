@@ -6,9 +6,9 @@
 package rabinizer.automata;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import static rabinizer.automata.Automaton.generatePartitioning;
 import rabinizer.bdd.MyBDD;
 import rabinizer.bdd.Valuation;
 import rabinizer.bdd.ValuationSet;
@@ -53,10 +53,12 @@ public class DTGRA extends Product implements AccAutomatonInterface {
             result += i == 0 ? "" : " | ";
             result += "Fin(" + sum + ")";
             sum++;
-            for (TranSet<ProductState> ts : acc.get(i).right) {
-                result += "&Inf(" + sum + ")";
+            List<TranSet<ProductState>> right = acc.get(i).right;
+			for (int j = 0; j < right.size(); j++) {
+				right.get(j);
+				result += "&Inf(" + sum + ")";
                 sum++;
-            }
+			}
         }
         return sum + " " + result;
     }
@@ -69,18 +71,18 @@ public class DTGRA extends Product implements AccAutomatonInterface {
     @Override
     protected String outTransToHOA(ProductState s) {
         String result = "";
-        Set<Set<ValuationSet>> productVs = new HashSet();
+        Set<Set<ValuationSet>> productVs = new HashSet<Set<ValuationSet>>();
         productVs.add(transitions.get(s).keySet());
         Set<ValuationSet> vSets;
         for (GRabinPairT rp : acc) {
-            vSets = new HashSet();
+            vSets = new HashSet<ValuationSet>();
             if (rp.left.containsKey(s)) {
                 vSets.add(rp.left.get(s));
                 vSets.add(rp.left.get(s).complement());
             }
             productVs.add(vSets);
             for (TranSet<ProductState> ts : rp.right) {
-                vSets = new HashSet();
+                vSets = new HashSet<ValuationSet>();
                 if (ts.containsKey(s)) {
                     vSets.add(ts.get(s));
                     vSets.add(ts.get(s).complement());
@@ -88,7 +90,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
                 productVs.add(vSets);
             }
         }
-        vSets = new HashSet();
+        vSets = new HashSet<ValuationSet>();
         productVs.remove(vSets);
         Set<ValuationSet> edges = generatePartitioning(productVs);
         for (ValuationSet vsSep : edges) {

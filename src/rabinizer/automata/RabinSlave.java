@@ -8,7 +8,6 @@ package rabinizer.automata;
 import java.util.*;
 import rabinizer.bdd.*;
 import rabinizer.exec.Main;
-import rabinizer.deleteOld.Misc;
 import rabinizer.exec.Tuple;
 
 /**
@@ -73,7 +72,7 @@ public class RabinSlave extends Automaton<RankingState> {
 
     @Override
     protected Set<ValuationSet> generateSuccTransitions(RankingState s) {
-        Set<Set<ValuationSet>> product = new HashSet();
+        Set<Set<ValuationSet>> product = new HashSet<Set<ValuationSet>>();
         for (FormulaState fs : s.keySet()) {
             product.add(mojmir.transitions.get(fs).keySet());
         }
@@ -93,7 +92,7 @@ public class RabinSlave extends Automaton<RankingState> {
 
     private boolean noIncomingTransitions(RankingState in) {
         for (RankingState out : states) {
-            if (edgeBetween.containsKey(new Tuple(out, in))) {
+            if (edgeBetween.containsKey(new Tuple<RankingState, RankingState>(out, in))) {
                 return false;
             }
         }

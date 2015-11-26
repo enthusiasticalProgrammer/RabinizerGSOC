@@ -14,8 +14,8 @@ import java.util.Set;
  */
 public abstract class FormulaNullary extends Formula {
 
-    public FormulaNullary() {
-        super();
+    FormulaNullary(long id) {
+        super(id);
     }
 
     @Override
@@ -35,7 +35,7 @@ public abstract class FormulaNullary extends Formula {
 
     @Override
     public Set<Formula> gSubformulas() {
-        return new HashSet();
+        return new HashSet<Formula>();
     }
 
     @Override
@@ -45,7 +45,7 @@ public abstract class FormulaNullary extends Formula {
 
     @Override
     public Set<Formula> topmostGs() {
-        return new HashSet();
+        return new HashSet<Formula>();
     }
 
     @Override

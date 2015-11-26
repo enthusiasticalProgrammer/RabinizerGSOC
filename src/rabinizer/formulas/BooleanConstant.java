@@ -3,12 +3,21 @@ package rabinizer.formulas;
 import net.sf.javabdd.BDD;
 import rabinizer.bdd.BDDForFormulae;
 
+import java.util.ArrayList;
+
+import com.microsoft.z3.*;
+
 public class BooleanConstant extends FormulaNullary {
 
-    public boolean value;
 
-    public BooleanConstant(boolean value) {
+    private final boolean value;
+
+    private final int cachedHash;
+
+    BooleanConstant(boolean value,long id) {
+    	super(id);
         this.value = value;
+        this.cachedHash = init_hash();
     }
 
     @Override
@@ -27,7 +36,11 @@ public class BooleanConstant extends FormulaNullary {
 
     @Override
     public int hashCode() {
-        return value ? 0 : 1;
+        return cachedHash;
+    }
+    
+    public boolean get_value() {
+    	return value;
     }
 
     @Override
@@ -54,7 +67,55 @@ public class BooleanConstant extends FormulaNullary {
 
     @Override
     public Formula negationToNNF() {
-        return new BooleanConstant(!value);
+        return FormulaFactory.mkConst(!value);
     }
+    
+    public BoolExpr toExpr(Context ctx){
+    	if(cachedLTL==null){
+    		cachedLTL=(value? ctx.mkTrue() : ctx.mkFalse());
+    	}
+    	return cachedLTL;
+    		
+    }
+
+	@Override
+	public String toZ3String(boolean is_atom) {
+		return (value ? "true" : "false");
+	}
+
+	@Override
+	public ArrayList<String> getAllPropositions() {
+		return new ArrayList<String>();
+	}
+
+	@Override
+	public Formula rmAllConstants() {
+		return FormulaFactory.mkConst(value);
+	}
+
+	@Override
+	public Formula setToConst(long id, boolean constant) {
+		return this;
+	}
+
+	
+	private int init_hash() {
+		return value ? 1 : 2;
+	}
+
+	@Override
+	public Formula acceptFormula(Formula_Visitor v) {
+		return v.visitB(this);
+	}
+
+	@Override
+	public boolean acceptBool(Attribute_Visitor v) {
+		return v.visitB(this);
+	}
+
+	@Override
+	public boolean acceptBinarybool(Attribute_Binary_Visitor v, Formula f) {
+		return v.visitB(this, f);
+	}
 
 }

@@ -1,6 +1,5 @@
 package rabinizer.bdd;
 
-import rabinizer.exec.*;
 import java.util.*;
 import rabinizer.formulas.*;
 
@@ -15,8 +14,8 @@ public class BijectionBooleanAtomBddVar {
     Map<Integer, Formula> idToAtom;
     
     public BijectionBooleanAtomBddVar() {
-        atomToId = new HashMap();
-        idToAtom = new HashMap();
+        atomToId = new HashMap<Formula, Integer>();
+        idToAtom = new HashMap<Integer, Formula>();
     }
 
     /**

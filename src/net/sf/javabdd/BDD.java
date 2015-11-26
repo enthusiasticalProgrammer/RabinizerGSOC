@@ -1,12 +1,13 @@
 // BDD.java, created Jan 29, 2003 9:50:57 PM by jwhaley
 // Copyright (C) 2003 John Whaley
 // Licensed under the terms of the GNU LGPL; see COPYING for details.
+
+
 package net.sf.javabdd;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.io.PrintStream;
 import java.math.BigInteger;
@@ -510,14 +511,6 @@ public abstract class BDD {
      */
     public abstract BDD satOne(BDD var, boolean pol);
 
-    /**
-     * <p>Finds all satisfying variable assignments.</p>
-     * 
-     * <p>Compare to bdd_allsat.</p>
-     * 
-     * @return all satisfying variable assignments
-     */
-    public abstract List allsat();
 
     /**
      * <p>Scans this BDD to find all occurrences of BDD variables and returns an
@@ -731,7 +724,7 @@ public abstract class BDD {
      * @author jwhaley
      * @version $Id: BDD.java,v 1.5 2005/01/26 23:46:17 joewhaley Exp $
      */
-    public static class BDDIterator implements Iterator {
+    public static class BDDIterator implements Iterator<Object> {
         protected BDDFactory factory;
         protected int[] levels;
         protected boolean[] values;
@@ -992,8 +985,8 @@ public abstract class BDD {
      * 
      * @return an iteration of minterms
      */
-    public Iterator iterator2(final BDD var) {
-        return new Iterator() {
+    public Iterator<Object> iterator2(final BDD var) {
+        return new Iterator<Object>() {
 
             BDD b = null;
             BDD myVar;
@@ -1099,19 +1092,19 @@ public abstract class BDD {
 
         boolean[] visited = new boolean[nodeCount()+2];
         visited[0] = true; visited[1] = true;
-        HashMap map = new HashMap();
+        HashMap<BDD, Integer> map = new HashMap<BDD, Integer>();
         map.put(getFactory().zero(), new Integer(0));
         map.put(getFactory().one(), new Integer(1));
         printdot_rec(out, 1, visited, map);
         
-        for (Iterator i = map.keySet().iterator(); i.hasNext(); ) {
+        for (Iterator<BDD> i = map.keySet().iterator(); i.hasNext(); ) {
             BDD b = (BDD) i.next();
             b.free();
         }
         out.println("}");
     }
 
-    protected int printdot_rec(PrintStream out, int current, boolean[] visited, HashMap map) {
+    protected int printdot_rec(PrintStream out, int current, boolean[] visited, HashMap<BDD, Integer> map) {
         Integer ri = ((Integer) map.get(this));
         if (ri == null) {
             map.put(this.id(), ri = new Integer(++current));
@@ -1369,10 +1362,6 @@ public abstract class BDD {
             }
             done = true;
             return sb;
-        }
-        
-        void append(BigInteger low) {
-            append(low, low);
         }
     }
     

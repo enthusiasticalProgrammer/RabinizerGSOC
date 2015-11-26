@@ -22,7 +22,7 @@ import rabinizer.exec.Tuple;
 public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
 
     public Set<State> states;
-    public Map<State, Map<ValuationSet, State>> transitions;
+    public Map<State, HashMap<ValuationSet, State>> transitions;
     public State initialState;
     public Set<State> sinks;
     //AccCondition accCondition;
@@ -30,13 +30,13 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
     public Map<State, Integer> statesToNumbers = null;
 
     public Automaton() {
-        states = new HashSet();
-        transitions = new HashMap();
+        states = new HashSet<State>();
+        transitions = new HashMap<State, HashMap<ValuationSet, State>>();
         initialState = null;
-        sinks = new HashSet();
+        sinks = new HashSet<State>();
         //stateLabels = new HashMap();
-        edgeBetween = new HashMap();
-        statesToNumbers = new HashMap();
+        edgeBetween = new HashMap<Tuple<State, State>, ValuationSet>();
+        statesToNumbers = new HashMap<State, Integer>();
         //this.generate();
     }
     
@@ -55,14 +55,14 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
 
     protected abstract Set<ValuationSet> generateSuccTransitions(State s);
 
-    public Automaton generate() {
+    public Automaton<State> generate() {
         initialState = generateInitialState();;
         states.add(initialState);
         //stateLabels.put(initialState, init.right);
         statesToNumbers.put(initialState, 0);
         Main.nonsilent("  Generating automaton for " + initialState);
 
-        Stack<State> workstack = new Stack();
+        Stack<State> workstack = new Stack<State>();
         State curr = initialState;
         workstack.push(curr);
 
@@ -74,7 +74,7 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
             //if (succValSets.isEmpty()) {  // TODO empty or true and non-progress or just selfloops?
             //    sinks.add(curr);
             //} else {
-            transitions.put(curr, new HashMap());
+            transitions.put(curr, new HashMap<ValuationSet, State>());
             for (ValuationSet succVals : succValSets) {
                 //Tuple<State, String> succStateLabel = generateSuccState(curr, succVals);
                 State succ = generateSuccState(curr, succVals);
@@ -85,7 +85,7 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
                     //stateLabels.put(succ, succStateLabel.right);
                     workstack.push(succ);
                 }
-                Tuple<State, State> statePair = new Tuple(curr, succ);
+                Tuple<State, State> statePair = new Tuple<State, State>(curr, succ);
                 ValuationSet newVals;
                 if (edgeBetween.containsKey(statePair)) {  // update edge
                     ValuationSet oldVals = edgeBetween.get(statePair);
@@ -106,14 +106,14 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
         return this;
     }
 
-    public Automaton useSinks() {
+    public Automaton<State> useSinks() {
         for (State s : states) {
-            Tuple<State, State> selfloop = new Tuple(s, s);
+            Tuple<State, State> selfloop = new Tuple<State, State>(s, s);
             if (edgeBetween.containsKey(selfloop) && edgeBetween.get(selfloop).isAllVals() && !s.equals(initialState)) {
                 //(transitions.get(s).size()==1) && (transitions.get(s).values().contains(s))
                 sinks.add(s);
                 edgeBetween.remove(selfloop);
-                transitions.put(s, new HashMap());
+                transitions.put(s, new HashMap<ValuationSet,State>());
             }
         }
         return this;
@@ -135,10 +135,10 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
      */
     // TODO to abstract ProductAutomaton ?
     protected static Set<ValuationSet> generatePartitioning(Set<Set<ValuationSet>> product) {
-        Set<ValuationSet> partitioning = new HashSet();
+        Set<ValuationSet> partitioning = new HashSet<ValuationSet>();
         partitioning.add(new ValuationSetBDD(BDDForVariables.getTrueBDD()));
         for (Set<ValuationSet> vSets : product) {
-            Set<ValuationSet> partitioningNew = new HashSet();
+            Set<ValuationSet> partitioningNew = new HashSet<ValuationSet>();
             for (ValuationSet vSet : vSets) {
                 for (ValuationSet vSetOld : partitioning) {
                     partitioningNew.add(vSetOld.and(vSet));
@@ -226,5 +226,8 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
         }
         return result;
     }
+    
+    
+
 
 }

@@ -13,27 +13,33 @@ public interface LTLParserConstants {
   /** RegularExpression Id. */
   int FOP = 5;
   /** RegularExpression Id. */
-  int GOP = 6;
+  int VOP = 6;
   /** RegularExpression Id. */
-  int XOP = 7;
+  int ROP = 7;
   /** RegularExpression Id. */
-  int NEG = 8;
+  int WOP = 8;
   /** RegularExpression Id. */
-  int UOP = 9;
+  int GOP = 9;
   /** RegularExpression Id. */
-  int AND = 10;
+  int XOP = 10;
   /** RegularExpression Id. */
-  int OR = 11;
+  int NEG = 11;
   /** RegularExpression Id. */
-  int LPAR = 12;
+  int UOP = 12;
   /** RegularExpression Id. */
-  int RPAR = 13;
+  int AND = 13;
   /** RegularExpression Id. */
-  int TRUE = 14;
+  int OR = 14;
   /** RegularExpression Id. */
-  int FALSE = 15;
+  int LPAR = 15;
   /** RegularExpression Id. */
-  int ID = 16;
+  int RPAR = 16;
+  /** RegularExpression Id. */
+  int TRUE = 17;
+  /** RegularExpression Id. */
+  int FALSE = 18;
+  /** RegularExpression Id. */
+  int ID = 19;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -46,6 +52,9 @@ public interface LTLParserConstants {
     "\"\\t\"",
     "\"\\n\"",
     "\"F\"",
+    "\"V\"",
+    "\"R\"",
+    "\"W\"",
     "\"G\"",
     "\"X\"",
     "\"!\"",

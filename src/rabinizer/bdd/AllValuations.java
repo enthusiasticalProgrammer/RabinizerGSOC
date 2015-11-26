@@ -5,7 +5,7 @@
  */
 package rabinizer.bdd;
 
-import net.sf.javabdd.*;
+
 import java.util.*;
 
 /**
@@ -44,10 +44,10 @@ public class AllValuations {
      * @return
      */
     public static void initializeValuations(int n) {
-        allValuations = new ArrayList();
+        allValuations = new ArrayList<Valuation>();
         boolean[] values = new boolean[n];
         enumerateValuations(values, n - 1);
-        allValuationsAsSets = new HashSet();
+        allValuationsAsSets = new HashSet<ValuationSet>();
         for(Valuation v:allValuations){
             allValuationsAsSets.add(new ValuationSetExplicit(v));
         }

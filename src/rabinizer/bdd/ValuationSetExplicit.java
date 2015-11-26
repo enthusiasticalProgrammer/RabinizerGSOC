@@ -9,6 +9,8 @@ import net.sf.javabdd.BDD;
 import rabinizer.formulas.BooleanConstant;
 import rabinizer.formulas.Disjunction;
 import rabinizer.formulas.Formula;
+import rabinizer.formulas.FormulaFactory;
+
 import java.util.*;
 import rabinizer.formulas.Literal;
 
@@ -21,7 +23,7 @@ public class ValuationSetExplicit extends ValuationSet {
     private Set<Valuation> valuations;
 
     public ValuationSetExplicit() {
-        valuations = new HashSet();
+        valuations = new HashSet<Valuation>();
     }
 
     public ValuationSetExplicit(ValuationSet vs) {
@@ -39,9 +41,9 @@ public class ValuationSetExplicit extends ValuationSet {
 
     @Override
     public Formula toFormula() {
-        Formula result = new BooleanConstant(false);
+        Formula result = FormulaFactory.mkConst(false);
         for (Valuation v : valuations) {
-            result = (new Disjunction(result, v.toFormula())).representative();
+            result = (FormulaFactory.mkOr(result, v.toFormula())).representative();
         }
         return result.representative();
     }
@@ -71,11 +73,6 @@ public class ValuationSetExplicit extends ValuationSet {
         return this;
     }
 
-    @Override
-    public ValuationSet add(Valuation v) {
-        valuations.add(v);
-        return this;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -108,7 +105,7 @@ public class ValuationSetExplicit extends ValuationSet {
     
     @Override
     public ValuationSet or(ValuationSet vs) {
-        Set<Valuation> union = new HashSet();
+        Set<Valuation> union = new HashSet<Valuation>();
         union.addAll(valuations);
         union.addAll(vs.toSet());
         return new ValuationSetExplicit(union);

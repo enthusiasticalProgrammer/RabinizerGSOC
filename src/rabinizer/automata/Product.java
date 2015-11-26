@@ -8,7 +8,6 @@ package rabinizer.automata;
 import java.util.*;
 import rabinizer.bdd.Valuation;
 import rabinizer.bdd.ValuationSet;
-import rabinizer.exec.Tuple;
 import rabinizer.formulas.Formula;
 
 /**
@@ -69,7 +68,7 @@ public class Product extends Automaton<ProductState> {
 
     @Override
     protected Set<ValuationSet> generateSuccTransitions(ProductState s) {
-        Set<Set<ValuationSet>> product = new HashSet();
+        Set<Set<ValuationSet>> product = new HashSet<Set<ValuationSet>>();
         product.add(master.transitions.get(s.masterState).keySet());
         for (Formula slaveFormula : s.keySet()) {
             product.add(slaves.get(slaveFormula).transitions.get(s.get(slaveFormula)).keySet());
@@ -78,7 +77,7 @@ public class Product extends Automaton<ProductState> {
     }
     
     Set<ValuationSet> generateSuccTransitionsReflectingSinks(ProductState s) {
-        Set<Set<ValuationSet>> product = new HashSet();
+        Set<Set<ValuationSet>> product = new HashSet<Set<ValuationSet>>();
         product.add(master.transitions.get(s.masterState).keySet());
         for (Formula slaveFormula : s.keySet()) {
             FormulaAutomaton m = slaves.get(slaveFormula).mojmir;
@@ -86,7 +85,7 @@ public class Product extends Automaton<ProductState> {
                 product.add(m.transitions.get(fs).keySet());   
             }
         }
-        product.remove(new HashSet()); // removing empty trans due to sinks
+        product.remove(new HashSet<Object>()); // removing empty trans due to sinks
         return generatePartitioning(product);
     }
 

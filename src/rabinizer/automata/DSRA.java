@@ -6,7 +6,6 @@
 package rabinizer.automata;
 
 import java.util.*;
-import static rabinizer.automata.Automaton.generatePartitioning;
 import rabinizer.bdd.AllValuations;
 import rabinizer.bdd.MyBDD;
 import rabinizer.bdd.Valuation;
@@ -27,7 +26,7 @@ public class DSRA extends Automaton<ProductDegenAccState> implements AccAutomato
     public DSRA(DTRA dtra) {
         this.dtra = dtra;
         this.accTR = dtra.accTR;
-        stateAcceptance = new HashMap();
+        stateAcceptance = new HashMap<ProductDegenState,Set<Integer>>();
         for (ProductDegenState s : dtra.states) {
             stateAcceptance.put(s, new HashSet());
             for (int i = 0; i < accTR.size(); i++) {
@@ -52,7 +51,7 @@ public class DSRA extends Automaton<ProductDegenAccState> implements AccAutomato
     protected ProductDegenAccState generateSuccState(ProductDegenAccState s, ValuationSet vs) {
         Valuation v = vs.pickAny();
         ProductDegenState succ = dtra.succ(s.left, v);
-        Set<Integer> accSets = new HashSet(stateAcceptance.get(succ));
+        Set<Integer> accSets = new HashSet<Integer>(stateAcceptance.get(succ));
         for (int i = 0; i < accTR.size(); i++) {
             RabinPair<ProductDegenState> rp = accTR.get(i);
             if (rp.left != null && rp.left.get(s.left) != null && rp.left.get(s.left).contains(v)

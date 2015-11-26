@@ -47,7 +47,7 @@ public class DTGRARaw /*implements AccAutomatonInterface*/ {
         Main.verboseln("========================================");
         Main.nonsilent("Generating Mojmir & Rabin slaves");
         Set<Formula> gSubformulas = phi.gSubformulas(); // without outer G
-        Map<Formula, RabinSlave> slaves = new HashMap();
+        Map<Formula, RabinSlave> slaves = new HashMap<Formula, RabinSlave>();
         for (Formula f : gSubformulas) {
             FormulaAutomaton mSlave;
             if (unfoldedOn) {  // unfold upon arrival to state
@@ -91,26 +91,6 @@ public class DTGRARaw /*implements AccAutomatonInterface*/ {
         }
     }
 
-    /*
-    public String accTGR() {
-        return accTGR.toString();
-    }
-
-    public String toDotty() {
-        return automaton.toDotty();
-    }
     
-    public String toHOA() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    public String acc() {
-        return accTGR.toString();
-    }
-
-    public int size() {
-        return automaton.size();
-    }  
-    */
     
 }

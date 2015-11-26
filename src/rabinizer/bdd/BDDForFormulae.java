@@ -29,7 +29,7 @@ public class BDDForFormulae {
     public static void init() {
         bijectionBooleanAtomBddVar = new BijectionBooleanAtomBddVar();
         bddFactory = BDDFactory.init("java", 100, 100);
-        bddToRepresentative = new HashMap();
+        bddToRepresentative = new HashMap<BDD, Formula>();
     }
 
     /**

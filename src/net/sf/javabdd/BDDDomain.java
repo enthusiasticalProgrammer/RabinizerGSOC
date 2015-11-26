@@ -377,7 +377,7 @@ public abstract class BDDDomain {
         if (max != -1 && n > max)
             n = max;
         BigInteger[] res = new BigInteger[n];
-        Iterator it = bdd.iterator(myvarset);
+        Iterator<?> it = bdd.iterator(myvarset);
         for (int i = 0; i < n; i++) {
             BDD bi = (BDD) it.next();
             res[i] = bi.scanVar(this);

@@ -10,7 +10,12 @@ import rabinizer.bdd.Valuation;
 
 public class AccTGR extends ArrayList<GRabinPairT> {
 
-    public AccTGR(AccTGRRaw accTGR) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 2472964991141498843L;
+
+	public AccTGR(AccTGRRaw accTGR) {
         super();
         for (GRabinPairRaw grp : accTGR) {
             add(grp.order());

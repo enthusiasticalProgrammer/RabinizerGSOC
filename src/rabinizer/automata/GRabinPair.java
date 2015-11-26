@@ -28,7 +28,7 @@ public class GRabinPair<BaseSet> extends Tuple<BaseSet, List<BaseSet>> {
     */
     
     public final List<BaseSet> order(Set<BaseSet> r) {
-        List<BaseSet> result = new ArrayList(r.size());
+        List<BaseSet> result = new ArrayList<BaseSet>(r.size());
         for (BaseSet ts : r) {
             result.add(ts);
         }

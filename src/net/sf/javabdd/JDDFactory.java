@@ -4,8 +4,10 @@
 package net.sf.javabdd;
 
 import java.util.Collection;
-import java.util.List;
+
 import java.math.BigInteger;
+
+
 
 /**
  * JDDFactory
@@ -133,8 +135,6 @@ public class JDDFactory extends BDDFactory {
          * @see net.sf.javabdd.BDD#compose(net.sf.javabdd.BDD, int)
          */
         public BDD compose(BDD g, int var) {
-            int x = _index;
-            int y = ((bdd) g)._index;
             return null; // todo.
         }
 
@@ -142,7 +142,6 @@ public class JDDFactory extends BDDFactory {
          * @see net.sf.javabdd.BDD#veccompose(net.sf.javabdd.BDDPairing)
          */
         public BDD veccompose(BDDPairing pair) {
-            int x = _index;
             return null; // todo.
         }
 
@@ -150,8 +149,6 @@ public class JDDFactory extends BDDFactory {
          * @see net.sf.javabdd.BDD#constrain(net.sf.javabdd.BDD)
          */
         public BDD constrain(BDD that) {
-            int x = _index;
-            int y = ((bdd) that)._index;
             return null; // todo.
         }
 
@@ -177,8 +174,6 @@ public class JDDFactory extends BDDFactory {
          * @see net.sf.javabdd.BDD#unique(net.sf.javabdd.BDD)
          */
         public BDD unique(BDD var) {
-            int x = _index;
-            int y = ((bdd) var)._index;
             return null; // todo.
         }
 
@@ -303,10 +298,6 @@ public class JDDFactory extends BDDFactory {
          * @see net.sf.javabdd.BDD#applyUni(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp, net.sf.javabdd.BDD)
          */
         public BDD applyUni(BDD that, BDDOp opr, BDD var) {
-            int x = _index;
-            int y = ((bdd) that)._index;
-            int z = opr.id;
-            int a = ((bdd) var)._index;
             throw new BDDException(); // todo.
         }
 
@@ -367,7 +358,7 @@ public class JDDFactory extends BDDFactory {
             return _index;
         }
 
-        static final boolean USE_FINALIZER = false;
+        
         
         /**
          * @see java.lang.Object#finalize()
@@ -407,12 +398,6 @@ public class JDDFactory extends BDDFactory {
             throw new UnsupportedOperationException();
         }
 
-        /* (non-Javadoc)
-         * @see net.sf.javabdd.BDD#allsat()
-         */
-        public List allsat() {
-            throw new BDDException();
-        }
 
         /* (non-Javadoc)
          * @see net.sf.javabdd.BDD#pathCount()
@@ -484,12 +469,6 @@ public class JDDFactory extends BDDFactory {
             }
             //debug();
             pairing = bdd.createPermutation(from, to);
-        }
-        
-        void debug() {
-            for (int i = 0; i < from.length; ++i) {
-                System.out.println(bdd.getVar(from[i])+" -> "+bdd.getVar(to[i]));
-            }
         }
         
         /* (non-Javadoc)
@@ -848,7 +827,7 @@ public class JDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDFactory#nodeCount(java.util.Collection)
      */
-    public int nodeCount(Collection r) {
+    public int nodeCount(Collection<BDD> r) {
         throw new BDDException();
     }
 

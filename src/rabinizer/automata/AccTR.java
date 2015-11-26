@@ -9,8 +9,7 @@ import java.util.*;
 import rabinizer.bdd.Valuation;
 import rabinizer.bdd.ValuationSet;
 import rabinizer.bdd.ValuationSetBDD;
-import rabinizer.exec.Tuple;
-import rabinizer.formulas.Formula;
+
 
 /**
  *
@@ -18,12 +17,17 @@ import rabinizer.formulas.Formula;
  */
 public class AccTR extends ArrayList<RabinPair<ProductDegenState>> {
 
-    public AccTR(AccTGR accTGR, DTRA dtra) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -5442515295977731129L;
+
+	public AccTR(AccTGR accTGR, DTRA dtra) {
         super();
         for (int i = 0; i < accTGR.size(); i++) {
             GRabinPairT grp = accTGR.get(i);
-            TranSet<ProductDegenState> fin = new TranSet();
-            TranSet<ProductDegenState> inf = new TranSet();
+            TranSet<ProductDegenState> fin = new TranSet<ProductDegenState>();
+            TranSet<ProductDegenState> inf = new TranSet<ProductDegenState>();
             for (ProductDegenState s : dtra.states) {
                 ValuationSet vsFin = grp.left.get(s.left);
                 if (vsFin != null) {
@@ -33,7 +37,7 @@ public class AccTR extends ArrayList<RabinPair<ProductDegenState>> {
                     inf.add(s, ValuationSetBDD.getAllVals());
                 }
             }
-            this.add(new RabinPair(fin, inf));
+            this.add(new RabinPair<ProductDegenState>(fin, inf));
         }
     }
 

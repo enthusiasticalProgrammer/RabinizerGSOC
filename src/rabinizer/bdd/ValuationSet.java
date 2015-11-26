@@ -1,21 +1,14 @@
 package rabinizer.bdd;
 
-import rabinizer.automata.*;
-import rabinizer.exec.*;
+
 import java.util.*;
 
-import rabinizer.formulas.BooleanConstant;
-import rabinizer.formulas.Disjunction;
+
 import rabinizer.formulas.Formula;
 import rabinizer.formulas.Literal;
 import net.sf.javabdd.*;
 
 public abstract class ValuationSet extends Object {
-
-    /**
-     * An automatically generated serial version.
-     */
-    private static final long serialVersionUID = -5648284081889006821L;
 
     //protected static BDDFactory bf;
     public abstract Formula toFormula();
@@ -27,8 +20,6 @@ public abstract class ValuationSet extends Object {
     public abstract Valuation pickAny();
 
     public abstract ValuationSet add(ValuationSet vs);
-
-    public abstract ValuationSet add(Valuation v);
 
     @Override
     public abstract boolean equals(Object o);

@@ -6,7 +6,6 @@
 
 package rabinizer.automata;
 
-import rabinizer.formulas.Formula;
 import java.util.*;
 
 /**

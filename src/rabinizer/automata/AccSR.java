@@ -13,10 +13,15 @@ import java.util.*;
  */
 public class AccSR extends ArrayList<Set<ProductDegenAccState>> {
 
-    AccSR(AccTR accTR, DSRA dsra) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	AccSR(AccTR accTR, DSRA dsra) {
         super();
         for (int i = 0; i < 2 * accTR.size(); i++) {
-            this.add(new HashSet());
+            this.add(new HashSet<ProductDegenAccState>());
         }
         for (ProductDegenAccState s : dsra.states) {
             for (Integer i : s.right) {

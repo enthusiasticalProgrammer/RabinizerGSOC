@@ -5,6 +5,9 @@
  */
 package rabinizer.bdd;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import net.sf.javabdd.*;
 import rabinizer.formulas.*;
 
@@ -89,9 +92,9 @@ public class MyBDD {
 
     public Formula BDDtoFormula() {
         if (bdd.isOne()) {
-            return new BooleanConstant(true);
+            return FormulaFactory.mkConst(true);
         } else if (bdd.isZero()) {
-            return new BooleanConstant(false);
+            return FormulaFactory.mkConst(false);
         } else if (bdd.high().equals(bdd.low())) {
             return new MyBDD(bdd.high(), valuationType).BDDtoFormula();
         } else {
@@ -99,31 +102,31 @@ public class MyBDD {
             if (bdd.high().isOne()) {
                 high = variableToFormula(bdd.level());
             } else if (bdd.high().isZero()) {
-                high = new BooleanConstant(false);
+                high = FormulaFactory.mkConst(false);
             } else {
-                high = new Conjunction(variableToFormula(bdd.level()), new MyBDD(bdd.high(), valuationType).BDDtoFormula());
+                high = FormulaFactory.mkAnd(variableToFormula(bdd.level()), new MyBDD(bdd.high(), valuationType).BDDtoFormula());
             }
 
             Formula neg;
             if (variableToFormula(bdd.level()) instanceof Literal) {
                 neg = ((Literal) variableToFormula(bdd.level())).negated();
             } else {
-                neg = new Negation(variableToFormula(bdd.level()));
+                neg = FormulaFactory.mkNot(variableToFormula(bdd.level()));
             }
             if (bdd.low().isOne()) {
                 low = neg;
             } else if (bdd.low().isZero()) {
-                low = new BooleanConstant(false);
+                low = FormulaFactory.mkConst(false);
             } else {
-                low = new Conjunction(neg, new MyBDD(bdd.low(), valuationType).BDDtoFormula());
+                low = FormulaFactory.mkAnd(neg, new MyBDD(bdd.low(), valuationType).BDDtoFormula());
             }
 
-            if (high.equals(new BooleanConstant(false))) {
+            if (high.equals(FormulaFactory.mkConst(false))) {
                 return low;
-            } else if (low.equals(new BooleanConstant(false))) {
+            } else if (low.equals(FormulaFactory.mkConst(false))) {
                 return high;
             } else {
-                return new Disjunction(high, low);
+                return FormulaFactory.mkOr(high, low);
             }
         }
     }
@@ -134,7 +137,7 @@ public class MyBDD {
 
     public Formula variableToFormula(int var) {
         if (valuationType) {
-            return new Literal(BDDForVariables.bijectionIdAtom.atom(var), var, false);
+            return FormulaFactory.mkLit(BDDForVariables.bijectionIdAtom.atom(var), var, false);
         } else {
             return BDDForFormulae.bijectionBooleanAtomBddVar.atom(var);
         }

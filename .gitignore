@@ -1,3 +1,10 @@
-bin/*
-*.dot
-lib/junit-4.1.jar
+.classpath
+.project
+bin
+Z3
+lib
+build/
+.gradle/
+.settings
+output.dot
+

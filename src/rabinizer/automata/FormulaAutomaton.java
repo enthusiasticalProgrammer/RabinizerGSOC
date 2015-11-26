@@ -24,7 +24,7 @@ public abstract class FormulaAutomaton extends Automaton<FormulaState> {
     public FormulaAutomaton(Formula formula) {
         super();
         this.formula = formula;
-        stateLabels = new HashMap();
+        stateLabels = new HashMap<FormulaState, Formula>();
     }
 
     @Override
@@ -33,7 +33,7 @@ public abstract class FormulaAutomaton extends Automaton<FormulaState> {
     }
     
     protected static Set<ValuationSet> generatePartitioning(Formula f) { // TODO method of state
-        Set<ValuationSet> result = new HashSet();
+        Set<ValuationSet> result = new HashSet<ValuationSet>();
         Literal l = f.getAnUnguardedLiteral();
         if (l == null) {
             result.add(new ValuationSetBDD(BDDForVariables.getTrueBDD()));

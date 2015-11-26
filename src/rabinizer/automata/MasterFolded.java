@@ -10,7 +10,6 @@ package rabinizer.automata;
  * @author jkretinsky
  */
 import java.util.Set;
-import static rabinizer.automata.FormulaAutomaton.generatePartitioning;
 import rabinizer.bdd.ValuationSet;
 import rabinizer.formulas.Formula;
 

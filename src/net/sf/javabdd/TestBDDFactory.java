@@ -6,7 +6,8 @@ package net.sf.javabdd;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
+
+
 import java.io.IOException;
 import java.math.BigInteger;
 
@@ -61,7 +62,7 @@ public class TestBDDFactory extends BDDFactory {
         }
     }
     
-    private class TestBDD extends BDD {
+    public class TestBDD extends BDD {
 
         BDD b1, b2;
 
@@ -370,23 +371,7 @@ public class TestBDDFactory extends BDDFactory {
             return new TestBDD(r1, r2);
         }
 
-        /* (non-Javadoc)
-         * @see net.sf.javabdd.BDD#allsat()
-         */
-        public List allsat() {
-            List r1 = b1.allsat();
-            List r2 = b2.allsat();
-            assertSame(r1.size() == r2.size(), b1, b2, "allsat");
-            List r = new LinkedList();
-            Iterator i = r1.iterator();
-            Iterator j = r2.iterator();
-            while (i.hasNext()) {
-                BDD c1 = (BDD) i.next();
-                BDD c2 = (BDD) j.next();
-                r.add(new TestBDD(c1, c2));
-            }
-            return r;
-        }
+  
 
         /* (non-Javadoc)
          * @see net.sf.javabdd.BDD#replace(net.sf.javabdd.BDDPairing)
@@ -633,7 +618,7 @@ public class TestBDDFactory extends BDDFactory {
      */
     public int setVarNum(int num) {
         int r1 = f1.setVarNum(num);
-        int r2 = f2.setVarNum(num);
+        f2.setVarNum(num);
         //assertSame(r1 == r2, "setVarNum");
         return r1;
     }
@@ -838,10 +823,10 @@ public class TestBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDFactory#nodeCount(java.util.Collection)
      */
-    public int nodeCount(Collection r) {
-        LinkedList a1 = new LinkedList();
-        LinkedList a2 = new LinkedList();
-        for (Iterator i=r.iterator(); i.hasNext();) {
+    public int nodeCount(Collection<BDD> r) {
+        LinkedList<BDD> a1 = new LinkedList<BDD>();
+        LinkedList<BDD> a2 = new LinkedList<BDD>();
+        for (Iterator<BDD> i=r.iterator(); i.hasNext();) {
             TestBDD b = (TestBDD)i.next();
             a1.add(b.b1);
             a2.add(b.b2);
