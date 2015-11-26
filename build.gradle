@@ -1,7 +1,10 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
-sourceCompatibility = 1.5
+
+sourceCompatibility = 1.8
+
 version = '3.2'
+
 jar {
     from {
         configurations.compile.collect {
@@ -11,8 +14,9 @@ jar {
             it.isDirectory() ? it : zipTree(it)
         }
     }
+
     manifest {
-        attributes 'Implementation-Title': 'Z3',
+        attributes 'Implementation-Title': 'Rabinizer',
                    'Implementation-Version': 1.0,
                    'Main-class': 'rabinizer.exec.Main',
                    'Built-Date': new Date(),
@@ -23,6 +27,7 @@ jar {
 dependencies {
     compile fileTree(dir: 'lib', include: ['*.jar','*.zip'])
 }
+
 sourceSets {
     main {
         java {
