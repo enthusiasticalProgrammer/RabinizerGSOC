@@ -5,15 +5,18 @@
  */
 package rabinizer.automata;
 
-import java.util.*;
 import rabinizer.bdd.BDDForVariables;
 import rabinizer.bdd.ValuationSet;
 import rabinizer.bdd.ValuationSetBDD;
 import rabinizer.formulas.Formula;
 import rabinizer.formulas.Literal;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 /**
- *
  * @author jkretinsky
  */
 public abstract class FormulaAutomaton extends Automaton<FormulaState> {
@@ -27,11 +30,6 @@ public abstract class FormulaAutomaton extends Automaton<FormulaState> {
         stateLabels = new HashMap<FormulaState, Formula>();
     }
 
-    @Override
-    protected Set<ValuationSet> generateSuccTransitions(FormulaState s) {
-        return generatePartitioning(s.formula);
-    }
-    
     protected static Set<ValuationSet> generatePartitioning(Formula f) { // TODO method of state
         Set<ValuationSet> result = new HashSet<ValuationSet>();
         Literal l = f.getAnUnguardedLiteral();
@@ -50,6 +48,11 @@ public abstract class FormulaAutomaton extends Automaton<FormulaState> {
             }
         }
         return result;
+    }
+
+    @Override
+    protected Set<ValuationSet> generateSuccTransitions(FormulaState s) {
+        return generatePartitioning(s.formula);
     }
 
 }

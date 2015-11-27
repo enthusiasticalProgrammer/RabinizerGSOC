@@ -1,16 +1,17 @@
 package rabinizer.formulas;
 
-public class Suspendable implements AttributeVisitor {
+//visit returns true if formula is pure_eventual
+public class EventualVisitor implements AttributeVisitor {
 
-    private static Suspendable instance = new Suspendable();
+    private static EventualVisitor instance = new EventualVisitor();
 
     // to overwrite the public default constructor-->other classes have to call
     // getVisitor()
-    private Suspendable() {
+    private EventualVisitor() {
         super();
     }
 
-    public static Suspendable getVisitor() {
+    public static EventualVisitor getVisitor() {
         return instance;
     }
 
@@ -34,12 +35,8 @@ public class Suspendable implements AttributeVisitor {
         return evtl;
     }
 
-    public boolean visitF(FOperator f) {
-        return f.operand.acceptBool(this) || f.operand.acceptBool(UniversalityVisitor.getVisitor());
-    }
-
     public boolean visitG(GOperator g) {
-        return g.operand.acceptBool(this) || g.operand.acceptBool(EventualVisitor.getVisitor());
+        return g.operand.acceptBool(this);
     }
 
     public boolean visitL(Literal l) {
@@ -47,7 +44,7 @@ public class Suspendable implements AttributeVisitor {
     }
 
     public boolean visitN(Negation n) {
-        return n.operand.acceptBool(this);
+        return n.operand.acceptBool(UniversalityVisitor.getVisitor());
     }
 
     public boolean visitU(UOperator u) {
@@ -56,6 +53,10 @@ public class Suspendable implements AttributeVisitor {
 
     public boolean visitX(XOperator x) {
         return x.operand.acceptBool(this);
+    }
+
+    public boolean visitF(FOperator f) {
+        return true;
     }
 
 }

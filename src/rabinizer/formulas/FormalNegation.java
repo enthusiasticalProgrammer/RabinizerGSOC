@@ -5,17 +5,13 @@
  */
 package rabinizer.formulas;
 
-import net.sf.javabdd.BDD;
-import rabinizer.bdd.BDDForFormulae;
-
 /**
- *
  * @author jkretinsky
  */
 public class FormalNegation extends Negation { //used?
 
-    FormalNegation(Formula f,long id) {
-        super(f,id);
+    FormalNegation(Formula f, long id) {
+        super(f, id);
     }
 
 

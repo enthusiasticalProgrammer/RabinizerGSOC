@@ -1,29 +1,28 @@
 package rabinizer.bdd;
 
-import net.sf.javabdd.*;
+import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import rabinizer.formulas.Literal;
 
 /**
  * Service class that serves as an interface to javabdd.
  *
  * @author andreas
- *
  */
 public class BDDForVariables {
 
-    private static BDDFactory bf;
     public static int numOfVariables;
     public static String[] variables;
-
     /**
      * The bijection between atom identifiers and atoms for the purpose of 1.
      * Consistently creating literals across parsing of different formulas (e.g.
      * during unit testing) by mapping atoms to identifiers 2. Rendering
      * valuations by mapping identifiers to atoms
-     *
+     * <p>
      * Created and populated during parsing.
      */
     public static BijectionIdAtom bijectionIdAtom = new BijectionIdAtom();
+    private static BDDFactory bf;
 
     public static void init() {
         numOfVariables = bijectionIdAtom.size();

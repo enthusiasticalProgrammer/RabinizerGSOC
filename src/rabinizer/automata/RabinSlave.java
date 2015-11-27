@@ -5,13 +5,17 @@
  */
 package rabinizer.automata;
 
-import java.util.*;
-import rabinizer.bdd.*;
+import rabinizer.bdd.BDDForVariables;
+import rabinizer.bdd.Valuation;
+import rabinizer.bdd.ValuationSet;
 import rabinizer.exec.Main;
 import rabinizer.exec.Tuple;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
- *
  * @author jkretinsky
  */
 public class RabinSlave extends Automaton<RankingState> {

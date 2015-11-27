@@ -5,10 +5,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import rabinizer.automata.AccLocalFolded;
-import rabinizer.bdd.BDDForFormulae;
 import rabinizer.bdd.BDDForVariables;
-import rabinizer.bdd.BijectionIdAtom;
 import rabinizer.bdd.Valuation;
 import rabinizer.formulas.*;
 
@@ -20,11 +17,9 @@ public class TestFormula {
 	public void setUp(){
 		System.out.print("Testing...");
 
-		return;
 	}
 	public void tearDown(){
 		System.out.println("Testing done");
-		return;
 	}
 	
 	@Test
@@ -354,7 +349,7 @@ public class TestFormula {
 		Formula f3 = FormulaFactory.mkX(f1);
 		Formula f4 = FormulaFactory.mkG(FormulaFactory.mkF(f3));
 		Formula f5 = FormulaFactory.mkAnd(f4,f2);
-		Implication_Visitor v = Implication_Visitor.getVisitor();
+		ImplicationVisitor v = ImplicationVisitor.getVisitor();
 		assertEquals(f2.acceptBinarybool(v, f5),true);
 	}
 	
@@ -365,7 +360,7 @@ public class TestFormula {
 		Formula f2 = FormulaFactory.mkG(FormulaFactory.mkF(f1));
 		Formula f3 = FormulaFactory.mkX(f1);
 		Formula f4 = FormulaFactory.mkG(FormulaFactory.mkF(f3));
-		Simplify_Aggressively_Visitor v = Simplify_Aggressively_Visitor.getVisitor();
+		SimplifyAggressivelyVisitor v = SimplifyAggressivelyVisitor.getVisitor();
 		assertEquals(f4.acceptFormula(v),f2);
 	}
 	
@@ -376,7 +371,7 @@ public class TestFormula {
 		Formula f3 = FormulaFactory.mkX(f1);
 		Formula f4 = FormulaFactory.mkG(FormulaFactory.mkF(f3));
 		Formula f5 = FormulaFactory.mkAnd(f4,f2);
-		Simplify_Aggressively_Visitor v = Simplify_Aggressively_Visitor.getVisitor();
+		SimplifyAggressivelyVisitor v = SimplifyAggressivelyVisitor.getVisitor();
 		assertEquals(f5.acceptFormula(v),f2);
 	}
 	
@@ -386,7 +381,7 @@ public class TestFormula {
 		Formula f2 = FormulaFactory.mkF(FormulaFactory.mkConst(true));
 		Formula f3 = FormulaFactory.mkAnd(f1,f2);
 		
-		Simplify_Aggressively_Visitor v = Simplify_Aggressively_Visitor.getVisitor();
+		SimplifyAggressivelyVisitor v = SimplifyAggressivelyVisitor.getVisitor();
 		assertEquals(f3.acceptFormula(v),f1);
 	}
 	
@@ -395,7 +390,7 @@ public class TestFormula {
 		Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
 		Formula f2 = FormulaFactory.mkU(f1,f1);
 		
-		Simplify_Aggressively_Visitor v = Simplify_Aggressively_Visitor.getVisitor();
+		SimplifyAggressivelyVisitor v = SimplifyAggressivelyVisitor.getVisitor();
 		assertEquals(f2.acceptFormula(v),f1);
 	}
 	

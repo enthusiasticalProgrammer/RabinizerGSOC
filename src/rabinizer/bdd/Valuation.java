@@ -5,16 +5,20 @@
  */
 package rabinizer.bdd;
 
-import java.util.*;
-import rabinizer.formulas.*;
-import net.sf.javabdd.*;
+import net.sf.javabdd.BDD;
+import rabinizer.formulas.Formula;
+import rabinizer.formulas.FormulaFactory;
+import rabinizer.formulas.Literal;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A valuation is a map from atomic propositions to boolean values. In the AST
  * atomic propositions are integers.
  *
  * @author Jan Kretinsky & Ruslan Ledesma-Garza
- *
  */
 public class Valuation extends HashMap<Integer, Boolean> {
 
@@ -22,12 +26,13 @@ public class Valuation extends HashMap<Integer, Boolean> {
      * An automatically generated serial version.
      */
     private static final long serialVersionUID = -5927454815102468383L;
+    private String strValuation = null;
 
     //private static BDDFactory bf;
     public Valuation() {
         super();
     }
-    
+
     public Valuation(int n) {
         super();
         for (int i = 0; i < n; i++) {
@@ -48,13 +53,11 @@ public class Valuation extends HashMap<Integer, Boolean> {
             this.put(i, values.get(i));
         }
     }
-    
+
     public Valuation set(int var, boolean value) {
         this.put(var, value);
         return this;
     }
-
-    private String strValuation = null;
 
     public String toString() {
         if (strValuation == null) {
@@ -74,7 +77,8 @@ public class Valuation extends HashMap<Integer, Boolean> {
                     if (v == null) {
                         strValuation = strValuation + (e.getValue().booleanValue() ? ", v" + e.getKey().intValue() : "");
                     } else {
-                        strValuation = strValuation + (e.getValue().booleanValue() ? ", " + v : "");;
+                        strValuation = strValuation + (e.getValue().booleanValue() ? ", " + v : "");
+                        ;
                     }
 
                 }
@@ -87,8 +91,8 @@ public class Valuation extends HashMap<Integer, Boolean> {
     public Formula toFormula() {
         Formula result = null;
         for (Map.Entry<Integer, Boolean> e : this.entrySet()) {
-            Literal l =(Literal) FormulaFactory.mkLit(BDDForVariables.bijectionIdAtom.atom(e.getKey()),
-            		e.getKey(), !e.getValue());
+            Literal l = (Literal) FormulaFactory.mkLit(BDDForVariables.bijectionIdAtom.atom(e.getKey()),
+                    e.getKey(), !e.getValue());
             if (result == null) {
                 result = l;
             } else {
@@ -98,7 +102,7 @@ public class Valuation extends HashMap<Integer, Boolean> {
         return result;
     }
 
- 
+
     public BDD toValuationBDD() {
         BDD result = BDDForVariables.getTrueBDD();  // BDD for True
         for (Integer i : this.keySet()) {

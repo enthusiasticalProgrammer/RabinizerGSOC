@@ -6,11 +6,13 @@
 
 package rabinizer.automata;
 
-import java.util.*;
 import rabinizer.exec.Tuple;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 /**
- *
  * @author jkretinsky
  */
 public class GRabinPair<BaseSet> extends Tuple<BaseSet, List<BaseSet>> {
@@ -26,7 +28,7 @@ public class GRabinPair<BaseSet> extends Tuple<BaseSet, List<BaseSet>> {
         right = order(r);        
     }
     */
-    
+
     public final List<BaseSet> order(Set<BaseSet> r) {
         List<BaseSet> result = new ArrayList<BaseSet>(r.size());
         for (BaseSet ts : r) {
@@ -47,6 +49,6 @@ public class GRabinPair<BaseSet> extends Tuple<BaseSet, List<BaseSet>> {
         }
         return result;
     }
-    
-    
+
+
 }

@@ -5,14 +5,12 @@
  */
 package rabinizer.bdd;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import net.sf.javabdd.*;
-import rabinizer.formulas.*;
+import net.sf.javabdd.BDD;
+import rabinizer.formulas.Formula;
+import rabinizer.formulas.FormulaFactory;
+import rabinizer.formulas.Literal;
 
 /**
- *
  * @author jkretinsky
  */
 public class MyBDD {
@@ -46,17 +44,17 @@ public class MyBDD {
                 firstOp = true;
             } else if (!bdd.high().isZero()) {
                 result += "(" + variableToString(bdd.level()) + "&"
-                    + new MyBDD(bdd.high(), valuationType).BDDtoString() + ")";
+                        + new MyBDD(bdd.high(), valuationType).BDDtoString() + ")";
                 firstOp = true;
             }
 
             if (bdd.low().isOne()) {
                 result += (firstOp ? "+" : "") + "!"
-                    + variableToString(bdd.level()) + "";
+                        + variableToString(bdd.level()) + "";
             } else if (!bdd.low().isZero()) {
                 result += (firstOp ? "+" : "") + "(!"
-                    + variableToString(bdd.level()) + "&"
-                    + new MyBDD(bdd.low(), valuationType).BDDtoString() + ")";
+                        + variableToString(bdd.level()) + "&"
+                        + new MyBDD(bdd.low(), valuationType).BDDtoString() + ")";
             }
             result += "";
             return result;

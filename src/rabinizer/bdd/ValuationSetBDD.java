@@ -5,13 +5,15 @@
  */
 package rabinizer.bdd;
 
-import java.util.*;
 import net.sf.javabdd.BDD;
 import rabinizer.formulas.Formula;
 import rabinizer.formulas.Literal;
 
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
 /**
- *
  * @author jkretinsky
  */
 public class ValuationSetBDD extends ValuationSet {
@@ -24,6 +26,10 @@ public class ValuationSetBDD extends ValuationSet {
 
     public ValuationSetBDD(ValuationSet vs) {
         valuations = vs.toBdd();
+    }
+
+    public static ValuationSetBDD getAllVals() {
+        return new ValuationSetBDD(BDDForVariables.getTrueBDD());
     }
 
     @Override
@@ -68,7 +74,7 @@ public class ValuationSetBDD extends ValuationSet {
         valuations = valuations.or(vs.toBdd());
         return this;
     }
- 
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof ValuationSet)) {
@@ -114,12 +120,12 @@ public class ValuationSetBDD extends ValuationSet {
     public ValuationSet and(ValuationSet vs) {
         return new ValuationSetBDD(valuations.and(vs.toBdd()));
     }
-    
+
     @Override
     public ValuationSet or(ValuationSet vs) {
         return new ValuationSetBDD(valuations.or(vs.toBdd()));
     }
-    
+
     @Override
     public ValuationSet complement() {
         return new ValuationSetBDD(valuations.not());
@@ -128,10 +134,6 @@ public class ValuationSetBDD extends ValuationSet {
     @Override
     public void remove(ValuationSet vs) {
         valuations = valuations.and(vs.toBdd().not());
-    }
-    
-    public static ValuationSetBDD getAllVals(){
-        return new ValuationSetBDD(BDDForVariables.getTrueBDD());
     }
 
 }

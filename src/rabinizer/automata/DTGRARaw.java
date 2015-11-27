@@ -5,26 +5,27 @@
  */
 package rabinizer.automata;
 
-import java.util.*;
 import rabinizer.exec.Main;
 import rabinizer.formulas.Formula;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 /**
- *
  * @author jkretinsky
  */
 public class DTGRARaw /*implements AccAutomatonInterface*/ {
 
     public Product automaton;
-    AccLocal accLocal;
     public AccTGRRaw accTGR;
+    AccLocal accLocal;
 
     public DTGRARaw(Formula phi) {
         this(phi, true, true, true, true, true, true);
     }
 
     /**
-     *
      * @param phi
      * @param computeAcc
      * @param unfoldedOn
@@ -91,6 +92,5 @@ public class DTGRARaw /*implements AccAutomatonInterface*/ {
         }
     }
 
-    
-    
+
 }

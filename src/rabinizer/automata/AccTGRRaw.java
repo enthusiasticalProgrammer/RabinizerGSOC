@@ -5,22 +5,24 @@
  */
 package rabinizer.automata;
 
-import java.util.*;
 import rabinizer.bdd.GSet;
 import rabinizer.exec.Main;
 import rabinizer.formulas.Formula;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 /**
- *
  * @author jkretinsky
  */
 public class AccTGRRaw extends HashSet<GRabinPairRaw> {
 
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 245172601429256815L;
-	private final TranSet<ProductState> allTrans;
+     *
+     */
+    private static final long serialVersionUID = 245172601429256815L;
+    private final TranSet<ProductState> allTrans;
 
     public AccTGRRaw() {
         super();
@@ -208,7 +210,7 @@ public class AccTGRRaw extends HashSet<GRabinPairRaw> {
 
     public void printProgress(int phase) {
         Main.nonsilent("Phase " + phase + ": "
-            + Main.stopwatchLocal() + " s " + this.size() + " pairs");
+                + Main.stopwatchLocal() + " s " + this.size() + " pairs");
     }
 
     public String toString() {

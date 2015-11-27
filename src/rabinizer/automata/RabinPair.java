@@ -5,35 +5,30 @@
  */
 package rabinizer.automata;
 
-import java.util.Map;
 import rabinizer.bdd.ValuationSet;
 import rabinizer.exec.Main;
 import rabinizer.exec.Tuple;
 
+import java.util.Map;
+
 /**
- *
- * @author jkretinsky
  * @param <State>
+ * @author jkretinsky
  */
 public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
 
     public RabinPair(TranSet<State> l, TranSet<State> r) {
         super(l, r);
     }
-    
-    public RabinPair(RabinPair<State> rp){
-        super(rp.left,rp.right);
+
+    public RabinPair(RabinPair<State> rp) {
+        super(rp.left, rp.right);
     }
-    
-    public RabinPair(RabinSlave slave, Map<FormulaState, Boolean> finalStates, int rank, Product product){
+
+    public RabinPair(RabinSlave slave, Map<FormulaState, Boolean> finalStates, int rank, Product product) {
         this(fromSlave(slave, finalStates, rank, product));
     }
-    
-    @Override
-    public String toString() {
-        return "Fin:\n" + (left == null ? "trivial" : left) + "\nInf:\n" + (right == null ? "trivial" : right);
-    }
-    
+
     private static RabinPair fromSlave(RabinSlave slave, Map<FormulaState, Boolean> finalStates, int rank, Product product) {
 
         // Set fail
@@ -55,7 +50,7 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
             if (rs != null) { // relevant slave
                 for (FormulaState fs : rs.keySet()) {
                     if (failM.containsKey(fs)) {
-                        failP.add(ps, (ValuationSet) failM.get(fs));
+                        failP.add(ps, failM.get(fs));
                     }
                 }
             }
@@ -88,7 +83,7 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
             if (rs != null) { // relevant slave
                 for (FormulaState fs : rs.keySet()) {
                     if (succeedM.containsKey(fs) && (rs.get(fs) == rank)) {
-                        succeedP.add(ps, (ValuationSet) succeedM.get(fs));
+                        succeedP.add(ps, succeedM.get(fs));
                     }
                 }
             }
@@ -103,8 +98,8 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
                         for (FormulaState succ : slave.mojmir.states) {
                             ValuationSet vs1, vs2;
                             if (!finalStates.get(succ)
-                                && ((vs1 = slave.mojmir.edgeBetween.get(new Tuple<FormulaState, FormulaState>(fs, succ))) != null)
-                                && ((vs2 = slave.mojmir.edgeBetween.get(new Tuple<FormulaState,FormulaState>(fs2, succ))) != null)) {
+                                    && ((vs1 = slave.mojmir.edgeBetween.get(new Tuple<FormulaState, FormulaState>(fs, succ))) != null)
+                                    && ((vs2 = slave.mojmir.edgeBetween.get(new Tuple<FormulaState, FormulaState>(fs2, succ))) != null)) {
                                 if (!fs.equals(fs2)) {
                                     buyR.add(rs, vs1.and(vs2));
                                 } else if (succ.equals(slave.mojmir.initialState)) {
@@ -123,7 +118,7 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
             RankingState rs = ps.get(slave.mojmir.formula);
             if (rs != null) { // relevant slave
                 if (buyR.containsKey(rs)) {
-                    buyP.add(ps, (ValuationSet) buyR.get(rs));
+                    buyP.add(ps, buyR.get(rs));
                 }
             }
         }
@@ -137,6 +132,10 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
         return new RabinPair<ProductState>(failP.addAll(buyP), succeedP);
     }
 
-    
+    @Override
+    public String toString() {
+        return "Fin:\n" + (left == null ? "trivial" : left) + "\nInf:\n" + (right == null ? "trivial" : right);
+    }
+
 
 }

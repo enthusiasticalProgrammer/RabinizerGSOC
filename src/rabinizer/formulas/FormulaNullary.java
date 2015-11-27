@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- *
  * @author jkretinsky
  */
 public abstract class FormulaNullary extends Formula {

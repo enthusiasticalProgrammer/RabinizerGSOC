@@ -1,14 +1,16 @@
 package rabinizer.bdd;
 
-import java.util.*;
-import net.sf.javabdd.*;
-import rabinizer.formulas.*;
+import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
+import rabinizer.formulas.Formula;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Global state & pervasive methods.
  *
  * @author Ruslan Ledesma-Garza
- *
  */
 public class BDDForFormulae {
 
@@ -21,21 +23,20 @@ public class BDDForFormulae {
     /**
      * The map from boolean atoms to BDD variables for the purpose of
      * constructing BDDs over boolean atoms.
-     *
+     * <p>
      * Populated by Formula.bdd().
      */
     public static BijectionBooleanAtomBddVar bijectionBooleanAtomBddVar;
+    /**
+     * Cache for the representative of a given bdd
+     */
+    private static Map<BDD, Formula> bddToRepresentative;
 
     public static void init() {
         bijectionBooleanAtomBddVar = new BijectionBooleanAtomBddVar();
         bddFactory = BDDFactory.init("java", 100, 100);
         bddToRepresentative = new HashMap<BDD, Formula>();
     }
-
-    /**
-     * Cache for the representative of a given bdd
-     */
-    private static Map<BDD, Formula> bddToRepresentative;
 
     /**
      * Return the cached representative of a BDD.

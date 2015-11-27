@@ -5,20 +5,21 @@
  */
 package rabinizer.automata;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- *
  * @author jkretinsky
  */
 public class AccSR extends ArrayList<Set<ProductDegenAccState>> {
 
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+     *
+     */
+    private static final long serialVersionUID = 1L;
 
-	AccSR(AccTR accTR, DSRA dsra) {
+    AccSR(AccTR accTR, DSRA dsra) {
         super();
         for (int i = 0; i < 2 * accTR.size(); i++) {
             this.add(new HashSet<ProductDegenAccState>());
@@ -42,7 +43,7 @@ public class AccSR extends ArrayList<Set<ProductDegenAccState>> {
     String accSets(ProductDegenAccState s) {
         String result = "{";
         Set<Integer> accSets = s.right;
-        for (int i = 0; i < 2*size(); i++) {
+        for (int i = 0; i < 2 * size(); i++) {
             if (accSets.contains(i)) {
                 result += i + " ";
             }

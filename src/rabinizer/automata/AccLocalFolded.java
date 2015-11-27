@@ -6,31 +6,20 @@
 package rabinizer.automata;
 
 import rabinizer.bdd.GSet;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
 import rabinizer.bdd.Valuation;
 import rabinizer.bdd.ValuationSetBDD;
-import rabinizer.formulas.*;
+import rabinizer.formulas.Formula;
+import rabinizer.formulas.FormulaFactory;
+
+import java.util.Map;
 
 /**
- *
  * @author jkretinsky
  */
 public class AccLocalFolded extends AccLocal {
 
     public AccLocalFolded(Product product) {
         super(product);
-    }
-
-    @Override
-    protected TranSet<ProductState> computeAccMasterForState(GSet gSet, GSet gSetComplement, Map<Formula, Integer> ranking, ProductState ps) {
-        TranSet<ProductState> result = new TranSet<ProductState>();
-        if (!slavesEntail(gSet, gSetComplement, ps, ranking, null, ps.masterState.formula)) {
-            result.add(ps, ValuationSetBDD.getAllVals());
-        }
-        return result;
     }
 
     protected static boolean slavesEntail(GSet gSet, GSet gSetComplement, ProductState ps, Map<Formula, Integer> ranking, Valuation v, Formula consequent) {
@@ -50,6 +39,15 @@ public class AccLocalFolded extends AccLocal {
             antecedent = FormulaFactory.mkAnd(antecedent, slaveAntecedent);
         }
         return entails(antecedent, consequent);
+    }
+
+    @Override
+    protected TranSet<ProductState> computeAccMasterForState(GSet gSet, GSet gSetComplement, Map<Formula, Integer> ranking, ProductState ps) {
+        TranSet<ProductState> result = new TranSet<ProductState>();
+        if (!slavesEntail(gSet, gSetComplement, ps, ranking, null, ps.masterState.formula)) {
+            result.add(ps, ValuationSetBDD.getAllVals());
+        }
+        return result;
     }
 
 }

@@ -5,17 +5,18 @@
  */
 package rabinizer.automata;
 
-import java.util.ArrayList;
 import rabinizer.bdd.Valuation;
+
+import java.util.ArrayList;
 
 public class AccTGR extends ArrayList<GRabinPairT> {
 
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 2472964991141498843L;
+     *
+     */
+    private static final long serialVersionUID = 2472964991141498843L;
 
-	public AccTGR(AccTGRRaw accTGR) {
+    public AccTGR(AccTGRRaw accTGR) {
         super();
         for (GRabinPairRaw grp : accTGR) {
             add(grp.order());
@@ -25,12 +26,12 @@ public class AccTGR extends ArrayList<GRabinPairT> {
     String accSets(ProductState s, Valuation v) {
         String result = "";
         int sum = 0;
-        for (int i = 0; i < size(); i++) {
-            if (get(i).left.containsKey(s) && get(i).left.get(s).contains(v)) {
+        for (GRabinPairT gRabinPairT : this) {
+            if (gRabinPairT.left.containsKey(s) && gRabinPairT.left.get(s).contains(v)) {
                 result += sum + " ";
             }
             sum++;
-            for (TranSet<ProductState> ts : get(i).right) {
+            for (TranSet<ProductState> ts : gRabinPairT.right) {
                 if (ts.containsKey(s) && ts.get(s).contains(v)) {
                     result += sum + " ";
                 }
@@ -39,7 +40,7 @@ public class AccTGR extends ArrayList<GRabinPairT> {
         }
         return result;
     }
-    
+
     @Override
     public String toString() {
         String result = "Gen. Rabin acceptance condition";

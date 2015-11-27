@@ -1,12 +1,11 @@
 package rabinizer.bdd;
 
 
-import java.util.*;
-
-
+import net.sf.javabdd.BDD;
 import rabinizer.formulas.Formula;
 import rabinizer.formulas.Literal;
-import net.sf.javabdd.*;
+
+import java.util.Set;
 
 public abstract class ValuationSet extends Object {
 
@@ -49,5 +48,5 @@ public abstract class ValuationSet extends Object {
     public String toString() {
         return this.toFormula().toString();
     }
-    
+
 }

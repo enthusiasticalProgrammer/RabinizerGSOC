@@ -5,13 +5,15 @@
  */
 package rabinizer.automata;
 
-import java.util.*;
 import rabinizer.bdd.Valuation;
 import rabinizer.bdd.ValuationSet;
 import rabinizer.formulas.Formula;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 /**
- *
  * @author jkretinsky
  */
 public class Product extends Automaton<ProductState> {
@@ -29,12 +31,12 @@ public class Product extends Automaton<ProductState> {
          allSlaves.add(slaveFormula);
          }*/
     }
-    
+
     public Product(Product a) {
         super(a);
         master = a.master;
         slaves = a.slaves;
-        allSlaves = a.allSlaves;   
+        allSlaves = a.allSlaves;
     }
 
     @Override
@@ -42,7 +44,7 @@ public class Product extends Automaton<ProductState> {
         ProductState init = new ProductState(master.initialState);
         for (Formula slave : relevantSlaves(master.initialState)) {
             init.put(slave, slaves.get(slave).initialState);
-        }     
+        }
         return init;
     }
 
@@ -75,14 +77,14 @@ public class Product extends Automaton<ProductState> {
         }
         return generatePartitioning(product);
     }
-    
+
     Set<ValuationSet> generateSuccTransitionsReflectingSinks(ProductState s) {
         Set<Set<ValuationSet>> product = new HashSet<Set<ValuationSet>>();
         product.add(master.transitions.get(s.masterState).keySet());
         for (Formula slaveFormula : s.keySet()) {
             FormulaAutomaton m = slaves.get(slaveFormula).mojmir;
-            for(FormulaState fs :m.states){
-                product.add(m.transitions.get(fs).keySet());   
+            for (FormulaState fs : m.states) {
+                product.add(m.transitions.get(fs).keySet());
             }
         }
         product.remove(new HashSet<Object>()); // removing empty trans due to sinks

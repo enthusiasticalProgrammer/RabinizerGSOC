@@ -6,12 +6,13 @@
 package rabinizer.automata;
 
 /**
- *
  * @author jkretinsky
  */
-import java.util.Set;
+
 import rabinizer.bdd.ValuationSet;
 import rabinizer.formulas.Formula;
+
+import java.util.Set;
 
 public class MojmirSlaveFolded extends FormulaAutomaton {
 

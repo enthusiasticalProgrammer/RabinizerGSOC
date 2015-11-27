@@ -6,19 +6,18 @@
 package rabinizer.automata;
 
 /**
- *
  * @author jkretinsky
  */
 public interface AccAutomatonInterface {
 
-    public String toHOA();
+    String toHOA();
 
-    public String toDotty();
+    String toDotty();
 
-    public String acc();
+    String acc();
 
-    public int size();
-    
-    public int pairNumber();
+    int size();
+
+    int pairNumber();
 
 }

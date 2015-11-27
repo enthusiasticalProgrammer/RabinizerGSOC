@@ -6,17 +6,19 @@
 package rabinizer.bdd;
 
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
- *
  * @author jkretinsky
  */
 public class AllValuations {
 
     /**
      * All the possible valuations.
-     *
+     * <p>
      * Created and populated by initializeValuations.
      */
     public static List<Valuation> allValuations;
@@ -48,12 +50,11 @@ public class AllValuations {
         boolean[] values = new boolean[n];
         enumerateValuations(values, n - 1);
         allValuationsAsSets = new HashSet<ValuationSet>();
-        for(Valuation v:allValuations){
+        for (Valuation v : allValuations) {
             allValuationsAsSets.add(new ValuationSetExplicit(v));
         }
     }
-    
-    
+
 
     //public static BooleanConstant fTrue = new BooleanConstant(true);
     //public static BooleanConstant fFalse = new BooleanConstant(false);

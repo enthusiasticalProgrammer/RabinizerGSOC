@@ -5,12 +5,12 @@
  */
 package rabinizer.automata;
 
-import java.util.Arrays;
-import java.util.Set;
 import rabinizer.exec.Tuple;
 
+import java.util.Arrays;
+import java.util.Set;
+
 /**
- *
  * @author jkretinsky
  */
 public class ProductDegenAccState extends Tuple<ProductDegenState, Set<Integer>> {

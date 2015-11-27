@@ -5,12 +5,11 @@
  */
 package rabinizer.automata;
 
-import java.util.HashSet;
-import rabinizer.automata.ProductState;
 import rabinizer.exec.Tuple;
 
+import java.util.HashSet;
+
 /**
- *
  * @author jkretinsky
  */
 public class RabinAcc extends HashSet<RabinPair> {
@@ -20,7 +19,7 @@ public class RabinAcc extends HashSet<RabinPair> {
         String result = "\n";
         int i = 1;
         for (Tuple<TranSet<ProductState>, TranSet<ProductState>> pair : this) {
-            result += (i==1 ? "" : "\n") + "Pair " + i + "\n" + pair;
+            result += (i == 1 ? "" : "\n") + "Pair " + i + "\n" + pair;
         }
         return result;
     }

@@ -1,11 +1,11 @@
 package rabinizer.formulas;
 
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
 import net.sf.javabdd.BDD;
 import rabinizer.bdd.BDDForFormulae;
 
 import java.util.ArrayList;
-
-import com.microsoft.z3.*;
 
 public class BooleanConstant extends FormulaNullary {
 
@@ -14,8 +14,8 @@ public class BooleanConstant extends FormulaNullary {
 
     private final int cachedHash;
 
-    BooleanConstant(boolean value,long id) {
-    	super(id);
+    BooleanConstant(boolean value, long id) {
+        super(id);
         this.value = value;
         this.cachedHash = init_hash();
     }
@@ -27,10 +27,10 @@ public class BooleanConstant extends FormulaNullary {
 
     @Override
     public BDD bdd() {
-        if (cachedBdd == null) { 
+        if (cachedBdd == null) {
             cachedBdd = (this.value ? BDDForFormulae.bddFactory.one() : BDDForFormulae.bddFactory.zero());
             BDDForFormulae.representativeOfBdd(cachedBdd, this);
-        } 
+        }
         return cachedBdd;
     }
 
@@ -38,9 +38,9 @@ public class BooleanConstant extends FormulaNullary {
     public int hashCode() {
         return cachedHash;
     }
-    
+
     public boolean get_value() {
-    	return value;
+        return value;
     }
 
     @Override
@@ -69,53 +69,53 @@ public class BooleanConstant extends FormulaNullary {
     public Formula negationToNNF() {
         return FormulaFactory.mkConst(!value);
     }
-    
-    public BoolExpr toExpr(Context ctx){
-    	if(cachedLTL==null){
-    		cachedLTL=(value? ctx.mkTrue() : ctx.mkFalse());
-    	}
-    	return cachedLTL;
-    		
+
+    public BoolExpr toExpr(Context ctx) {
+        if (cachedLTL == null) {
+            cachedLTL = (value ? ctx.mkTrue() : ctx.mkFalse());
+        }
+        return cachedLTL;
+
     }
 
-	@Override
-	public String toZ3String(boolean is_atom) {
-		return (value ? "true" : "false");
-	}
+    @Override
+    public String toZ3String(boolean is_atom) {
+        return (value ? "true" : "false");
+    }
 
-	@Override
-	public ArrayList<String> getAllPropositions() {
-		return new ArrayList<String>();
-	}
+    @Override
+    public ArrayList<String> getAllPropositions() {
+        return new ArrayList<String>();
+    }
 
-	@Override
-	public Formula rmAllConstants() {
-		return FormulaFactory.mkConst(value);
-	}
+    @Override
+    public Formula rmAllConstants() {
+        return FormulaFactory.mkConst(value);
+    }
 
-	@Override
-	public Formula setToConst(long id, boolean constant) {
-		return this;
-	}
+    @Override
+    public Formula setToConst(long id, boolean constant) {
+        return this;
+    }
 
-	
-	private int init_hash() {
-		return value ? 1 : 2;
-	}
 
-	@Override
-	public Formula acceptFormula(Formula_Visitor v) {
-		return v.visitB(this);
-	}
+    private int init_hash() {
+        return value ? 1 : 2;
+    }
 
-	@Override
-	public boolean acceptBool(Attribute_Visitor v) {
-		return v.visitB(this);
-	}
+    @Override
+    public Formula acceptFormula(FormulaVisitor v) {
+        return v.visitB(this);
+    }
 
-	@Override
-	public boolean acceptBinarybool(Attribute_Binary_Visitor v, Formula f) {
-		return v.visitB(this, f);
-	}
+    @Override
+    public boolean acceptBool(AttributeVisitor v) {
+        return v.visitB(this);
+    }
+
+    @Override
+    public boolean acceptBinarybool(AttributeBinaryVisitor v, Formula f) {
+        return v.visitB(this, f);
+    }
 
 }

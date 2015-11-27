@@ -6,12 +6,13 @@
 package rabinizer.automata;
 
 /**
- *
  * @author jkretinsky
  */
-import java.util.Set;
+
 import rabinizer.bdd.ValuationSet;
 import rabinizer.formulas.Formula;
+
+import java.util.Set;
 
 public class MasterFolded extends FormulaAutomaton {
 
@@ -30,7 +31,7 @@ public class MasterFolded extends FormulaAutomaton {
         Formula succ = s.formula.unfold().temporalStep(vs.pickAny()).representative(); // any element of the equivalence class
         return new FormulaState(succ, succ);
     }
-    
+
     @Override
     protected Set<ValuationSet> generateSuccTransitions(FormulaState s) {
         return generatePartitioning(s.formula.unfold());

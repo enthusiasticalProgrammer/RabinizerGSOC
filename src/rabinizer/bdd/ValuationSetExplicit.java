@@ -6,16 +6,15 @@
 package rabinizer.bdd;
 
 import net.sf.javabdd.BDD;
-import rabinizer.formulas.BooleanConstant;
-import rabinizer.formulas.Disjunction;
 import rabinizer.formulas.Formula;
 import rabinizer.formulas.FormulaFactory;
-
-import java.util.*;
 import rabinizer.formulas.Literal;
 
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
 /**
- *
  * @author jkretinsky
  */
 public class ValuationSetExplicit extends ValuationSet {
@@ -29,7 +28,7 @@ public class ValuationSetExplicit extends ValuationSet {
     public ValuationSetExplicit(ValuationSet vs) {
         valuations = vs.toSet();
     }
-    
+
     public ValuationSetExplicit(Set<Valuation> vs) {
         valuations = vs;
     }
@@ -102,7 +101,7 @@ public class ValuationSetExplicit extends ValuationSet {
     public ValuationSet and(ValuationSet vs) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     @Override
     public ValuationSet or(ValuationSet vs) {
         Set<Valuation> union = new HashSet<Valuation>();

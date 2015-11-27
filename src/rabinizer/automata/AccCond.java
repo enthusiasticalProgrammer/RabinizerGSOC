@@ -7,9 +7,8 @@
 package rabinizer.automata;
 
 /**
- *
  * @author jkretinsky
  */
 public class AccCond {
-    
+
 }

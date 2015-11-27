@@ -6,9 +6,9 @@
 package rabinizer.automata;
 
 /**
- *
  * @author jkretinsky
  */
+
 import rabinizer.bdd.ValuationSet;
 import rabinizer.formulas.Formula;
 

@@ -4,18 +4,17 @@ public class Tuple<L, R> {
 
     public final L left;
     public final R right;
+    private String strTuple = null;
 
     public Tuple(L l, R r) {
         left = l;
         right = r;
     }
 
-    private String strTuple = null;
-
     @Override
     public String toString() {
         if (strTuple == null) {
-            strTuple = "<" + (left==null ? "null" : left.toString()) + ", " + (right==null ? "null" : right.toString()) + ">";
+            strTuple = "<" + (left == null ? "null" : left.toString()) + ", " + (right == null ? "null" : right.toString()) + ">";
         }
         return strTuple;
 //		return "(" + left.toString() + ", " + right.toString() + ")";

@@ -5,11 +5,10 @@
  */
 package rabinizer.automata;
 
-import rabinizer.bdd.*;
-import rabinizer.formulas.*;
+import rabinizer.bdd.ValuationSet;
+import rabinizer.formulas.Formula;
 
 /**
- *
  * @author jkretinsky
  */
 public class MojmirSlave extends FormulaAutomaton {
@@ -29,7 +28,7 @@ public class MojmirSlave extends FormulaAutomaton {
     @Override
     public FormulaState generateSuccState(FormulaState s, ValuationSet vs) {
         Formula label = s.formula.temporalStep(vs.pickAny()); // any element of the equivalence class
-        FormulaState state = new FormulaState(label.unfoldNoG().representative(), label); 
+        FormulaState state = new FormulaState(label.unfoldNoG().representative(), label);
         if (states.contains(state)) {
             state.label = stateLabels.get(state);
         } else {

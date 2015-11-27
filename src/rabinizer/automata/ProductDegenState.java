@@ -6,11 +6,11 @@
 
 package rabinizer.automata;
 
-import java.util.Map;
 import rabinizer.exec.Tuple;
 
+import java.util.Map;
+
 /**
- *
  * @author jkretinsky
  */
 public class ProductDegenState extends Tuple<ProductState, Map<Integer, Integer>> {
@@ -18,10 +18,10 @@ public class ProductDegenState extends Tuple<ProductState, Map<Integer, Integer>
     public ProductDegenState(ProductState ps, Map<Integer, Integer> awaitedIndices) {
         super(ps, awaitedIndices);
     }
-    
+
     @Override
-    public String toString(){
+    public String toString() {
         return left + " " + right;
     }
-    
+
 }

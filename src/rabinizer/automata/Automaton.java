@@ -5,19 +5,15 @@
  */
 package rabinizer.automata;
 
-import rabinizer.bdd.ValuationSet;
-import rabinizer.bdd.Valuation;
-import java.util.*;
-import rabinizer.bdd.BDDForVariables;
-import rabinizer.bdd.MyBDD;
-import rabinizer.bdd.ValuationSetBDD;
+import rabinizer.bdd.*;
 import rabinizer.exec.Main;
 import rabinizer.exec.Tuple;
 
+import java.util.*;
+
 /**
- *
- * @author jkretinsky
  * @param <State>
+ * @author jkretinsky
  */
 public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
 
@@ -39,7 +35,7 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
         statesToNumbers = new HashMap<State, Integer>();
         //this.generate();
     }
-    
+
     public Automaton(Automaton<State> a) {
         states = a.states;
         transitions = a.transitions;
@@ -49,6 +45,28 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
         statesToNumbers = a.statesToNumbers;
     }
 
+    /*
+     protected String nameOfState(State s) {
+     return stateLabels.get(s);
+     }
+     */
+    // TODO to abstract ProductAutomaton ?
+    protected static Set<ValuationSet> generatePartitioning(Set<Set<ValuationSet>> product) {
+        Set<ValuationSet> partitioning = new HashSet<ValuationSet>();
+        partitioning.add(new ValuationSetBDD(BDDForVariables.getTrueBDD()));
+        for (Set<ValuationSet> vSets : product) {
+            Set<ValuationSet> partitioningNew = new HashSet<ValuationSet>();
+            for (ValuationSet vSet : vSets) {
+                for (ValuationSet vSetOld : partitioning) {
+                    partitioningNew.add(vSetOld.and(vSet));
+                }
+            }
+            partitioning = partitioningNew;
+        }
+        partitioning.remove(new ValuationSetBDD(BDDForVariables.getFalseBDD()));
+        return partitioning;
+    }
+
     protected abstract State generateInitialState();
 
     protected abstract State generateSuccState(State s, ValuationSet vs);
@@ -56,7 +74,7 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
     protected abstract Set<ValuationSet> generateSuccTransitions(State s);
 
     public Automaton<State> generate() {
-        initialState = generateInitialState();;
+        initialState = generateInitialState();
         states.add(initialState);
         //stateLabels.put(initialState, init.right);
         statesToNumbers.put(initialState, 0);
@@ -113,7 +131,7 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
                 //(transitions.get(s).size()==1) && (transitions.get(s).values().contains(s))
                 sinks.add(s);
                 edgeBetween.remove(selfloop);
-                transitions.put(s, new HashMap<ValuationSet,State>());
+                transitions.put(s, new HashMap<ValuationSet, State>());
             }
         }
         return this;
@@ -126,28 +144,6 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
             }
         }
         return null;
-    }
-
-    /*
-     protected String nameOfState(State s) {
-     return stateLabels.get(s);
-     }
-     */
-    // TODO to abstract ProductAutomaton ?
-    protected static Set<ValuationSet> generatePartitioning(Set<Set<ValuationSet>> product) {
-        Set<ValuationSet> partitioning = new HashSet<ValuationSet>();
-        partitioning.add(new ValuationSetBDD(BDDForVariables.getTrueBDD()));
-        for (Set<ValuationSet> vSets : product) {
-            Set<ValuationSet> partitioningNew = new HashSet<ValuationSet>();
-            for (ValuationSet vSet : vSets) {
-                for (ValuationSet vSetOld : partitioning) {
-                    partitioningNew.add(vSetOld.and(vSet));
-                }
-            }
-            partitioning = partitioningNew;
-        }
-        partitioning.remove(new ValuationSetBDD(BDDForVariables.getFalseBDD()));
-        return partitioning;
     }
 
     public int size() {
@@ -169,7 +165,7 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
         for (State s : transitions.keySet()) {
             for (Map.Entry<ValuationSet, State> edge : transitions.get(s).entrySet()) {
                 r += "\"" + s + "\" -> \"" + edge.getValue()
-                    + "\" [label=\"" + edge.getKey() + "\"];\n";
+                        + "\" [label=\"" + edge.getKey() + "\"];\n";
             }
         }
         return r + "}";
@@ -221,13 +217,11 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
     protected String outTransToHOA(State s) {
         String result = "";
         for (ValuationSet vs : transitions.get(s).keySet()) {
-            result += "[" + (new MyBDD(vs.toBdd(),true)).BDDtoNumericString() + "] " 
-                + statesToNumbers.get(transitions.get(s).get(vs)) + "\n";
+            result += "[" + (new MyBDD(vs.toBdd(), true)).BDDtoNumericString() + "] "
+                    + statesToNumbers.get(transitions.get(s).get(vs)) + "\n";
         }
         return result;
     }
-    
-    
 
 
 }

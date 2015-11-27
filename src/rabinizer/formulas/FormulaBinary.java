@@ -9,15 +9,14 @@ import java.util.Set;
 
 
 /**
- *
  * @author jkretinsky
  */
 public abstract class FormulaBinary extends Formula {
 
     final Formula left, right;
-    
+
     FormulaBinary(Formula left, Formula right, long id) {
-    	super(id);
+        super(id);
         this.left = left;
         this.right = right;
     }
@@ -27,10 +26,10 @@ public abstract class FormulaBinary extends Formula {
         if (!(o instanceof FormulaBinary)) {
             return false;
         } else {
-            return o.getClass().equals(getClass()) && ((FormulaBinary) o).left.unique_id==left.unique_id && ((FormulaBinary) o).right.unique_id==right.unique_id;
+            return o.getClass().equals(getClass()) && ((FormulaBinary) o).left.unique_id == left.unique_id && ((FormulaBinary) o).right.unique_id == right.unique_id;
         }
     }
-    
+
     @Override
     public String toString() {
         if (cachedString == null) {
@@ -43,7 +42,7 @@ public abstract class FormulaBinary extends Formula {
     public String toReversePolishString() {
         return operator() + " " + left.toReversePolishString() + " " + right.toReversePolishString();
     }
-    
+
     @Override
     public boolean containsG() {
         return left.containsG() || right.containsG();

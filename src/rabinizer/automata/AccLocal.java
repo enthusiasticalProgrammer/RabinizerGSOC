@@ -6,34 +6,36 @@
 package rabinizer.automata;
 
 
-import rabinizer.bdd.GSet;
-
-
-import java.util.*;
-
-import com.microsoft.z3.*;
-
-import rabinizer.formulas.*;
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.Solver;
+import com.microsoft.z3.Status;
 import rabinizer.bdd.*;
 import rabinizer.exec.Main;
+import rabinizer.formulas.Formula;
+import rabinizer.formulas.FormulaFactory;
 import rabinizer.z3.LTLExpr;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
- *
  * @author jkretinsky & Christopher Ziegler
  */
 public class AccLocal {
 
     protected final Product product;
     protected final Formula formula;
-    protected final Map<Formula, Integer> maxRank = new HashMap<Formula,Integer>();
-    final Map<Formula, GSet> topmostGs = new HashMap<Formula,GSet>(); // without the outer G
+    protected final Map<Formula, Integer> maxRank = new HashMap<Formula, Integer>();
+    final Map<Formula, GSet> topmostGs = new HashMap<Formula, GSet>(); // without the outer G
     final TranSet<ProductState> allTrans = new TranSet<ProductState>();
     // separate automata acceptance projected to the whole product
-    Map<Formula, Map<GSet, Map<Integer, RabinPair>>> accSlavesOptions = new HashMap<Formula, Map<GSet, Map<Integer, RabinPair>>>(); 
-    Map<GSet, Map<Map<Formula, Integer>, RabinPair>> accMasterOptions = new HashMap<GSet,Map<Map<Formula, Integer>, RabinPair>>();
-    			// actually just coBuchi
+    Map<Formula, Map<GSet, Map<Integer, RabinPair>>> accSlavesOptions = new HashMap<Formula, Map<GSet, Map<Integer, RabinPair>>>();
+    Map<GSet, Map<Map<Formula, Integer>, RabinPair>> accMasterOptions = new HashMap<GSet, Map<Map<Formula, Integer>, RabinPair>>();
+    // actually just coBuchi
 
     public AccLocal(Product product) {
         this.product = product;
@@ -57,6 +59,39 @@ public class AccLocal {
         Main.verboseln("Acceptance for master:\n" + this.accMasterOptions);
     }
 
+    protected static boolean slavesEntail(GSet gSet, GSet gSetComplement, ProductState ps, Map<Formula, Integer> ranking, Valuation v, Formula consequent) {
+        Formula antecedent = FormulaFactory.mkConst(true);
+        for (Formula f : gSet) {
+            antecedent = FormulaFactory.mkAnd(antecedent, FormulaFactory.mkG(f)); // TODO compute these lines once for all states
+            antecedent = FormulaFactory.mkAnd(antecedent, f.substituteGsToFalse(gSetComplement));
+            Formula slaveAntecedent = FormulaFactory.mkConst(true);
+            if (ps.containsKey(f)) {
+                for (FormulaState s : ps.get(f).keySet()) {
+                    if (ps.get(f).get(s) >= ranking.get(f)) {
+                        slaveAntecedent = FormulaFactory.mkAnd(slaveAntecedent, s.formula);
+                    }
+                }
+            }
+            slaveAntecedent = slaveAntecedent.temporalStep(v).substituteGsToFalse(gSetComplement);
+            antecedent = FormulaFactory.mkAnd(antecedent, slaveAntecedent);
+        }
+        return entails(antecedent, consequent.temporalStep(v));
+    }
+
+    //checks if antecedent =>consequent
+    //Formula:
+    public static boolean entails(Formula antecedent, Formula consequent) {
+
+        Context ctx = LTLExpr.getContext();
+        BoolExpr ant = antecedent.rmAllConstants().toExpr(ctx);
+        BoolExpr con = consequent.rmAllConstants().toExpr(ctx);
+        Solver s = ctx.mkSolver();
+        s.add(ctx.mkAnd(ant, ctx.mkNot(con)));
+        return !(s.check() == Status.SATISFIABLE);
+
+
+    }
+
     protected Map<GSet, Map<Integer, RabinPair>> computeAccSlavesOptions(Formula f) {
         Map<GSet, Map<Integer, RabinPair>> result = new HashMap<GSet, Map<Integer, RabinPair>>();
         RabinSlave rSlave = product.slaves.get(f);
@@ -66,7 +101,7 @@ public class AccLocal {
             for (FormulaState fs : rSlave.mojmir.states) {
                 finalStates.put(fs, gSet.entails(fs.formula));
             }
-            result.put(gSet, new HashMap<Integer,RabinPair>());
+            result.put(gSet, new HashMap<Integer, RabinPair>());
             for (int rank = 1; rank <= maxRank.get(f); rank++) {
                 result.get(gSet).put(rank, new RabinPair(rSlave, finalStates, rank, product));
             }
@@ -117,7 +152,7 @@ public class AccLocal {
                     Main.verboseln("Skipping complete Avoid");
                 } else {
                     if (!result.containsKey(gSet)) {
-                        result.put(gSet, new HashMap<Map<Formula,Integer>,RabinPair>());
+                        result.put(gSet, new HashMap<Map<Formula, Integer>, RabinPair>());
                     }
                     if (!result.get(gSet).containsKey(ranking)) {
                         result.get(gSet).put(ranking, new RabinPair<ProductState>(avoidP, null));
@@ -130,15 +165,15 @@ public class AccLocal {
     }
 
     protected Set<Map<Formula, Integer>> powersetRanks(Set<Formula> gSet) {
-        Set<Map<Formula, Integer>> result = new HashSet<Map<Formula,Integer> >();
+        Set<Map<Formula, Integer>> result = new HashSet<Map<Formula, Integer>>();
         if (gSet.isEmpty()) {
-            result.add(new HashMap<Formula,Integer>());
+            result.add(new HashMap<Formula, Integer>());
         } else {
             Formula curr = gSet.iterator().next();
             gSet.remove(curr);
             for (Map<Formula, Integer> ranking : powersetRanks(gSet)) {
                 for (int rank = 1; rank <= maxRank.get(curr); rank++) {
-                    Map<Formula, Integer> rankingNew = new HashMap<Formula,Integer>(ranking);
+                    Map<Formula, Integer> rankingNew = new HashMap<Formula, Integer>(ranking);
                     rankingNew.put(curr, rank);
                     result.add(rankingNew);
                 }
@@ -168,44 +203,5 @@ public class AccLocal {
             }
         }
         return result;
-    }
-
-    protected static boolean slavesEntail(GSet gSet, GSet gSetComplement, ProductState ps, Map<Formula, Integer> ranking, Valuation v, Formula consequent) {
-        Formula antecedent = FormulaFactory.mkConst(true);
-        for (Formula f : gSet) {
-            antecedent = FormulaFactory.mkAnd(antecedent, FormulaFactory.mkG(f)); // TODO compute these lines once for all states
-            antecedent = FormulaFactory.mkAnd(antecedent, f.substituteGsToFalse(gSetComplement));
-            Formula slaveAntecedent = FormulaFactory.mkConst(true);
-            if (ps.containsKey(f)) {
-                for (FormulaState s : ps.get(f).keySet()) {
-                    if (ps.get(f).get(s) >= ranking.get(f)) {
-                        slaveAntecedent = FormulaFactory.mkAnd(slaveAntecedent, s.formula);
-                    }
-                }
-            }
-            slaveAntecedent = slaveAntecedent.temporalStep(v).substituteGsToFalse(gSetComplement);
-            antecedent = FormulaFactory.mkAnd(antecedent, slaveAntecedent);
-        }
-        return entails(antecedent, consequent.temporalStep(v));
-    }
-
-    //checks if antecedent =>consequent
-    //Formula:
-    public static boolean entails(Formula antecedent, Formula consequent) {
-    	
-    	Context ctx=LTLExpr.getContext();
-    	BoolExpr ant=antecedent.rmAllConstants().toExpr(ctx);
-    	BoolExpr con=consequent.rmAllConstants().toExpr(ctx);
-    	Solver s=ctx.mkSolver();
-    	s.add(ctx.mkAnd(ant,ctx.mkNot(con)));
-    	return!(s.check()==Status.SATISFIABLE);
-    
-    	
-    		
-    	
-    	
-    	
-    	
-        
     }
 }

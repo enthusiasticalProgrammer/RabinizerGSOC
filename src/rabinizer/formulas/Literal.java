@@ -1,13 +1,12 @@
 package rabinizer.formulas;
 
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import net.sf.javabdd.BDD;
+import rabinizer.bdd.BDDForFormulae;
 import rabinizer.bdd.Valuation;
 
 import java.util.ArrayList;
-
-import com.microsoft.z3.*;
-
-import net.sf.javabdd.*;
-import rabinizer.bdd.BDDForFormulae;
 
 public class Literal extends FormulaNullary {
 
@@ -17,47 +16,48 @@ public class Literal extends FormulaNullary {
 
     private final int cachedHash;
 
-    Literal(String atom, int atomId, boolean negated,long id) {
-    	super(id);
-        this.atom         = atom;
-        this.atomId       = atomId;
-        this.negated      = negated;
-        this.cachedHash   = init_hash();
+    Literal(String atom, int atomId, boolean negated, long id) {
+        super(id);
+        this.atom = atom;
+        this.atomId = atomId;
+        this.negated = negated;
+        this.cachedHash = init_hash();
     }
 
     @Override
     public String operator() {
         return null;
     }
-    
-    public boolean getNegated(){
-    	return negated;
+
+    public boolean getNegated() {
+        return negated;
     }
+
     public Literal positiveLiteral() {
         return (Literal) FormulaFactory.mkLit(this.atom, this.atomId, false);
     }
 
     public Literal negated() {
-    	return (Literal) FormulaFactory.mkLit(atom, atomId, !negated);
+        return (Literal) FormulaFactory.mkLit(atom, atomId, !negated);
     }
 
     @Override
-    public BDD bdd() { 
-        if (cachedBdd == null) { 
+    public BDD bdd() {
+        if (cachedBdd == null) {
             int bddVar = BDDForFormulae.bijectionBooleanAtomBddVar.id(this.positiveLiteral()); // R3: just "this"
             if (BDDForFormulae.bddFactory.varNum() <= bddVar) {
                 BDDForFormulae.bddFactory.extVarNum(1);
             }
             cachedBdd = (negated ? BDDForFormulae.bddFactory.nithVar(bddVar) : BDDForFormulae.bddFactory.ithVar(bddVar));
             BDDForFormulae.representativeOfBdd(cachedBdd, this);
-        } 
+        }
         return cachedBdd;
-        
+
     }
 
     @Override
-    public int hashCode(){
-    	return cachedHash;
+    public int hashCode() {
+        return cachedHash;
     }
 
     @Override
@@ -105,73 +105,72 @@ public class Literal extends FormulaNullary {
     public Literal getAnUnguardedLiteral() {
         return this;
     }
-    
-    public BoolExpr toExpr(Context ctx){
-    	
-    	if(cachedLTL==null){
-    		cachedLTL=ctx.mkBoolConst(atom);
-    		if(negated){
-    			cachedLTL=ctx.mkNot(cachedLTL);
-    		}
-    	}
-    	return cachedLTL;
+
+    public BoolExpr toExpr(Context ctx) {
+
+        if (cachedLTL == null) {
+            cachedLTL = ctx.mkBoolConst(atom);
+            if (negated) {
+                cachedLTL = ctx.mkNot(cachedLTL);
+            }
+        }
+        return cachedLTL;
     }
 
-	@Override
-	public String toZ3String(boolean is_atom) {
-		if(is_atom){
-			return (negated?"!":"")+atom;
-		}else{
-			if(negated){
-				return "(not "+atom+" )";
-			}else{
-				return atom;
-			}
-		}
-	}
+    @Override
+    public String toZ3String(boolean is_atom) {
+        if (is_atom) {
+            return (negated ? "!" : "") + atom;
+        } else {
+            if (negated) {
+                return "(not " + atom + " )";
+            } else {
+                return atom;
+            }
+        }
+    }
 
-	@Override
-	public ArrayList<String> getAllPropositions() {
-		ArrayList<String> a=new ArrayList<String>();
-		a.add(atom);
-		return a;
-	}
+    @Override
+    public ArrayList<String> getAllPropositions() {
+        ArrayList<String> a = new ArrayList<String>();
+        a.add(atom);
+        return a;
+    }
 
-	@Override
-	public Formula rmAllConstants() {
-		return FormulaFactory.mkLit(getAtom(), atomId, negated);
-		
-	}
+    @Override
+    public Formula rmAllConstants() {
+        return FormulaFactory.mkLit(getAtom(), atomId, negated);
 
-	public String getAtom() {
-		return atom;
-	}
+    }
 
-	@Override
-	public Formula setToConst(long id, boolean constant) {
-		return (id==unique_id?FormulaFactory.mkConst(constant) : this);
-	}
+    public String getAtom() {
+        return atom;
+    }
+
+    @Override
+    public Formula setToConst(long id, boolean constant) {
+        return (id == unique_id ? FormulaFactory.mkConst(constant) : this);
+    }
 
 
-	
-	private int init_hash(){
-		return ((atom.hashCode() % 34483) *32363)+(negated? 97 : 167) % 999983;
-	}
+    private int init_hash() {
+        return ((atom.hashCode() % 34483) * 32363) + (negated ? 97 : 167) % 999983;
+    }
 
-	@Override
-	public Formula acceptFormula(Formula_Visitor v) {
-		return v.visitL(this);
-	}
+    @Override
+    public Formula acceptFormula(FormulaVisitor v) {
+        return v.visitL(this);
+    }
 
-	@Override
-	public boolean acceptBool(Attribute_Visitor v) {
-		return v.visitL(this);
-	}
+    @Override
+    public boolean acceptBool(AttributeVisitor v) {
+        return v.visitL(this);
+    }
 
-	@Override
-	public boolean acceptBinarybool(Attribute_Binary_Visitor v, Formula f) {
-		return v.visitL(this, f);
-	}
+    @Override
+    public boolean acceptBinarybool(AttributeBinaryVisitor v, Formula f) {
+        return v.visitL(this, f);
+    }
 
 
 }

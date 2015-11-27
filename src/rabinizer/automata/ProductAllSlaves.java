@@ -5,11 +5,12 @@
  */
 package rabinizer.automata;
 
-import java.util.*;
 import rabinizer.formulas.Formula;
 
+import java.util.Map;
+import java.util.Set;
+
 /**
- *
  * @author jkretinsky
  */
 public class ProductAllSlaves extends Product {

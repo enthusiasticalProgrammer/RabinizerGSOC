@@ -1,18 +1,18 @@
 package rabinizer.bdd;
 
-import java.util.*;
-import rabinizer.formulas.*;
+import rabinizer.formulas.Formula;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- *
  * @author Andreas Gaiser & Ruslan Ledesma-Garza
- *
  */
 public class BijectionBooleanAtomBddVar {
 
     Map<Formula, Integer> atomToId;
     Map<Integer, Formula> idToAtom;
-    
+
     public BijectionBooleanAtomBddVar() {
         atomToId = new HashMap<Formula, Integer>();
         idToAtom = new HashMap<Integer, Formula>();

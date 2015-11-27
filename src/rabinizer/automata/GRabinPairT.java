@@ -5,9 +5,9 @@
  */
 package rabinizer.automata;
 
-import java.util.*;
+import java.util.List;
+
 /**
- *
  * @author jkretinsky
  */
 public class GRabinPairT extends GRabinPair<TranSet<ProductState>> {
@@ -31,5 +31,5 @@ public class GRabinPairT extends GRabinPair<TranSet<ProductState>> {
     }
     */
 
-    
+
 }

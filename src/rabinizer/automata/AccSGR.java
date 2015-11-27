@@ -5,13 +5,13 @@ import java.util.Set;
 
 public class AccSGR extends ArrayList<GRabinPair<Set<ProductAccState>>> {
 
-	public AccSGR(AccTGR accTGR, DSGRA dsgra) {
-		// TODO Auto-generated constructor stub
-	}
+    public AccSGR(AccTGR accTGR, DSGRA dsgra) {
+        // TODO Auto-generated constructor stub
+    }
 
-	public String accSets(ProductAccState s) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public String accSets(ProductAccState s) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }

@@ -5,22 +5,22 @@
  */
 package rabinizer.automata;
 
-import java.util.HashMap;
 import rabinizer.bdd.ValuationSet;
 import rabinizer.bdd.ValuationSetBDD;
 
+import java.util.HashMap;
+
 /**
- *
  * @author jkretinsky
  */
 public class TranSet<State> extends HashMap<State, ValuationSet> {
 
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1013653255527479470L;
+     *
+     */
+    private static final long serialVersionUID = 1013653255527479470L;
 
-	public TranSet<State> add(State s, ValuationSet vs) {
+    public TranSet<State> add(State s, ValuationSet vs) {
         if (!this.containsKey(s)) {
             this.put(s, vs);
         } else {
@@ -73,7 +73,7 @@ public class TranSet<State> extends HashMap<State, ValuationSet> {
     }
         */
 
-    
+
     public String toString() {
         String result = "{";
         boolean first = true;

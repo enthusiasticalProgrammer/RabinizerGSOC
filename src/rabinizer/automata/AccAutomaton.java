@@ -6,7 +6,6 @@
 package rabinizer.automata;
 
 /**
- *
  * @author jkretinsky
  */
 public abstract class AccAutomaton<State> extends Automaton<State> {

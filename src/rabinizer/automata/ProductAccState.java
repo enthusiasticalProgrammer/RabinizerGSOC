@@ -5,12 +5,12 @@
  */
 package rabinizer.automata;
 
-import java.util.Map;
-import java.util.Set;
 import rabinizer.exec.Tuple;
 
+import java.util.Map;
+import java.util.Set;
+
 /**
- *
  * @author jkretinsky
  */
 class ProductAccState extends Tuple<ProductState, Map<Integer, Set<Integer>>> {
@@ -18,9 +18,9 @@ class ProductAccState extends Tuple<ProductState, Map<Integer, Set<Integer>>> {
     public ProductAccState(ProductState ps, Map<Integer, Set<Integer>> accSets) {
         super(ps, accSets);
     }
-    
+
     @Override
-    public String toString(){
+    public String toString() {
         return left + " " + right;
     }
 

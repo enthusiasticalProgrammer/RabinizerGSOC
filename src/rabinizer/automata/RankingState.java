@@ -6,20 +6,19 @@
 
 package rabinizer.automata;
 
-import java.util.*;
+import java.util.HashMap;
 
 /**
- *
  * @author jkretinsky
  */
-public class RankingState extends HashMap<FormulaState,Integer>{
-    
-    public RankingState(){
+public class RankingState extends HashMap<FormulaState, Integer> {
+
+    public RankingState() {
         super();
     }
-    
-    
-    public String toString(){
+
+
+    public String toString() {
         String result = "";
         for (FormulaState f : keySet()) {
             result += " " + f + "=" + get(f);

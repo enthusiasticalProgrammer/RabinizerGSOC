@@ -5,24 +5,24 @@
  */
 package rabinizer.automata;
 
-import java.util.*;
 import rabinizer.bdd.Valuation;
 import rabinizer.bdd.ValuationSet;
 import rabinizer.bdd.ValuationSetBDD;
 
+import java.util.ArrayList;
+
 
 /**
- *
  * @author jkretinsky
  */
 public class AccTR extends ArrayList<RabinPair<ProductDegenState>> {
 
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = -5442515295977731129L;
+     *
+     */
+    private static final long serialVersionUID = -5442515295977731129L;
 
-	public AccTR(AccTGR accTGR, DTRA dtra) {
+    public AccTR(AccTGR accTGR, DTRA dtra) {
         super();
         for (int i = 0; i < accTGR.size(); i++) {
             GRabinPairT grp = accTGR.get(i);

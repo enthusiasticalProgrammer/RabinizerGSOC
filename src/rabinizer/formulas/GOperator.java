@@ -1,31 +1,27 @@
 package rabinizer.formulas;
 
 
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import rabinizer.bdd.GSet;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-
-
-import rabinizer.bdd.GSet;
-import rabinizer.bdd.Valuation;
-
 public class GOperator extends FormulaUnary {
 
- final int cachedHash;
+    final int cachedHash;
 
+
+    GOperator(Formula f, long id) {
+        super(f, id);
+        this.cachedHash = init_hash();
+    }
 
     @Override
     public String operator() {
         return "G";
-    }
-
-    GOperator(Formula f,long id) {
-        super(f,id);
-        this.cachedHash = init_hash();
     }
 
     @Override
@@ -82,68 +78,68 @@ public class GOperator extends FormulaUnary {
             return this;
         }
     }
-    
-    
-    public BoolExpr toExpr(Context ctx){
-    	if(cachedLTL==null){
-    		cachedLTL = ctx.mkBoolConst(toZ3String(true));
-    	}
-    	return cachedLTL;
+
+
+    public BoolExpr toExpr(Context ctx) {
+        if (cachedLTL == null) {
+            cachedLTL = ctx.mkBoolConst(toZ3String(true));
+        }
+        return cachedLTL;
     }
 
     @Override
-    public int hashCode(){
-    	return cachedHash;
+    public int hashCode() {
+        return cachedHash;
     }
-    
-	@Override
-	public String toZ3String(boolean is_atom) {
-		
-		String child=operand.toZ3String(true);
-		if(child.equals("true")){
-			return "true";
-		}else if(child.equals("false")){
-			return "false";
-		}else{
-			return "G"+child;
-		}
-		
-	}
 
-	@Override
-	public ArrayList<String> getAllPropositions() {
-		ArrayList<String> a=new ArrayList<String>();
-		a.add(toZ3String(true));
-		return a;
-	}
+    @Override
+    public String toZ3String(boolean is_atom) {
 
-	@Override
-	public Formula rmAllConstants() {
-		Formula child=operand.rmAllConstants();
-		if(child instanceof BooleanConstant) {
-			return child;
-		}
-		return FormulaFactory.mkG(child);
-	}
+        String child = operand.toZ3String(true);
+        if (child.equals("true")) {
+            return "true";
+        } else if (child.equals("false")) {
+            return "false";
+        } else {
+            return "G" + child;
+        }
 
-	
-	private int init_hash() {
-		return (((operand.hashCode() % 35023) * 31277)+ 3109) % 999983;
-	}
+    }
 
-	@Override
-	public Formula acceptFormula(Formula_Visitor v) {
-		return v.visitG(this);
-	}
+    @Override
+    public ArrayList<String> getAllPropositions() {
+        ArrayList<String> a = new ArrayList<String>();
+        a.add(toZ3String(true));
+        return a;
+    }
 
-	@Override
-	public boolean acceptBool(Attribute_Visitor v) {
-		return v.visitG(this);
-	}
+    @Override
+    public Formula rmAllConstants() {
+        Formula child = operand.rmAllConstants();
+        if (child instanceof BooleanConstant) {
+            return child;
+        }
+        return FormulaFactory.mkG(child);
+    }
 
-	@Override
-	public boolean acceptBinarybool(Attribute_Binary_Visitor v, Formula f) {
-		return v.visitG(this, f);
-	}
+
+    private int init_hash() {
+        return (((operand.hashCode() % 35023) * 31277) + 3109) % 999983;
+    }
+
+    @Override
+    public Formula acceptFormula(FormulaVisitor v) {
+        return v.visitG(this);
+    }
+
+    @Override
+    public boolean acceptBool(AttributeVisitor v) {
+        return v.visitG(this);
+    }
+
+    @Override
+    public boolean acceptBinarybool(AttributeBinaryVisitor v, Formula f) {
+        return v.visitG(this, f);
+    }
 
 }

@@ -6,11 +6,13 @@
 
 package rabinizer.automata;
 
-import java.util.*;
 import rabinizer.exec.Tuple;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 /**
- *
  * @author jkretinsky
  */
 public class GRabinPairRaw extends Tuple<TranSet<ProductState>, Set<TranSet<ProductState>>> {
@@ -31,7 +33,7 @@ public class GRabinPairRaw extends Tuple<TranSet<ProductState>, Set<TranSet<Prod
         }
         return result;
     }
-    
+
     public GRabinPairT order() {
         List<TranSet<ProductState>> rightOrdered = new ArrayList<TranSet<ProductState>>(right.size());
         for (TranSet<ProductState> ts : right) {
@@ -39,5 +41,5 @@ public class GRabinPairRaw extends Tuple<TranSet<ProductState>, Set<TranSet<Prod
         }
         return new GRabinPairT(left, rightOrdered);
     }
-        
+
 }
