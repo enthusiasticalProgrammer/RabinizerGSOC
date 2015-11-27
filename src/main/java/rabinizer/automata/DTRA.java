@@ -77,7 +77,7 @@ public class DTRA extends AccAutomaton<ProductDegenState> implements AccAutomato
 
     @Override
     protected String accTypeNumerical() {
-        if (accTR.size() == 0) {
+        if (accTR.isEmpty()) {
             return "0 f";
         }
         String result = accTR.size() * 2 + " ";

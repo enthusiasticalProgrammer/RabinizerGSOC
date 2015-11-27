@@ -89,7 +89,7 @@ public class DSRA extends Automaton<ProductDegenAccState> implements AccAutomato
 
     @Override
     protected String accTypeNumerical() {
-        if (accSR.size() == 0) {
+        if (accSR.isEmpty()) {
             return "0 f";
         }
         String result = accSR.size() * 2 + " ";

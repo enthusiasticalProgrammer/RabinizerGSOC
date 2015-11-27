@@ -45,7 +45,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
 
     @Override
     protected String accTypeNumerical() {
-        if (acc.size() == 0) {
+        if (acc.isEmpty()) {
             return "0 f";
         }
         String result = "";

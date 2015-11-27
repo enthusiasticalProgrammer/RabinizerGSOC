@@ -217,7 +217,7 @@ public class AccTGRRaw extends HashSet<GRabinPairRaw> {
         String result = "Gen. Rabin acceptance condition";
         int i = 1;
         for (GRabinPairRaw pair : this) {
-            result += "\nPair " + i + "\n" + pair.toString();
+            result += "\nPair " + i + "\n" + pair;
             i++;
         }
         return result;

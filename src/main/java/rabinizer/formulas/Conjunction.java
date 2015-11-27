@@ -183,7 +183,7 @@ public class Conjunction extends FormulaBinaryBoolean {
                 new_children.add(fm);
             }
         }
-        if (new_children.size() == 0) {
+        if (new_children.isEmpty()) {
             return FormulaFactory.mkConst(true);
         } else if (new_children.size() == 1) {
             return new_children.get(0);

@@ -50,7 +50,7 @@ public class Disjunction extends FormulaBinaryBoolean {
                 new_children.add(new_child);
             }
         }
-        if (new_children.size() == 0) {
+        if (new_children.isEmpty()) {
             return FormulaFactory.mkConst(false);
         }
         if (new_children.size() == 1) {
@@ -185,7 +185,7 @@ public class Disjunction extends FormulaBinaryBoolean {
                 new_children.add(fm);
             }
         }
-        if (new_children.size() == 0) {
+        if (new_children.isEmpty()) {
             return FormulaFactory.mkConst(false);
         } else if (new_children.size() == 1) {
             return new_children.get(0);

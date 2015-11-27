@@ -46,7 +46,7 @@ public class AccTR extends ArrayList<RabinPair<ProductDegenState>> {
         String result = "Rabin transition-based acceptance condition";
         int i = 1;
         for (RabinPair pair : this) {
-            result += "\nPair " + i + "\n" + pair.toString();
+            result += "\nPair " + i + "\n" + pair;
             i++;
         }
         return result;

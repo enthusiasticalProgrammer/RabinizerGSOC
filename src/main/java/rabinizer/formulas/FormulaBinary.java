@@ -33,7 +33,7 @@ public abstract class FormulaBinary extends Formula {
     @Override
     public String toString() {
         if (cachedString == null) {
-            cachedString = "(" + left.toString() + operator() + right.toString() + ")";
+            cachedString = "(" + left + operator() + right + ")";
         }
         return cachedString;
     }

@@ -291,9 +291,9 @@ public class Main {
             errorMessageAndExit("Exception when parsing: " + e.getLocalizedMessage());
         }
         if (simplify) {
-            nonsilent("Formula unsimplified: " + formula.toString());
+            nonsilent("Formula unsimplified: " + formula);
             formula = formula.acceptFormula(SimplifyAggressivelyVisitor.getVisitor());
-            nonsilent("Formula simplified:" + formula.toString());
+            nonsilent("Formula simplified:" + formula);
         } else {
             nonsilent("Input formula: " + formula);
         }

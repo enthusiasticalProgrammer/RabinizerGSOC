@@ -78,7 +78,7 @@ public class SimplifyBooleanVisitor implements FormulaVisitor {
         }
         list.addAll(helper);
 
-        if (list.size() == 0) {
+        if (list.isEmpty()) {
             return FormulaFactory.mkConst(true);
         } else if (list.size() == 1) {
             return list.get(0);
@@ -148,7 +148,7 @@ public class SimplifyBooleanVisitor implements FormulaVisitor {
             }
         }
         list.addAll(helper);
-        if (list.size() == 0) {
+        if (list.isEmpty()) {
             return FormulaFactory.mkConst(false);
         } else if (list.size() == 1) {
             return list.get(0);

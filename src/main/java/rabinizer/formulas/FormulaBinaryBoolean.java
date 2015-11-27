@@ -187,7 +187,7 @@ public abstract class FormulaBinaryBoolean extends Formula {
         if (cachedString == null) {
             cachedString = "(";
             for (Formula child : children) {
-                cachedString = cachedString + (cachedString.equals("(") ? "" : operator()) + child.toString();
+                cachedString = cachedString + (cachedString.equals("(") ? "" : operator()) + child;
             }
             cachedString = cachedString + ")";
 

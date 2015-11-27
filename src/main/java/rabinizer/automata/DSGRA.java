@@ -80,7 +80,7 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
 
     @Override
     protected String accTypeNumerical() {
-        if (accSGR.size() == 0) {
+        if (accSGR.isEmpty()) {
             return "0 f";
         }
         String result = "";

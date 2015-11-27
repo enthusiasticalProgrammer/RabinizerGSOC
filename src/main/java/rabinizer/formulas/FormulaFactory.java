@@ -38,7 +38,7 @@ public class FormulaFactory {
             }
         }
 
-        if (helper.size() == 0) {
+        if (helper.isEmpty()) {
             return FormulaFactory.mkConst(true);
         } else if (helper.size() == 1) {
             return helper.get(0);
@@ -71,7 +71,7 @@ public class FormulaFactory {
                 }
             }
         }
-        if (helper.size() == 0) {
+        if (helper.isEmpty()) {
             return FormulaFactory.mkConst(false);
         } else if (helper.size() == 1) {
             return helper.get(0);

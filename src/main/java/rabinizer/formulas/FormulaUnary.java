@@ -54,7 +54,7 @@ public abstract class FormulaUnary extends Formula {
     @Override
     public String toString() {
         if (cachedString == null) {
-            cachedString = operator() + operand.toString();
+            cachedString = operator() + operand;
         }
         return cachedString;
     }
