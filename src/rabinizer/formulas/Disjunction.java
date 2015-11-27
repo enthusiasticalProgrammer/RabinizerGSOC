@@ -39,7 +39,7 @@ public class Disjunction extends FormulaBinaryBoolean {
 
     @Override
     public Formula removeConstants() {
-        ArrayList<Formula> new_children = new ArrayList<Formula>();
+        ArrayList<Formula> new_children = new ArrayList<>();
         for (Formula child : children) {
             Formula new_child = child.removeConstants();
             if (new_child instanceof BooleanConstant) {
@@ -77,7 +77,7 @@ public class Disjunction extends FormulaBinaryBoolean {
 
     @Override
     public Formula toNNF() {
-        ArrayList<Formula> new_children = new ArrayList<Formula>();
+        ArrayList<Formula> new_children = new ArrayList<>();
         for (Formula child : children) {
             new_children.add(child.toNNF());
         }
@@ -86,7 +86,7 @@ public class Disjunction extends FormulaBinaryBoolean {
 
     @Override
     public Formula negationToNNF() {
-        ArrayList<Formula> new_children = new ArrayList<Formula>();
+        ArrayList<Formula> new_children = new ArrayList<>();
         for (Formula child : children) {
             new_children.add(child.negationToNNF());
         }
@@ -98,7 +98,7 @@ public class Disjunction extends FormulaBinaryBoolean {
     public boolean isUnfoldOfF() {
         for (Formula child : children) {
             if (child instanceof XOperator) {
-                if (((XOperator) child).operand instanceof FOperator) {
+                if (((FormulaUnary) child).operand instanceof FOperator) {
                     return true;
                 }
             }
@@ -108,7 +108,7 @@ public class Disjunction extends FormulaBinaryBoolean {
 
     public BoolExpr toExpr(Context ctx) {
         if (cachedLTL == null) {
-            ArrayList<BoolExpr> exprs = new ArrayList<BoolExpr>();
+            ArrayList<BoolExpr> exprs = new ArrayList<>();
             for (Formula child : children) {
                 exprs.add(child.toExpr(ctx));
             }
@@ -122,7 +122,7 @@ public class Disjunction extends FormulaBinaryBoolean {
 
     @Override
     public String toZ3String(boolean is_atom) {
-        ArrayList<String> al = new ArrayList<String>();
+        ArrayList<String> al = new ArrayList<>();
         for (Formula child : children) {
             al.add(child.toZ3String(is_atom));
         }
@@ -133,7 +133,7 @@ public class Disjunction extends FormulaBinaryBoolean {
                 if (prop.equals("true")) {
                     return "true";
                 } else if (!prop.equals("false")) {
-                    result = result + (result.equals("") ? prop : " &" + prop);
+                    result = result + (result.isEmpty() ? prop : " &" + prop);
                 }
             }
             if (result == "") {
@@ -173,7 +173,7 @@ public class Disjunction extends FormulaBinaryBoolean {
 
     @Override
     public Formula rmAllConstants() {
-        ArrayList<Formula> new_children = new ArrayList<Formula>();
+        ArrayList<Formula> new_children = new ArrayList<>();
         Formula fm;
         for (Formula child : children) {
             fm = child.rmAllConstants();
@@ -197,7 +197,7 @@ public class Disjunction extends FormulaBinaryBoolean {
 
     //helps the SimplifyBooleanVisitor
     protected ArrayList<Formula> getAllChildrenOfDisjunction() {
-        ArrayList<Formula> al = new ArrayList<Formula>();
+        ArrayList<Formula> al = new ArrayList<>();
         for (Formula child : children) {
             if (child instanceof Disjunction) {
                 al.addAll(((Disjunction) child).getAllChildrenOfDisjunction());
@@ -207,11 +207,7 @@ public class Disjunction extends FormulaBinaryBoolean {
         }
 
         // sort them according to unique_id:
-        Collections.sort(al, new Comparator<Formula>() {
-            public int compare(Formula s1, Formula s2) {
-                return Long.compare(s1.get_id(), s2.get_id());
-            }
-        });
+        Collections.sort(al, (s1, s2) -> Long.compare(s1.get_id(), s2.get_id()));
         return al;
 
     }

@@ -96,7 +96,7 @@ public class UOperator extends FormulaBinary {
 
     @Override
     public ArrayList<String> getAllPropositions() {
-        ArrayList<String> a = new ArrayList<String>();
+        ArrayList<String> a = new ArrayList<>();
         if (!toZ3String(true).equals("true") && !toZ3String(true).equals("true"))
             a.add(toZ3String(true));
         return a;

@@ -29,12 +29,12 @@ public class AccLocal {
 
     protected final Product product;
     protected final Formula formula;
-    protected final Map<Formula, Integer> maxRank = new HashMap<Formula, Integer>();
-    final Map<Formula, GSet> topmostGs = new HashMap<Formula, GSet>(); // without the outer G
-    final TranSet<ProductState> allTrans = new TranSet<ProductState>();
+    protected final Map<Formula, Integer> maxRank = new HashMap<>();
+    final Map<Formula, GSet> topmostGs = new HashMap<>(); // without the outer G
+    final TranSet<ProductState> allTrans = new TranSet<>();
     // separate automata acceptance projected to the whole product
-    Map<Formula, Map<GSet, Map<Integer, RabinPair>>> accSlavesOptions = new HashMap<Formula, Map<GSet, Map<Integer, RabinPair>>>();
-    Map<GSet, Map<Map<Formula, Integer>, RabinPair>> accMasterOptions = new HashMap<GSet, Map<Map<Formula, Integer>, RabinPair>>();
+    Map<Formula, Map<GSet, Map<Integer, RabinPair>>> accSlavesOptions = new HashMap<>();
+    Map<GSet, Map<Map<Formula, Integer>, RabinPair>> accMasterOptions = new HashMap<>();
     // actually just coBuchi
 
     public AccLocal(Product product) {
@@ -93,15 +93,15 @@ public class AccLocal {
     }
 
     protected Map<GSet, Map<Integer, RabinPair>> computeAccSlavesOptions(Formula f) {
-        Map<GSet, Map<Integer, RabinPair>> result = new HashMap<GSet, Map<Integer, RabinPair>>();
+        Map<GSet, Map<Integer, RabinPair>> result = new HashMap<>();
         RabinSlave rSlave = product.slaves.get(f);
         Set<GSet> gSets = powerset(new GSet(topmostGs.get(f)));
         for (GSet gSet : gSets) {
-            Map<FormulaState, Boolean> finalStates = new HashMap<FormulaState, Boolean>();
+            Map<FormulaState, Boolean> finalStates = new HashMap<>();
             for (FormulaState fs : rSlave.mojmir.states) {
                 finalStates.put(fs, gSet.entails(fs.formula));
             }
-            result.put(gSet, new HashMap<Integer, RabinPair>());
+            result.put(gSet, new HashMap<>());
             for (int rank = 1; rank <= maxRank.get(f); rank++) {
                 result.get(gSet).put(rank, new RabinPair(rSlave, finalStates, rank, product));
             }
@@ -110,7 +110,7 @@ public class AccLocal {
     }
 
     protected Set<GSet> powerset(GSet gSet) {
-        Set<GSet> result = new HashSet<GSet>();
+        Set<GSet> result = new HashSet<>();
         if (gSet.isEmpty()) {
             result.add(new GSet());
         } else {
@@ -127,7 +127,7 @@ public class AccLocal {
     }
 
     protected Map<GSet, Map<Map<Formula, Integer>, RabinPair>> computeAccMasterOptions() {
-        Map<GSet, Map<Map<Formula, Integer>, RabinPair>> result = new HashMap<GSet, Map<Map<Formula, Integer>, RabinPair>>();
+        Map<GSet, Map<Map<Formula, Integer>, RabinPair>> result = new HashMap<>();
         GSet allGs = new GSet(formula.gSubformulas());
         Set<GSet> gSets = powerset(new GSet(allGs));
         for (GSet gSet : gSets) {
@@ -137,7 +137,7 @@ public class AccLocal {
             Set<Map<Formula, Integer>> rankings = powersetRanks(new GSet(gSet));
             for (Map<Formula, Integer> ranking : rankings) {
                 Main.verboseln("\t  Ranking " + ranking);
-                TranSet<ProductState> avoidP = new TranSet<ProductState>();
+                TranSet<ProductState> avoidP = new TranSet<>();
                 for (ProductState ps : product.states) {
                     /*
                      for (Valuation v : AllValuations.allValuations) { // TODO !!! expl vs bdd
@@ -152,10 +152,10 @@ public class AccLocal {
                     Main.verboseln("Skipping complete Avoid");
                 } else {
                     if (!result.containsKey(gSet)) {
-                        result.put(gSet, new HashMap<Map<Formula, Integer>, RabinPair>());
+                        result.put(gSet, new HashMap<>());
                     }
                     if (!result.get(gSet).containsKey(ranking)) {
-                        result.get(gSet).put(ranking, new RabinPair<ProductState>(avoidP, null));
+                        result.get(gSet).put(ranking, new RabinPair<>(avoidP, null));
                     }
                     Main.verboseln("Avoid for " + gSet + ranking + "\n" + avoidP);
                 }
@@ -165,15 +165,15 @@ public class AccLocal {
     }
 
     protected Set<Map<Formula, Integer>> powersetRanks(Set<Formula> gSet) {
-        Set<Map<Formula, Integer>> result = new HashSet<Map<Formula, Integer>>();
+        Set<Map<Formula, Integer>> result = new HashSet<>();
         if (gSet.isEmpty()) {
-            result.add(new HashMap<Formula, Integer>());
+            result.add(new HashMap<>());
         } else {
             Formula curr = gSet.iterator().next();
             gSet.remove(curr);
             for (Map<Formula, Integer> ranking : powersetRanks(gSet)) {
                 for (int rank = 1; rank <= maxRank.get(curr); rank++) {
-                    Map<Formula, Integer> rankingNew = new HashMap<Formula, Integer>(ranking);
+                    Map<Formula, Integer> rankingNew = new HashMap<>(ranking);
                     rankingNew.put(curr, rank);
                     result.add(rankingNew);
                 }
@@ -184,7 +184,7 @@ public class AccLocal {
 
     // symbolic version
     protected TranSet<ProductState> computeAccMasterForState(GSet gSet, GSet gSetComplement, Map<Formula, Integer> ranking, ProductState ps) {
-        TranSet<ProductState> result = new TranSet<ProductState>();
+        TranSet<ProductState> result = new TranSet<>();
         Set<ValuationSet> fineSuccVs = product.generateSuccTransitionsReflectingSinks(ps);
         for (ValuationSet vs : fineSuccVs) {
             if (!slavesEntail(gSet, gSetComplement, ps, ranking, vs.pickAny(), ps.masterState.formula)) {
@@ -196,7 +196,7 @@ public class AccLocal {
 
     // unused: explicit version (simpler, likely slower)
     protected TranSet<ProductState> computeAccMasterForState2(GSet gSet, GSet gSetComplement, Map<Formula, Integer> ranking, ProductState ps) {
-        TranSet<ProductState> result = new TranSet<ProductState>();
+        TranSet<ProductState> result = new TranSet<>();
         for (Valuation v : AllValuations.allValuations) { // TODO !!! expl vs bdd
             if (!slavesEntail(gSet, gSetComplement, ps, ranking, v, ps.masterState.formula)) {
                 result.add(ps, new ValuationSetExplicit(v));

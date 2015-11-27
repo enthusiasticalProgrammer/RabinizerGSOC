@@ -33,9 +33,9 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
 
     @Override
     protected ProductAccState generateInitialState() {
-        Map<Integer, Set<Integer>> accSets = new HashMap();
+        Map<Integer, Set<Integer>> accSets = new HashMap<>();
         for (int i = 0; i < accTGR.size(); i++) {
-            accSets.put(i, new HashSet());
+            accSets.put(i, new HashSet<>());
         }
         return new ProductAccState(dtgra.automaton.initialState, accSets);
     }
@@ -43,9 +43,9 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
     @Override
     protected ProductAccState generateSuccState(ProductAccState s, ValuationSet vs) {
         Valuation v = vs.pickAny();
-        Map<Integer, Set<Integer>> accSets = new HashMap();
+        Map<Integer, Set<Integer>> accSets = new HashMap<>();
         for (int i = 0; i < accTGR.size(); i++) {
-            accSets.put(i, new HashSet());
+            accSets.put(i, new HashSet<>());
             GRabinPairT grp = accTGR.get(i);
             if (grp.left != null && grp.left.get(s.left) != null && grp.left.get(s.left).contains(v)) {
                 accSets.get(i).add(-1);
@@ -72,8 +72,8 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
     @Override
     protected String accName() {
         String result = "acc-name: generalized-Rabin " + accSGR.size();
-        for (int i = 0; i < accSGR.size(); i++) {
-            result += " " + (accSGR.get(i).right.size());
+        for (Object anAccSGR : accSGR) {
+            result += " " + (anAccSGR.right.size());
         }
         return result + "\n";
     }

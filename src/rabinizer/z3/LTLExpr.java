@@ -24,7 +24,7 @@ public class LTLExpr {
 
 
     //stores all Formulae, gets emptied in dispose-Method
-    private static Map<LTLExpr, Formula> LTLToRepresentative = new HashMap<LTLExpr, Formula>();
+    private static Map<LTLExpr, Formula> LTLToRepresentative = new HashMap<>();
 
 
     //propositional formula, in order to have a representative

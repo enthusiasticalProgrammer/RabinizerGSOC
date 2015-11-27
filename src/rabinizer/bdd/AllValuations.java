@@ -46,10 +46,10 @@ public class AllValuations {
      * @return
      */
     public static void initializeValuations(int n) {
-        allValuations = new ArrayList<Valuation>();
+        allValuations = new ArrayList<>();
         boolean[] values = new boolean[n];
         enumerateValuations(values, n - 1);
-        allValuationsAsSets = new HashSet<ValuationSet>();
+        allValuationsAsSets = new HashSet<>();
         for (Valuation v : allValuations) {
             allValuationsAsSets.add(new ValuationSetExplicit(v));
         }

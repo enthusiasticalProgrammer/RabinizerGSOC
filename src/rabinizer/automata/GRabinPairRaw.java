@@ -35,7 +35,7 @@ public class GRabinPairRaw extends Tuple<TranSet<ProductState>, Set<TranSet<Prod
     }
 
     public GRabinPairT order() {
-        List<TranSet<ProductState>> rightOrdered = new ArrayList<TranSet<ProductState>>(right.size());
+        List<TranSet<ProductState>> rightOrdered = new ArrayList<>(right.size());
         for (TranSet<ProductState> ts : right) {
             rightOrdered.add(ts);
         }

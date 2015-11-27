@@ -30,7 +30,7 @@ public abstract class FormulaBinaryBoolean extends Formula {
 
     @Override
     public Formula unfold() {
-        ArrayList<Formula> unfolded = new ArrayList<Formula>();
+        ArrayList<Formula> unfolded = new ArrayList<>();
         for (Formula child : children) {
             unfolded.add(child.unfold());
         }
@@ -39,7 +39,7 @@ public abstract class FormulaBinaryBoolean extends Formula {
 
     @Override
     public Formula unfoldNoG() {
-        ArrayList<Formula> unfoldedNoG = new ArrayList<Formula>();
+        ArrayList<Formula> unfoldedNoG = new ArrayList<>();
         for (Formula child : children) {
             unfoldedNoG.add(child.unfoldNoG());
         }
@@ -48,7 +48,7 @@ public abstract class FormulaBinaryBoolean extends Formula {
 
     @Override
     public Formula evaluateValuation(Valuation valuation) {
-        ArrayList<Formula> evaluated = new ArrayList<Formula>();
+        ArrayList<Formula> evaluated = new ArrayList<>();
         for (Formula child : children) {
             evaluated.add(child.evaluateValuation(valuation));
         }
@@ -57,7 +57,7 @@ public abstract class FormulaBinaryBoolean extends Formula {
 
     @Override
     public Formula evaluateLiteral(Literal literal) {
-        ArrayList<Formula> evaluated = new ArrayList<Formula>();
+        ArrayList<Formula> evaluated = new ArrayList<>();
         for (Formula child : children) {
             evaluated.add(child.evaluateLiteral(literal));
         }
@@ -69,7 +69,7 @@ public abstract class FormulaBinaryBoolean extends Formula {
 
     @Override
     public Formula removeX() {
-        ArrayList<Formula> xRemoved = new ArrayList<Formula>();
+        ArrayList<Formula> xRemoved = new ArrayList<>();
         for (Formula child : children) {
             xRemoved.add(child.removeX());
         }
@@ -88,7 +88,7 @@ public abstract class FormulaBinaryBoolean extends Formula {
 
     @Override
     public Set<Formula> topmostGs() {
-        Set<Formula> result = new HashSet<Formula>();
+        Set<Formula> result = new HashSet<>();
         for (Formula child : children) {
             result.addAll(child.topmostGs());
         }
@@ -106,7 +106,7 @@ public abstract class FormulaBinaryBoolean extends Formula {
 
     @Override
     public ArrayList<String> getAllPropositions() {
-        ArrayList<String> a = new ArrayList<String>();
+        ArrayList<String> a = new ArrayList<>();
         for (Formula child : children) {
             a.addAll(child.getAllPropositions());
         }
@@ -116,7 +116,7 @@ public abstract class FormulaBinaryBoolean extends Formula {
 
     @Override
     public Formula substituteGsToFalse(GSet gSet) {
-        ArrayList<Formula> gSubstituted = new ArrayList<Formula>();
+        ArrayList<Formula> gSubstituted = new ArrayList<>();
         for (Formula child : children) {
             gSubstituted.add(child.substituteGsToFalse(gSet));
         }
@@ -125,7 +125,7 @@ public abstract class FormulaBinaryBoolean extends Formula {
 
     @Override
     public Set<Formula> gSubformulas() {
-        Set<Formula> gSub = new HashSet<Formula>();
+        Set<Formula> gSub = new HashSet<>();
         for (Formula child : children) {
             gSub.addAll(child.gSubformulas());
         }
@@ -205,7 +205,7 @@ public abstract class FormulaBinaryBoolean extends Formula {
         if (id == unique_id) {
             return FormulaFactory.mkConst(constant);
         }
-        ArrayList<Formula> helper = new ArrayList<Formula>();
+        ArrayList<Formula> helper = new ArrayList<>();
         for (Formula child : children) {
             helper.add(child.setToConst(id, constant));
         }

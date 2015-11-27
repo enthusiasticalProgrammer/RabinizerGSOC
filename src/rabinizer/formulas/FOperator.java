@@ -62,18 +62,19 @@ public class FOperator extends FormulaUnary {
     @Override
     public String toZ3String(boolean is_atom) {
         String child = operand.toZ3String(true);
-        if (child.equals("true")) {
-            return "true";
-        } else if (child.equals("false")) {
-            return "false";
-        } else {
-            return "F" + child;
+        switch (child) {
+            case "true":
+                return "true";
+            case "false":
+                return "false";
+            default:
+                return "F" + child;
         }
     }
 
     @Override
     public ArrayList<String> getAllPropositions() {
-        ArrayList<String> a = new ArrayList<String>();
+        ArrayList<String> a = new ArrayList<>();
         a.add(toZ3String(true));
         return a;
     }

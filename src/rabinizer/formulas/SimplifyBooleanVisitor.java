@@ -26,7 +26,7 @@ public class SimplifyBooleanVisitor implements FormulaVisitor {
         //I want a,b, and c, because you can simplify it more
 
         ArrayList<Formula> list = c.getAllChildrenOfConjunction();
-        ArrayList<Formula> helper = new ArrayList<Formula>();
+        ArrayList<Formula> helper = new ArrayList<>();
 
         for (int i = list.size() - 1; i >= 0; i--) {
             if (list.get(i) instanceof BooleanConstant) {
@@ -90,11 +90,7 @@ public class SimplifyBooleanVisitor implements FormulaVisitor {
             }
 
             // Therefore list has to be ordered
-            Collections.sort(list, new Comparator<Formula>() {
-                public int compare(Formula f1, Formula f2) {
-                    return Long.compare(f1.get_id(), f2.get_id());
-                }
-            });
+            Collections.sort(list, (f1, f2) -> Long.compare(f1.get_id(), f2.get_id()));
 
             for (int i = 0; i < list.size(); i++) {
                 if (list.get(i).get_id() != c.children.get(i).get_id()) {
@@ -110,7 +106,7 @@ public class SimplifyBooleanVisitor implements FormulaVisitor {
     public Formula visitD(Disjunction d) {
 
         ArrayList<Formula> list = d.getAllChildrenOfDisjunction();
-        ArrayList<Formula> helper = new ArrayList<Formula>();
+        ArrayList<Formula> helper = new ArrayList<>();
 
         for (int i = list.size() - 1; i >= 0; i--) {
             if (list.get(i) instanceof BooleanConstant) {
@@ -164,11 +160,7 @@ public class SimplifyBooleanVisitor implements FormulaVisitor {
             }
 
             // Therefore list has to be ordered
-            Collections.sort(list, new Comparator<Formula>() {
-                public int compare(Formula f1, Formula f2) {
-                    return Long.compare(f1.get_id(), f2.get_id());
-                }
-            });
+            Collections.sort(list, (f1, f2) -> Long.compare(f1.get_id(), f2.get_id()));
 
             for (int i = 0; i < list.size(); i++) {
                 if (list.get(i).get_id() != d.children.get(i).get_id()) {
@@ -194,16 +186,16 @@ public class SimplifyBooleanVisitor implements FormulaVisitor {
 
     public Formula visitN(Negation n) {
         if (n.operand instanceof Negation) {
-            return ((Negation) n.operand).operand;
+            return ((FormulaUnary) n.operand).operand;
         } else if (n.operand instanceof Conjunction) {
-            ArrayList<Formula> children = new ArrayList<Formula>();
-            for (Formula child : ((Conjunction) n.operand).children) {
+            ArrayList<Formula> children = new ArrayList<>();
+            for (Formula child : ((FormulaBinaryBoolean) n.operand).children) {
                 children.add(FormulaFactory.mkNot(child));
             }
             return FormulaFactory.mkOr(children);
         } else if (n.operand instanceof Disjunction) {
-            ArrayList<Formula> children = new ArrayList<Formula>();
-            for (Formula child : ((Disjunction) n.operand).children) {
+            ArrayList<Formula> children = new ArrayList<>();
+            for (Formula child : ((FormulaBinaryBoolean) n.operand).children) {
                 children.add(FormulaFactory.mkNot(child));
             }
             return (FormulaFactory.mkAnd(children));

@@ -132,14 +132,14 @@ public class Literal extends FormulaNullary {
 
     @Override
     public ArrayList<String> getAllPropositions() {
-        ArrayList<String> a = new ArrayList<String>();
+        ArrayList<String> a = new ArrayList<>();
         a.add(atom);
         return a;
     }
 
     @Override
     public Formula rmAllConstants() {
-        return FormulaFactory.mkLit(getAtom(), atomId, negated);
+        return FormulaFactory.mkLit(atom, atomId, negated);
 
     }
 

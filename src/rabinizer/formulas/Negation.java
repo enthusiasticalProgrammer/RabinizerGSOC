@@ -91,7 +91,7 @@ public class Negation extends FormulaUnary {
     @Override
     public ArrayList<String> getAllPropositions() {
         String child = operand.toZ3String(true);
-        ArrayList<String> a = new ArrayList<String>();
+        ArrayList<String> a = new ArrayList<>();
         if (!child.equals("true") && !child.equals("false")) {
             a.addAll(operand.getAllPropositions());
         }

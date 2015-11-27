@@ -7,7 +7,7 @@ import rabinizer.formulas.Literal;
 
 import java.util.Set;
 
-public abstract class ValuationSet extends Object {
+public abstract class ValuationSet {
 
     //protected static BDDFactory bf;
     public abstract Formula toFormula();

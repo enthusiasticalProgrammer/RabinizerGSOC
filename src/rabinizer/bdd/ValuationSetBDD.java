@@ -44,7 +44,7 @@ public class ValuationSetBDD extends ValuationSet {
 
     @Override
     public Set<Valuation> toSet() {
-        Set<Valuation> vs = new HashSet<Valuation>();
+        Set<Valuation> vs = new HashSet<>();
         for (Valuation v : AllValuations.allValuations) {
             if (this.contains(v)) {
                 vs.add(v);
@@ -112,8 +112,7 @@ public class ValuationSetBDD extends ValuationSet {
     @Override
     public ValuationSet and(Literal literal) {
         BDD res = valuations.and(BDDForVariables.literalToBDD(literal));
-        ValuationSet result = new ValuationSetBDD(res);
-        return result;
+        return new ValuationSetBDD(res);
     }
 
     @Override

@@ -57,7 +57,7 @@ public class Conjunction extends FormulaBinaryBoolean {
 
     @Override
     public Formula removeConstants() {
-        ArrayList<Formula> new_children = new ArrayList<Formula>();
+        ArrayList<Formula> new_children = new ArrayList<>();
         for (Formula child : children) {
             Formula new_child = child.removeConstants();
             if (new_child instanceof BooleanConstant) {
@@ -99,7 +99,7 @@ public class Conjunction extends FormulaBinaryBoolean {
 
     @Override
     public Formula toNNF() {
-        ArrayList<Formula> nnf = new ArrayList<Formula>();
+        ArrayList<Formula> nnf = new ArrayList<>();
         for (Formula child : children) {
             nnf.add(child.toNNF());
         }
@@ -108,7 +108,7 @@ public class Conjunction extends FormulaBinaryBoolean {
 
     @Override
     public Formula negationToNNF() {
-        ArrayList<Formula> negnnf = new ArrayList<Formula>();
+        ArrayList<Formula> negnnf = new ArrayList<>();
         for (Formula child : children) {
             negnnf.add(child.negationToNNF());
         }
@@ -117,7 +117,7 @@ public class Conjunction extends FormulaBinaryBoolean {
 
     public BoolExpr toExpr(Context ctx) {
         if (cachedLTL == null) {
-            ArrayList<BoolExpr> exprs = new ArrayList<BoolExpr>();
+            ArrayList<BoolExpr> exprs = new ArrayList<>();
             for (Formula child : children) {
                 exprs.add(child.toExpr(ctx));
             }
@@ -131,7 +131,7 @@ public class Conjunction extends FormulaBinaryBoolean {
 
     @Override
     public String toZ3String(boolean is_atom) {
-        ArrayList<String> al = new ArrayList<String>();
+        ArrayList<String> al = new ArrayList<>();
         for (Formula child : children) {
             al.add(child.toZ3String(is_atom));
         }
@@ -142,7 +142,7 @@ public class Conjunction extends FormulaBinaryBoolean {
                 if (prop.equals("false")) {
                     return "false";
                 } else if (!prop.equals("true")) {
-                    result = result + (result.equals("") ? prop : " &" + prop);
+                    result = result + (result.isEmpty() ? prop : " &" + prop);
                 }
             }
             if (result == "") {
@@ -171,7 +171,7 @@ public class Conjunction extends FormulaBinaryBoolean {
 
     @Override
     public Formula rmAllConstants() {
-        ArrayList<Formula> new_children = new ArrayList<Formula>();
+        ArrayList<Formula> new_children = new ArrayList<>();
         Formula fm;
         for (Formula child : children) {
             fm = child.rmAllConstants();
@@ -195,7 +195,7 @@ public class Conjunction extends FormulaBinaryBoolean {
 
     //helps the SimplifyBooleanVisitor
     protected ArrayList<Formula> getAllChildrenOfConjunction() {
-        ArrayList<Formula> al = new ArrayList<Formula>();
+        ArrayList<Formula> al = new ArrayList<>();
         for (Formula child : children) {
             if (child instanceof Conjunction) {
                 al.addAll(((Conjunction) child).getAllChildrenOfConjunction());
@@ -205,11 +205,7 @@ public class Conjunction extends FormulaBinaryBoolean {
         }
 
         //sort them according to unique_id:
-        Collections.sort(al, new Comparator<Formula>() {
-            public int compare(Formula f1, Formula f2) {
-                return Long.compare(f1.get_id(), f2.get_id());
-            }
-        });
+        Collections.sort(al, (f1, f2) -> Long.compare(f1.get_id(), f2.get_id()));
 
         return al;
 

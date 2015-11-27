@@ -12,8 +12,8 @@ public class BijectionIdAtom {
     private Map<String, Integer> atomToId;
 
     public BijectionIdAtom() {
-        atomToId = new HashMap<String, Integer>();
-        idToAtom = new HashMap<Integer, String>();
+        atomToId = new HashMap<>();
+        idToAtom = new HashMap<>();
     }
 
     /**

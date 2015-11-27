@@ -76,7 +76,7 @@ public class RabinSlave extends Automaton<RankingState> {
 
     @Override
     protected Set<ValuationSet> generateSuccTransitions(RankingState s) {
-        Set<Set<ValuationSet>> product = new HashSet<Set<ValuationSet>>();
+        Set<Set<ValuationSet>> product = new HashSet<>();
         for (FormulaState fs : s.keySet()) {
             product.add(mojmir.transitions.get(fs).keySet());
         }
@@ -96,7 +96,7 @@ public class RabinSlave extends Automaton<RankingState> {
 
     private boolean noIncomingTransitions(RankingState in) {
         for (RankingState out : states) {
-            if (edgeBetween.containsKey(new Tuple<RankingState, RankingState>(out, in))) {
+            if (edgeBetween.containsKey(new Tuple<>(out, in))) {
                 return false;
             }
         }

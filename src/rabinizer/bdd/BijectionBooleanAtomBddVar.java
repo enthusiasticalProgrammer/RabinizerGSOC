@@ -14,8 +14,8 @@ public class BijectionBooleanAtomBddVar {
     Map<Integer, Formula> idToAtom;
 
     public BijectionBooleanAtomBddVar() {
-        atomToId = new HashMap<Formula, Integer>();
-        idToAtom = new HashMap<Integer, Formula>();
+        atomToId = new HashMap<>();
+        idToAtom = new HashMap<>();
     }
 
     /**

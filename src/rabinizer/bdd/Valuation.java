@@ -64,21 +64,20 @@ public class Valuation extends HashMap<Integer, Boolean> {
             strValuation = "{";
             boolean first = true;
             for (Map.Entry<Integer, Boolean> e : this.entrySet()) {
-                if (first && e.getValue().booleanValue()) {
-                    String v = BDDForVariables.bijectionIdAtom.atom(e.getKey().intValue());
+                if (first && e.getValue()) {
+                    String v = BDDForVariables.bijectionIdAtom.atom(e.getKey());
                     if (v == null) {
-                        strValuation = strValuation + "v" + e.getKey().intValue();
+                        strValuation = strValuation + "v" + e.getKey();
                     } else {
                         strValuation = strValuation + v;
                     }
                     first = false;
                 } else {
-                    String v = BDDForVariables.bijectionIdAtom.atom(e.getKey().intValue());
+                    String v = BDDForVariables.bijectionIdAtom.atom(e.getKey());
                     if (v == null) {
-                        strValuation = strValuation + (e.getValue().booleanValue() ? ", v" + e.getKey().intValue() : "");
+                        strValuation = strValuation + (e.getValue() ? ", v" + e.getKey() : "");
                     } else {
-                        strValuation = strValuation + (e.getValue().booleanValue() ? ", " + v : "");
-                        ;
+                        strValuation = strValuation + (e.getValue() ? ", " + v : "");
                     }
 
                 }

@@ -29,7 +29,7 @@ public class ImplicationVisitor implements AttributeBinaryVisitor {
         }
         if (fo instanceof Conjunction) {
             boolean imp = true;
-            for (Formula fochild : ((Conjunction) fo).children) {
+            for (Formula fochild : ((FormulaBinaryBoolean) fo).children) {
                 boolean impClause = false;
                 for (Formula child : c.children) {
                     impClause = impClause || child.acceptBinarybool(this, fochild);
@@ -62,7 +62,7 @@ public class ImplicationVisitor implements AttributeBinaryVisitor {
             return true;
         }
         if (fo instanceof FOperator) {
-            return f.operand.acceptBinarybool(this, ((FOperator) fo).operand);
+            return f.operand.acceptBinarybool(this, ((FormulaUnary) fo).operand);
         }
         return false;
     }
@@ -77,27 +77,27 @@ public class ImplicationVisitor implements AttributeBinaryVisitor {
             return ((BooleanConstant) fo).get_value();
         } else if (fo instanceof Conjunction) {
             boolean imp = true;
-            for (Formula fochild : ((Conjunction) fo).children) {
+            for (Formula fochild : ((FormulaBinaryBoolean) fo).children) {
                 imp = imp && g.acceptBinarybool(this, fochild);
             }
             return imp;
         } else if (fo instanceof Disjunction) {
             boolean imp = false;
-            for (Formula fochild : ((Disjunction) fo).children) {
+            for (Formula fochild : ((FormulaBinaryBoolean) fo).children) {
                 imp = imp || g.acceptBinarybool(this, fochild);
             }
             return imp;
         } else if (fo instanceof FOperator) {
-            return g.acceptBinarybool(this, ((FOperator) fo).operand);
+            return g.acceptBinarybool(this, ((FormulaUnary) fo).operand);
         } else if (fo instanceof GOperator) {
-            return g.acceptBinarybool(this, ((GOperator) fo).operand);
+            return g.acceptBinarybool(this, ((FormulaUnary) fo).operand);
         } else if (fo instanceof Literal) {
             return g.operand.acceptBinarybool(this, fo);
         } else if (fo instanceof UOperator) {
-            return g.acceptBinarybool(this, ((UOperator) fo).right) || g.acceptBinarybool(this, FormulaFactory
-                    .mkAnd(FormulaFactory.mkG(((UOperator) fo).left), FormulaFactory.mkF(((UOperator) fo).right)));
+            return g.acceptBinarybool(this, ((FormulaBinary) fo).right) || g.acceptBinarybool(this, FormulaFactory
+                    .mkAnd(FormulaFactory.mkG(((FormulaBinary) fo).left), FormulaFactory.mkF(((FormulaBinary) fo).right)));
         } else if (fo instanceof XOperator) {
-            return g.acceptBinarybool(this, ((XOperator) fo).operand) || g.operand.acceptBinarybool(this, fo);
+            return g.acceptBinarybool(this, ((FormulaUnary) fo).operand) || g.operand.acceptBinarybool(this, fo);
         }
         return false;
     }
@@ -105,13 +105,13 @@ public class ImplicationVisitor implements AttributeBinaryVisitor {
     public boolean visitL(Literal l, Formula fo) {
         if (fo instanceof Conjunction) {
             boolean imp = true;
-            for (Formula child : ((Conjunction) fo).children) {
+            for (Formula child : ((FormulaBinaryBoolean) fo).children) {
                 imp = imp && l.acceptBinarybool(this, child);
             }
             return imp;
         } else if (fo instanceof Disjunction) {
             boolean imp = false;
-            for (Formula child : ((Disjunction) fo).children) {
+            for (Formula child : ((FormulaBinaryBoolean) fo).children) {
                 imp = imp || l.acceptBinarybool(this, child);
             }
         } else if (fo instanceof Literal) {
@@ -119,7 +119,7 @@ public class ImplicationVisitor implements AttributeBinaryVisitor {
         } else if (fo instanceof BooleanConstant) {
             return ((BooleanConstant) fo).get_value();
         } else if (fo instanceof FOperator) {
-            return l.acceptBinarybool(this, ((FOperator) fo).operand);
+            return l.acceptBinarybool(this, ((FormulaUnary) fo).operand);
         }
         return false;
     }
@@ -133,10 +133,10 @@ public class ImplicationVisitor implements AttributeBinaryVisitor {
             return true;
         }
         if (fo instanceof UOperator) {
-            return u.left.acceptBinarybool(this, ((UOperator) fo).left)
-                    && u.right.acceptBinarybool(this, ((UOperator) fo).right);
+            return u.left.acceptBinarybool(this, ((FormulaBinary) fo).left)
+                    && u.right.acceptBinarybool(this, ((FormulaBinary) fo).right);
         } else if (fo instanceof FOperator) {
-            return u.right.acceptBinarybool(this, ((FOperator) fo).operand);
+            return u.right.acceptBinarybool(this, ((FormulaUnary) fo).operand);
         } else {
             return FormulaFactory.mkAnd(u.left, u.right).acceptFormula(SimplifyAggressivelyVisitor.getVisitor())
                     .acceptBinarybool(this, fo);
@@ -152,19 +152,19 @@ public class ImplicationVisitor implements AttributeBinaryVisitor {
             return ((BooleanConstant) fo).get_value();
         } else if (fo instanceof Conjunction) {
             boolean imp = true;
-            for (Formula child : ((Conjunction) fo).children) {
+            for (Formula child : ((FormulaBinaryBoolean) fo).children) {
                 imp = imp && x.acceptBinarybool(this, child);
             }
             return imp;
         } else if (fo instanceof Disjunction) {
             boolean imp = false;
-            for (Formula child : ((Disjunction) fo).children) {
+            for (Formula child : ((FormulaBinaryBoolean) fo).children) {
                 imp = imp || x.acceptBinarybool(this, child);
             }
             return imp;
         } else if (fo instanceof FOperator) {
-            return x.operand.acceptBinarybool(this, fo) || x.acceptBinarybool(this, ((FOperator) fo).operand)
-                    || x.operand.acceptBinarybool(this, ((FOperator) fo).operand);
+            return x.operand.acceptBinarybool(this, fo) || x.acceptBinarybool(this, ((FormulaUnary) fo).operand)
+                    || x.operand.acceptBinarybool(this, ((FormulaUnary) fo).operand);
         } else if (fo instanceof GOperator) {
             return false;
         } else if (fo instanceof Literal) {
@@ -172,7 +172,7 @@ public class ImplicationVisitor implements AttributeBinaryVisitor {
         } else if (fo instanceof UOperator) {
             return false;
         } else if (fo instanceof XOperator) {
-            return x.operand.acceptBinarybool(this, ((XOperator) fo).operand);
+            return x.operand.acceptBinarybool(this, ((FormulaUnary) fo).operand);
         }
         return false;
 

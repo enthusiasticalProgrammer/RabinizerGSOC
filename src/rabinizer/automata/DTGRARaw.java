@@ -48,7 +48,7 @@ public class DTGRARaw /*implements AccAutomatonInterface*/ {
         Main.verboseln("========================================");
         Main.nonsilent("Generating Mojmir & Rabin slaves");
         Set<Formula> gSubformulas = phi.gSubformulas(); // without outer G
-        Map<Formula, RabinSlave> slaves = new HashMap<Formula, RabinSlave>();
+        Map<Formula, RabinSlave> slaves = new HashMap<>();
         for (Formula f : gSubformulas) {
             FormulaAutomaton mSlave;
             if (unfoldedOn) {  // unfold upon arrival to state

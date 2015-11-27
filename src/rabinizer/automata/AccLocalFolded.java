@@ -43,7 +43,7 @@ public class AccLocalFolded extends AccLocal {
 
     @Override
     protected TranSet<ProductState> computeAccMasterForState(GSet gSet, GSet gSetComplement, Map<Formula, Integer> ranking, ProductState ps) {
-        TranSet<ProductState> result = new TranSet<ProductState>();
+        TranSet<ProductState> result = new TranSet<>();
         if (!slavesEntail(gSet, gSetComplement, ps, ranking, null, ps.masterState.formula)) {
             result.add(ps, ValuationSetBDD.getAllVals());
         }

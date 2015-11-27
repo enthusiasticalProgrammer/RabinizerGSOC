@@ -65,7 +65,7 @@ public class GOperator extends FormulaUnary {
 
     @Override
     public Set<Formula> topmostGs() {
-        Set<Formula> result = new HashSet<Formula>();
+        Set<Formula> result = new HashSet<>();
         result.add(this.operand);
         return result;
     }
@@ -94,21 +94,21 @@ public class GOperator extends FormulaUnary {
 
     @Override
     public String toZ3String(boolean is_atom) {
-
         String child = operand.toZ3String(true);
-        if (child.equals("true")) {
-            return "true";
-        } else if (child.equals("false")) {
-            return "false";
-        } else {
-            return "G" + child;
-        }
 
+        switch (child) {
+            case "true":
+                return "true";
+            case "false":
+                return "false";
+            default:
+                return "G" + child;
+        }
     }
 
     @Override
     public ArrayList<String> getAllPropositions() {
-        ArrayList<String> a = new ArrayList<String>();
+        ArrayList<String> a = new ArrayList<>();
         a.add(toZ3String(true));
         return a;
     }

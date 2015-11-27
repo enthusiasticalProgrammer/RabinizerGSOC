@@ -22,7 +22,7 @@ public class AccSR extends ArrayList<Set<ProductDegenAccState>> {
     AccSR(AccTR accTR, DSRA dsra) {
         super();
         for (int i = 0; i < 2 * accTR.size(); i++) {
-            this.add(new HashSet<ProductDegenAccState>());
+            this.add(new HashSet<>());
         }
         for (ProductDegenAccState s : dsra.states) {
             for (Integer i : s.right) {

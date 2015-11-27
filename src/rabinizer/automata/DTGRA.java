@@ -37,8 +37,8 @@ public class DTGRA extends Product implements AccAutomatonInterface {
     @Override
     protected String accName() {
         String result = "acc-name: generalized-Rabin " + acc.size();
-        for (int i = 0; i < acc.size(); i++) {
-            result += " " + acc.get(i).right.size();
+        for (GRabinPairT anAcc : acc) {
+            result += " " + anAcc.right.size();
         }
         return result + "\n";
     }
@@ -72,18 +72,18 @@ public class DTGRA extends Product implements AccAutomatonInterface {
     @Override
     protected String outTransToHOA(ProductState s) {
         String result = "";
-        Set<Set<ValuationSet>> productVs = new HashSet<Set<ValuationSet>>();
+        Set<Set<ValuationSet>> productVs = new HashSet<>();
         productVs.add(transitions.get(s).keySet());
         Set<ValuationSet> vSets;
         for (GRabinPairT rp : acc) {
-            vSets = new HashSet<ValuationSet>();
+            vSets = new HashSet<>();
             if (rp.left.containsKey(s)) {
                 vSets.add(rp.left.get(s));
                 vSets.add(rp.left.get(s).complement());
             }
             productVs.add(vSets);
             for (TranSet<ProductState> ts : rp.right) {
-                vSets = new HashSet<ValuationSet>();
+                vSets = new HashSet<>();
                 if (ts.containsKey(s)) {
                     vSets.add(ts.get(s));
                     vSets.add(ts.get(s).complement());
@@ -91,7 +91,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
                 productVs.add(vSets);
             }
         }
-        vSets = new HashSet<ValuationSet>();
+        vSets = new HashSet<>();
         productVs.remove(vSets);
         Set<ValuationSet> edges = generatePartitioning(productVs);
         for (ValuationSet vsSep : edges) {

@@ -40,7 +40,7 @@ public class MyBDD {
             boolean firstOp = false;
             String result = "";
             if (bdd.high().isOne()) {
-                result += variableToString(bdd.level()) + "";
+                result += variableToString(bdd.level());
                 firstOp = true;
             } else if (!bdd.high().isZero()) {
                 result += "(" + variableToString(bdd.level()) + "&"
@@ -49,8 +49,7 @@ public class MyBDD {
             }
 
             if (bdd.low().isOne()) {
-                result += (firstOp ? "+" : "") + "!"
-                        + variableToString(bdd.level()) + "";
+                result += (firstOp ? "+" : "") + "!" + variableToString(bdd.level());
             } else if (!bdd.low().isZero()) {
                 result += (firstOp ? "+" : "") + "(!"
                         + variableToString(bdd.level()) + "&"
@@ -89,42 +88,45 @@ public class MyBDD {
     }
 
     public Formula BDDtoFormula() {
-        if (bdd.isOne()) {
-            return FormulaFactory.mkConst(true);
-        } else if (bdd.isZero()) {
-            return FormulaFactory.mkConst(false);
-        } else if (bdd.high().equals(bdd.low())) {
-            return new MyBDD(bdd.high(), valuationType).BDDtoFormula();
-        } else {
-            Formula high, low;
-            if (bdd.high().isOne()) {
-                high = variableToFormula(bdd.level());
-            } else if (bdd.high().isZero()) {
-                high = FormulaFactory.mkConst(false);
+        MyBDD other = this;
+        while (true) {
+            if (other.bdd.isOne()) {
+                return FormulaFactory.mkConst(true);
+            } else if (other.bdd.isZero()) {
+                return FormulaFactory.mkConst(false);
+            } else if (other.bdd.high().equals(other.bdd.low())) {
+                other = new MyBDD(other.bdd.high(), other.valuationType);
             } else {
-                high = FormulaFactory.mkAnd(variableToFormula(bdd.level()), new MyBDD(bdd.high(), valuationType).BDDtoFormula());
-            }
+                Formula high, low;
+                if (other.bdd.high().isOne()) {
+                    high = other.variableToFormula(bdd.level());
+                } else if (other.bdd.high().isZero()) {
+                    high = FormulaFactory.mkConst(false);
+                } else {
+                    high = FormulaFactory.mkAnd(other.variableToFormula(bdd.level()), new MyBDD(other.bdd.high(), other.valuationType).BDDtoFormula());
+                }
 
-            Formula neg;
-            if (variableToFormula(bdd.level()) instanceof Literal) {
-                neg = ((Literal) variableToFormula(bdd.level())).negated();
-            } else {
-                neg = FormulaFactory.mkNot(variableToFormula(bdd.level()));
-            }
-            if (bdd.low().isOne()) {
-                low = neg;
-            } else if (bdd.low().isZero()) {
-                low = FormulaFactory.mkConst(false);
-            } else {
-                low = FormulaFactory.mkAnd(neg, new MyBDD(bdd.low(), valuationType).BDDtoFormula());
-            }
+                Formula neg;
+                if (other.variableToFormula(bdd.level()) instanceof Literal) {
+                    neg = ((Literal) other.variableToFormula(bdd.level())).negated();
+                } else {
+                    neg = FormulaFactory.mkNot(other.variableToFormula(bdd.level()));
+                }
+                if (other.bdd.low().isOne()) {
+                    low = neg;
+                } else if (other.bdd.low().isZero()) {
+                    low = FormulaFactory.mkConst(false);
+                } else {
+                    low = FormulaFactory.mkAnd(neg, new MyBDD(other.bdd.low(), other.valuationType).BDDtoFormula());
+                }
 
-            if (high.equals(FormulaFactory.mkConst(false))) {
-                return low;
-            } else if (low.equals(FormulaFactory.mkConst(false))) {
-                return high;
-            } else {
-                return FormulaFactory.mkOr(high, low);
+                if (high.equals(FormulaFactory.mkConst(false))) {
+                    return low;
+                } else if (low.equals(FormulaFactory.mkConst(false))) {
+                    return high;
+                } else {
+                    return FormulaFactory.mkOr(high, low);
+                }
             }
         }
     }

@@ -26,13 +26,13 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
     public Map<State, Integer> statesToNumbers = null;
 
     public Automaton() {
-        states = new HashSet<State>();
-        transitions = new HashMap<State, HashMap<ValuationSet, State>>();
+        states = new HashSet<>();
+        transitions = new HashMap<>();
         initialState = null;
-        sinks = new HashSet<State>();
+        sinks = new HashSet<>();
         //stateLabels = new HashMap();
-        edgeBetween = new HashMap<Tuple<State, State>, ValuationSet>();
-        statesToNumbers = new HashMap<State, Integer>();
+        edgeBetween = new HashMap<>();
+        statesToNumbers = new HashMap<>();
         //this.generate();
     }
 
@@ -52,10 +52,10 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
      */
     // TODO to abstract ProductAutomaton ?
     protected static Set<ValuationSet> generatePartitioning(Set<Set<ValuationSet>> product) {
-        Set<ValuationSet> partitioning = new HashSet<ValuationSet>();
+        Set<ValuationSet> partitioning = new HashSet<>();
         partitioning.add(new ValuationSetBDD(BDDForVariables.getTrueBDD()));
         for (Set<ValuationSet> vSets : product) {
-            Set<ValuationSet> partitioningNew = new HashSet<ValuationSet>();
+            Set<ValuationSet> partitioningNew = new HashSet<>();
             for (ValuationSet vSet : vSets) {
                 for (ValuationSet vSetOld : partitioning) {
                     partitioningNew.add(vSetOld.and(vSet));
@@ -80,7 +80,7 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
         statesToNumbers.put(initialState, 0);
         Main.nonsilent("  Generating automaton for " + initialState);
 
-        Stack<State> workstack = new Stack<State>();
+        Stack<State> workstack = new Stack<>();
         State curr = initialState;
         workstack.push(curr);
 
@@ -92,7 +92,7 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
             //if (succValSets.isEmpty()) {  // TODO empty or true and non-progress or just selfloops?
             //    sinks.add(curr);
             //} else {
-            transitions.put(curr, new HashMap<ValuationSet, State>());
+            transitions.put(curr, new HashMap<>());
             for (ValuationSet succVals : succValSets) {
                 //Tuple<State, String> succStateLabel = generateSuccState(curr, succVals);
                 State succ = generateSuccState(curr, succVals);
@@ -103,7 +103,7 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
                     //stateLabels.put(succ, succStateLabel.right);
                     workstack.push(succ);
                 }
-                Tuple<State, State> statePair = new Tuple<State, State>(curr, succ);
+                Tuple<State, State> statePair = new Tuple<>(curr, succ);
                 ValuationSet newVals;
                 if (edgeBetween.containsKey(statePair)) {  // update edge
                     ValuationSet oldVals = edgeBetween.get(statePair);
@@ -126,12 +126,12 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
 
     public Automaton<State> useSinks() {
         for (State s : states) {
-            Tuple<State, State> selfloop = new Tuple<State, State>(s, s);
+            Tuple<State, State> selfloop = new Tuple<>(s, s);
             if (edgeBetween.containsKey(selfloop) && edgeBetween.get(selfloop).isAllVals() && !s.equals(initialState)) {
                 //(transitions.get(s).size()==1) && (transitions.get(s).values().contains(s))
                 sinks.add(s);
                 edgeBetween.remove(selfloop);
-                transitions.put(s, new HashMap<ValuationSet, State>());
+                transitions.put(s, new HashMap<>());
             }
         }
         return this;
@@ -162,9 +162,9 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
                 r += "node [shape=rectangle, label=\"" + s + "\"]\"" + s + "\";\n";
             }
         }
-        for (State s : transitions.keySet()) {
-            for (Map.Entry<ValuationSet, State> edge : transitions.get(s).entrySet()) {
-                r += "\"" + s + "\" -> \"" + edge.getValue()
+        for (Map.Entry<State, HashMap<ValuationSet, State>> stateHashMapEntry : transitions.entrySet()) {
+            for (Map.Entry<ValuationSet, State> edge : stateHashMapEntry.getValue().entrySet()) {
+                r += "\"" + stateHashMapEntry.getKey() + "\" -> \"" + edge.getValue()
                         + "\" [label=\"" + edge.getKey() + "\"];\n";
             }
         }

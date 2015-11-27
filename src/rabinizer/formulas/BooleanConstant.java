@@ -85,7 +85,7 @@ public class BooleanConstant extends FormulaNullary {
 
     @Override
     public ArrayList<String> getAllPropositions() {
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     @Override

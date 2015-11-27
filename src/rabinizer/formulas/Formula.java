@@ -81,7 +81,7 @@ public abstract class Formula {
     }
 
     public Set<Formula> relevantGFormulas(Set<Formula> candidates) { // TODO: is with the outer G (not GSet)
-        Set<Formula> result = new HashSet<Formula>();
+        Set<Formula> result = new HashSet<>();
         for (Formula subFormula : candidates) {
             if (hasSubformula(subFormula) && !unfold().representative().ignoresG(subFormula)) {
                 result.add(subFormula);

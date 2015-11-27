@@ -71,7 +71,7 @@ public class XOperator extends FormulaUnary {
 
     @Override
     public ArrayList<String> getAllPropositions() {
-        ArrayList<String> a = new ArrayList<String>();
+        ArrayList<String> a = new ArrayList<>();
         a.add(toZ3String(true));
         return a;
     }

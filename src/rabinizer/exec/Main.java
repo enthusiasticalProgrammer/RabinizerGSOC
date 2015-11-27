@@ -23,7 +23,7 @@ public class Main {
 
     public static boolean verbose = false;
     public static boolean silent = false;
-    private static long clock = 0, clock2;
+    private static long clock = 0L, clock2;
 
     public static void verboseln(String s) {
         if (verbose) {
@@ -200,7 +200,7 @@ public class Main {
         }
         BufferedReader bReader = new BufferedReader(reader);
 
-        PrintWriter writer = null;
+        PrintWriter writer;
         FileWriter fw = null;
         if (outFile) {
             String file;
@@ -309,12 +309,11 @@ public class Main {
         AllValuations.initializeValuations(BDDForVariables.bijectionIdAtom.size());
         BDDForFormulae.init();
 
-        boolean unfoldedOn = eager;
         boolean slowerIsabelleAccForUnfolded = false;
 
 
         // DGRA dgra = new DTGRA(phi); for optimized
-        DTGRARaw dtgra = new DTGRARaw(formula, computeAcc, unfoldedOn, sinks_on, opt_init,
+        DTGRARaw dtgra = new DTGRARaw(formula, computeAcc, eager, sinks_on, opt_init,
                 relSlavesOnly, slowerIsabelleAccForUnfolded);
         switch (type) {
             case TGR:

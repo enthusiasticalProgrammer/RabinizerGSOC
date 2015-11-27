@@ -5,8 +5,8 @@ import java.util.HashMap;
 
 public class FormulaFactory {
 
-    private static HashMap<Formula, Formula> formulae = new HashMap<Formula, Formula>();
-    private static long next_identifier = 0;
+    private static HashMap<Formula, Formula> formulae = new HashMap<>();
+    private static long next_identifier = 0L;
 
     private static SimplifyBooleanVisitor get_vis() {
         return SimplifyBooleanVisitor.getVisitor();
@@ -17,12 +17,12 @@ public class FormulaFactory {
     // because this makes Comparable easier
     public static Formula mkAnd(Formula... af) {
         Formula swap;
-        ArrayList<Formula> helper = new ArrayList<Formula>();
-        for (int i = 0; i < af.length; i++) {
-            if (af[i] instanceof Conjunction) {
-                helper.addAll(((Conjunction) af[i]).children);
+        ArrayList<Formula> helper = new ArrayList<>();
+        for (Formula anAf : af) {
+            if (anAf instanceof Conjunction) {
+                helper.addAll(((FormulaBinaryBoolean) anAf).children);
             } else {
-                helper.add(af[i]);
+                helper.add(anAf);
             }
         }
 
@@ -51,13 +51,13 @@ public class FormulaFactory {
 
     public static Formula mkOr(Formula... af) {
         Formula swap;
-        ArrayList<Formula> helper = new ArrayList<Formula>();
+        ArrayList<Formula> helper = new ArrayList<>();
 
-        for (int i = 0; i < af.length; i++) {
-            if (af[i] instanceof Disjunction) {
-                helper.addAll(((Disjunction) af[i]).children);
+        for (Formula anAf : af) {
+            if (anAf instanceof Disjunction) {
+                helper.addAll(((FormulaBinaryBoolean) anAf).children);
             } else {
-                helper.add(af[i]);
+                helper.add(anAf);
             }
         }
         for (int i = 0; i < helper.size(); i++) {

@@ -26,8 +26,8 @@ public class AccTR extends ArrayList<RabinPair<ProductDegenState>> {
         super();
         for (int i = 0; i < accTGR.size(); i++) {
             GRabinPairT grp = accTGR.get(i);
-            TranSet<ProductDegenState> fin = new TranSet<ProductDegenState>();
-            TranSet<ProductDegenState> inf = new TranSet<ProductDegenState>();
+            TranSet<ProductDegenState> fin = new TranSet<>();
+            TranSet<ProductDegenState> inf = new TranSet<>();
             for (ProductDegenState s : dtra.states) {
                 ValuationSet vsFin = grp.left.get(s.left);
                 if (vsFin != null) {
@@ -37,7 +37,7 @@ public class AccTR extends ArrayList<RabinPair<ProductDegenState>> {
                     inf.add(s, ValuationSetBDD.getAllVals());
                 }
             }
-            this.add(new RabinPair<ProductDegenState>(fin, inf));
+            this.add(new RabinPair<>(fin, inf));
         }
     }
 

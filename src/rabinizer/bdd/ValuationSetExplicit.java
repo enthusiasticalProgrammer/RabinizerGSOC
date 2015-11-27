@@ -22,7 +22,7 @@ public class ValuationSetExplicit extends ValuationSet {
     private Set<Valuation> valuations;
 
     public ValuationSetExplicit() {
-        valuations = new HashSet<Valuation>();
+        valuations = new HashSet<>();
     }
 
     public ValuationSetExplicit(ValuationSet vs) {
@@ -104,7 +104,7 @@ public class ValuationSetExplicit extends ValuationSet {
 
     @Override
     public ValuationSet or(ValuationSet vs) {
-        Set<Valuation> union = new HashSet<Valuation>();
+        Set<Valuation> union = new HashSet<>();
         union.addAll(valuations);
         union.addAll(vs.toSet());
         return new ValuationSetExplicit(union);

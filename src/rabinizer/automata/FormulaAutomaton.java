@@ -27,11 +27,11 @@ public abstract class FormulaAutomaton extends Automaton<FormulaState> {
     public FormulaAutomaton(Formula formula) {
         super();
         this.formula = formula;
-        stateLabels = new HashMap<FormulaState, Formula>();
+        stateLabels = new HashMap<>();
     }
 
     protected static Set<ValuationSet> generatePartitioning(Formula f) { // TODO method of state
-        Set<ValuationSet> result = new HashSet<ValuationSet>();
+        Set<ValuationSet> result = new HashSet<>();
         Literal l = f.getAnUnguardedLiteral();
         if (l == null) {
             result.add(new ValuationSetBDD(BDDForVariables.getTrueBDD()));

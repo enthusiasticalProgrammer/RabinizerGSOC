@@ -14,7 +14,7 @@ public class GenAccCondPrism {
     private final ArrayList<GRPairPrism> conds;
 
     public GenAccCondPrism() {
-        conds = new ArrayList<GRPairPrism>();
+        conds = new ArrayList<>();
     }
 
     public void addAccCond(BitSet f, ArrayList<BitSet> infs) {

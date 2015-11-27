@@ -34,7 +34,7 @@ public abstract class FormulaNullary extends Formula {
 
     @Override
     public Set<Formula> gSubformulas() {
-        return new HashSet<Formula>();
+        return new HashSet<>();
     }
 
     @Override
@@ -44,7 +44,7 @@ public abstract class FormulaNullary extends Formula {
 
     @Override
     public Set<Formula> topmostGs() {
-        return new HashSet<Formula>();
+        return new HashSet<>();
     }
 
     @Override
