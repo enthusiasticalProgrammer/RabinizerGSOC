@@ -5,8 +5,8 @@
  */
 package rabinizer.automata;
 
-import rabinizer.bdd.ValuationSet;
-import rabinizer.bdd.ValuationSetBDD;
+import rabinizer.ltl.bdd.ValuationSet;
+import rabinizer.ltl.bdd.ValuationSetBDD;
 
 import java.util.HashMap;
 

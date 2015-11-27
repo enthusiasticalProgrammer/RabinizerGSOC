@@ -5,8 +5,8 @@
  */
 package rabinizer.automata;
 
-import rabinizer.bdd.ValuationSet;
-import rabinizer.formulas.Formula;
+import rabinizer.ltl.bdd.ValuationSet;
+import rabinizer.ltl.Formula;
 
 /**
  * @author jkretinsky

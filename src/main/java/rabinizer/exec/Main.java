@@ -6,11 +6,11 @@
 package rabinizer.exec;
 
 import rabinizer.automata.*;
-import rabinizer.bdd.AllValuations;
-import rabinizer.bdd.BDDForFormulae;
-import rabinizer.bdd.BDDForVariables;
-import rabinizer.formulas.Formula;
-import rabinizer.formulas.SimplifyAggressivelyVisitor;
+import rabinizer.ltl.bdd.AllValuations;
+import rabinizer.ltl.bdd.BDDForFormulae;
+import rabinizer.ltl.bdd.BDDForVariables;
+import rabinizer.ltl.Formula;
+import rabinizer.ltl.SimplifyAggressivelyVisitor;
 import rabinizer.parser.LTLParser;
 import rabinizer.parser.ParseException;
 

@@ -18,9 +18,8 @@ options
 PARSER_BEGIN(LTLParser)
 package rabinizer.parser;
 
-import rabinizer.formulas.*;
+import rabinizer.ltl.*;
 import rabinizer.exec.*;
-import rabinizer.bdd.*;
 
 public class LTLParser
 {

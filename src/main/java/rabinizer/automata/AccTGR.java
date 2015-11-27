@@ -5,7 +5,7 @@
  */
 package rabinizer.automata;
 
-import rabinizer.bdd.Valuation;
+import rabinizer.ltl.bdd.Valuation;
 
 import java.util.ArrayList;
 

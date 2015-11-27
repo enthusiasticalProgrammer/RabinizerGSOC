@@ -6,7 +6,7 @@
 
 package rabinizer.automata;
 
-import rabinizer.formulas.Formula;
+import rabinizer.ltl.Formula;
 
 /**
  * @author jkretinsky

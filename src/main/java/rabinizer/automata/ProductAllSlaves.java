@@ -5,7 +5,7 @@
  */
 package rabinizer.automata;
 
-import rabinizer.formulas.Formula;
+import rabinizer.ltl.Formula;
 
 import java.util.Map;
 import java.util.Set;

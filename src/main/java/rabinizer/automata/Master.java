@@ -9,8 +9,8 @@ package rabinizer.automata;
  * @author jkretinsky
  */
 
-import rabinizer.bdd.ValuationSet;
-import rabinizer.formulas.Formula;
+import rabinizer.ltl.bdd.ValuationSet;
+import rabinizer.ltl.Formula;
 
 public class Master extends FormulaAutomaton {
 

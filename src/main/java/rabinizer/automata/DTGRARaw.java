@@ -6,7 +6,7 @@
 package rabinizer.automata;
 
 import rabinizer.exec.Main;
-import rabinizer.formulas.Formula;
+import rabinizer.ltl.Formula;
 
 import java.util.HashMap;
 import java.util.Map;

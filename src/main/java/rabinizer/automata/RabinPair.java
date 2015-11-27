@@ -5,7 +5,7 @@
  */
 package rabinizer.automata;
 
-import rabinizer.bdd.ValuationSet;
+import rabinizer.ltl.bdd.ValuationSet;
 import rabinizer.exec.Main;
 import rabinizer.exec.Tuple;
 

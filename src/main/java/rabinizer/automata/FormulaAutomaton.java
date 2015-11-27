@@ -5,11 +5,11 @@
  */
 package rabinizer.automata;
 
-import rabinizer.bdd.BDDForVariables;
-import rabinizer.bdd.ValuationSet;
-import rabinizer.bdd.ValuationSetBDD;
-import rabinizer.formulas.Formula;
-import rabinizer.formulas.Literal;
+import rabinizer.ltl.bdd.BDDForVariables;
+import rabinizer.ltl.bdd.ValuationSet;
+import rabinizer.ltl.bdd.ValuationSetBDD;
+import rabinizer.ltl.Formula;
+import rabinizer.ltl.Literal;
 
 import java.util.HashMap;
 import java.util.HashSet;

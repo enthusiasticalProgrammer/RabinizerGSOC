@@ -7,14 +7,14 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import rabinizer.bdd.BDDForVariables;
-import rabinizer.bdd.Valuation;
-import rabinizer.formulas.Disjunction;
-import rabinizer.formulas.Formula;
-import rabinizer.formulas.FormulaFactory;
-import rabinizer.formulas.ImplicationVisitor;
-import rabinizer.formulas.Literal;
-import rabinizer.formulas.SimplifyAggressivelyVisitor;
+import rabinizer.ltl.bdd.BDDForVariables;
+import rabinizer.ltl.bdd.Valuation;
+import rabinizer.ltl.Disjunction;
+import rabinizer.ltl.Formula;
+import rabinizer.ltl.FormulaFactory;
+import rabinizer.ltl.ImplicationVisitor;
+import rabinizer.ltl.Literal;
+import rabinizer.ltl.SimplifyAggressivelyVisitor;
 
 public class TestFormula {
 	public void setUp() {

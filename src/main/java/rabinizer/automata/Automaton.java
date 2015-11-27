@@ -5,7 +5,7 @@
  */
 package rabinizer.automata;
 
-import rabinizer.bdd.*;
+import rabinizer.ltl.bdd.*;
 import rabinizer.exec.Main;
 import rabinizer.exec.Tuple;
 

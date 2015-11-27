@@ -5,10 +5,10 @@
  */
 package rabinizer.automata;
 
-import rabinizer.bdd.AllValuations;
-import rabinizer.bdd.MyBDD;
-import rabinizer.bdd.Valuation;
-import rabinizer.bdd.ValuationSet;
+import rabinizer.ltl.bdd.AllValuations;
+import rabinizer.ltl.bdd.MyBDD;
+import rabinizer.ltl.bdd.Valuation;
+import rabinizer.ltl.bdd.ValuationSet;
 
 import java.util.HashMap;
 import java.util.HashSet;

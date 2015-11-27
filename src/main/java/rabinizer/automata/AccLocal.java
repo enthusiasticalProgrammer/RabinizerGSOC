@@ -10,11 +10,11 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
-import rabinizer.bdd.*;
+import rabinizer.ltl.bdd.*;
 import rabinizer.exec.Main;
-import rabinizer.formulas.Formula;
-import rabinizer.formulas.FormulaFactory;
-import rabinizer.z3.LTLExpr;
+import rabinizer.ltl.Formula;
+import rabinizer.ltl.FormulaFactory;
+import rabinizer.ltl.z3.LTLExpr;
 
 import java.util.HashMap;
 import java.util.HashSet;

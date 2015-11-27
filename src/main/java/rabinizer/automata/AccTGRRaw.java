@@ -5,9 +5,9 @@
  */
 package rabinizer.automata;
 
-import rabinizer.bdd.GSet;
+import rabinizer.ltl.bdd.GSet;
 import rabinizer.exec.Main;
-import rabinizer.formulas.Formula;
+import rabinizer.ltl.Formula;
 
 import java.util.HashSet;
 import java.util.Map;

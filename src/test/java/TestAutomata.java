@@ -3,9 +3,9 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import rabinizer.automata.MasterFolded;
-import rabinizer.bdd.BDDForVariables;
-import rabinizer.formulas.Formula;
-import rabinizer.formulas.FormulaFactory;
+import rabinizer.ltl.bdd.BDDForVariables;
+import rabinizer.ltl.Formula;
+import rabinizer.ltl.FormulaFactory;
 
 public class TestAutomata {
 
