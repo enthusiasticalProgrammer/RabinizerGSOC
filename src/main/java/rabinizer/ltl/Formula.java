@@ -174,6 +174,4 @@ public abstract class Formula {
     public abstract boolean acceptBool(AttributeVisitor v);
 
     public abstract boolean acceptBinarybool(AttributeBinaryVisitor v, Formula f);
-
-
 }

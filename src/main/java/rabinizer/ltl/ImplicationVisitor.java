@@ -124,10 +124,6 @@ public class ImplicationVisitor implements AttributeBinaryVisitor {
         return false;
     }
 
-    public boolean visitN(Negation n, Formula fo) {
-        return n.equals(fo);
-    }
-
     public boolean visitU(UOperator u, Formula fo) {
         if (u.get_id() == fo.get_id()) {
             return true;

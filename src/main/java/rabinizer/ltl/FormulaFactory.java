@@ -114,11 +114,6 @@ public class FormulaFactory {
         return probe(z);
     }
 
-    public static Formula mkNot(Formula child) {
-        Formula z = new Negation(child, next_identifier++).acceptFormula(get_vis());
-        return probe(z);
-    }
-
     public static Formula mkU(Formula l, Formula r) {
         Formula z = new UOperator(l, r, next_identifier++).acceptFormula(get_vis());
         return probe(z);
@@ -139,4 +134,9 @@ public class FormulaFactory {
             return inMap;
         }
     }
+
+    public static Formula mkNot(Formula formula) {
+        throw new RuntimeException("Not yet implemented");
+    }
+
 }

@@ -171,6 +171,4 @@ public class Literal extends FormulaNullary {
     public boolean acceptBinarybool(AttributeBinaryVisitor v, Formula f) {
         return v.visitL(this, f);
     }
-
-
 }

@@ -183,28 +183,6 @@ public class SimplifyBooleanVisitor implements FormulaVisitor {
         return g;
     }
 
-    public Formula visitN(Negation n) {
-        if (n.operand instanceof Negation) {
-            return ((FormulaUnary) n.operand).operand;
-        } else if (n.operand instanceof Conjunction) {
-            ArrayList<Formula> children = new ArrayList<>();
-            for (Formula child : ((FormulaBinaryBoolean) n.operand).children) {
-                children.add(FormulaFactory.mkNot(child));
-            }
-            return FormulaFactory.mkOr(children);
-        } else if (n.operand instanceof Disjunction) {
-            ArrayList<Formula> children = new ArrayList<>();
-            for (Formula child : ((FormulaBinaryBoolean) n.operand).children) {
-                children.add(FormulaFactory.mkNot(child));
-            }
-            return (FormulaFactory.mkAnd(children));
-        } else if (n.operand instanceof Literal) {
-            return ((Literal) n.operand).negated();
-        } else {
-            return n;
-        }
-    }
-
     public Formula visitU(UOperator u) {
         return u;
     }

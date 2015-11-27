@@ -47,11 +47,6 @@ public class SimplifyAggressivelyVisitor implements FormulaVisitor {
                     } else if (list.get(j).acceptBinarybool(imp, list.get(i))) {
                         list.remove(i);
                         break;
-                    } else if (list.get(i).acceptBinarybool(imp, FormulaFactory.mkNot(list.get(j)).acceptFormula(this))) {
-                        return FormulaFactory.mkConst(false);
-                    } else if (list.get(j).acceptBinarybool(imp,
-                            FormulaFactory.mkNot(list.get(i)).acceptFormula(this))) {
-                        return FormulaFactory.mkConst(false);
                     } else {
                         list.set(i, list.get(i).setToConst(list.get(j).get_id(), true));
                         list.set(j, list.get(j).setToConst(list.get(i).get_id(), true));
@@ -102,12 +97,6 @@ public class SimplifyAggressivelyVisitor implements FormulaVisitor {
                         break;
                     } else if (list.get(j).acceptBinarybool(imp, list.get(i))) {
                         list.remove(j);
-                    } else if (FormulaFactory.mkNot((list.get(j)).acceptFormula(this)).acceptBinarybool(imp,
-                            list.get(i))) {
-                        return FormulaFactory.mkConst(true);
-                    } else if (FormulaFactory.mkNot((list.get(i)).acceptFormula(this)).acceptBinarybool(imp,
-                            list.get(j))) {
-                        return FormulaFactory.mkConst(true);
                     } else {
                         list.set(i, list.get(i).setToConst(list.get(j).get_id(), false));
                         list.set(j, list.get(j).setToConst(list.get(i).get_id(), false));
@@ -162,48 +151,6 @@ public class SimplifyAggressivelyVisitor implements FormulaVisitor {
         return l;
     }
 
-    public Formula visitN(Negation n) {
-        if (n.operand instanceof Negation) {
-            return ((FormulaUnary) n.operand).operand.acceptFormula(this);
-        }
-        if (n.operand instanceof BooleanConstant) {
-            return FormulaFactory.mkConst(!((BooleanConstant) n.operand).get_value());
-        } else if (n.operand instanceof Conjunction) {
-            ArrayList<Formula> children = new ArrayList<>();
-            for (Formula grandchild : ((FormulaBinaryBoolean) n.operand).children) {
-                children.add(FormulaFactory.mkNot(grandchild));
-            }
-            return (FormulaFactory.mkOr(children)).acceptFormula(this);
-        } else if (n.operand instanceof Disjunction) {
-            ArrayList<Formula> children = new ArrayList<>();
-            for (Formula child : ((FormulaBinaryBoolean) n.operand).children) {
-                children.add(FormulaFactory.mkNot(child));
-            }
-            return (FormulaFactory.mkAnd(children)).acceptFormula(this);
-        } else if (n.operand instanceof FOperator) {
-            return (FormulaFactory.mkG(FormulaFactory.mkNot(((FormulaUnary) n.operand).operand))).acceptFormula(this);
-        } else if (n.operand instanceof GOperator) {
-            return (FormulaFactory.mkF(FormulaFactory.mkNot(((FormulaUnary) n.operand).operand))).acceptFormula(this);
-        } else if (n.operand instanceof Literal) {
-            return (((Literal) n.operand).negated());
-        } else if (n.operand instanceof UOperator) {
-            Formula child = n.operand.acceptFormula(this);
-            if (!(child instanceof UOperator)) {
-
-                return FormulaFactory.mkNot(child).acceptFormula(this);
-            }
-            return (FormulaFactory.mkOr(
-                    FormulaFactory.mkU(FormulaFactory.mkNot(((FormulaBinary) child).right),
-                            FormulaFactory.mkAnd(FormulaFactory.mkNot(((FormulaBinary) child).left),
-                                    FormulaFactory.mkNot(((FormulaBinary) child).right))),
-                    FormulaFactory.mkG(FormulaFactory.mkNot(((FormulaBinary) child).right)))).acceptFormula(this);
-        } else if (n.operand instanceof XOperator) {
-            return (FormulaFactory.mkX(FormulaFactory.mkNot(((FormulaUnary) n.operand).operand)));
-        }
-
-        return n; // never happens
-    }
-
     public Formula visitU(UOperator u) {
         if (u.right.acceptBool(Suspendable.getVisitor()) || u.right.acceptBool(EventualVisitor.getVisitor())) {
             return u.right.acceptFormula(this);
@@ -213,8 +160,6 @@ public class SimplifyAggressivelyVisitor implements FormulaVisitor {
             ImplicationVisitor imp = ImplicationVisitor.getVisitor();
             if (l.acceptBinarybool(imp, r)) {
                 return r;
-            } else if (FormulaFactory.mkNot(l).acceptFormula(this).acceptBinarybool(imp, r)) {
-                return FormulaFactory.mkF(r).acceptFormula(this);
             } else if (r instanceof BooleanConstant) {
                 return r;
             } else if (l instanceof BooleanConstant) {

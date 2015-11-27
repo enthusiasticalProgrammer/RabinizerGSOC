@@ -13,8 +13,6 @@ public interface AttributeVisitor {
 
     boolean visitL(Literal l);
 
-    boolean visitN(Negation n);
-
     boolean visitU(UOperator u);
 
     boolean visitX(XOperator x);

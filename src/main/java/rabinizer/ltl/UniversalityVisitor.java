@@ -46,10 +46,6 @@ public class UniversalityVisitor implements AttributeVisitor {
         return false;
     }
 
-    public boolean visitN(Negation n) {
-        return n.operand.acceptBool(EventualVisitor.getVisitor());
-    }
-
     public boolean visitU(UOperator u) {
         return u.left.acceptBool(this) && u.right.acceptBool(this);
     }

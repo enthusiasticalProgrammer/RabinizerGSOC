@@ -13,8 +13,6 @@ public interface AttributeBinaryVisitor {
 
     boolean visitL(Literal l, Formula fo);
 
-    boolean visitN(Negation n, Formula fo);
-
     boolean visitU(UOperator u, Formula fo);
 
     boolean visitX(XOperator x, Formula fo);

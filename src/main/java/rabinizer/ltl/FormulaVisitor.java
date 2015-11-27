@@ -13,8 +13,6 @@ public interface FormulaVisitor {
 
     Formula visitL(Literal l);
 
-    Formula visitN(Negation n);
-
     Formula visitU(UOperator u);
 
     Formula visitX(XOperator x);

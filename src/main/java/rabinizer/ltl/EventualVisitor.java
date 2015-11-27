@@ -43,10 +43,6 @@ public class EventualVisitor implements AttributeVisitor {
         return false;
     }
 
-    public boolean visitN(Negation n) {
-        return n.operand.acceptBool(UniversalityVisitor.getVisitor());
-    }
-
     public boolean visitU(UOperator u) {
         return u.right.acceptBool(this);
     }
