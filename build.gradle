@@ -1,43 +1,23 @@
 apply plugin: 'java'
-apply plugin: 'eclipse'
-
-sourceCompatibility = 1.8
+apply plugin: 'application'
 
 version = '3.2'
 
-jar {
-    from {
-        configurations.compile.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-        configurations.runtime.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
+mainClassName = 'rabinizer.exec.Main'
 
+jar {
     manifest {
         attributes 'Implementation-Title': 'Rabinizer',
-                   'Implementation-Version': 1.0,
-                   'Main-class': 'rabinizer.exec.Main',
-                   'Built-Date': new Date(),
-                   'Built-JDK': System.getProperty('java.version')
+                   'Implementation-Version': version
     }
+}
+
+repositories {
+    mavenCentral()
 }
 
 dependencies {
-    compile fileTree(dir: 'lib', include: ['*.jar','*.zip'])
-}
-
-sourceSets {
-    main {
-        java {
-            srcDirs = ["src"]
-        }
-    }
-}
-
-buildscript {
-    dependencies {
-        classpath fileTree(dir: 'lib', include: '*.jar')
-    }
+    compile files('lib/jdd.jar')
+    compile files('lib/z3/bin/com.microsoft.z3.jar')
+    testCompile 'junit:junit:4+'
 }
