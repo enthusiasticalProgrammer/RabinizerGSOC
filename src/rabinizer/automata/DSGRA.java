@@ -72,7 +72,7 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
     @Override
     protected String accName() {
         String result = "acc-name: generalized-Rabin " + accSGR.size();
-        for (Object anAccSGR : accSGR) {
+        for (GRabinPair<Set<ProductAccState>> anAccSGR : accSGR) {
             result += " " + (anAccSGR.right.size());
         }
         return result + "\n";
