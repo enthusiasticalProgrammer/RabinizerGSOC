@@ -233,10 +233,23 @@ public class Conjunction extends FormulaBinaryBoolean {
         return v.visitC(this);
     }
 
-
     @Override
     public boolean acceptBinarybool(AttributeBinaryVisitor v, Formula f) {
         return v.visitC(this, f);
     }
 
+    @Override
+    public boolean isPureEventual() {
+        return children.stream().allMatch(c -> c.isPureEventual());
+    }
+
+    @Override
+    public boolean isPureUniversal() {
+        return children.stream().allMatch(c -> c.isPureUniversal());
+    }
+
+    @Override
+    public boolean isSuspendable() {
+        return children.stream().allMatch(c -> c.isSuspendable());
+    }
 }

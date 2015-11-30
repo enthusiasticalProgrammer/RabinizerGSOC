@@ -142,4 +142,18 @@ public class GOperator extends FormulaUnary {
         return v.visitG(this, f);
     }
 
+    @Override
+    public boolean isPureEventual() {
+        return operand.isPureEventual();
+    }
+
+    @Override
+    public boolean isPureUniversal() {
+        return true;
+    }
+
+    @Override
+    public boolean isSuspendable() {
+        return operand.isPureEventual() || operand.isSuspendable();
+    }
 }

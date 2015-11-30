@@ -173,5 +173,18 @@ public class UOperator extends FormulaBinary {
         return v.visitU(this, f);
     }
 
+    @Override
+    public boolean isPureEventual() {
+        return right.isPureEventual();
+    }
 
+    @Override
+    public boolean isPureUniversal() {
+        return left.isPureUniversal() && right.isPureUniversal();
+    }
+
+    @Override
+    public boolean isSuspendable() {
+        return right.isSuspendable();
+    }
 }

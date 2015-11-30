@@ -152,7 +152,7 @@ public class SimplifyAggressivelyVisitor implements FormulaVisitor {
     }
 
     public Formula visitU(UOperator u) {
-        if (u.right.acceptBool(Suspendable.getVisitor()) || u.right.acceptBool(EventualVisitor.getVisitor())) {
+        if (u.right.isSuspendable() || u.right.isPureEventual()) {
             return u.right.acceptFormula(this);
         } else {
             Formula l = u.left.acceptFormula(this);
@@ -186,7 +186,7 @@ public class SimplifyAggressivelyVisitor implements FormulaVisitor {
 
     public Formula visitX(XOperator x) {
         Formula child = x.operand.acceptFormula(this);
-        if (child.acceptBool(Suspendable.getVisitor())) {
+        if (child.isSuspendable()) {
             return child;
         } else if (child.get_id() == x.operand.get_id()) {
             return x;

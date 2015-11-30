@@ -174,4 +174,11 @@ public abstract class Formula {
     public abstract boolean acceptBool(AttributeVisitor v);
 
     public abstract boolean acceptBinarybool(AttributeBinaryVisitor v, Formula f);
+
+    // Temporal Properties of an LTL Formula
+    public abstract boolean isPureEventual();
+
+    public abstract boolean isPureUniversal();
+
+    public abstract boolean isSuspendable();
 }

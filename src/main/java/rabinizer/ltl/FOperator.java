@@ -121,5 +121,18 @@ public class FOperator extends FormulaUnary {
         return v.visitF(this, f);
     }
 
+    @Override
+    public boolean isPureEventual() {
+        return true;
+    }
 
+    @Override
+    public boolean isPureUniversal() {
+        return operand.isPureUniversal();
+    }
+
+    @Override
+    public boolean isSuspendable() {
+        return operand.isPureUniversal() || operand.isSuspendable();
+    }
 }

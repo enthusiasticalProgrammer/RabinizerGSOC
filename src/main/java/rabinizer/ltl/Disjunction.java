@@ -236,4 +236,18 @@ public class Disjunction extends FormulaBinaryBoolean {
         return v.visitD(this, f);
     }
 
+    @Override
+    public boolean isPureEventual() {
+        return children.stream().allMatch(c -> c.isPureEventual());
+    }
+
+    @Override
+    public boolean isPureUniversal() {
+        return children.stream().allMatch(c -> c.isPureUniversal());
+    }
+
+    @Override
+    public boolean isSuspendable() {
+        return children.stream().allMatch(c -> c.isSuspendable());
+    }
 }

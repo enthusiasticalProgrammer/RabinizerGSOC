@@ -8,8 +8,6 @@ import rabinizer.ltl.bdd.BDDForFormulae;
 import java.util.ArrayList;
 
 public class BooleanConstant extends FormulaNullary {
-
-
     private final boolean value;
 
     private final int cachedHash;
@@ -98,7 +96,6 @@ public class BooleanConstant extends FormulaNullary {
         return this;
     }
 
-
     private int init_hash() {
         return value ? 1 : 2;
     }
@@ -118,4 +115,18 @@ public class BooleanConstant extends FormulaNullary {
         return v.visitB(this, f);
     }
 
+    @Override
+    public boolean isPureEventual() {
+        return true;
+    }
+
+    @Override
+    public boolean isPureUniversal() {
+        return true;
+    }
+
+    @Override
+    public boolean isSuspendable() {
+        return true;
+    }
 }

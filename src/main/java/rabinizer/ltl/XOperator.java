@@ -10,7 +10,6 @@ public class XOperator extends FormulaUnary {
 
     private final int cachedHash;
 
-
     XOperator(Formula f, long id) {
         super(f, id);
         this.cachedHash = init_hash();
@@ -104,5 +103,18 @@ public class XOperator extends FormulaUnary {
         return v.visitX(this, f);
     }
 
+    @Override
+    public boolean isPureEventual() {
+        return operand.isPureEventual();
+    }
 
+    @Override
+    public boolean isPureUniversal() {
+        return operand.isPureUniversal();
+    }
+
+    @Override
+    public boolean isSuspendable() {
+        return operand.isSuspendable();
+    }
 }
