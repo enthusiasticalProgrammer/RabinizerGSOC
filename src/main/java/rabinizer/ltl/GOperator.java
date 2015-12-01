@@ -103,13 +103,8 @@ public final class GOperator extends FormulaUnary {
     }
 
     @Override
-    public Formula acceptFormula(FormulaVisitor v) {
-        return v.visitG(this);
-    }
-
-    @Override
-    public boolean acceptBool(AttributeVisitor v) {
-        return v.visitG(this);
+    public <R> R accept(Visitor<R> v) {
+        return v.visit(this);
     }
 
     @Override

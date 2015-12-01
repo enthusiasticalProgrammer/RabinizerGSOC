@@ -145,10 +145,7 @@ public abstract class Formula {
     //so I write this method
     public abstract Formula rmAllConstants();
 
-    //to realize the visitor pattern for different method signatures
-    public abstract Formula acceptFormula(FormulaVisitor v);
-
-    public abstract boolean acceptBool(AttributeVisitor v);
+    public abstract <R> R accept(Visitor<R> v);
 
     public abstract boolean acceptBinarybool(AttributeBinaryVisitor v, Formula f);
 

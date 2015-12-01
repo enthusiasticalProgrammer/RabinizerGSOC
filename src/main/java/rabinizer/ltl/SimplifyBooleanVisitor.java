@@ -3,7 +3,7 @@ package rabinizer.ltl;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class SimplifyBooleanVisitor implements FormulaVisitor {
+public class SimplifyBooleanVisitor implements Visitor<Formula> {
 
     private static SimplifyBooleanVisitor instance = new SimplifyBooleanVisitor();
 

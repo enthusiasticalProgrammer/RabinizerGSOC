@@ -191,13 +191,8 @@ public final class Disjunction extends FormulaBinaryBoolean {
     }
 
     @Override
-    public Formula acceptFormula(FormulaVisitor v) {
-        return v.visitD(this);
-    }
-
-    @Override
-    public boolean acceptBool(AttributeVisitor v) {
-        return v.visitD(this);
+    public <R> R accept(Visitor<R> v) {
+        return v.visit(this);
     }
 
     @Override

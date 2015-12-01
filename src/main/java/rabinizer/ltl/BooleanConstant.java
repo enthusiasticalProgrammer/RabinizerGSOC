@@ -66,13 +66,8 @@ public final class BooleanConstant extends FormulaNullary {
     }
 
     @Override
-    public Formula acceptFormula(FormulaVisitor v) {
-        return v.visitB(this);
-    }
-
-    @Override
-    public boolean acceptBool(AttributeVisitor v) {
-        return v.visitB(this);
+    public <R> R accept(Visitor<R> v) {
+        return v.visit(this);
     }
 
     @Override

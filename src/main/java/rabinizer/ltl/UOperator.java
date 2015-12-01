@@ -177,13 +177,8 @@ public final class UOperator extends Formula {
     }
 
     @Override
-    public Formula acceptFormula(FormulaVisitor v) {
-        return v.visitU(this);
-    }
-
-    @Override
-    public boolean acceptBool(AttributeVisitor v) {
-        return v.visitU(this);
+    public <R> R accept(Visitor<R> v) {
+        return v.visit(this);
     }
 
     @Override

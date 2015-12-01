@@ -117,13 +117,8 @@ public final class Literal extends FormulaNullary {
     }
 
     @Override
-    public Formula acceptFormula(FormulaVisitor v) {
-        return v.visitL(this);
-    }
-
-    @Override
-    public boolean acceptBool(AttributeVisitor v) {
-        return v.visitL(this);
+    public <R> R accept(Visitor<R> v) {
+        return v.visit(this);
     }
 
     @Override

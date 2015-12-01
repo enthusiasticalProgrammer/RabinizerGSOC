@@ -70,13 +70,8 @@ public final class FOperator extends FormulaUnary {
     }
 
     @Override
-    public Formula acceptFormula(FormulaVisitor v) {
-        return v.visitF(this);
-    }
-
-    @Override
-    public boolean acceptBool(AttributeVisitor v) {
-        return v.visitF(this);
+    public <R> R accept(Visitor<R> v) {
+        return v.visit(this);
     }
 
     @Override
