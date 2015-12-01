@@ -9,21 +9,17 @@ package rabinizer.ltl;
 import rabinizer.ltl.bdd.GSet;
 import rabinizer.ltl.bdd.Valuation;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author jkretinsky & Christopher Ziegler
  */
-public abstract class FormulaBinaryBoolean extends Formula {
+public abstract class FormulaBinaryBoolean extends Formula { /* Why is this called Binary? */
 
-    final List<Formula> children;
+    final Set<Formula> children;
 
-    FormulaBinaryBoolean(List<Formula> children, long id) {
-        super(id);
-        this.children = children;
+    FormulaBinaryBoolean(Collection<Formula> children) {
+        this.children = new HashSet<>(children);
     }
 
     public abstract Formula ThisTypeBoolean(ArrayList<Formula> children);
@@ -96,15 +92,6 @@ public abstract class FormulaBinaryBoolean extends Formula {
     }
 
     @Override
-    public String toReversePolishString() {
-        String result = operator();
-        for (Formula child : children) {
-            result = result + " " + child.toReversePolishString();
-        }
-        return result;
-    }
-
-    @Override
     public ArrayList<String> getAllPropositions() {
         ArrayList<String> a = new ArrayList<>();
         for (Formula child : children) {
@@ -151,29 +138,6 @@ public abstract class FormulaBinaryBoolean extends Formula {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof FormulaBinaryBoolean)) {
-            return false;
-        } else {
-            if (!o.getClass().equals(getClass()) || o.hashCode() != this.hashCode()) {
-                return false;
-            }
-
-            if (((FormulaBinaryBoolean) o).children.size() != this.children.size()) {
-                return false;
-            }
-
-            for (int i = 0; i < this.children.size(); i++) {
-                if (this.children.get(i).get_id() != ((FormulaBinaryBoolean) o).children.get(i).get_id()) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-    }
-
-    @Override
     public boolean isVeryDifferentFrom(Formula f) {
         boolean diff = false;
         for (Formula child : children) {
@@ -195,25 +159,21 @@ public abstract class FormulaBinaryBoolean extends Formula {
         return cachedString;
     }
 
-
     @Override
     public abstract boolean ignoresG(Formula f);
 
-
     @Override
-    public Formula setToConst(long id, boolean constant) {
-        if (id == unique_id) {
-            return FormulaFactory.mkConst(constant);
-        }
-        ArrayList<Formula> helper = new ArrayList<>();
-        for (Formula child : children) {
-            helper.add(child.setToConst(id, constant));
-        }
-        boolean eq = true;
-        for (int i = 0; i < helper.size(); i++) {
-            eq = eq && helper.get(i) == children.get(i);
-        }
-        return ThisTypeBoolean(helper);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FormulaBinaryBoolean that = (FormulaBinaryBoolean) o;
+        return Objects.equals(children, that.children);
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(children);
+    }
+
+    public abstract String operator();
 }

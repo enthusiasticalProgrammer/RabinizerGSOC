@@ -108,7 +108,7 @@ public class MyBDD {
 
                 Formula neg;
                 if (other.variableToFormula(bdd.level()) instanceof Literal) {
-                    neg = ((Literal) other.variableToFormula(bdd.level())).negated();
+                    neg = ((Literal) other.variableToFormula(bdd.level())).not();
                 } else {
                     neg = FormulaFactory.mkNot(other.variableToFormula(bdd.level()));
                 }

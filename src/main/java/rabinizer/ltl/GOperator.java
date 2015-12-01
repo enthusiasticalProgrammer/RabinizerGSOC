@@ -9,24 +9,15 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GOperator extends FormulaUnary {
+public final class GOperator extends FormulaUnary {
 
-    final int cachedHash;
-
-
-    GOperator(Formula f, long id) {
-        super(f, id);
-        this.cachedHash = init_hash();
+    public GOperator(Formula f) {
+        super(f);
     }
 
     @Override
     public String operator() {
         return "G";
-    }
-
-    @Override
-    public Formula ThisTypeUnary(Formula operand) {
-        return FormulaFactory.mkG(operand);
     }
 
     @Override
@@ -41,13 +32,8 @@ public class GOperator extends FormulaUnary {
     }
 
     @Override
-    public Formula toNNF() {
-        return FormulaFactory.mkG(operand.toNNF());
-    }
-
-    @Override
-    public Formula negationToNNF() {
-        return FormulaFactory.mkF(operand.negationToNNF());
+    public FOperator not() {
+        return new FOperator(operand.not());
     }
 
     //============== OVERRIDE ====================
@@ -79,17 +65,11 @@ public class GOperator extends FormulaUnary {
         }
     }
 
-
     public BoolExpr toExpr(Context ctx) {
         if (cachedLTL == null) {
             cachedLTL = ctx.mkBoolConst(toZ3String(true));
         }
         return cachedLTL;
-    }
-
-    @Override
-    public int hashCode() {
-        return cachedHash;
     }
 
     @Override
@@ -120,11 +100,6 @@ public class GOperator extends FormulaUnary {
             return child;
         }
         return FormulaFactory.mkG(child);
-    }
-
-
-    private int init_hash() {
-        return (((operand.hashCode() % 35023) * 31277) + 3109) % 999983;
     }
 
     @Override

@@ -16,17 +16,10 @@ import java.util.Set;
  * @author Jan Kretinsky
  */
 public abstract class Formula {
-    static int curr_symbol = 0;
-    final long unique_id;
+
     String cachedString;
     BDD cachedBdd = null;
     BoolExpr cachedLTL = null;
-
-    Formula(long id) {
-        unique_id = id;
-    }
-
-    public abstract String operator();
 
     public abstract BDD bdd();
 
@@ -40,14 +33,10 @@ public abstract class Formula {
     @Override
     public abstract boolean equals(Object o);
 
-    public abstract String toReversePolishString();
-
-    public abstract Formula toNNF();
-
     //to be overwritten, side-effects: propositions will be inserted into ctx
     public abstract BoolExpr toExpr(Context ctx);
 
-    public abstract Formula negationToNNF();
+    public abstract Formula not();
 
     public abstract boolean containsG();
 
@@ -67,10 +56,6 @@ public abstract class Formula {
         return this.assertValuation(valuation).removeX();
     }
 
-    //for testing
-    public long get_id() {
-        return unique_id;
-    }
 
     public Formula assertValuation(Valuation valuation) {
         return evaluateValuation(valuation).removeConstants();
@@ -159,14 +144,6 @@ public abstract class Formula {
     //removeConstants did not remove boolean constants such as true/false
     //so I write this method
     public abstract Formula rmAllConstants();
-
-
-    //a.setToConst(id,true), return a if id is not a subformula of a
-    //		and if id is a subformula of a, it replaces id with const
-    //this is used to minimize expressions as a&phi(a) -->a&phi.setToConst(a.unique_id,true)
-    // and a|phi(a)--> a|phi.setToConst(a.unique_id,false)
-    public abstract Formula setToConst(long id, boolean constant);
-
 
     //to realize the visitor pattern for different method signatures
     public abstract Formula acceptFormula(FormulaVisitor v);

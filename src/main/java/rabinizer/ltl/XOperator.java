@@ -6,22 +6,14 @@ import com.microsoft.z3.Context;
 import java.util.ArrayList;
 
 
-public class XOperator extends FormulaUnary {
+public final class XOperator extends FormulaUnary {
 
-    private final int cachedHash;
-
-    XOperator(Formula f, long id) {
-        super(f, id);
-        this.cachedHash = init_hash();
+    public XOperator(Formula f) {
+        super(f);
     }
 
     public String operator() {
         return "X";
-    }
-
-    @Override
-    public Formula ThisTypeUnary(Formula operand) {
-        return FormulaFactory.mkX(operand);
     }
 
     @Override
@@ -35,13 +27,8 @@ public class XOperator extends FormulaUnary {
     }
 
     @Override
-    public Formula toNNF() {
-        return FormulaFactory.mkX(operand.toNNF());
-    }
-
-    @Override
-    public Formula negationToNNF() {
-        return FormulaFactory.mkX(operand.negationToNNF());
+    public Formula not() {
+        return new XOperator(operand.not());
     }
 
     //============== OVERRIDE ====================
@@ -54,17 +41,12 @@ public class XOperator extends FormulaUnary {
         if (cachedLTL == null) {
             cachedLTL = ctx.mkBoolConst(toZ3String(true));
         }
+
         return cachedLTL;
     }
 
     @Override
-    public int hashCode() {
-        return cachedHash;
-    }
-
-    @Override
     public String toZ3String(boolean is_atom) {
-
         return "X" + operand.toZ3String(true);
     }
 
@@ -78,14 +60,12 @@ public class XOperator extends FormulaUnary {
     @Override
     public Formula rmAllConstants() {
         Formula child = operand.rmAllConstants();
+
         if (child instanceof BooleanConstant) {
             return child;
         }
-        return FormulaFactory.mkX(child);
-    }
 
-    private int init_hash() {
-        return (((operand.hashCode() % 33791) * 32687) + 701) % 999983;
+        return FormulaFactory.mkX(child);
     }
 
     @Override

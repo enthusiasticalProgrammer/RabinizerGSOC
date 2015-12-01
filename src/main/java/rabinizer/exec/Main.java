@@ -45,7 +45,6 @@ public class Main {
     public static void printUsage() {
         System.out.println("\n" + "Usage: rabinizer [options] <ltlfile>\n" + "Options:\n"
                 + "   -help                       : print this help and exit\n"
-                + "   -postfix                    : dump formula in reverse Polish notation and exit\n"
                 + "   -silent                     : silent terminal output, no messages, only the result\n\n"
                 // + " -verbose : verbose terminal output for debugging\n"
                 + "   -auto=tgr                   : creates generalized Rabin automaton with condition on transitions (default)\n"
@@ -297,11 +296,7 @@ public class Main {
         } else {
             nonsilent("Input formula: " + formula);
         }
-        if (postfix) {
-            System.out.println("Input formula in postfix format:\n" + formula.toReversePolishString());
-            return null;
-        }
-        formula = formula.toNNF();
+
         nonsilent("Input formula in NNF: " + formula);
 
         nonsilent("Enumeration of valuations");

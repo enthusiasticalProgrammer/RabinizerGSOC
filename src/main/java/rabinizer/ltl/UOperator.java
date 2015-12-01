@@ -7,23 +7,68 @@ import rabinizer.ltl.bdd.BDDForFormulae;
 import rabinizer.ltl.z3.LTLExpr;
 
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Represents a until formula.
  *
  * @author Andreas & Ruslan
  */
-public class UOperator extends FormulaBinary {
+public final class UOperator extends Formula {
 
+    final Formula left, right;
 
-    private final int cachedHash;
-
-    UOperator(Formula left, Formula right, long id) {
-        super(left, right, id);
-        this.cachedHash = init_hash();
+    public UOperator(Formula left, Formula right) {
+        this.left = left;
+        this.right = right;
     }
 
     @Override
+    public String toString() {
+        if (cachedString == null) {
+            cachedString = "(" + left + operator() + right + ")";
+        }
+        return cachedString;
+    }
+
+    @Override
+    public boolean containsG() {
+        return left.containsG() || right.containsG();
+    }
+
+    @Override
+    public boolean hasSubformula(Formula f) {
+        return this.equals(f) || left.hasSubformula(f) || right.hasSubformula(f);
+    }
+
+    @Override
+    public Set<Formula> gSubformulas() {
+        Set<Formula> r = left.gSubformulas();
+        r.addAll(right.gSubformulas());
+        return r;
+    }
+
+    @Override
+    public Set<Formula> topmostGs() {
+        Set<Formula> result = left.topmostGs();
+        result.addAll(right.topmostGs());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UOperator uOperator = (UOperator) o;
+        return Objects.equals(left, uOperator.left) && Objects.equals(right, uOperator.right);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(left, right);
+    }
+
     public String operator() {
         return "U";
     }
@@ -56,14 +101,11 @@ public class UOperator extends FormulaBinary {
         return FormulaFactory.mkOr(right.unfoldNoG(), FormulaFactory.mkAnd(left.unfoldNoG(), /*new XOperator*/ (this)));
     }
 
-    public Formula toNNF() {
-        return FormulaFactory.mkU(left.toNNF(), right.toNNF());
-    }
-
-    public Formula negationToNNF() {
-        return FormulaFactory.mkOr(FormulaFactory.mkG(right.negationToNNF()),
-                FormulaFactory.mkU(right.negationToNNF(), FormulaFactory.mkAnd(
-                        left.negationToNNF(), right.negationToNNF())));
+    @Override
+    public Formula not() {
+        return FormulaFactory.mkOr(FormulaFactory.mkG(right.not()),
+                FormulaFactory.mkU(right.not(), FormulaFactory.mkAnd(
+                        left.not(), right.not())));
     }
 
     public BoolExpr toExpr(Context ctx) {
@@ -71,11 +113,6 @@ public class UOperator extends FormulaBinary {
             cachedLTL = ctx.mkBoolConst(toZ3String(true));
         }
         return cachedLTL;
-    }
-
-    @Override
-    public int hashCode() {
-        return cachedHash;
     }
 
     @Override
@@ -107,7 +144,7 @@ public class UOperator extends FormulaBinary {
         Formula l = left.rmAllConstants();
         Formula r = right.rmAllConstants();
         if (l instanceof BooleanConstant) {
-            if (((BooleanConstant) l).get_value()) {
+            if (((BooleanConstant) l).value) {
                 return FormulaFactory.mkF(r);
             } else {
                 return r;
@@ -119,18 +156,6 @@ public class UOperator extends FormulaBinary {
         }
         return FormulaFactory.mkU(l, r);
     }
-
-
-    @Override
-    public Formula setToConst(long id, boolean constant) {
-        if (id == unique_id) {
-            return FormulaFactory.mkConst(constant);
-        } else {
-            return this;
-        }
-
-    }
-
 
     private BDD init_bdd() {
         BDD helper;
@@ -151,22 +176,15 @@ public class UOperator extends FormulaBinary {
         return ctx.mkBoolConst(toZ3String(true));
     }
 
-    private int init_hash() {
-        return (((left.hashCode() % 33767) * (right.hashCode() % 33049)) + 2141) % 999983;
-    }
-
-
     @Override
     public Formula acceptFormula(FormulaVisitor v) {
         return v.visitU(this);
     }
 
-
     @Override
     public boolean acceptBool(AttributeVisitor v) {
         return v.visitU(this);
     }
-
 
     @Override
     public boolean acceptBinarybool(AttributeBinaryVisitor v, Formula f) {

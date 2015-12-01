@@ -6,21 +6,17 @@ import net.sf.javabdd.BDD;
 import rabinizer.ltl.bdd.BDDForFormulae;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
-public class BooleanConstant extends FormulaNullary {
-    private final boolean value;
+public final class BooleanConstant extends FormulaNullary {
 
-    private final int cachedHash;
+    static public final BooleanConstant TRUE = new BooleanConstant(true);
+    static public final BooleanConstant FALSE = new BooleanConstant(false);
 
-    BooleanConstant(boolean value, long id) {
-        super(id);
+    public final boolean value;
+
+    private BooleanConstant(boolean value) {
         this.value = value;
-        this.cachedHash = init_hash();
-    }
-
-    @Override
-    public String operator() {
-        return null;
     }
 
     @Override
@@ -33,47 +29,25 @@ public class BooleanConstant extends FormulaNullary {
     }
 
     @Override
-    public int hashCode() {
-        return cachedHash;
-    }
-
-    public boolean get_value() {
-        return value;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof BooleanConstant)) {
-            return false;
-        } else {
-            return ((BooleanConstant) o).value == value;
-        }
-    }
-
-    @Override
-    public String toReversePolishString() {
-        return toString();
-    }
-
-    @Override
     public String toString() {
         if (cachedString == null) {
             cachedString = (value ? "true" : "false");
         }
+
         return cachedString;
     }
 
     @Override
-    public Formula negationToNNF() {
-        return FormulaFactory.mkConst(!value);
+    public BooleanConstant not() {
+        return value ? FALSE : TRUE;
     }
 
     public BoolExpr toExpr(Context ctx) {
         if (cachedLTL == null) {
             cachedLTL = (value ? ctx.mkTrue() : ctx.mkFalse());
         }
-        return cachedLTL;
 
+        return cachedLTL;
     }
 
     @Override
@@ -89,15 +63,6 @@ public class BooleanConstant extends FormulaNullary {
     @Override
     public Formula rmAllConstants() {
         return FormulaFactory.mkConst(value);
-    }
-
-    @Override
-    public Formula setToConst(long id, boolean constant) {
-        return this;
-    }
-
-    private int init_hash() {
-        return value ? 1 : 2;
     }
 
     @Override
@@ -128,5 +93,18 @@ public class BooleanConstant extends FormulaNullary {
     @Override
     public boolean isSuspendable() {
         return true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BooleanConstant that = (BooleanConstant) o;
+        return value == that.value;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
     }
 }

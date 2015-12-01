@@ -1,42 +1,35 @@
 package rabinizer.ltl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 public class FormulaFactory {
 
-    private static HashMap<Formula, Formula> formulae = new HashMap<>();
-    private static long next_identifier = 0L;
+    /* TODO: Merge this with simplify Visitors */
+    private static Map<Formula, Formula> formulae = new HashMap<>();
 
     private static SimplifyBooleanVisitor get_vis() {
         return SimplifyBooleanVisitor.getVisitor();
     }
 
-
     //For and/or, the output of the formula can be reverted
     // because this makes Comparable easier
     public static Formula mkAnd(Formula... af) {
-        Formula swap;
+        Set<Formula> conjuncts = new HashSet<>(Arrays.asList(af));
+
         ArrayList<Formula> helper = new ArrayList<>();
+
         for (Formula anAf : af) {
             if (anAf instanceof Conjunction) {
-                helper.addAll(((FormulaBinaryBoolean) anAf).children);
+                conjuncts.addAll(((FormulaBinaryBoolean) anAf).children);
             } else {
-                helper.add(anAf);
+                conjuncts.add(anAf);
             }
         }
 
-        for (int i = 0; i < helper.size(); i++) {
-            for (int j = helper.size() - 1; j > i; j--) {
-                if (helper.get(i).unique_id > helper.get(j).unique_id) {
-                    swap = helper.get(i);
-                    helper.set(i, helper.get(j));
-                    helper.set(j, swap);
-                } else if (helper.get(i).unique_id == helper.get(j).unique_id) {
-                    helper.remove(j);
-                }
-            }
+        if (conjuncts.contains(BooleanConstant.FALSE)) {
+            return BooleanConstant.FALSE;
         }
+
 
         if (helper.isEmpty()) {
             return FormulaFactory.mkConst(true);
@@ -46,7 +39,6 @@ public class FormulaFactory {
 
         Formula z = (new Conjunction(helper, next_identifier++)).acceptFormula(get_vis());
         return probe(z);
-
     }
 
     public static Formula mkOr(Formula... af) {
@@ -93,14 +85,13 @@ public class FormulaFactory {
         return mkOr(helper);
     }
 
-
     public static Formula mkConst(boolean t) {
-        Formula z = new BooleanConstant(t, next_identifier++);
+        Formula z = t ? BooleanConstant.TRUE : BooleanConstant.FALSE;
         return probe(z);
     }
 
     public static Formula mkF(Formula child) {
-        Formula z = new FOperator(child, next_identifier++).acceptFormula(get_vis());
+        Formula z = new FOperator(child).acceptFormula(get_vis());
         return probe(z);
     }
 
@@ -110,18 +101,18 @@ public class FormulaFactory {
     }
 
     public static Formula mkLit(String proposition, int atomId, boolean negated) {
-        Formula z = new Literal(proposition, atomId, negated, next_identifier++);
+        Formula z = new Literal(proposition, atomId, negated);
         return probe(z);
     }
 
     public static Formula mkU(Formula l, Formula r) {
-        Formula z = new UOperator(l, r, next_identifier++).acceptFormula(get_vis());
+        Formula z = new UOperator(l, r).acceptFormula(get_vis());
         return probe(z);
 
     }
 
     public static Formula mkX(Formula child) {
-        Formula z = new XOperator(child, next_identifier++).acceptFormula(get_vis());
+        Formula z = new XOperator(child).acceptFormula(get_vis());
         return probe(z);
     }
 

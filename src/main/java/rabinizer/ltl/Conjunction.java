@@ -5,24 +5,22 @@ import com.microsoft.z3.Context;
 import net.sf.javabdd.BDD;
 import rabinizer.ltl.bdd.BDDForFormulae;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
  * @author Andreas Gaiser & Ruslan Ledesma-Garza & Christopher Ziegler
  */
-public class Conjunction extends FormulaBinaryBoolean {
+public final class Conjunction extends FormulaBinaryBoolean {
 
-
-    private final int cachedHash;
-
-    Conjunction(List<Formula> af, long id) {
-        super(af, id);
-        this.cachedHash = init_hash();
+    public Conjunction(Collection<Formula> conjuncts) {
+        super(conjuncts);
     }
 
+    public Conjunction(Formula... conjuncts) {
+        super(Arrays.asList(conjuncts));
+    }
 
     @Override
     public Formula ThisTypeBoolean(ArrayList<Formula> af) {
@@ -33,7 +31,6 @@ public class Conjunction extends FormulaBinaryBoolean {
     public String operator() {
         return "&";
     }
-
 
     @Override
     public BDD bdd() {
@@ -47,20 +44,13 @@ public class Conjunction extends FormulaBinaryBoolean {
         return cachedBdd;
     }
 
-
-    @Override
-    public int hashCode() {
-        return cachedHash;
-    }
-
-
     @Override
     public Formula removeConstants() {
         ArrayList<Formula> new_children = new ArrayList<>();
         for (Formula child : children) {
             Formula new_child = child.removeConstants();
             if (new_child instanceof BooleanConstant) {
-                if (!((BooleanConstant) new_child).get_value()) {
+                if (!((BooleanConstant) new_child).value) {
                     return FormulaFactory.mkConst(false);
                 }
             } else {
@@ -72,18 +62,19 @@ public class Conjunction extends FormulaBinaryBoolean {
         } else {
             return FormulaFactory.mkAnd(new_children);
         }
-
     }
 
     @Override
     public boolean ignoresG(Formula f) {
         boolean isTransientwrt = !hasSubformula(f);
         boolean result = true;
-        for (int i = 0; i < children.size(); i++) {
-            for (int j = i + 1; j < children.size(); j++) {
-                result = result && (children.get(i).isTransientwrt(children.get(j)) || children.get(j).isTransientwrt(children.get(i)));
-            }
-        }
+
+        // for (int i = 0; i < children.size(); i++) {
+        //    for (int j = i + 1; j < children.size(); j++) {
+        //        result = result && (children.get(i).isTransientwrt(children.get(j)) || children.get(j).isTransientwrt(children.get(i)));
+        //    }
+        // }
+
         result = result || isTransientwrt;
         if (result) {
             return true;
@@ -93,25 +84,11 @@ public class Conjunction extends FormulaBinaryBoolean {
                 isTransientwrt = isTransientwrt && child.ignoresG(f);
             return isTransientwrt;
         }
-
     }
 
     @Override
-    public Formula toNNF() {
-        ArrayList<Formula> nnf = new ArrayList<>();
-        for (Formula child : children) {
-            nnf.add(child.toNNF());
-        }
-        return FormulaFactory.mkAnd(nnf);
-    }
-
-    @Override
-    public Formula negationToNNF() {
-        ArrayList<Formula> negnnf = new ArrayList<>();
-        for (Formula child : children) {
-            negnnf.add(child.negationToNNF());
-        }
-        return FormulaFactory.mkOr(negnnf);
+    public Formula not() {
+        return new Disjunction(children.stream().map(Formula::not).collect(Collectors.toSet()));
     }
 
     public BoolExpr toExpr(Context ctx) {
@@ -126,7 +103,6 @@ public class Conjunction extends FormulaBinaryBoolean {
         }
         return cachedLTL;
     }
-
 
     @Override
     public String toZ3String(boolean is_atom) {
@@ -167,7 +143,6 @@ public class Conjunction extends FormulaBinaryBoolean {
 
     }
 
-
     @Override
     public Formula rmAllConstants() {
         ArrayList<Formula> new_children = new ArrayList<>();
@@ -175,7 +150,7 @@ public class Conjunction extends FormulaBinaryBoolean {
         for (Formula child : children) {
             fm = child.rmAllConstants();
             if (fm instanceof BooleanConstant) {
-                if (!((BooleanConstant) fm).get_value()) {
+                if (!((BooleanConstant) fm).value) {
                     return FormulaFactory.mkConst(false);
                 }
             } else {
@@ -191,10 +166,10 @@ public class Conjunction extends FormulaBinaryBoolean {
         }
     }
 
-
     //helps the SimplifyBooleanVisitor
-    protected ArrayList<Formula> getAllChildrenOfConjunction() {
-        ArrayList<Formula> al = new ArrayList<>();
+    protected Set<Formula> getAllChildrenOfConjunction() {
+        Set<Formula> al = new HashSet<>(children.size());
+
         for (Formula child : children) {
             if (child instanceof Conjunction) {
                 al.addAll(((Conjunction) child).getAllChildrenOfConjunction());
@@ -203,30 +178,13 @@ public class Conjunction extends FormulaBinaryBoolean {
             }
         }
 
-        //sort them according to unique_id:
-        Collections.sort(al, (f1, f2) -> Long.compare(f1.get_id(), f2.get_id()));
-
         return al;
-
     }
-
-    private int init_hash() {
-        int offset = 31607;
-        int hash = 1;
-        for (Formula child : children) {
-            hash %= offset;
-            hash = hash * (child.hashCode() % 31601);
-        }
-
-        return (hash + 1103) % 999983;
-    }
-
 
     @Override
     public Formula acceptFormula(FormulaVisitor v) {
         return v.visitC(this);
     }
-
 
     @Override
     public boolean acceptBool(AttributeVisitor v) {

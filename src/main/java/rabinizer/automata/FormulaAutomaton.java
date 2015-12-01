@@ -39,12 +39,12 @@ public abstract class FormulaAutomaton extends Automaton<FormulaState> {
             l = l.positiveLiteral();
             //System.out.println("  gen " + f + "; " + l);
             Set<ValuationSet> pos = generatePartitioning(f.assertLiteral(l));
-            Set<ValuationSet> neg = generatePartitioning(f.assertLiteral(l.negated()));
+            Set<ValuationSet> neg = generatePartitioning(f.assertLiteral(l.not()));
             for (ValuationSet vs : pos) {
                 result.add(vs.and(l));
             }
             for (ValuationSet vs : neg) {
-                result.add(vs.and(l.negated()));
+                result.add(vs.and(l.not()));
             }
         }
         return result;

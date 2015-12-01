@@ -9,6 +9,7 @@ package rabinizer.ltl;
 import net.sf.javabdd.BDD;
 import rabinizer.ltl.bdd.BDDForFormulae;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -18,37 +19,25 @@ public abstract class FormulaUnary extends Formula {
 
     public final Formula operand;
 
-    FormulaUnary(Formula operand, long id) {
-        super(id);
+    protected FormulaUnary(Formula operand) {
         this.operand = operand;
     }
 
-    //might also be a Boolean constant or sth else,
-    //since FormulaFactory simplifies upon creation
-    public abstract Formula ThisTypeUnary(Formula operand);
-
+    /* TODO: Move to BDD package */
     @Override
     public BDD bdd() {
         if (cachedBdd == null) {
-            Formula booleanAtom = ThisTypeUnary(operand.representative());
-            int bddVar = BDDForFormulae.bijectionBooleanAtomBddVar.id(booleanAtom);
+            int bddVar = BDDForFormulae.bijectionBooleanAtomBddVar.id(this);
+
             if (BDDForFormulae.bddFactory.varNum() <= bddVar) {
                 BDDForFormulae.bddFactory.extVarNum(1);
             }
+
             cachedBdd = BDDForFormulae.bddFactory.ithVar(bddVar);
             BDDForFormulae.representativeOfBdd(cachedBdd, this);
         }
+
         return cachedBdd;
-    }
-
-
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof FormulaUnary)) {
-            return false;
-        } else {
-            return o.getClass().equals(getClass()) && ((FormulaUnary) o).operand.unique_id == operand.unique_id;
-        }
     }
 
     @Override
@@ -57,11 +46,6 @@ public abstract class FormulaUnary extends Formula {
             cachedString = operator() + operand;
         }
         return cachedString;
-    }
-
-    @Override
-    public String toReversePolishString() {
-        return operator() + " " + operand.toReversePolishString();
     }
 
     @Override
@@ -87,15 +71,18 @@ public abstract class FormulaUnary extends Formula {
         return operand.topmostGs();
     }
 
-
     @Override
-    //to be overridden by FOperator
-    public Formula setToConst(long id, boolean constant) {
-        if (unique_id == id) {
-            return FormulaFactory.mkConst(constant);
-        } else {
-            return this;
-        }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FormulaUnary that = (FormulaUnary) o;
+        return Objects.equals(operand, that.operand);
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(operand);
+    }
+
+    public abstract String operator();
 }

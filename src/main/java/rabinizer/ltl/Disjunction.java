@@ -5,20 +5,20 @@ import com.microsoft.z3.Context;
 import net.sf.javabdd.BDD;
 import rabinizer.ltl.bdd.BDDForFormulae;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Andreas Gaiser & Ruslan Ledesma-Garza & Christopher Ziegler
  */
-public class Disjunction extends FormulaBinaryBoolean {
+public final class Disjunction extends FormulaBinaryBoolean {
 
-    private final int cachedHash;
+    public Disjunction(Collection<Formula> disjuncts) {
+        super(disjuncts);
+    }
 
-    Disjunction(List<Formula> af, long id) {
-        super(af, id);
-        this.cachedHash = init_hash();
+    public Disjunction(Formula... disjuncts) {
+        super(Arrays.asList(disjuncts));
     }
 
     @Override
@@ -32,17 +32,12 @@ public class Disjunction extends FormulaBinaryBoolean {
     }
 
     @Override
-    public int hashCode() {
-        return cachedHash;
-    }
-
-    @Override
     public Formula removeConstants() {
         ArrayList<Formula> new_children = new ArrayList<>();
         for (Formula child : children) {
             Formula new_child = child.removeConstants();
             if (new_child instanceof BooleanConstant) {
-                if (((BooleanConstant) new_child).get_value()) {
+                if (((BooleanConstant) new_child).value) {
                     return FormulaFactory.mkConst(true);
                 }
             } else {
@@ -75,21 +70,8 @@ public class Disjunction extends FormulaBinaryBoolean {
     }
 
     @Override
-    public Formula toNNF() {
-        ArrayList<Formula> new_children = new ArrayList<>();
-        for (Formula child : children) {
-            new_children.add(child.toNNF());
-        }
-        return FormulaFactory.mkOr(new_children);
-    }
-
-    @Override
-    public Formula negationToNNF() {
-        ArrayList<Formula> new_children = new ArrayList<>();
-        for (Formula child : children) {
-            new_children.add(child.negationToNNF());
-        }
-        return FormulaFactory.mkAnd(new_children);
+    public Formula not() {
+        return new Conjunction(children.stream().map(Formula::not).collect(Collectors.toSet()));
     }
 
     // ============================================================
@@ -166,8 +148,8 @@ public class Disjunction extends FormulaBinaryBoolean {
             }
             BDDForFormulae.representativeOfBdd(cachedBdd, this);
         }
-        return cachedBdd;
 
+        return cachedBdd;
     }
 
     @Override
@@ -177,7 +159,7 @@ public class Disjunction extends FormulaBinaryBoolean {
         for (Formula child : children) {
             fm = child.rmAllConstants();
             if (fm instanceof BooleanConstant) {
-                if (((BooleanConstant) fm).get_value()) {
+                if (((BooleanConstant) fm).value) {
                     return FormulaFactory.mkConst(true);
                 }
             } else {
@@ -193,10 +175,10 @@ public class Disjunction extends FormulaBinaryBoolean {
         }
     }
 
-
     //helps the SimplifyBooleanVisitor
-    protected ArrayList<Formula> getAllChildrenOfDisjunction() {
-        ArrayList<Formula> al = new ArrayList<>();
+    protected Set<Formula> getAllChildrenOfDisjunction() {
+        Set<Formula> al = new HashSet<>();
+
         for (Formula child : children) {
             if (child instanceof Disjunction) {
                 al.addAll(((Disjunction) child).getAllChildrenOfDisjunction());
@@ -205,20 +187,7 @@ public class Disjunction extends FormulaBinaryBoolean {
             }
         }
 
-        // sort them according to unique_id:
-        Collections.sort(al, (s1, s2) -> Long.compare(s1.get_id(), s2.get_id()));
         return al;
-
-    }
-
-    private int init_hash() {
-        int offset = 31583;
-        int hash = 1;
-        for (Formula child : children) {
-            hash %= offset;
-            hash = hash * (child.hashCode() % 34631);
-        }
-        return (hash + 2503) % 999983;
     }
 
     @Override

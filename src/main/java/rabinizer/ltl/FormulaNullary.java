@@ -5,6 +5,7 @@
  */
 package rabinizer.ltl;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,10 +13,6 @@ import java.util.Set;
  * @author jkretinsky
  */
 public abstract class FormulaNullary extends Formula {
-
-    FormulaNullary(long id) {
-        super(id);
-    }
 
     @Override
     public Formula unfold() {
@@ -38,18 +35,12 @@ public abstract class FormulaNullary extends Formula {
     }
 
     @Override
-    public Formula toNNF() {
-        return this;
-    }
-
-    @Override
     public Set<Formula> topmostGs() {
-        return new HashSet<>();
+        return Collections.emptySet();
     }
 
     @Override
     public boolean containsG() {
         return false;
     }
-
 }

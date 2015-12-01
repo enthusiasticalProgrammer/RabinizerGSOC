@@ -7,26 +7,18 @@ import rabinizer.ltl.bdd.BDDForFormulae;
 import rabinizer.ltl.bdd.Valuation;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
-public class Literal extends FormulaNullary {
+public final class Literal extends FormulaNullary {
 
     final String atom;
     final int atomId;
     final boolean negated;
 
-    private final int cachedHash;
-
-    Literal(String atom, int atomId, boolean negated, long id) {
-        super(id);
+    public Literal(String atom, int atomId, boolean negated) {
         this.atom = atom;
         this.atomId = atomId;
         this.negated = negated;
-        this.cachedHash = init_hash();
-    }
-
-    @Override
-    public String operator() {
-        return null;
     }
 
     public boolean getNegated() {
@@ -35,10 +27,6 @@ public class Literal extends FormulaNullary {
 
     public Literal positiveLiteral() {
         return (Literal) FormulaFactory.mkLit(this.atom, this.atomId, false);
-    }
-
-    public Literal negated() {
-        return (Literal) FormulaFactory.mkLit(atom, atomId, !negated);
     }
 
     @Override
@@ -53,25 +41,6 @@ public class Literal extends FormulaNullary {
         }
         return cachedBdd;
 
-    }
-
-    @Override
-    public int hashCode() {
-        return cachedHash;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof Literal)) {
-            return false;
-        } else {
-            return ((Literal) o).atomId == this.atomId && ((Literal) o).negated == this.negated;
-        }
-    }
-
-    @Override
-    public String toReversePolishString() {
-        return cachedString = (negated ? "! " : "") + atom;
     }
 
     @Override
@@ -97,8 +66,8 @@ public class Literal extends FormulaNullary {
     }
 
     @Override
-    public Formula negationToNNF() {
-        return this.negated();
+    public Literal not() {
+        return new Literal(atom, atomId, !negated);
     }
 
     @Override
@@ -148,16 +117,6 @@ public class Literal extends FormulaNullary {
     }
 
     @Override
-    public Formula setToConst(long id, boolean constant) {
-        return (id == unique_id ? FormulaFactory.mkConst(constant) : this);
-    }
-
-
-    private int init_hash() {
-        return ((atom.hashCode() % 34483) * 32363) + (negated ? 97 : 167) % 999983;
-    }
-
-    @Override
     public Formula acceptFormula(FormulaVisitor v) {
         return v.visitL(this);
     }
@@ -185,5 +144,20 @@ public class Literal extends FormulaNullary {
     @Override
     public boolean isSuspendable() {
         return false;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Literal literal = (Literal) o;
+        return atomId == literal.atomId &&
+                negated == literal.negated &&
+                Objects.equals(atom, literal.atom);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(atom, atomId, negated);
     }
 }
