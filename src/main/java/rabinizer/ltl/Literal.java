@@ -152,7 +152,7 @@ public final class Literal extends FormulaNullary {
     }
 
     @Override
-    public int hashCode() {
+    protected int hashCodeOnce() {
         return Objects.hash(atom, atomId, negated);
     }
 }

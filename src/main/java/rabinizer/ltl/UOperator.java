@@ -65,7 +65,7 @@ public final class UOperator extends Formula {
     }
 
     @Override
-    public int hashCode() {
+    protected int hashCodeOnce() {
         return Objects.hash(left, right);
     }
 

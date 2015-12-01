@@ -20,6 +20,7 @@ public abstract class Formula {
     String cachedString;
     BDD cachedBdd = null;
     BoolExpr cachedLTL = null;
+    private int cachedHashCode = -1;
 
     public abstract BDD bdd();
 
@@ -28,7 +29,15 @@ public abstract class Formula {
     }
 
     @Override
-    public abstract int hashCode();
+    public int hashCode() {
+        if (cachedHashCode == -1) {
+            cachedHashCode = hashCodeOnce();
+        }
+
+        return cachedHashCode;
+    }
+
+    protected abstract int hashCodeOnce();
 
     @Override
     public abstract boolean equals(Object o);

@@ -80,7 +80,7 @@ public abstract class FormulaUnary extends Formula {
     }
 
     @Override
-    public int hashCode() {
+    protected int hashCodeOnce() {
         return Objects.hash(operand);
     }
 

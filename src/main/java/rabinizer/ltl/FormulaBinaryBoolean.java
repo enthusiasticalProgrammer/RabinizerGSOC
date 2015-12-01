@@ -171,7 +171,7 @@ public abstract class FormulaBinaryBoolean extends Formula { /* Why is this call
     }
 
     @Override
-    public int hashCode() {
+    protected int hashCodeOnce() {
         return Objects.hash(children);
     }
 

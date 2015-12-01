@@ -99,7 +99,7 @@ public final class BooleanConstant extends FormulaNullary {
     }
 
     @Override
-    public int hashCode() {
+    protected int hashCodeOnce() {
         return Objects.hash(value);
     }
 }
