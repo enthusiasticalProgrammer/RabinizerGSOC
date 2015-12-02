@@ -181,4 +181,8 @@ public abstract class FormulaBinaryBoolean extends Formula { /* Why is this call
     }
 
     public abstract String operator();
+
+    public Set<Formula> getChildren() {
+        return Collections.unmodifiableSet(children);
+    }
 }
