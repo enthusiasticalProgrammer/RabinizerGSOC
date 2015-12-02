@@ -6,8 +6,9 @@ import net.sf.javabdd.BDD;
 import rabinizer.ltl.bdd.BDDForFormulae;
 import rabinizer.ltl.bdd.Valuation;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public final class Literal extends FormulaNullary {
 
@@ -100,10 +101,10 @@ public final class Literal extends FormulaNullary {
     }
 
     @Override
-    public ArrayList<String> getAllPropositions() {
-        ArrayList<String> a = new ArrayList<>();
-        a.add(atom);
-        return a;
+    public Set<Formula> getPropositions() {
+        Set<Formula> propositions = new HashSet<>();
+        propositions.add(this);
+        return propositions;
     }
 
     @Override

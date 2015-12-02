@@ -5,7 +5,6 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import rabinizer.ltl.bdd.GSet;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -84,13 +83,6 @@ public final class GOperator extends FormulaUnary {
             default:
                 return "G" + child;
         }
-    }
-
-    @Override
-    public ArrayList<String> getAllPropositions() {
-        ArrayList<String> a = new ArrayList<>();
-        a.add(toZ3String(true));
-        return a;
     }
 
     @Override

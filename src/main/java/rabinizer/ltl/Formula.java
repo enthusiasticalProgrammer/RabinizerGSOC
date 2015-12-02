@@ -7,7 +7,6 @@ import rabinizer.ltl.bdd.BDDForFormulae;
 import rabinizer.ltl.bdd.GSet;
 import rabinizer.ltl.bdd.Valuation;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -64,7 +63,6 @@ public abstract class Formula {
     public Formula temporalStep(Valuation valuation) {
         return this.assertValuation(valuation).removeX();
     }
-
 
     public Formula assertValuation(Valuation valuation) {
         return evaluateValuation(valuation).removeConstants();
@@ -145,14 +143,18 @@ public abstract class Formula {
     //it is likely not needed when calling the Z3 from the java interface
     public abstract String toZ3String(boolean is_atom);
 
-    //to be overridden by subclasses
-    //gets all propositions such as Fa, a, GaUb, ...
-    public abstract ArrayList<String> getAllPropositions();
-
-
     //removeConstants did not remove boolean constants such as true/false
     //so I write this method
     public abstract Formula rmAllConstants();
+
+    /**
+     * For the propositional view on LTL modal operators (F, G, U, X) and literals (a, !a) are treated as propositions.
+     * The method reduces the set by leaving out the negation of a formula. The propositional reasoning libraries are
+     * expected to register negations accordingly.
+     *
+     * @return
+     */
+    public abstract Set<Formula> getPropositions();
 
     public abstract <R> R accept(Visitor<R> v);
 

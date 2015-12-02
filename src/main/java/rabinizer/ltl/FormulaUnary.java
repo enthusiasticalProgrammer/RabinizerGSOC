@@ -85,4 +85,11 @@ public abstract class FormulaUnary extends Formula {
     }
 
     public abstract String operator();
+
+    @Override
+    public Set<Formula> getPropositions() {
+        Set<Formula> propositions = operand.getPropositions();
+        propositions.add(this);
+        return propositions;
+    }
 }

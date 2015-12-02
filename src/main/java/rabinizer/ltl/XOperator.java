@@ -3,8 +3,6 @@ package rabinizer.ltl;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 
-import java.util.ArrayList;
-
 
 public final class XOperator extends FormulaUnary {
 
@@ -48,13 +46,6 @@ public final class XOperator extends FormulaUnary {
     @Override
     public String toZ3String(boolean is_atom) {
         return "X" + operand.toZ3String(true);
-    }
-
-    @Override
-    public ArrayList<String> getAllPropositions() {
-        ArrayList<String> a = new ArrayList<>();
-        a.add(toZ3String(true));
-        return a;
     }
 
     @Override

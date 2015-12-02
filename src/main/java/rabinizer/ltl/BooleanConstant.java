@@ -5,8 +5,9 @@ import com.microsoft.z3.Context;
 import net.sf.javabdd.BDD;
 import rabinizer.ltl.bdd.BDDForFormulae;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public final class BooleanConstant extends FormulaNullary {
 
@@ -56,8 +57,8 @@ public final class BooleanConstant extends FormulaNullary {
     }
 
     @Override
-    public ArrayList<String> getAllPropositions() {
-        return new ArrayList<>();
+    public Set<Formula> getPropositions() {
+        return new HashSet<>();
     }
 
     @Override

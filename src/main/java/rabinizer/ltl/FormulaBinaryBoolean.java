@@ -92,13 +92,18 @@ public abstract class FormulaBinaryBoolean extends Formula { /* Why is this call
     }
 
     @Override
-    public ArrayList<String> getAllPropositions() {
-        ArrayList<String> a = new ArrayList<>();
+    public Set<Formula> getPropositions() {
+        Set<Formula> propositions = new HashSet<>();
+
         for (Formula child : children) {
-            a.addAll(child.getAllPropositions());
+            for (Formula proposition : child.getPropositions()) {
+                if (!propositions.contains(proposition) && !propositions.contains(proposition.not())) {
+                    propositions.add(proposition);
+                }
+            }
         }
 
-        return a;
+        return propositions;
     }
 
     @Override

@@ -6,7 +6,6 @@ import net.sf.javabdd.BDD;
 import rabinizer.ltl.bdd.BDDForFormulae;
 import rabinizer.ltl.z3.LTLExpr;
 
-import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Set;
 
@@ -132,11 +131,11 @@ public final class UOperator extends Formula {
     }
 
     @Override
-    public ArrayList<String> getAllPropositions() {
-        ArrayList<String> a = new ArrayList<>();
-        if (!toZ3String(true).equals("true") && !toZ3String(true).equals("true"))
-            a.add(toZ3String(true));
-        return a;
+    public Set<Formula> getPropositions() {
+        Set<Formula> propositions = left.getPropositions();
+        propositions.addAll(right.getPropositions());
+        propositions.add(this);
+        return propositions;
     }
 
     @Override

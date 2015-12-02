@@ -3,8 +3,6 @@ package rabinizer.ltl;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 
-import java.util.ArrayList;
-
 public final class FOperator extends FormulaUnary {
 
     public FOperator(Formula f) {
@@ -51,13 +49,6 @@ public final class FOperator extends FormulaUnary {
             default:
                 return "F" + child;
         }
-    }
-
-    @Override
-    public ArrayList<String> getAllPropositions() {
-        ArrayList<String> a = new ArrayList<>();
-        a.add(toZ3String(true));
-        return a;
     }
 
     @Override
