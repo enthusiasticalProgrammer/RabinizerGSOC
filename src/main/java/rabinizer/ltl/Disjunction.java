@@ -75,18 +75,7 @@ public final class Disjunction extends FormulaBinaryBoolean {
     }
 
     // ============================================================
-    @Override
-    public boolean isUnfoldOfF() {
-        for (Formula child : children) {
-            if (child instanceof XOperator) {
-                if (((FormulaUnary) child).operand instanceof FOperator) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
+    
     public BoolExpr toExpr(Context ctx) {
         if (cachedLTL == null) {
             ArrayList<BoolExpr> exprs = new ArrayList<>();

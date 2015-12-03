@@ -131,11 +131,6 @@ public abstract class Formula {
         return !hasSubformula(f);
     }
 
-    // to be overridden by Disjunction
-    public boolean isUnfoldOfF() {
-        return false;
-    }
-
     //to be overridden,
     //writes it to a string s.t. it can be interpreted by Z3
     //hint: this is not the only string the Z3 needs (also some preamble etc)
