@@ -146,6 +146,7 @@ public abstract class PropositionalFormula extends Formula {
         for (Formula child : children) {
             gSubstituted.add(child.substituteGsToFalse(gSet));
         }
+
         return ThisTypeBoolean(gSubstituted);
     }
 
@@ -204,7 +205,6 @@ public abstract class PropositionalFormula extends Formula {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-
         PropositionalFormula that = (PropositionalFormula) o;
         return Objects.equals(children, that.children);
     }

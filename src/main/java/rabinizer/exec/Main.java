@@ -54,7 +54,8 @@ public class Main {
                 // + " -auto=buchi : creates Rabin automaton with condition on
                 // states\n"
                 + "   -format=hoa                 : HOA (Hanoi omega-automata) format \n"
-                + "   -format=dot                 : dotty format (default)\n" + "   -format=size  : print only size of automaton\n"
+                + "   -format=dot                 : dotty format (default)\n"
+                + "   -format=size  : print only size of automaton\n"
                 + "   -how=isabelle               : stick to mechanically proven construction\n"
                 + "   -how=optimize               : use optimizations (default) \n"
                 + "   -eager                      : use eager optimizations, default if optimize\n"
@@ -97,8 +98,8 @@ public class Main {
         boolean simplifyFormula = true;
         boolean eager = true;
         boolean relSlavesOnly = true;
-        boolean sinks_on = true;
-        boolean opt_init = true;
+        boolean sinksOn = true;
+        boolean optInit = true;
 
         for (String arg : args) {
             if (arg.equals("-h") || arg.equals("--h") || arg.equals("-help") || arg.equals("--help")) {
@@ -128,9 +129,9 @@ public class Main {
                 format = Format.SIZEACC;
             } else if (arg.equals("-how=isabelle") || arg.equals("--how=isabelle")) {
                 eager = false;
-                sinks_on = false;
+                sinksOn = false;
                 relSlavesOnly = false;
-                opt_init = false;
+                optInit = false;
             } else if (arg.equals("-how=optimize") || arg.equals("--how=optimize")) {
                 eager = true;
             } else if (arg.equals("-in=formula") || arg.equals("--in=formula")) {
@@ -156,13 +157,13 @@ public class Main {
             } else if (arg.equals("-all-slaves") || arg.equals("--all-slaves")) {
                 relSlavesOnly = false;
             } else if (arg.equals("-sinks-on") || arg.equals("--sinks-on")) {
-                sinks_on = true;
+                sinksOn = true;
             } else if (arg.equals("-sinks-off") || arg.equals("--sinks-off")) {
-                sinks_on = false;
+                sinksOn = false;
             } else if (arg.equals("-optimize-initial-state") || arg.equals("--optimize-initial-state")) {
-                opt_init = true;
+                optInit = true;
             } else if (arg.equals("-not-optimize-initial-state") || arg.equals("--not-optimize-initial-state")) {
-                opt_init = false;
+                optInit = false;
             } else if (arg.substring(0, 1).equals("-")) {
                 System.out.println("\n\nERROR: unknown option " + arg);
                 printUsage();
@@ -209,16 +210,16 @@ public class Main {
                 file = "output";
             }
             switch (format) {
-                case HOA:
-                    file += ".hoa";
-                    break;
-                case DOT:
-                    file += ".dot";
-                    break;
-                case SIZE:
-                case SIZEACC:
-                    file += ".txt";
-                    break;
+            case HOA:
+                file += ".hoa";
+                break;
+            case DOT:
+                file += ".dot";
+                break;
+            case SIZE:
+            case SIZEACC:
+                file += ".txt";
+                break;
             }
             try {
                 fw = new FileWriter(new File(file));
@@ -236,28 +237,29 @@ public class Main {
             stopwatch();
 
             AccAutomatonInterface automaton = computeAutomaton(input, type,
-                    format != Format.SIZE || type != AutomatonType.TGR, postfix, eager, simplifyFormula, sinks_on, relSlavesOnly, opt_init);
+                    format != Format.SIZE || type != AutomatonType.TGR, postfix, eager, simplifyFormula, sinksOn,
+                    relSlavesOnly, optInit);
 
             nonsilent("Time for construction: " + stopwatch() + " s");
             nonsilent("Outputting DGRA");
             switch (format) {
-                case HOA:
-                    output = automaton.toHOA();
-                    break;
-                case DOT:
-                    output = automaton.toDotty();
-                    output += "\n" + automaton.acc();
-                    break;
-                case SIZE:
-                    output = String.format("%8s", automaton.size());
-                    break;
-                case SIZEACC:
-                    output = String.format("%8s%8s", automaton.size(), automaton.pairNumber());
-                    // throw new UnsupportedOperationException("Not supported
-                    // yet.");
-                    break;
-                default:
-                    output = null;
+            case HOA:
+                output = automaton.toHOA();
+                break;
+            case DOT:
+                output = automaton.toDotty();
+                output += "\n" + automaton.acc();
+                break;
+            case SIZE:
+                output = String.format("%8s", automaton.size());
+                break;
+            case SIZEACC:
+                output = String.format("%8s%8s", automaton.size(), automaton.pairNumber());
+                // throw new UnsupportedOperationException("Not supported
+                // yet.");
+                break;
+            default:
+                output = null;
             }
             writer.println(output);
             writer.flush();
@@ -277,8 +279,8 @@ public class Main {
     }
 
     public static AccAutomatonInterface computeAutomaton(String input, AutomatonType type, boolean computeAcc,
-                                                         boolean postfix, boolean eager, boolean simplify,
-                                                         boolean sinks_on, boolean relSlavesOnly, boolean opt_init) {
+            boolean postfix, boolean eager, boolean simplify, boolean sinks_on, boolean relSlavesOnly,
+            boolean opt_init) {
         // BDDForVariables.bijectionIdAtom = new BijectionIdAtom(); // fresh
         // variables for each formula
 
@@ -291,7 +293,7 @@ public class Main {
         }
         if (simplify) {
             nonsilent("Formula unsimplified: " + formula);
-            formula = formula.acceptFormula(SimplifyAggressivelyVisitor.getVisitor());
+            formula = formula.accept(SimplifyAggressivelyVisitor.getVisitor());
             nonsilent("Formula simplified:" + formula);
         } else {
             nonsilent("Input formula: " + formula);
@@ -306,20 +308,19 @@ public class Main {
 
         boolean slowerIsabelleAccForUnfolded = false;
 
-
         // DGRA dgra = new DTGRA(phi); for optimized
-        DTGRARaw dtgra = new DTGRARaw(formula, computeAcc, eager, sinks_on, opt_init,
-                relSlavesOnly, slowerIsabelleAccForUnfolded);
+        DTGRARaw dtgra = new DTGRARaw(formula, computeAcc, eager, sinks_on, opt_init, relSlavesOnly,
+                slowerIsabelleAccForUnfolded);
         switch (type) {
-            case TGR:
-                return new DTGRA(dtgra);
-            // case SGR:
-            // return new DSGRA(dtgra);
-            case TR:
-                return new DTRA(dtgra);
-            case SR:
-                return new DSRA(new DTRA(dtgra));
-            case BUCHI:
+        case TGR:
+            return new DTGRA(dtgra);
+        // case SGR:
+        // return new DSGRA(dtgra);
+        case TR:
+            return new DTRA(dtgra);
+        case SR:
+            return new DSRA(new DTRA(dtgra));
+        case BUCHI:
         }
         errorMessageAndExit("Unsupported automaton type");
         return null;
