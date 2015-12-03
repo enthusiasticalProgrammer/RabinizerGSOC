@@ -97,7 +97,7 @@ public abstract class FormulaBinaryBoolean extends Formula { /* Why is this call
 
         for (Formula child : children) {
             for (Formula proposition : child.getPropositions()) {
-                if (!propositions.contains(proposition) && !propositions.contains(proposition.not())) {
+                if (!propositions.contains(proposition.not())) {
                     propositions.add(proposition);
                 }
             }
