@@ -1,26 +1,23 @@
 package rabinizer.ltl;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class FormulaFactory {
 
     /* TODO: Merge this with simplify Visitors */
     private static Map<Formula, Formula> formulae = new HashMap<>();
 
-    private static SimplifyBooleanVisitor get_vis() {
+    private static SimplifyBooleanVisitor getVis() {
         return SimplifyBooleanVisitor.getVisitor();
     }
 
-    //For and/or, the output of the formula can be reverted
-    // because this makes Comparable easier
     public static Formula mkAnd(Formula... af) {
-        Set<Formula> conjuncts = new HashSet<>(Arrays.asList(af));
-
-        ArrayList<Formula> helper = new ArrayList<>();
+        Set<Formula> conjuncts = new HashSet<Formula>();
 
         for (Formula anAf : af) {
             if (anAf instanceof Conjunction) {
-                conjuncts.addAll(((FormulaBinaryBoolean) anAf).children);
+                conjuncts.addAll(((PropositionalFormula) anAf).children);
             } else {
                 conjuncts.add(anAf);
             }
@@ -30,59 +27,56 @@ public class FormulaFactory {
             return BooleanConstant.FALSE;
         }
 
-
-        if (helper.isEmpty()) {
+        if (conjuncts.isEmpty()) {
             return FormulaFactory.mkConst(true);
-        } else if (helper.size() == 1) {
-            return helper.get(0);
+        } else if (conjuncts.size() == 1) {
+            Formula onlyOne = null;
+            for (Formula a : conjuncts) {
+                onlyOne = a;
+            }
+            return onlyOne;
         }
 
-        Formula z = (new Conjunction(helper, next_identifier++)).acceptFormula(get_vis());
+        Formula z = (new Conjunction(conjuncts)).accept(getVis());
         return probe(z);
     }
 
     public static Formula mkOr(Formula... af) {
-        Formula swap;
-        ArrayList<Formula> helper = new ArrayList<>();
+
+        Set<Formula> disjuncts = new HashSet<Formula>();
 
         for (Formula anAf : af) {
             if (anAf instanceof Disjunction) {
-                helper.addAll(((FormulaBinaryBoolean) anAf).children);
+                disjuncts.addAll(((PropositionalFormula) anAf).children);
             } else {
-                helper.add(anAf);
+                disjuncts.add(anAf);
             }
         }
-        for (int i = 0; i < helper.size(); i++) {
-            for (int j = helper.size() - 1; j > i; j--) {
-                if (helper.get(i).unique_id > helper.get(j).unique_id) {
-                    swap = helper.get(i);
-                    helper.set(i, helper.get(j));
-                    helper.set(j, swap);
-                } else if (helper.get(i).unique_id == helper.get(j).unique_id) {
-                    helper.remove(j);
-                }
-            }
-        }
-        if (helper.isEmpty()) {
+
+        if (disjuncts.isEmpty()) {
             return FormulaFactory.mkConst(false);
-        } else if (helper.size() == 1) {
-            return helper.get(0);
+        } else if (disjuncts.size() == 1) {
+            Formula onlyOne = null;
+            for (Formula a : disjuncts) {
+                onlyOne = a;
+            }
+            return onlyOne;
         }
-        Formula z = (new Disjunction(helper, next_identifier++)).acceptFormula(get_vis());
+        Formula z = (new Disjunction(disjuncts)).accept(getVis());
         return probe(z);
 
     }
 
-    public static Formula mkAnd(ArrayList<Formula> af) {
-        Formula[] helper = new Formula[af.size()];
-        helper = af.toArray(helper);
-        return mkAnd(helper);
-    }
-
-    public static Formula mkOr(ArrayList<Formula> af) {
+    public static Formula mkOr(Collection<Formula> af) {
         Formula[] helper = new Formula[af.size()];
         helper = af.toArray(helper);
         return mkOr(helper);
+    }
+
+    public static Formula mkAnd(Collection<Formula> af) {
+        Formula[] helper = new Formula[af.size()];
+        helper = af.toArray(helper);
+        return mkAnd(helper);
     }
 
     public static Formula mkConst(boolean t) {
@@ -91,12 +85,12 @@ public class FormulaFactory {
     }
 
     public static Formula mkF(Formula child) {
-        Formula z = new FOperator(child).acceptFormula(get_vis());
+        Formula z = new FOperator(child).accept(getVis());
         return probe(z);
     }
 
     public static Formula mkG(Formula child) {
-        Formula z = new GOperator(child, next_identifier++).acceptFormula(get_vis());
+        Formula z = new GOperator(child).accept(getVis());
         return probe(z);
     }
 
@@ -106,13 +100,13 @@ public class FormulaFactory {
     }
 
     public static Formula mkU(Formula l, Formula r) {
-        Formula z = new UOperator(l, r).acceptFormula(get_vis());
+        Formula z = new UOperator(l, r).accept(getVis());
         return probe(z);
 
     }
 
     public static Formula mkX(Formula child) {
-        Formula z = new XOperator(child).acceptFormula(get_vis());
+        Formula z = new XOperator(child).accept(getVis());
         return probe(z);
     }
 
@@ -127,7 +121,7 @@ public class FormulaFactory {
     }
 
     public static Formula mkNot(Formula formula) {
-        throw new RuntimeException("Not yet implemented");
+        return probe(formula.not());
     }
 
 }

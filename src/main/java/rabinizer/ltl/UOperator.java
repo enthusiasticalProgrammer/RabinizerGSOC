@@ -57,8 +57,10 @@ public final class UOperator extends Formula {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         UOperator uOperator = (UOperator) o;
         return Objects.equals(left, uOperator.left) && Objects.equals(right, uOperator.right);
     }
@@ -72,12 +74,10 @@ public final class UOperator extends Formula {
         return "U";
     }
 
+    @Override
     public BDD bdd() {
         if (cachedBdd == null) {
-            Formula booleanAtom = FormulaFactory.mkU(
-                    left.representative(),
-                    right.representative()
-            );
+            Formula booleanAtom = FormulaFactory.mkU(left.representative(), right.representative());
             int bddVar = BDDForFormulae.bijectionBooleanAtomBddVar.id(booleanAtom);
             if (BDDForFormulae.bddFactory.varNum() <= bddVar) {
                 BDDForFormulae.bddFactory.extVarNum(bddVar);
@@ -91,43 +91,29 @@ public final class UOperator extends Formula {
     @Override
     public Formula unfold() {
         // unfold(a U b) = unfold(b) v (unfold(a) ^ X (a U b))
-        return FormulaFactory.mkOr(right.unfold(), FormulaFactory.mkAnd(left.unfold(), /*new XOperator*/ (this)));
+        return FormulaFactory.mkOr(right.unfold(),
+                FormulaFactory.mkAnd(left.unfold(), /* new XOperator */ (this)));
     }
 
     @Override
     public Formula unfoldNoG() {
         // unfold(a U b) = unfold(b) v (unfold(a) ^ X (a U b))
-        return FormulaFactory.mkOr(right.unfoldNoG(), FormulaFactory.mkAnd(left.unfoldNoG(), /*new XOperator*/ (this)));
+        return FormulaFactory.mkOr(right.unfoldNoG(),
+                FormulaFactory.mkAnd(left.unfoldNoG(), /* new XOperator */ (this)));
     }
 
     @Override
     public Formula not() {
         return FormulaFactory.mkOr(FormulaFactory.mkG(right.not()),
-                FormulaFactory.mkU(right.not(), FormulaFactory.mkAnd(
-                        left.not(), right.not())));
-    }
-
-    public BoolExpr toExpr(Context ctx) {
-        if (cachedLTL == null) {
-            cachedLTL = ctx.mkBoolConst(toZ3String(true));
-        }
-        return cachedLTL;
+                FormulaFactory.mkU(right.not(), FormulaFactory.mkAnd(left.not(), right.not())));
     }
 
     @Override
-    public String toZ3String(boolean is_atom) {
-        String l = left.toZ3String(true);
-        String r = right.toZ3String(true);
-        if (r.equals("true")) {
-            return "true";
-        } else if (l.equals("false")) {
-            return r;
-        } else if (r.equals("false")) {
-            return "false";
-        } else {
-            return l + "U" + r;
+    public BoolExpr toExpr(Context ctx) {
+        if (cachedLTL == null) {
+            cachedLTL = ctx.mkBoolConst(this.toString());
         }
-
+        return cachedLTL;
     }
 
     @Override
@@ -156,11 +142,9 @@ public final class UOperator extends Formula {
         return FormulaFactory.mkU(l, r);
     }
 
-    private BDD init_bdd() {
+    private BDD initBdd() {// used??
         BDD helper;
-        Formula booleanAtom = FormulaFactory.mkU(
-                left.representative(),
-                right.representative());
+        Formula booleanAtom = FormulaFactory.mkU(left.representative(), right.representative());
         int bddVar = BDDForFormulae.bijectionBooleanAtomBddVar.id(booleanAtom);
         if (BDDForFormulae.bddFactory.varNum() <= bddVar) {
             BDDForFormulae.bddFactory.extVarNum(bddVar);
@@ -170,9 +154,9 @@ public final class UOperator extends Formula {
         return helper;
     }
 
-    private BoolExpr init_ltl() {
+    private BoolExpr initLtl() {// used??
         Context ctx = LTLExpr.getContext();
-        return ctx.mkBoolConst(toZ3String(true));
+        return ctx.mkBoolConst(toString());
     }
 
     @Override
@@ -181,8 +165,13 @@ public final class UOperator extends Formula {
     }
 
     @Override
-    public boolean acceptBinarybool(AttributeBinaryVisitor v, Formula f) {
-        return v.visitU(this, f);
+    public <A, B> A accept(BinaryVisitor<A, B> v, B f) {
+        return v.visit(this, f);
+    }
+
+    @Override
+    public <A, B, C> A accept(TripleVisitor<A, B, C> v, B f, C c) {
+        return v.visit(this, f, c);
     }
 
     @Override

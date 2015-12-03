@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 /**
  * @author Andreas Gaiser & Ruslan Ledesma-Garza & Christopher Ziegler
  */
-public final class Disjunction extends FormulaBinaryBoolean {
+public final class Disjunction extends PropositionalFormula {
 
     public Disjunction(Collection<Formula> disjuncts) {
         super(disjuncts);
@@ -22,7 +22,7 @@ public final class Disjunction extends FormulaBinaryBoolean {
     }
 
     @Override
-    public Formula ThisTypeBoolean(ArrayList<Formula> af) {
+    public Formula ThisTypeBoolean(Collection<Formula> af) {
         return FormulaFactory.mkOr(af);
     }
 
@@ -32,50 +32,13 @@ public final class Disjunction extends FormulaBinaryBoolean {
     }
 
     @Override
-    public Formula removeConstants() {
-        ArrayList<Formula> new_children = new ArrayList<>();
-        for (Formula child : children) {
-            Formula new_child = child.removeConstants();
-            if (new_child instanceof BooleanConstant) {
-                if (((BooleanConstant) new_child).value) {
-                    return FormulaFactory.mkConst(true);
-                }
-            } else {
-                new_children.add(new_child);
-            }
-        }
-        if (new_children.isEmpty()) {
-            return FormulaFactory.mkConst(false);
-        }
-        if (new_children.size() == 1) {
-            return new_children.get(0);
-        } else {
-            return FormulaFactory.mkOr(new_children);
-        }
-    }
-
-    @Override
-    public boolean ignoresG(Formula f) {
-        // return (!left.hasSubformula(f) || left.ignoresG(f))
-        // && (!right.hasSubformula(f) || right.ignoresG(f));
-        if (!hasSubformula(f)) {
-            return true;
-        } else {
-            boolean ign = true;
-            for (Formula child : children) {
-                ign = ign && child.ignoresG(f);
-            }
-            return ign;
-        }
-    }
-
-    @Override
     public Formula not() {
         return new Conjunction(children.stream().map(Formula::not).collect(Collectors.toSet()));
     }
 
     // ============================================================
     
+    @Override
     public BoolExpr toExpr(Context ctx) {
         if (cachedLTL == null) {
             ArrayList<BoolExpr> exprs = new ArrayList<>();
@@ -91,44 +54,6 @@ public final class Disjunction extends FormulaBinaryBoolean {
     }
 
     @Override
-    public String toZ3String(boolean is_atom) {
-        ArrayList<String> al = new ArrayList<>();
-        for (Formula child : children) {
-            al.add(child.toZ3String(is_atom));
-        }
-
-        String result = "";
-        if (is_atom) {
-            for (String prop : al) {
-                if (prop.equals("true")) {
-                    return "true";
-                } else if (!prop.equals("false")) {
-                    result = result + (result.isEmpty() ? prop : " &" + prop);
-                }
-            }
-            if (result == "") {
-                return "false";
-            } else {
-                return result;
-            }
-        } else {
-            result = "(or ";
-            for (String prop : al) {
-                if (prop.equals("true")) {
-                    return "true";
-                } else if (!prop.equals("false")) {
-                    result = result + prop + " ";
-                }
-            }
-            if (result.equals("(or ")) {
-                return "false";
-            } else {
-                return result + " )";
-            }
-        }
-    }
-
-    @Override
     public BDD bdd() {
         if (cachedBdd == null) {
             cachedBdd = BDDForFormulae.bddFactory.zero();
@@ -141,30 +66,7 @@ public final class Disjunction extends FormulaBinaryBoolean {
         return cachedBdd;
     }
 
-    @Override
-    public Formula rmAllConstants() {
-        ArrayList<Formula> new_children = new ArrayList<>();
-        Formula fm;
-        for (Formula child : children) {
-            fm = child.rmAllConstants();
-            if (fm instanceof BooleanConstant) {
-                if (((BooleanConstant) fm).value) {
-                    return FormulaFactory.mkConst(true);
-                }
-            } else {
-                new_children.add(fm);
-            }
-        }
-        if (new_children.isEmpty()) {
-            return FormulaFactory.mkConst(false);
-        } else if (new_children.size() == 1) {
-            return new_children.get(0);
-        } else {
-            return FormulaFactory.mkOr(new_children);
-        }
-    }
-
-    //helps the SimplifyBooleanVisitor
+    // helps the SimplifyBooleanVisitor
     protected Set<Formula> getAllChildrenOfDisjunction() {
         Set<Formula> al = new HashSet<>();
 
@@ -185,8 +87,13 @@ public final class Disjunction extends FormulaBinaryBoolean {
     }
 
     @Override
-    public boolean acceptBinarybool(AttributeBinaryVisitor v, Formula f) {
-        return v.visitD(this, f);
+    public <A, B> A accept(BinaryVisitor<A, B> v, B f) {
+        return v.visit(this, f);
+    }
+
+    @Override
+    public <A, B, C> A accept(TripleVisitor<A, B, C> v, B f, C c) {
+        return v.visit(this, f, c);
     }
 
     @Override
@@ -203,4 +110,5 @@ public final class Disjunction extends FormulaBinaryBoolean {
     public boolean isSuspendable() {
         return children.stream().allMatch(c -> c.isSuspendable());
     }
+
 }

@@ -1,8 +1,5 @@
 package rabinizer.ltl;
 
-
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
 import rabinizer.ltl.bdd.GSet;
 
 import java.util.HashSet;
@@ -21,8 +18,7 @@ public final class GOperator extends FormulaUnary {
 
     @Override
     public Formula unfold() {
-        // U(F phi) = U(phi) \/ X F U(phi)
-        return FormulaFactory.mkAnd(operand.unfold(), /*new XOperator*/ (this));
+        return FormulaFactory.mkAnd(operand.unfold(), (this));
     }
 
     @Override
@@ -35,7 +31,7 @@ public final class GOperator extends FormulaUnary {
         return new FOperator(operand.not());
     }
 
-    //============== OVERRIDE ====================
+    // ============== OVERRIDE ====================
     @Override
     public boolean containsG() {
         return true;
@@ -64,27 +60,6 @@ public final class GOperator extends FormulaUnary {
         }
     }
 
-    public BoolExpr toExpr(Context ctx) {
-        if (cachedLTL == null) {
-            cachedLTL = ctx.mkBoolConst(toZ3String(true));
-        }
-        return cachedLTL;
-    }
-
-    @Override
-    public String toZ3String(boolean is_atom) {
-        String child = operand.toZ3String(true);
-
-        switch (child) {
-            case "true":
-                return "true";
-            case "false":
-                return "false";
-            default:
-                return "G" + child;
-        }
-    }
-
     @Override
     public Formula rmAllConstants() {
         Formula child = operand.rmAllConstants();
@@ -100,8 +75,13 @@ public final class GOperator extends FormulaUnary {
     }
 
     @Override
-    public boolean acceptBinarybool(AttributeBinaryVisitor v, Formula f) {
-        return v.visitG(this, f);
+    public <A, B> A accept(BinaryVisitor<A, B> v, B f) {
+        return v.visit(this, f);
+    }
+
+    @Override
+    public <A, B, C> A accept(TripleVisitor<A, B, C> v, B f, C c) {
+        return v.visit(this, f, c);
     }
 
     @Override

@@ -43,17 +43,13 @@ public final class BooleanConstant extends FormulaNullary {
         return value ? FALSE : TRUE;
     }
 
+    @Override
     public BoolExpr toExpr(Context ctx) {
         if (cachedLTL == null) {
             cachedLTL = (value ? ctx.mkTrue() : ctx.mkFalse());
         }
 
         return cachedLTL;
-    }
-
-    @Override
-    public String toZ3String(boolean is_atom) {
-        return (value ? "true" : "false");
     }
 
     @Override
@@ -72,8 +68,13 @@ public final class BooleanConstant extends FormulaNullary {
     }
 
     @Override
-    public boolean acceptBinarybool(AttributeBinaryVisitor v, Formula f) {
-        return v.visitB(this, f);
+    public <A, B> A accept(BinaryVisitor<A, B> v, B f) {
+        return v.visit(this, f);
+    }
+
+    @Override
+    public <A, B, C> A accept(TripleVisitor<A, B, C> v, B f, C c) {
+        return v.visit(this, f, c);
     }
 
     @Override
@@ -93,8 +94,10 @@ public final class BooleanConstant extends FormulaNullary {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         BooleanConstant that = (BooleanConstant) o;
         return value == that.value;
     }

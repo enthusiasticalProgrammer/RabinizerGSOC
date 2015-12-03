@@ -3,7 +3,7 @@ package rabinizer.ltl;
 //visitY(a,b) returns true if a=>b, and if we don't know it or a doesn't imply b then false.
 //it is highly recommended to have the formulae agressively simplified before
 //the class is written to be used only in simplifyAggressively for a Con- or Disjunction
-public class ImplicationVisitor implements AttributeBinaryVisitor {
+public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
 
     private static ImplicationVisitor instance = new ImplicationVisitor();
 
@@ -15,24 +15,24 @@ public class ImplicationVisitor implements AttributeBinaryVisitor {
         return instance;
     }
 
-    public boolean visitB(BooleanConstant b, Formula fo) {
-        if (b.get_value()) {
+    public Boolean visit(BooleanConstant b, Formula fo) {
+        if (b.value) {
             return b.equals(fo);
         } else {
             return true;
         }
     }
 
-    public boolean visitC(Conjunction c, Formula fo) {
-        if (c.get_id() == fo.get_id()) {
+    public Boolean visit(Conjunction c, Formula fo) {
+        if (c.equals(fo)) {
             return true;
         }
         if (fo instanceof Conjunction) {
             boolean imp = true;
-            for (Formula fochild : ((FormulaBinaryBoolean) fo).children) {
+            for (Formula fochild : ((PropositionalFormula) fo).children) {
                 boolean impClause = false;
                 for (Formula child : c.children) {
-                    impClause = impClause || child.acceptBinarybool(this, fochild);
+                    impClause = impClause || child.accept(this, fochild);
                 }
                 imp = imp && impClause;
             }
@@ -40,127 +40,120 @@ public class ImplicationVisitor implements AttributeBinaryVisitor {
         } else {
             boolean imp = false;
             for (Formula child : c.children) {
-                imp = imp || child.acceptBinarybool(this, fo);
+                imp = imp || child.accept(this, fo);
             }
             return imp;
         }
     }
 
-    public boolean visitD(Disjunction d, Formula fo) {
-        if (d.get_id() == fo.get_id()) {
-            return true;
-        }
+    public Boolean visit(Disjunction d, Formula fo) {
         boolean imp = true;
         for (Formula child : d.children) {
-            imp = imp && child.acceptBinarybool(this, fo);
+            imp = imp && child.accept(this, fo);
         }
         return imp;
     }
 
-    public boolean visitF(FOperator f, Formula fo) {
-        if (f.get_id() == fo.get_id()) {
-            return true;
-        }
+    public Boolean visit(FOperator f, Formula fo) {
         if (fo instanceof FOperator) {
-            return f.operand.acceptBinarybool(this, ((FormulaUnary) fo).operand);
+            return f.operand.accept(this, ((FormulaUnary) fo).operand);
         }
         return false;
     }
 
-    public boolean visitG(GOperator g, Formula fo) {
-        if (g.get_id() == fo.get_id()) {
+    public Boolean visit(GOperator g, Formula fo) {
+        if (g.equals(fo)) {
             return true;
         }
-        if (fo.get_id() == g.operand.get_id()) {
+        if (fo.equals(g.operand)) {
             return true;
         } else if (fo instanceof BooleanConstant) {
-            return ((BooleanConstant) fo).get_value();
+            return ((BooleanConstant) fo).value;
         } else if (fo instanceof Conjunction) {
             boolean imp = true;
-            for (Formula fochild : ((FormulaBinaryBoolean) fo).children) {
-                imp = imp && g.acceptBinarybool(this, fochild);
+            for (Formula fochild : ((PropositionalFormula) fo).children) {
+                imp = imp && g.accept(this, fochild);
             }
             return imp;
         } else if (fo instanceof Disjunction) {
             boolean imp = false;
-            for (Formula fochild : ((FormulaBinaryBoolean) fo).children) {
-                imp = imp || g.acceptBinarybool(this, fochild);
+            for (Formula fochild : ((PropositionalFormula) fo).children) {
+                imp = imp || g.accept(this, fochild);
             }
             return imp;
         } else if (fo instanceof FOperator) {
-            return g.acceptBinarybool(this, ((FormulaUnary) fo).operand);
+            return g.accept(this, ((FormulaUnary) fo).operand);
         } else if (fo instanceof GOperator) {
-            return g.acceptBinarybool(this, ((FormulaUnary) fo).operand);
+            return g.accept(this, ((FormulaUnary) fo).operand);
         } else if (fo instanceof Literal) {
-            return g.operand.acceptBinarybool(this, fo);
+            return g.operand.accept(this, fo);
         } else if (fo instanceof UOperator) {
-            return g.acceptBinarybool(this, ((FormulaBinary) fo).right) || g.acceptBinarybool(this, FormulaFactory
-                    .mkAnd(FormulaFactory.mkG(((FormulaBinary) fo).left), FormulaFactory.mkF(((FormulaBinary) fo).right)));
+            return g.accept(this, ((UOperator) fo).right) || g.accept(this, FormulaFactory
+                    .mkAnd(FormulaFactory.mkG(((UOperator) fo).left), FormulaFactory.mkF(((UOperator) fo).right)));
         } else if (fo instanceof XOperator) {
-            return g.acceptBinarybool(this, ((FormulaUnary) fo).operand) || g.operand.acceptBinarybool(this, fo);
+            return g.accept(this, ((FormulaUnary) fo).operand) || g.operand.accept(this, fo);
         }
         return false;
     }
 
-    public boolean visitL(Literal l, Formula fo) {
+    public Boolean visit(Literal l, Formula fo) {
         if (fo instanceof Conjunction) {
             boolean imp = true;
-            for (Formula child : ((FormulaBinaryBoolean) fo).children) {
-                imp = imp && l.acceptBinarybool(this, child);
+            for (Formula child : ((PropositionalFormula) fo).children) {
+                imp = imp && l.accept(this, child);
             }
             return imp;
         } else if (fo instanceof Disjunction) {
             boolean imp = false;
-            for (Formula child : ((FormulaBinaryBoolean) fo).children) {
-                imp = imp || l.acceptBinarybool(this, child);
+            for (Formula child : ((PropositionalFormula) fo).children) {
+                imp = imp || l.accept(this, child);
             }
         } else if (fo instanceof Literal) {
             return l.equals(fo);
         } else if (fo instanceof BooleanConstant) {
-            return ((BooleanConstant) fo).get_value();
+            return ((BooleanConstant) fo).value;
         } else if (fo instanceof FOperator) {
-            return l.acceptBinarybool(this, ((FormulaUnary) fo).operand);
+            return l.accept(this, ((FormulaUnary) fo).operand);
         }
         return false;
     }
 
-    public boolean visitU(UOperator u, Formula fo) {
-        if (u.get_id() == fo.get_id()) {
+    public Boolean visit(UOperator u, Formula fo) {
+        if (u.equals(fo)) {
             return true;
         }
         if (fo instanceof UOperator) {
-            return u.left.acceptBinarybool(this, ((FormulaBinary) fo).left)
-                    && u.right.acceptBinarybool(this, ((FormulaBinary) fo).right);
+            return u.left.accept(this, ((UOperator) fo).left) && u.right.accept(this, ((UOperator) fo).right);
         } else if (fo instanceof FOperator) {
-            return u.right.acceptBinarybool(this, ((FormulaUnary) fo).operand);
+            return u.right.accept(this, ((FormulaUnary) fo).operand);
         } else {
-            return FormulaFactory.mkAnd(u.left, u.right).acceptFormula(SimplifyAggressivelyVisitor.getVisitor())
-                    .acceptBinarybool(this, fo);
+            return FormulaFactory.mkAnd(u.left, u.right).accept(SimplifyAggressivelyVisitor.getVisitor()).accept(this,
+                    fo);
         }
 
     }
 
-    public boolean visitX(XOperator x, Formula fo) {
-        if (x.get_id() == fo.get_id()) {
+    public Boolean visit(XOperator x, Formula fo) {
+        if (x.equals(fo)) {
             return true;
         }
         if (fo instanceof BooleanConstant) {
-            return ((BooleanConstant) fo).get_value();
+            return ((BooleanConstant) fo).value;
         } else if (fo instanceof Conjunction) {
             boolean imp = true;
-            for (Formula child : ((FormulaBinaryBoolean) fo).children) {
-                imp = imp && x.acceptBinarybool(this, child);
+            for (Formula child : ((PropositionalFormula) fo).children) {
+                imp = imp && x.accept(this, child);
             }
             return imp;
         } else if (fo instanceof Disjunction) {
             boolean imp = false;
-            for (Formula child : ((FormulaBinaryBoolean) fo).children) {
-                imp = imp || x.acceptBinarybool(this, child);
+            for (Formula child : ((PropositionalFormula) fo).children) {
+                imp = imp || x.accept(this, child);
             }
             return imp;
         } else if (fo instanceof FOperator) {
-            return x.operand.acceptBinarybool(this, fo) || x.acceptBinarybool(this, ((FormulaUnary) fo).operand)
-                    || x.operand.acceptBinarybool(this, ((FormulaUnary) fo).operand);
+            return x.operand.accept(this, fo) || x.accept(this, ((FormulaUnary) fo).operand)
+                    || x.operand.accept(this, ((FormulaUnary) fo).operand);
         } else if (fo instanceof GOperator) {
             return false;
         } else if (fo instanceof Literal) {
@@ -168,7 +161,7 @@ public class ImplicationVisitor implements AttributeBinaryVisitor {
         } else if (fo instanceof UOperator) {
             return false;
         } else if (fo instanceof XOperator) {
-            return x.operand.acceptBinarybool(this, ((FormulaUnary) fo).operand);
+            return x.operand.accept(this, ((FormulaUnary) fo).operand);
         }
         return false;
 
