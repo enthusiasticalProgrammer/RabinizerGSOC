@@ -33,11 +33,14 @@ public final class Literal extends FormulaNullary {
     @Override
     public BDD bdd() {
         if (cachedBdd == null) {
-            int bddVar = BDDForFormulae.bijectionBooleanAtomBddVar.id(this.positiveLiteral()); // R3: just "this"
+            int bddVar = BDDForFormulae.bijectionBooleanAtomBddVar.id(this.positiveLiteral()); // R3:
+                                                                                               // just
+                                                                                               // "this"
             if (BDDForFormulae.bddFactory.varNum() <= bddVar) {
                 BDDForFormulae.bddFactory.extVarNum(1);
             }
-            cachedBdd = (negated ? BDDForFormulae.bddFactory.nithVar(bddVar) : BDDForFormulae.bddFactory.ithVar(bddVar));
+            cachedBdd = (negated ? BDDForFormulae.bddFactory.nithVar(bddVar)
+                    : BDDForFormulae.bddFactory.ithVar(bddVar));
             BDDForFormulae.representativeOfBdd(cachedBdd, this);
         }
         return cachedBdd;
@@ -76,6 +79,7 @@ public final class Literal extends FormulaNullary {
         return this;
     }
 
+    @Override
     public BoolExpr toExpr(Context ctx) {
 
         if (cachedLTL == null) {
@@ -85,19 +89,6 @@ public final class Literal extends FormulaNullary {
             }
         }
         return cachedLTL;
-    }
-
-    @Override
-    public String toZ3String(boolean is_atom) {
-        if (is_atom) {
-            return (negated ? "!" : "") + atom;
-        } else {
-            if (negated) {
-                return "(not " + atom + " )";
-            } else {
-                return atom;
-            }
-        }
     }
 
     @Override
@@ -123,8 +114,13 @@ public final class Literal extends FormulaNullary {
     }
 
     @Override
-    public boolean acceptBinarybool(AttributeBinaryVisitor v, Formula f) {
-        return v.visitL(this, f);
+    public <A, B> A accept(BinaryVisitor<A, B> v, B f) {
+        return v.visit(this, f);
+    }
+
+    @Override
+    public <A, B, C> A accept(TripleVisitor<A, B, C> v, B f, C c) {
+        return v.visit(this, f, c);
     }
 
     @Override
@@ -144,12 +140,12 @@ public final class Literal extends FormulaNullary {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Literal literal = (Literal) o;
-        return atomId == literal.atomId &&
-                negated == literal.negated &&
-                Objects.equals(atom, literal.atom);
+        return atomId == literal.atomId && negated == literal.negated && Objects.equals(atom, literal.atom);
     }
 
     @Override

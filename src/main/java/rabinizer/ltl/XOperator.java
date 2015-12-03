@@ -1,15 +1,12 @@
 package rabinizer.ltl;
 
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-
-
 public final class XOperator extends FormulaUnary {
 
     public XOperator(Formula f) {
         super(f);
     }
 
+    @Override
     public String operator() {
         return "X";
     }
@@ -29,23 +26,10 @@ public final class XOperator extends FormulaUnary {
         return new XOperator(operand.not());
     }
 
-    //============== OVERRIDE ====================
+    // ============== OVERRIDE ====================
     @Override
     public Formula removeX() {
         return operand;
-    }
-
-    public BoolExpr toExpr(Context ctx) {
-        if (cachedLTL == null) {
-            cachedLTL = ctx.mkBoolConst(toZ3String(true));
-        }
-
-        return cachedLTL;
-    }
-
-    @Override
-    public String toZ3String(boolean is_atom) {
-        return "X" + operand.toZ3String(true);
     }
 
     @Override
@@ -65,8 +49,13 @@ public final class XOperator extends FormulaUnary {
     }
 
     @Override
-    public boolean acceptBinarybool(AttributeBinaryVisitor v, Formula f) {
-        return v.visitX(this, f);
+    public <A, B> A accept(BinaryVisitor<A, B> v, B f) {
+        return v.visit(this, f);
+    }
+
+    @Override
+    public <A, B, C> A accept(TripleVisitor<A, B, C> v, B f, C c) {
+        return v.visit(this, f, c);
     }
 
     @Override

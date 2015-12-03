@@ -10,7 +10,6 @@ import rabinizer.ltl.bdd.Valuation;
 import java.util.HashSet;
 import java.util.Set;
 
-
 /**
  * @author Jan Kretinsky
  */
@@ -41,10 +40,8 @@ public abstract class Formula {
     @Override
     public abstract boolean equals(Object o);
 
-    //to be overwritten, side-effects: propositions will be inserted into ctx
+    // to be overwritten, side-effects: propositions will be inserted into ctx
     public abstract BoolExpr toExpr(Context ctx);
-
-    public abstract Formula not();
 
     public abstract boolean containsG();
 
@@ -72,7 +69,13 @@ public abstract class Formula {
         return evaluateLiteral(literal).removeConstants();
     }
 
-    public Set<Formula> relevantGFormulas(Set<Formula> candidates) { // TODO: is with the outer G (not GSet)
+    public Set<Formula> relevantGFormulas(Set<Formula> candidates) { // TODO: is
+                                                                     // with
+                                                                     // the
+                                                                     // outer
+                                                                     // G
+                                                                     // (not
+                                                                     // GSet)
         Set<Formula> result = new HashSet<>();
         for (Formula subFormula : candidates) {
             if (hasSubformula(subFormula) && !unfold().representative().ignoresG(subFormula)) {
@@ -82,11 +85,16 @@ public abstract class Formula {
         return result;
     }
 
-    // is not recurrent and is not produced by anything recurrent from f
-    // currently, the latter is safely approximated by having a different subformula
+    /**
+     * is not recurrent and is not produced by anything recurrent from f
+     * currently, the latter is safely approximated by having a different
+     * subformula
+     */
     public boolean isTransientwrt(Formula f) {
         return !containsG() && isVeryDifferentFrom(f);
     }
+
+    public abstract Formula not();
 
     // =============================================================
     // to be overridden by Boolean and Literal
@@ -127,25 +135,23 @@ public abstract class Formula {
 
     // to be overridden by Boolean
     public boolean ignoresG(Formula f) {
-        //return false;
+        // return false;
         return !hasSubformula(f);
     }
 
-    //to be overridden,
-    //writes it to a string s.t. it can be interpreted by Z3
-    //hint: this is not the only string the Z3 needs (also some preamble etc)
-    //and this is only the first version.
-    //it is likely not needed when calling the Z3 from the java interface
-    public abstract String toZ3String(boolean is_atom);
-
-    //removeConstants did not remove boolean constants such as true/false
-    //so I write this method
+    /**
+     * This method removes boolean constants such as true/false also inside of
+     * temporary operators,
+     * 
+     * @return Forumula, where all boolean constants are ommitted (if possible)
+     */
     public abstract Formula rmAllConstants();
 
     /**
-     * For the propositional view on LTL modal operators (F, G, U, X) and literals (a, !a) are treated as propositions.
-     * The method reduces the set by leaving out the negation of a formula. The propositional reasoning libraries are
-     * expected to register negations accordingly.
+     * For the propositional view on LTL modal operators (F, G, U, X) and
+     * literals (a, !a) are treated as propositions. The method reduces the set
+     * by leaving out the negation of a formula. The propositional reasoning
+     * libraries are expected to register negations accordingly.
      *
      * @return
      */
@@ -153,7 +159,9 @@ public abstract class Formula {
 
     public abstract <R> R accept(Visitor<R> v);
 
-    public abstract boolean acceptBinarybool(AttributeBinaryVisitor v, Formula f);
+    public abstract <A, B> A accept(BinaryVisitor<A, B> v, B f);
+
+    public abstract <A, B, C> A accept(TripleVisitor<A, B, C> v, B f, C c);
 
     // Temporal Properties of an LTL Formula
     public abstract boolean isPureEventual();
@@ -161,4 +169,5 @@ public abstract class Formula {
     public abstract boolean isPureUniversal();
 
     public abstract boolean isSuspendable();
+
 }

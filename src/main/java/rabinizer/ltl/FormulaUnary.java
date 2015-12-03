@@ -12,6 +12,9 @@ import rabinizer.ltl.bdd.BDDForFormulae;
 import java.util.Objects;
 import java.util.Set;
 
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+
 /**
  * @author jkretinsky
  */
@@ -72,9 +75,20 @@ public abstract class FormulaUnary extends Formula {
     }
 
     @Override
+    public BoolExpr toExpr(Context ctx) {
+        if (cachedLTL == null) {
+            cachedLTL = ctx.mkBoolConst(toString());
+        }
+
+        return cachedLTL;
+    }
+
+    @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         FormulaUnary that = (FormulaUnary) o;
         return Objects.equals(operand, that.operand);
     }
