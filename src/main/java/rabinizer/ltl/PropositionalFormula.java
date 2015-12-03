@@ -219,4 +219,15 @@ public abstract class PropositionalFormula extends Formula {
     public Set<Formula> getChildren() {
         return Collections.unmodifiableSet(children);
     }
+
+    @Override
+    public Set<String> getAtoms() {
+        Set<String> atoms = new HashSet<>();
+
+        for (Formula child : children) {
+            atoms.addAll(child.getAtoms());
+        }
+
+        return atoms;
+    }
 }

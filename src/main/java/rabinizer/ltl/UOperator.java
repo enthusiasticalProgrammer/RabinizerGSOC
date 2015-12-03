@@ -125,6 +125,13 @@ public final class UOperator extends Formula {
     }
 
     @Override
+    public Set<String> getAtoms() {
+        Set<String> atoms = left.getAtoms();
+        atoms.addAll(right.getAtoms());
+        return atoms;
+    }
+
+    @Override
     public Formula rmAllConstants() {
         Formula l = left.rmAllConstants();
         Formula r = right.rmAllConstants();

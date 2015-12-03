@@ -106,4 +106,9 @@ public abstract class FormulaUnary extends Formula {
         propositions.add(this);
         return propositions;
     }
+
+    @Override
+    public Set<String> getAtoms() {
+        return operand.getAtoms();
+    }
 }

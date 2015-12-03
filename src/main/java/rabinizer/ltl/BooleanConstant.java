@@ -58,6 +58,11 @@ public final class BooleanConstant extends FormulaNullary {
     }
 
     @Override
+    public Set<String> getAtoms() {
+        return new HashSet<>();
+    }
+
+    @Override
     public Formula rmAllConstants() {
         return FormulaFactory.mkConst(value);
     }

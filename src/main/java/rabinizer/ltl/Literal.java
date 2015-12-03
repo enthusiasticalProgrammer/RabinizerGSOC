@@ -99,6 +99,13 @@ public final class Literal extends FormulaNullary {
     }
 
     @Override
+    public Set<String> getAtoms() {
+        Set<String> atoms = new HashSet<>();
+        atoms.add(this.atom);
+        return atoms;
+    }
+
+    @Override
     public Formula rmAllConstants() {
         return FormulaFactory.mkLit(atom, atomId, negated);
 
