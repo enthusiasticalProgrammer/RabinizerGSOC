@@ -6,25 +6,29 @@
 
 package rabinizer.automata;
 
+import rabinizer.ltl.EquivalenceClass;
 import rabinizer.ltl.Formula;
+
+import java.util.Objects;
 
 /**
  * @author jkretinsky
  */
-public class FormulaState {  //TODO extends Formula
+public class FormulaState {
 
-    public Formula formula;
+    final protected EquivalenceClass clazz;
 
-    Formula label;
-
-    public FormulaState(Formula formula, Formula label) {
-        this.formula = formula;
-        this.label = label;
+    public FormulaState(EquivalenceClass clazz) {
+        this.clazz = clazz;
     }
 
     @Override
     public String toString() {
-        return label.toString();
+        return clazz.getRepresentative().toString();
+    }
+
+    public Formula getFormula() {
+        return clazz.getRepresentative();
     }
 
     @Override
@@ -32,13 +36,12 @@ public class FormulaState {  //TODO extends Formula
         if (!(o instanceof FormulaState)) {
             return false;
         } else {
-            return ((FormulaState) o).formula.equals(this.formula);
+            return clazz.equals(((FormulaState) o).clazz);
         }
     }
 
     @Override
     public int hashCode() {
-        return formula.hashCode();
+        return Objects.hashCode(clazz);
     }
-
 }

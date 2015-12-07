@@ -9,32 +9,33 @@ package rabinizer.automata;
  * @author jkretinsky
  */
 
-import rabinizer.ltl.bdd.ValuationSet;
+import rabinizer.ltl.EquivalenceClassFactory;
 import rabinizer.ltl.Formula;
+import rabinizer.ltl.ValuationSet;
+import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.Set;
 
 public class MasterFolded extends FormulaAutomaton {
 
-    public MasterFolded(Formula formula) {
-        super(formula);
+    public MasterFolded(Formula formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory<String> valuationSetFactory) {
+        super(formula, equivalenceClassFactory, valuationSetFactory);
     }
 
     @Override
     public FormulaState generateInitialState() {
-        Formula init = formula.representative();
-        return new FormulaState(init, init);
+        return new FormulaState(equivalenceClassFactory.createEquivalenceClass(formula));
     }
 
     @Override
     public FormulaState generateSuccState(FormulaState s, ValuationSet vs) {
-        Formula succ = s.formula.unfold().temporalStep(vs.pickAny()).representative(); // any element of the equivalence class
-        return new FormulaState(succ, succ);
+        Formula succ = s.getFormula().unfold().temporalStep(vs.pickAny()); // any element of the equivalence class
+        return new FormulaState(equivalenceClassFactory.createEquivalenceClass(succ));
     }
 
     @Override
     protected Set<ValuationSet> generateSuccTransitions(FormulaState s) {
-        return generatePartitioning(s.formula.unfold());
+        return generatePartitioning(s.getFormula().unfold());
     }
 
 }

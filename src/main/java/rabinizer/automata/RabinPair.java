@@ -5,9 +5,10 @@
  */
 package rabinizer.automata;
 
-import rabinizer.ltl.bdd.ValuationSet;
 import rabinizer.exec.Main;
 import rabinizer.exec.Tuple;
+import rabinizer.ltl.ValuationSet;
+import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.Map;
 
@@ -25,15 +26,15 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
         super(rp.left, rp.right);
     }
 
-    public RabinPair(RabinSlave slave, Map<FormulaState, Boolean> finalStates, int rank, Product product) {
-        this(fromSlave(slave, finalStates, rank, product));
+    public RabinPair(RabinSlave slave, Map<FormulaState, Boolean> finalStates, int rank, Product product, ValuationSetFactory<String> valuationSetFactory) {
+        this(RabinPair.fromSlave(slave, finalStates, rank, product, valuationSetFactory));
     }
 
-    private static RabinPair fromSlave(RabinSlave slave, Map<FormulaState, Boolean> finalStates, int rank, Product product) {
+    private static RabinPair fromSlave(RabinSlave slave, Map<FormulaState, Boolean> finalStates, int rank, Product product, ValuationSetFactory<String> valuationSetFactory) {
 
         // Set fail
         // Mojmir
-        TranSet<FormulaState> failM = new TranSet<>();
+        TranSet<FormulaState> failM = new TranSet<>(valuationSetFactory);
         for (FormulaState fs : slave.mojmir.states) {
             //if (!slave.mojmir.sinks.contains(fs)) {
             for (Map.Entry<ValuationSet, FormulaState> vsfs : slave.mojmir.transitions.get(fs).entrySet()) {
@@ -44,7 +45,7 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
             //}
         }
         // Product
-        TranSet<ProductState> failP = new TranSet<>();
+        TranSet<ProductState> failP = new TranSet<>(valuationSetFactory);
         for (ProductState ps : product.states) {
             RankingState rs = ps.get(slave.mojmir.formula);
             if (rs != null) { // relevant slave
@@ -58,7 +59,7 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
 
         // Set succeed(pi)
         // Mojmir
-        TranSet<FormulaState> succeedM = new TranSet<>();
+        TranSet<FormulaState> succeedM = new TranSet<>(valuationSetFactory);
         if (finalStates.get(slave.mojmir.initialState)) {
             for (FormulaState fs : slave.mojmir.states) {
                 for (Map.Entry<ValuationSet, FormulaState> vsfs : slave.mojmir.transitions.get(fs).entrySet()) {
@@ -77,7 +78,7 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
             }
         }
         // Product
-        TranSet<ProductState> succeedP = new TranSet<>();
+        TranSet<ProductState> succeedP = new TranSet<>(valuationSetFactory);
         for (ProductState ps : product.states) {
             RankingState rs = ps.get(slave.mojmir.formula);
             if (rs != null) { // relevant slave
@@ -90,7 +91,7 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
         }
         // Set buy(pi)
         // Rabin
-        TranSet<RankingState> buyR = new TranSet<>();
+        TranSet<RankingState> buyR = new TranSet<>(valuationSetFactory);
         for (RankingState rs : slave.states) {
             for (FormulaState fs : rs.keySet()) {
                 if (rs.get(fs) < rank) {
@@ -101,7 +102,9 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
                                     && ((vs1 = slave.mojmir.edgeBetween.get(new Tuple<>(fs, succ))) != null)
                                     && ((vs2 = slave.mojmir.edgeBetween.get(new Tuple<>(fs2, succ))) != null)) {
                                 if (!fs.equals(fs2)) {
-                                    buyR.add(rs, vs1.and(vs2));
+                                    ValuationSet vs1copy = valuationSetFactory.createValuationSet(vs1);
+                                    vs1copy.retainAll(vs2);
+                                    buyR.add(rs, vs1copy);
                                 } else if (succ.equals(slave.mojmir.initialState)) {
                                     buyR.add(rs, vs1);
                                 }
@@ -113,7 +116,7 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
             }
         }
         // Product
-        TranSet<ProductState> buyP = new TranSet<>();
+        TranSet<ProductState> buyP = new TranSet<>(valuationSetFactory);
         for (ProductState ps : product.states) {
             RankingState rs = ps.get(slave.mojmir.formula);
             if (rs != null) { // relevant slave

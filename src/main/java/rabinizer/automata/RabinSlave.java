@@ -5,13 +5,13 @@
  */
 package rabinizer.automata;
 
-import rabinizer.ltl.bdd.BDDForVariables;
-import rabinizer.ltl.bdd.Valuation;
-import rabinizer.ltl.bdd.ValuationSet;
 import rabinizer.exec.Main;
 import rabinizer.exec.Tuple;
+import rabinizer.ltl.ValuationSet;
+import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,8 +22,8 @@ public class RabinSlave extends Automaton<RankingState> {
 
     public FormulaAutomaton mojmir;
 
-    public RabinSlave(FormulaAutomaton mojmir) {
-        super();
+    public RabinSlave(FormulaAutomaton mojmir, ValuationSetFactory<String> factory) {
+        super(factory);
         this.mojmir = mojmir;
     }
 
@@ -36,7 +36,7 @@ public class RabinSlave extends Automaton<RankingState> {
 
     @Override
     protected RankingState generateSuccState(RankingState curr, ValuationSet vs) {
-        Valuation val = vs.pickAny();
+        Set<String> val = vs.pickAny();
         RankingState succ = new RankingState();
 
         // move tokens, keeping the lowest only
@@ -87,7 +87,7 @@ public class RabinSlave extends Automaton<RankingState> {
         while (noIncomingTransitions(initialState) && !transitions.get(initialState).isEmpty()) {
             Main.verboseln("Optimizing initial states");
             RankingState oldInit = initialState;
-            initialState = succ(initialState, new Valuation(BDDForVariables.numOfVariables));
+            initialState = succ(initialState, Collections.emptySet());
             transitions.remove(oldInit);
             states.remove(oldInit);
         }

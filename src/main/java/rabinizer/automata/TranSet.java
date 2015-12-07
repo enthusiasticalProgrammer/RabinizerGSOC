@@ -5,8 +5,8 @@
  */
 package rabinizer.automata;
 
-import rabinizer.ltl.bdd.ValuationSet;
-import rabinizer.ltl.bdd.ValuationSetBDD;
+import rabinizer.ltl.ValuationSet;
+import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.HashMap;
 
@@ -19,13 +19,18 @@ public class TranSet<State> extends HashMap<State, ValuationSet> {
      *
      */
     private static final long serialVersionUID = 1013653255527479470L;
+    private final ValuationSetFactory<String> factory;
+
+    public TranSet(ValuationSetFactory<String> factory) {
+        this.factory = factory;
+    }
 
     public TranSet<State> add(State s, ValuationSet vs) {
         if (!this.containsKey(s)) {
             this.put(s, vs);
         } else {
-            ValuationSet old = new ValuationSetBDD(this.get(s));
-            old.add(vs);
+            ValuationSet old = factory.createValuationSet(this.get(s));
+            old.addAll(vs);
             this.put(s, old);
         }
         return this;
@@ -50,7 +55,7 @@ public class TranSet<State> extends HashMap<State, ValuationSet> {
     void removeAll(TranSet<State> ts) {
         for (State s : ts.keySet()) {
             if (this.containsKey(s)) {
-                ValuationSet old = new ValuationSetBDD(this.get(s));
+                ValuationSet old = factory.createValuationSet(this.get(s));
                 old.remove(ts.get(s));
                 this.put(s, old);
                 if (this.get(s).isEmpty()) {
@@ -59,20 +64,6 @@ public class TranSet<State> extends HashMap<State, ValuationSet> {
             }
         }
     }
-    
-    /*
-    @Override
-    public int hashCode() {
-        return 17 * super.hashCode() + 5 * masterState.hashCode();
-    }
-
-
-    @Override
-    public boolean equals(Object o) {
-        return super.equals(o);
-    }
-        */
-
 
     public String toString() {
         String result = "{";

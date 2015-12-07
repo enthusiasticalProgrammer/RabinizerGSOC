@@ -5,9 +5,10 @@
  */
 package rabinizer.automata;
 
-import rabinizer.ltl.bdd.*;
 import rabinizer.exec.Main;
 import rabinizer.exec.Tuple;
+import rabinizer.ltl.ValuationSet;
+import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.*;
 
@@ -25,7 +26,9 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
     public Map<Tuple<State, State>, ValuationSet> edgeBetween;
     public Map<State, Integer> statesToNumbers = null;
 
-    public Automaton() {
+    protected final ValuationSetFactory<String> valuationSetFactory;
+
+    public Automaton(ValuationSetFactory<String> valuationSetFactory) {
         states = new HashSet<>();
         transitions = new HashMap<>();
         initialState = null;
@@ -33,6 +36,7 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
         //stateLabels = new HashMap();
         edgeBetween = new HashMap<>();
         statesToNumbers = new HashMap<>();
+        this.valuationSetFactory = valuationSetFactory;
         //this.generate();
     }
 
@@ -43,6 +47,7 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
         sinks = a.sinks;
         edgeBetween = a.edgeBetween;
         statesToNumbers = a.statesToNumbers;
+        this.valuationSetFactory = a.valuationSetFactory;
     }
 
     /*
@@ -51,19 +56,24 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
      }
      */
     // TODO to abstract ProductAutomaton ?
-    protected static Set<ValuationSet> generatePartitioning(Set<Set<ValuationSet>> product) {
+    protected Set<ValuationSet> generatePartitioning(Set<Set<ValuationSet>> product) {
         Set<ValuationSet> partitioning = new HashSet<>();
-        partitioning.add(new ValuationSetBDD(BDDForVariables.getTrueBDD()));
+        partitioning.add(valuationSetFactory.createUniverseValuationSet());
         for (Set<ValuationSet> vSets : product) {
             Set<ValuationSet> partitioningNew = new HashSet<>();
+
             for (ValuationSet vSet : vSets) {
                 for (ValuationSet vSetOld : partitioning) {
-                    partitioningNew.add(vSetOld.and(vSet));
+                    ValuationSet vs = valuationSetFactory.createValuationSet(vSetOld);
+                    vs.retainAll(vSet);
+                    partitioningNew.add(vs);
                 }
             }
+
             partitioning = partitioningNew;
         }
-        partitioning.remove(new ValuationSetBDD(BDDForVariables.getFalseBDD()));
+
+        partitioning.remove(valuationSetFactory.createEmptyValuationSet());
         return partitioning;
     }
 
@@ -94,6 +104,10 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
             //} else {
             transitions.put(curr, new HashMap<>());
             for (ValuationSet succVals : succValSets) {
+                if (succVals.isEmpty()) { // TODO: fix generateSuccTransitions
+                    continue;
+                }
+
                 //Tuple<State, String> succStateLabel = generateSuccState(curr, succVals);
                 State succ = generateSuccState(curr, succVals);
                 Main.verboseln("\t  SuccState: " + succ);
@@ -105,14 +119,15 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
                 }
                 Tuple<State, State> statePair = new Tuple<>(curr, succ);
                 ValuationSet newVals;
+
                 if (edgeBetween.containsKey(statePair)) {  // update edge
                     ValuationSet oldVals = edgeBetween.get(statePair);
-                    newVals = succVals.or(oldVals);
+                    succVals.addAll(oldVals);
                     transitions.get(curr).remove(oldVals);
                     edgeBetween.remove(statePair, oldVals);
-                } else {// new edge
-                    newVals = succVals;
                 }
+
+                newVals = succVals;
                 edgeBetween.put(statePair, newVals);
                 transitions.get(curr).put(newVals, succ);
             }
@@ -127,7 +142,7 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
     public Automaton<State> useSinks() {
         for (State s : states) {
             Tuple<State, State> selfloop = new Tuple<>(s, s);
-            if (edgeBetween.containsKey(selfloop) && edgeBetween.get(selfloop).isAllVals() && !s.equals(initialState)) {
+            if (edgeBetween.containsKey(selfloop) && edgeBetween.get(selfloop).isUniverse() && !s.equals(initialState)) {
                 //(transitions.get(s).size()==1) && (transitions.get(s).values().contains(s))
                 sinks.add(s);
                 edgeBetween.remove(selfloop);
@@ -137,12 +152,13 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
         return this;
     }
 
-    public State succ(State s, Valuation v) {
+    public State succ(State s, Set<String> v) {
         for (ValuationSet vs : transitions.get(s).keySet()) {
             if (vs.contains(v)) {
                 return transitions.get(s).get(vs);
             }
         }
+
         return null;
     }
 
@@ -182,9 +198,9 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
         dot += "Start: " + statesToNumbers.get(initialState) + "\n";
         dot += accName();
         dot += "Acceptance: " + accTypeNumerical() + "\n"; //TODO: handle trivial sets
-        dot += "AP: " + BDDForVariables.bijectionIdAtom.size();
-        for (Integer i = 0; i < BDDForVariables.bijectionIdAtom.size(); i++) {
-            dot += " \"" + BDDForVariables.bijectionIdAtom.atom(i) + "\"";
+        dot += "AP: " + valuationSetFactory.getAlphabet().size();
+        for (String letter : valuationSetFactory.getAlphabet()) {
+            dot += " \"" + letter + "\"";
         }
         dot += "\n";
         dot += "--BODY--\n";
@@ -217,7 +233,7 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
     protected String outTransToHOA(State s) {
         String result = "";
         for (ValuationSet vs : transitions.get(s).keySet()) {
-            result += "[" + (new MyBDD(vs.toBdd(), true)).BDDtoNumericString() + "] "
+            result += "[" + vs.toFormula() + "] "
                     + statesToNumbers.get(transitions.get(s).get(vs)) + "\n";
         }
         return result;

@@ -2,11 +2,13 @@ package rabinizer.ltl;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
-import net.sf.javabdd.BDD;
-import rabinizer.ltl.bdd.BDDForFormulae;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Andreas Gaiser & Ruslan Ledesma-Garza & Christopher Ziegler
@@ -18,7 +20,11 @@ public final class Conjunction extends PropositionalFormula {
     }
 
     public Conjunction(Formula... conjuncts) {
-        super(Arrays.asList(conjuncts));
+        super(conjuncts);
+    }
+
+    public Conjunction(Stream<Formula> formulaStream) {
+        super(formulaStream);
     }
 
     @Override
@@ -29,18 +35,6 @@ public final class Conjunction extends PropositionalFormula {
     @Override
     public String operator() {
         return "&";
-    }
-
-    @Override
-    public BDD bdd() {
-        if (cachedBdd == null) {
-            cachedBdd = BDDForFormulae.bddFactory.one();
-            for (Formula child : children) {
-                cachedBdd = cachedBdd.and(child.bdd());
-            }
-            BDDForFormulae.representativeOfBdd(cachedBdd, this);
-        }
-        return cachedBdd;
     }
 
     @Override
@@ -99,16 +93,16 @@ public final class Conjunction extends PropositionalFormula {
 
     @Override
     public boolean isPureEventual() {
-        return children.stream().allMatch(c -> c.isPureEventual());
+        return children.stream().allMatch(Formula::isPureEventual);
     }
 
     @Override
     public boolean isPureUniversal() {
-        return children.stream().allMatch(c -> c.isPureUniversal());
+        return children.stream().allMatch(Formula::isPureUniversal);
     }
 
     @Override
     public boolean isSuspendable() {
-        return children.stream().allMatch(c -> c.isSuspendable());
+        return children.stream().allMatch(Formula::isSuspendable);
     }
 }

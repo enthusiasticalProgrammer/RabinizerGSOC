@@ -5,35 +5,35 @@
  */
 package rabinizer.automata;
 
-import rabinizer.ltl.bdd.ValuationSet;
-import rabinizer.ltl.Formula;
+import rabinizer.ltl.*;
 
 /**
  * @author jkretinsky
  */
 public class MojmirSlave extends FormulaAutomaton {
 
-    public MojmirSlave(Formula formula) {
-        super(formula);
-        //this.formula = new GOperator(formula);
+    public MojmirSlave(Formula formula, EquivalenceClassFactory eqFactory, ValuationSetFactory<String> factory) {
+        super(formula, eqFactory, factory);
     }
 
     @Override
     public FormulaState generateInitialState() {
-        FormulaState init = new FormulaState(formula.unfoldNoG().representative(), formula);
+        EquivalenceClass clazz = equivalenceClassFactory.createEquivalenceClass(formula.unfoldNoG());
+        FormulaState init = new FormulaState(clazz);
         stateLabels.put(init, formula);
         return init;
     }
 
     @Override
     public FormulaState generateSuccState(FormulaState s, ValuationSet vs) {
-        Formula label = s.formula.temporalStep(vs.pickAny()); // any element of the equivalence class
-        FormulaState state = new FormulaState(label.unfoldNoG().representative(), label);
-        if (states.contains(state)) {
-            state.label = stateLabels.get(state);
-        } else {
+        Formula label = s.getFormula().temporalStep(vs.pickAny()); // any element of the equivalence class
+        EquivalenceClass clazz = equivalenceClassFactory.createEquivalenceClass(label.unfoldNoG());
+        FormulaState state = new FormulaState(clazz);
+
+        if (!states.contains(state)) {
             stateLabels.put(state, label);
         }
+
         return state;
     }
 

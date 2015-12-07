@@ -5,9 +5,8 @@
  */
 package rabinizer.automata;
 
-import rabinizer.ltl.bdd.Valuation;
-
 import java.util.ArrayList;
+import java.util.Set;
 
 public class AccTGR extends ArrayList<GRabinPairT> {
 
@@ -23,7 +22,7 @@ public class AccTGR extends ArrayList<GRabinPairT> {
         }
     }
 
-    String accSets(ProductState s, Valuation v) {
+    String accSets(ProductState s, Set<String> v) {
         String result = "";
         int sum = 0;
         for (GRabinPairT gRabinPairT : this) {

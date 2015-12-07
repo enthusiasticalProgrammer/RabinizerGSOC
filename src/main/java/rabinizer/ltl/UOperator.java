@@ -2,9 +2,6 @@ package rabinizer.ltl;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
-import net.sf.javabdd.BDD;
-import rabinizer.ltl.bdd.BDDForFormulae;
-import rabinizer.ltl.z3.LTLExpr;
 
 import java.util.Objects;
 import java.util.Set;
@@ -75,20 +72,6 @@ public final class UOperator extends Formula {
     }
 
     @Override
-    public BDD bdd() {
-        if (cachedBdd == null) {
-            Formula booleanAtom = FormulaFactory.mkU(left.representative(), right.representative());
-            int bddVar = BDDForFormulae.bijectionBooleanAtomBddVar.id(booleanAtom);
-            if (BDDForFormulae.bddFactory.varNum() <= bddVar) {
-                BDDForFormulae.bddFactory.extVarNum(bddVar);
-            }
-            cachedBdd = BDDForFormulae.bddFactory.ithVar(bddVar);
-            BDDForFormulae.representativeOfBdd(cachedBdd, this);
-        }
-        return cachedBdd;
-    }
-
-    @Override
     public Formula unfold() {
         // unfold(a U b) = unfold(b) v (unfold(a) ^ X (a U b))
         return FormulaFactory.mkOr(right.unfold(),
@@ -147,23 +130,6 @@ public final class UOperator extends Formula {
             return r;
         }
         return FormulaFactory.mkU(l, r);
-    }
-
-    private BDD initBdd() {// used??
-        BDD helper;
-        Formula booleanAtom = FormulaFactory.mkU(left.representative(), right.representative());
-        int bddVar = BDDForFormulae.bijectionBooleanAtomBddVar.id(booleanAtom);
-        if (BDDForFormulae.bddFactory.varNum() <= bddVar) {
-            BDDForFormulae.bddFactory.extVarNum(bddVar);
-        }
-        helper = BDDForFormulae.bddFactory.ithVar(bddVar);
-        BDDForFormulae.representativeOfBdd(helper, this);
-        return helper;
-    }
-
-    private BoolExpr initLtl() {// used??
-        Context ctx = LTLExpr.getContext();
-        return ctx.mkBoolConst(toString());
     }
 
     @Override

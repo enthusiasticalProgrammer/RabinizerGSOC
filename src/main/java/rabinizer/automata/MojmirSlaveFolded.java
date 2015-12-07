@@ -9,32 +9,33 @@ package rabinizer.automata;
  * @author jkretinsky
  */
 
-import rabinizer.ltl.bdd.ValuationSet;
+import rabinizer.ltl.EquivalenceClassFactory;
 import rabinizer.ltl.Formula;
+import rabinizer.ltl.ValuationSet;
+import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.Set;
 
 public class MojmirSlaveFolded extends FormulaAutomaton {
 
-    public MojmirSlaveFolded(Formula formula) {
-        super(formula);
+    public MojmirSlaveFolded(Formula formula, EquivalenceClassFactory eqFactory, ValuationSetFactory<String> factory) {
+        super(formula, eqFactory, factory);
     }
 
     @Override
     public FormulaState generateInitialState() {
-        Formula init = formula.representative();
-        return new FormulaState(init, init);
+        return new FormulaState(equivalenceClassFactory.createEquivalenceClass(formula));
     }
 
     @Override
     public FormulaState generateSuccState(FormulaState s, ValuationSet vs) {
-        Formula succ = s.formula.unfoldNoG().temporalStep(vs.pickAny()).representative(); // any element of the equivalence class
-        return new FormulaState(succ, succ);
+        Formula succ = s.getFormula().unfoldNoG().temporalStep(vs.pickAny());
+        return new FormulaState(equivalenceClassFactory.createEquivalenceClass(formula));
     }
 
     @Override
     protected Set<ValuationSet> generateSuccTransitions(FormulaState s) {
-        return generatePartitioning(s.formula.unfoldNoG());
+        return generatePartitioning(s.getFormula().unfoldNoG());
     }
 
 }

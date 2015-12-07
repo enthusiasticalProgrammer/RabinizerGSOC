@@ -5,10 +5,16 @@
  */
 package rabinizer.automata;
 
+import rabinizer.ltl.ValuationSetFactory;
+
 /**
  * @author jkretinsky
  */
 public abstract class AccAutomaton<State> extends Automaton<State> {
+
+    public AccAutomaton(ValuationSetFactory<String> valuationSetFactory) {
+        super(valuationSetFactory);
+    }
 
     @Override
     protected abstract String accTypeNumerical();

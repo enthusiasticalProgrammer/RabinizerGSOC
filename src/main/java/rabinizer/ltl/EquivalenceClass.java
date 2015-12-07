@@ -8,9 +8,11 @@ package rabinizer.ltl;
  * {@code false}.
  */
 public interface EquivalenceClass {
-    public Formula getRepresentative();
+    Formula getRepresentative();
 
-    public boolean implies(EquivalenceClass equivalenceClass);
+    Formula getSimplifiedRepresentative();
+
+    boolean implies(EquivalenceClass equivalenceClass);
 
     /**
      * Check if two classes are equivalent. Implementing classes are expected to
@@ -20,5 +22,5 @@ public interface EquivalenceClass {
      * @param equivalenceClass
      * @return
      */
-    public boolean equivalent(EquivalenceClass equivalenceClass);
+    boolean equivalent(EquivalenceClass equivalenceClass);
 }

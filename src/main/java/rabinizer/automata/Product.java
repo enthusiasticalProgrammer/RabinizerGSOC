@@ -5,9 +5,9 @@
  */
 package rabinizer.automata;
 
-import rabinizer.ltl.bdd.Valuation;
-import rabinizer.ltl.bdd.ValuationSet;
 import rabinizer.ltl.Formula;
+import rabinizer.ltl.ValuationSet;
+import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -22,8 +22,8 @@ public class Product extends Automaton<ProductState> {
     public final Map<Formula, RabinSlave> slaves;
     public final Set<Formula> allSlaves;
 
-    public Product(FormulaAutomaton master, Map<Formula, RabinSlave> slaves) {
-        super();
+    public Product(FormulaAutomaton master, Map<Formula, RabinSlave> slaves, ValuationSetFactory<String> factory) {
+        super(factory);
         this.master = master;
         this.slaves = slaves;
         allSlaves = slaves.keySet();/*new HashSet();
@@ -49,12 +49,12 @@ public class Product extends Automaton<ProductState> {
     }
 
     protected Set<Formula> relevantSlaves(FormulaState masterState) {
-        return masterState.formula.relevantGFormulas(allSlaves);
+        return masterState.getFormula().relevantGFormulas(allSlaves);
     }
 
     @Override   //TODO compute labels after construction would be faster
     protected ProductState generateSuccState(ProductState s, ValuationSet vs) {
-        Valuation val = vs.pickAny();
+        Set<String> val = vs.pickAny();
         ProductState succ = new ProductState(master.succ(s.masterState, val));
         //String label = master.stateLabels.get(master.succ(s.masterState, val)) + "::";
         for (Formula slave : relevantSlaves(succ.masterState)) {
@@ -87,7 +87,7 @@ public class Product extends Automaton<ProductState> {
                 product.add(m.transitions.get(fs).keySet());
             }
         }
-        product.removeIf(x -> x.isEmpty()); // removing empty trans due to sinks
+        product.removeIf(Set::isEmpty); // removing empty trans due to sinks
         return generatePartitioning(product);
     }
 

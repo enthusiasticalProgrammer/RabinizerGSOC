@@ -1,72 +1,49 @@
 package rabinizer.ltl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import com.google.common.collect.ImmutableSet;
+import org.junit.Test;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Test;
-
-import rabinizer.ltl.bdd.BDDForVariables;
-import rabinizer.ltl.bdd.Valuation;
-import rabinizer.ltl.Disjunction;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.FormulaFactory;
-import rabinizer.ltl.ImplicationVisitor;
-import rabinizer.ltl.Literal;
-import rabinizer.ltl.PseudoSubstitutionVisitor;
-import rabinizer.ltl.SimplifyAggressivelyVisitor;
+import static org.junit.Assert.*;
 
 public class TestFormula {
-    public void setUp() {
-        System.out.print("Testing...");
-
-    }
-
-    public void tearDown() {
-        System.out.println("Testing done");
-    }
 
     @Test
     public void testFormulaEquality() {
-        BDDForVariables.init();
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
-        Formula f2 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
+        Formula f2 = FormulaFactory.mkLit("p1", false);
         assertEquals(f1, f2);
     }
 
     @Test
     public void testFormulaEquality2() {
-        BDDForVariables.init();
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
-        Formula f2 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), true);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
+        Formula f2 = FormulaFactory.mkLit("p1", true);
         assertEquals(!f1.equals(f2), true);
     }
 
     @Test
     public void testFormulaEquality3() {
-        BDDForVariables.init();
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
-        Formula f2 = FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
+        Formula f2 = FormulaFactory.mkLit("p2", false);
         assertEquals(!f1.equals(f2), true);
     }
 
     @Test
     public void testFormulaFactory1() {
-        BDDForVariables.init();
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
-        Formula f2 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
+        Formula f2 = FormulaFactory.mkLit("p1", false);
         Formula f3 = FormulaFactory.mkOr(f1, f2);
         assertEquals(f3, f2);
     }
 
     @Test
     public void testFormulaFactory2() {
-        BDDForVariables.init();
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
-        Formula f2 = FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
+        Formula f2 = FormulaFactory.mkLit("p2", false);
         Formula f3 = FormulaFactory.mkOr(f1, f2);
         Formula f4 = FormulaFactory.mkOr(f1, f3);
         assertEquals(f3, f4);
@@ -74,18 +51,16 @@ public class TestFormula {
 
     @Test
     public void testFormulaFactory3() {
-        BDDForVariables.init();
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
-        Formula f2 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
+        Formula f2 = FormulaFactory.mkLit("p1", false);
         Formula f3 = FormulaFactory.mkAnd(f1, f2);
         assertEquals(f3, f2);
     }
 
     @Test
     public void testFormulaFactory4() {
-        BDDForVariables.init();
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
-        Formula f2 = FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
+        Formula f2 = FormulaFactory.mkLit("p2", false);
         Formula f3 = FormulaFactory.mkAnd(f1, f2);
         Formula f4 = FormulaFactory.mkAnd(f1, f3);
         assertEquals(f3, f4);
@@ -102,9 +77,8 @@ public class TestFormula {
 
     @Test
     public void testFormulaFactory6() {
-        BDDForVariables.init();
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
-        Formula f2 = FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
+        Formula f2 = FormulaFactory.mkLit("p2", false);
         Formula f3 = FormulaFactory.mkF(f1);
         Formula f4 = FormulaFactory.mkU(f3, f2);
 
@@ -114,8 +88,7 @@ public class TestFormula {
 
     @Test
     public void testFormulaFactory7() {
-        BDDForVariables.init();
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
         Formula f2 = FormulaFactory.mkX(f1);
         Formula f3 = FormulaFactory.mkF(f2);
         assertNotEquals(f3.toString(), "XFp1");
@@ -123,10 +96,9 @@ public class TestFormula {
 
     @Test
     public void unique1() {
-        BDDForVariables.init();
-        Formula f0 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
-        Formula f2 = FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), false);
+        Formula f0 = FormulaFactory.mkLit("p0", false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
+        Formula f2 = FormulaFactory.mkLit("p2", false);
         Formula f3 = FormulaFactory.mkAnd(FormulaFactory.mkOr(f1, f2), f1);
         assertTrue(!f0.equals(f1));
         assertTrue(!f0.equals(f2));
@@ -138,9 +110,8 @@ public class TestFormula {
 
     @Test
     public void simplify1() {
-        BDDForVariables.init();
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
-        Formula f2 = FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
+        Formula f2 = FormulaFactory.mkLit("p2", false);
         Formula f3 = FormulaFactory.mkOr(f1, f2);
         assertTrue(f3 instanceof Disjunction);
 
@@ -148,15 +119,14 @@ public class TestFormula {
 
     @Test
     public void simplify2() {
-        BDDForVariables.init();
-        Formula f0 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
-        Formula f2 = FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), false);
+        Formula f0 = FormulaFactory.mkLit("p0", false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
+        Formula f2 = FormulaFactory.mkLit("p2", false);
         Formula f3 = FormulaFactory.mkNot(FormulaFactory.mkAnd(FormulaFactory.mkOr(f1, f2), f0));
 
-        Formula f4 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), true);
-        Formula f5 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), true);
-        Formula f6 = FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), true);
+        Formula f4 = FormulaFactory.mkLit("p0", true);
+        Formula f5 = FormulaFactory.mkLit("p1", true);
+        Formula f6 = FormulaFactory.mkLit("p2", true);
         Formula f7 = FormulaFactory.mkOr(f4, FormulaFactory.mkAnd(f5, f6));
         assertEquals(f3, f7);
 
@@ -164,8 +134,7 @@ public class TestFormula {
 
     @Test
     public void simplify3() {
-        BDDForVariables.init();
-        Formula f0 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+        Formula f0 = FormulaFactory.mkLit("p0", false);
         Formula f1 = FormulaFactory.mkU(FormulaFactory.mkConst(true), f0);
         Formula f2 = FormulaFactory.mkAnd(f0, f1);
         Formula f3 = FormulaFactory.mkNot(f2);
@@ -174,14 +143,13 @@ public class TestFormula {
 
     @Test
     public void simplify4() {
-        BDDForVariables.init();
-        Formula f0 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
+        Formula f0 = FormulaFactory.mkLit("p0", false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
         Formula f2 = FormulaFactory.mkU(f0, f1);
         Formula f3 = FormulaFactory.mkNot(f2);
 
-        Formula f4 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), true);
-        Formula f5 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), true);
+        Formula f4 = FormulaFactory.mkLit("p0", true);
+        Formula f5 = FormulaFactory.mkLit("p1", true);
         Formula f6 = FormulaFactory.mkU(f5, FormulaFactory.mkAnd(f4, f5));
         Formula f7 = FormulaFactory.mkOr(FormulaFactory.mkG(f5), f6);
 
@@ -190,14 +158,13 @@ public class TestFormula {
 
     @Test
     public void simplify5() {
-        BDDForVariables.init();
-        Formula f0 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
+        Formula f0 = FormulaFactory.mkLit("p0", false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
         Formula f2 = FormulaFactory.mkG(FormulaFactory.mkU(f0, f1));
         Formula f3 = FormulaFactory.mkNot(f2);
 
-        Formula f4 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), true);
-        Formula f5 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), true);
+        Formula f4 = FormulaFactory.mkLit("p0", true);
+        Formula f5 = FormulaFactory.mkLit("p1", true);
         Formula f6 = FormulaFactory.mkU(f5, FormulaFactory.mkAnd(f4, f5));
         Formula f7 = FormulaFactory.mkF(FormulaFactory.mkOr(FormulaFactory.mkG(f5), f6));
         assertEquals(f3, f7);
@@ -205,26 +172,23 @@ public class TestFormula {
 
     @Test
     public void testMkOr() {
-        BDDForVariables.init();
-        Formula f0 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
+        Formula f0 = FormulaFactory.mkLit("p0", false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
         Formula f2 = FormulaFactory.mkOr(f0, f1);
         assertTrue(f2.toString().equals("(p0|p1)") || f2.toString().equals("(p1|p0)"));
     }
 
     @Test
     public void testSetToConst1() {
-        BDDForVariables.init();
-        Formula f0 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+        Formula f0 = FormulaFactory.mkLit("p0", false);
         Formula f1 = f0.accept(PseudoSubstitutionVisitor.getVisitor(), f0, true);
         assertEquals(f1, FormulaFactory.mkConst(true));
     }
 
     @Test
     public void testSetToConst2() {
-        BDDForVariables.init();
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
-        Formula f2 = FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
+        Formula f2 = FormulaFactory.mkLit("p2", false);
         Formula f3 = FormulaFactory.mkOr(f1, f2);
         Formula f4 = f3.accept(PseudoSubstitutionVisitor.getVisitor(), f2, false);
         assertEquals(f4, f1);
@@ -232,9 +196,8 @@ public class TestFormula {
 
     @Test
     public void testUnfold1() {
-        BDDForVariables.init();
-        Formula f0 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
+        Formula f0 = FormulaFactory.mkLit("p0", false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
         Formula f2 = FormulaFactory.mkU(f0, f1);
         Formula f3 = f2.unfold();
         Formula f4 = FormulaFactory.mkOr(f1, FormulaFactory.mkAnd(f0, f2));
@@ -243,60 +206,48 @@ public class TestFormula {
 
     @Test
     public void testAssertValuation1() {
-        BDDForVariables.init();
-        Formula f1 = FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), true);
+        Formula f1 = FormulaFactory.mkLit("p2", true);
         Formula f2 = FormulaFactory.mkG(f1);
         Formula f3 = FormulaFactory.mkAnd(f2, f1);
-        Valuation v = new Valuation();
-        v.set(BDDForVariables.bijectionIdAtom.id("p2"), true);
-        assertEquals(f3.assertValuation(v), FormulaFactory.mkConst(false));
+
+        assertEquals(f3.assertValuation(Collections.emptySet()), FormulaFactory.mkConst(false));
     }
 
     @Test
     public void testAssertValuation2() {
-        BDDForVariables.init();
-        Formula f0 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), true);
-        Formula f1 = FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), true);
+        Formula f0 = FormulaFactory.mkLit("p0", true);
+        Formula f1 = FormulaFactory.mkLit("p2", true);
         Formula f2 = FormulaFactory.mkAnd(f0, f1);
         Formula f3 = FormulaFactory.mkU(f1, f2);
         Formula f4 = FormulaFactory.mkG(f1);
         Formula f5 = FormulaFactory.mkAnd(f1, f4);
         Formula f6 = FormulaFactory.mkAnd(f1, f3);
         Formula f7 = FormulaFactory.mkOr(f2, f5, f6);
-        Valuation v = new Valuation();
-        v.set(BDDForVariables.bijectionIdAtom.id("p2"), true);
-        v.set(BDDForVariables.bijectionIdAtom.id("p0"), false);
-        assertEquals(f7.assertValuation(v), FormulaFactory.mkConst(false));
+
+        assertEquals(f7.assertValuation(ImmutableSet.of("p0", "p2")), FormulaFactory.mkConst(false));
     }
 
     @Test
     public void testAssertValuation3() {
-        BDDForVariables.init();
-        Formula f1 = FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), true);
+        Formula f1 = FormulaFactory.mkLit("p2", true);
         Formula f4 = FormulaFactory.mkG(f1);
         Formula f5 = f4.unfold();
-        Valuation v = new Valuation();
-        v.set(BDDForVariables.bijectionIdAtom.id("p2"), true);
-        v.set(BDDForVariables.bijectionIdAtom.id("p0"), false);
-
-        assertEquals(f5.temporalStep(v), FormulaFactory.mkConst(false));
+        assertEquals(f5.temporalStep(Collections.singleton("p2")), FormulaFactory.mkConst(false));
     }
 
     @Test
     public void testAssertValuation4() {
-        BDDForVariables.init();
-        Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
-        Formula f2 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
-        Formula f3 = FormulaFactory.mkLit("p2", BDDForVariables.bijectionIdAtom.id("p2"), false);
+        Formula f1 = FormulaFactory.mkLit("p0", false);
+        Formula f2 = FormulaFactory.mkLit("p1", false);
+        Formula f3 = FormulaFactory.mkLit("p2", false);
         Formula f4 = FormulaFactory.mkAnd(f1, f2, f3);
         assertEquals(f4.assertLiteral((Literal) f1), FormulaFactory.mkAnd(f2, f3));
     }
 
     @Test
     public void gSubformulas() {
-        BDDForVariables.init();
 
-        Formula f1 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
+        Formula f1 = FormulaFactory.mkLit("p1", false);
         Formula f2 = FormulaFactory.mkF(FormulaFactory.mkG(f1));
         Set<Formula> test = new HashSet<Formula>();
         test.add(f1);
@@ -306,8 +257,7 @@ public class TestFormula {
 
     @Test
     public void testSimplifyForEntails1() {
-        BDDForVariables.init();
-        Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+        Formula f1 = FormulaFactory.mkLit("p0", false);
 
         Formula f4 = FormulaFactory.mkG(f1);
         Formula f5 = FormulaFactory.mkG(FormulaFactory.mkF(f1));
@@ -317,8 +267,7 @@ public class TestFormula {
 
     @Test
     public void testSimplifyForEntails2() {
-        BDDForVariables.init();
-        Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+        Formula f1 = FormulaFactory.mkLit("p0", false);
 
         Formula f4 = FormulaFactory.mkX(f1);
         Formula f5 = FormulaFactory.mkX(FormulaFactory.mkF(f1));
@@ -328,8 +277,8 @@ public class TestFormula {
 
     @Test
     public void testUnfold2() {
-        Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
-        Formula f2 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
+        Formula f1 = FormulaFactory.mkLit("p0", false);
+        Formula f2 = FormulaFactory.mkLit("p1", false);
         Formula f3 = FormulaFactory.mkG(f1);
         Formula f4 = FormulaFactory.mkG(f2);
         Formula f5 = FormulaFactory.mkAnd(f3, f4);
@@ -339,7 +288,7 @@ public class TestFormula {
 
     @Test
     public void testImplication1() {
-        Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+        Formula f1 = FormulaFactory.mkLit("p0", false);
         Formula f2 = FormulaFactory.mkG(f1);
         Formula f3 = FormulaFactory.mkX(f1);
         Formula f4 = FormulaFactory.mkG(FormulaFactory.mkF(f3));
@@ -350,7 +299,7 @@ public class TestFormula {
 
     @Test
     public void testSimplifyAggressively1() {
-        Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+        Formula f1 = FormulaFactory.mkLit("p0", false);
         Formula f2 = FormulaFactory.mkG(FormulaFactory.mkF(f1));
         Formula f3 = FormulaFactory.mkX(f1);
         Formula f4 = FormulaFactory.mkG(FormulaFactory.mkF(f3));
@@ -360,7 +309,7 @@ public class TestFormula {
 
     @Test
     public void testSimplifyAggressively2() {
-        Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+        Formula f1 = FormulaFactory.mkLit("p0", false);
         Formula f2 = FormulaFactory.mkG(f1);
         Formula f3 = FormulaFactory.mkX(f1);
         Formula f4 = FormulaFactory.mkG(FormulaFactory.mkF(f3));
@@ -371,7 +320,7 @@ public class TestFormula {
 
     @Test
     public void testSimplifyAggressively3() {
-        Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+        Formula f1 = FormulaFactory.mkLit("p0", false);
         Formula f2 = FormulaFactory.mkF(FormulaFactory.mkConst(true));
         Formula f3 = FormulaFactory.mkAnd(f1, f2);
 
@@ -381,7 +330,7 @@ public class TestFormula {
 
     @Test
     public void testSimplifyAggressively4() {
-        Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+        Formula f1 = FormulaFactory.mkLit("p0", false);
         Formula f2 = FormulaFactory.mkU(f1, f1);
 
         SimplifyAggressivelyVisitor v = SimplifyAggressivelyVisitor.getVisitor();
@@ -390,7 +339,7 @@ public class TestFormula {
 
     @Test
     public void test_simplify_boolean1() {
-        Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
+        Formula f1 = FormulaFactory.mkLit("p0", false);
         Formula f2 = FormulaFactory.mkConst(true);
         Formula f3 = FormulaFactory.mkAnd(f1, f2);
         assertEquals(f3, f1);
@@ -398,8 +347,8 @@ public class TestFormula {
 
     @Test
     public void test_setConst() {
-        Formula f1 = FormulaFactory.mkLit("p0", BDDForVariables.bijectionIdAtom.id("p0"), false);
-        Formula f2 = FormulaFactory.mkLit("p1", BDDForVariables.bijectionIdAtom.id("p1"), false);
+        Formula f1 = FormulaFactory.mkLit("p0", false);
+        Formula f2 = FormulaFactory.mkLit("p1", false);
         Formula f3 = FormulaFactory.mkF(FormulaFactory.mkAnd(f1, f2));
         assertEquals(f3.accept(PseudoSubstitutionVisitor.getVisitor(), f1, true), f3);
     }

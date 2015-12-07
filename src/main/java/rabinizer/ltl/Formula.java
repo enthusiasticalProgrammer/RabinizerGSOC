@@ -2,11 +2,10 @@ package rabinizer.ltl;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
-import net.sf.javabdd.BDD;
-import rabinizer.ltl.bdd.BDDForFormulae;
-import rabinizer.ltl.bdd.GSet;
-import rabinizer.ltl.bdd.Valuation;
+import rabinizer.automata.GSet;
+import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,19 +15,12 @@ import java.util.Set;
 public abstract class Formula {
 
     String cachedString;
-    BDD cachedBdd = null;
     BoolExpr cachedLTL = null;
-    private int cachedHashCode = -1;
-
-    public abstract BDD bdd();
-
-    public Formula representative() {
-        return BDDForFormulae.representativeOfBdd(bdd(), this);
-    }
+    private int cachedHashCode = 0;
 
     @Override
     public int hashCode() {
-        if (cachedHashCode == -1) {
+        if (cachedHashCode == 0) {
             cachedHashCode = hashCodeOnce();
         }
 
@@ -40,10 +32,9 @@ public abstract class Formula {
     @Override
     public abstract boolean equals(Object o);
 
-    // to be overwritten, side-effects: propositions will be inserted into ctx
-    public abstract BoolExpr toExpr(Context ctx);
-
     public abstract boolean containsG();
+
+    public abstract BoolExpr toExpr(Context ctx);
 
     public abstract boolean hasSubformula(Formula f);
 
@@ -57,11 +48,11 @@ public abstract class Formula {
     // unfold everything but G's, used in slave automata
     public abstract Formula unfoldNoG();
 
-    public Formula temporalStep(Valuation valuation) {
+    public Formula temporalStep(Set<String> valuation) {
         return this.assertValuation(valuation).removeX();
     }
 
-    public Formula assertValuation(Valuation valuation) {
+    public Formula assertValuation(Set<String> valuation) {
         return evaluateValuation(valuation).removeConstants();
     }
 
@@ -69,19 +60,23 @@ public abstract class Formula {
         return evaluateLiteral(literal).removeConstants();
     }
 
-    public Set<Formula> relevantGFormulas(Set<Formula> candidates) { // TODO: is
-                                                                     // with
-                                                                     // the
-                                                                     // outer
-                                                                     // G
-                                                                     // (not
-                                                                     // GSet)
+    // TODO: is with the outer G (not GSet)
+    public Set<Formula> relevantGFormulas(Set<Formula> candidates) {
+        // TODO: Remove adhoc hack to compute relevant G -> move EquivClass
+        if (getPropositions().isEmpty()) {
+            return Collections.emptySet();
+        }
         Set<Formula> result = new HashSet<>();
+
+        EquivalenceClassFactory factory = new BDDEquivalenceClassFactory(getPropositions());
+        EquivalenceClass clazz = factory.createEquivalenceClass(this.unfold());
+
         for (Formula subFormula : candidates) {
-            if (hasSubformula(subFormula) && !unfold().representative().ignoresG(subFormula)) {
+            if (hasSubformula(subFormula) && !clazz.getSimplifiedRepresentative().ignoresG(subFormula)) {
                 result.add(subFormula);
             }
         }
+
         return result;
     }
 
@@ -98,7 +93,7 @@ public abstract class Formula {
 
     // =============================================================
     // to be overridden by Boolean and Literal
-    public Formula evaluateValuation(Valuation valuation) {
+    public Formula evaluateValuation(Set<String> valuation) {
         return this;
     }
 

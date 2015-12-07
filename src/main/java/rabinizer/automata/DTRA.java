@@ -5,10 +5,8 @@
  */
 package rabinizer.automata;
 
-import rabinizer.ltl.bdd.AllValuations;
-import rabinizer.ltl.bdd.MyBDD;
-import rabinizer.ltl.bdd.Valuation;
-import rabinizer.ltl.bdd.ValuationSet;
+import rabinizer.ltl.ValuationSet;
+import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,11 +22,12 @@ public class DTRA extends AccAutomaton<ProductDegenState> implements AccAutomato
     AccTGR accTGR;
     AccTR accTR;
 
-    public DTRA(DTGRARaw dtgra) {
+    public DTRA(DTGRARaw dtgra, ValuationSetFactory<String> factory) {
+        super(factory);
         this.dtgra = dtgra;
         accTGR = new AccTGR(dtgra.accTGR);
         generate();
-        accTR = new AccTR(accTGR, this);
+        accTR = new AccTR(accTGR, this, valuationSetFactory);
     }
 
     @Override
@@ -42,7 +41,7 @@ public class DTRA extends AccAutomaton<ProductDegenState> implements AccAutomato
 
     @Override
     protected ProductDegenState generateSuccState(ProductDegenState s, ValuationSet vs) {
-        Valuation v = vs.pickAny();
+        Set<String> v = vs.pickAny();
         Map<Integer, Integer> awaitedIndices = new HashMap<>();
         for (int i = 0; i < accTGR.size(); i++) {
             GRabinPairT grp = accTGR.get(i);
@@ -62,7 +61,7 @@ public class DTRA extends AccAutomaton<ProductDegenState> implements AccAutomato
 
     @Override
     protected Set<ValuationSet> generateSuccTransitions(ProductDegenState s) {
-        return AllValuations.allValuationsAsSets; // TODO symbolic
+        return valuationSetFactory.createAllValuationSets(); // TODO symbolic
     }
 
     @Override
@@ -117,8 +116,8 @@ public class DTRA extends AccAutomaton<ProductDegenState> implements AccAutomato
         productVs.remove(vSets);
         Set<ValuationSet> edges = generatePartitioning(productVs);
         for (ValuationSet vsSep : edges) {
-            Valuation v = vsSep.pickAny();
-            result += "[" + (new MyBDD(vsSep.toBdd(), true)).BDDtoNumericString() + "] "
+            Set<String> v = vsSep.pickAny();
+            result += "[" + vsSep.toFormula() + "] "
                     + statesToNumbers.get(succ(s, v)) + " {" + accTR.accSets(s, v) + "}\n";
         }
         return result;

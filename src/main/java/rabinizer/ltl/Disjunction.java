@@ -2,10 +2,11 @@ package rabinizer.ltl;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
-import net.sf.javabdd.BDD;
-import rabinizer.ltl.bdd.BDDForFormulae;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -18,7 +19,7 @@ public final class Disjunction extends PropositionalFormula {
     }
 
     public Disjunction(Formula... disjuncts) {
-        super(Arrays.asList(disjuncts));
+        super(disjuncts);
     }
 
     @Override
@@ -53,19 +54,6 @@ public final class Disjunction extends PropositionalFormula {
 
     }
 
-    @Override
-    public BDD bdd() {
-        if (cachedBdd == null) {
-            cachedBdd = BDDForFormulae.bddFactory.zero();
-            for (Formula child : children) {
-                cachedBdd = cachedBdd.or(child.bdd());
-            }
-            BDDForFormulae.representativeOfBdd(cachedBdd, this);
-        }
-
-        return cachedBdd;
-    }
-
     // helps the SimplifyBooleanVisitor
     protected Set<Formula> getAllChildrenOfDisjunction() {
         Set<Formula> al = new HashSet<>();
@@ -98,17 +86,17 @@ public final class Disjunction extends PropositionalFormula {
 
     @Override
     public boolean isPureEventual() {
-        return children.stream().allMatch(c -> c.isPureEventual());
+        return children.stream().allMatch(Formula::isPureEventual);
     }
 
     @Override
     public boolean isPureUniversal() {
-        return children.stream().allMatch(c -> c.isPureUniversal());
+        return children.stream().allMatch(Formula::isPureUniversal);
     }
 
     @Override
     public boolean isSuspendable() {
-        return children.stream().allMatch(c -> c.isSuspendable());
+        return children.stream().allMatch(Formula::isSuspendable);
     }
 
 }

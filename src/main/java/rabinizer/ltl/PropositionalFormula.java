@@ -5,10 +5,11 @@
  */
 package rabinizer.ltl;
 
-import rabinizer.ltl.bdd.GSet;
-import rabinizer.ltl.bdd.Valuation;
+import com.google.common.collect.ImmutableSet;
+import rabinizer.automata.GSet;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * @author jkretinsky & Christopher Ziegler
@@ -17,11 +18,16 @@ public abstract class PropositionalFormula extends Formula {
 
     final Set<Formula> children;
 
-    PropositionalFormula(Collection<Formula> children) {
-        super();
-        Set<Formula> tmp = new HashSet<Formula>();
-        tmp.addAll(children);
-        this.children = tmp;
+    protected PropositionalFormula(Collection<Formula> children) {
+        this.children = ImmutableSet.copyOf(children);
+    }
+
+    protected PropositionalFormula(Formula... children) {
+        this.children = ImmutableSet.copyOf(children);
+    }
+
+    public PropositionalFormula(Stream<Formula> formulaStream) {
+        this.children = ImmutableSet.copyOf(formulaStream.iterator());
     }
 
     public abstract Formula ThisTypeBoolean(Collection<Formula> children);
@@ -45,7 +51,7 @@ public abstract class PropositionalFormula extends Formula {
     }
 
     @Override
-    public Formula evaluateValuation(Valuation valuation) {
+    public Formula evaluateValuation(Set<String> valuation) {
         ArrayList<Formula> evaluated = new ArrayList<>();
         for (Formula child : children) {
             evaluated.add(child.evaluateValuation(valuation));
@@ -107,7 +113,7 @@ public abstract class PropositionalFormula extends Formula {
     public Formula rmAllConstants() {
         Set<Formula> newChildren = new HashSet<>();
         newChildren.addAll(children);
-        newChildren.stream().forEach(c -> c.rmAllConstants());
+        newChildren.stream().forEach(Formula::rmAllConstants);
 
         if (!newChildren.equals(children)) {
             return ThisTypeBoolean(newChildren);
@@ -217,7 +223,7 @@ public abstract class PropositionalFormula extends Formula {
     public abstract String operator();
 
     public Set<Formula> getChildren() {
-        return Collections.unmodifiableSet(children);
+        return children;
     }
 
     @Override

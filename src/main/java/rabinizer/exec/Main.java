@@ -6,11 +6,10 @@
 package rabinizer.exec;
 
 import rabinizer.automata.*;
-import rabinizer.ltl.bdd.AllValuations;
-import rabinizer.ltl.bdd.BDDForFormulae;
-import rabinizer.ltl.bdd.BDDForVariables;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.SimplifyAggressivelyVisitor;
+import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
+import rabinizer.ltl.bdd.BDDValuationSetFactory;
 import rabinizer.parser.LTLParser;
 import rabinizer.parser.ParseException;
 
@@ -87,15 +86,13 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException {
-
         // Parsing arguments
         AutomatonType type = AutomatonType.TGR;
         Format format = Format.DOT;
         boolean inFormula = true;
         boolean outFile = true;
-        String argument = null;
-        boolean postfix = false;
-        boolean simplifyFormula = true;
+        String argument = "(F G a) | X b";
+        boolean simplifyFormula = false; // NULL Pointer
         boolean eager = true;
         boolean relSlavesOnly = true;
         boolean sinksOn = true;
@@ -142,8 +139,6 @@ public class Main {
                 outFile = true;
             } else if (arg.equals("-out=std") || arg.equals("--out=std")) {
                 outFile = false;
-            } else if (arg.equals("-postfix") || arg.equals("--postfix")) {
-                postfix = true;
             } else if (arg.equals("-simplify-formula") || arg.equals("--simplify-formula")) {
                 simplifyFormula = true;
             } else if (arg.equals("-not-simplify-formula") || arg.equals("--not-simplify-formula")) {
@@ -237,7 +232,7 @@ public class Main {
             stopwatch();
 
             AccAutomatonInterface automaton = computeAutomaton(input, type,
-                    format != Format.SIZE || type != AutomatonType.TGR, postfix, eager, simplifyFormula, sinksOn,
+                    format != Format.SIZE || type != AutomatonType.TGR, eager, simplifyFormula, sinksOn,
                     relSlavesOnly, optInit);
 
             nonsilent("Time for construction: " + stopwatch() + " s");
@@ -278,19 +273,18 @@ public class Main {
         writer.close();
     }
 
-    public static AccAutomatonInterface computeAutomaton(String input, AutomatonType type, boolean computeAcc,
-            boolean postfix, boolean eager, boolean simplify, boolean sinks_on, boolean relSlavesOnly,
-            boolean opt_init) {
-        // BDDForVariables.bijectionIdAtom = new BijectionIdAtom(); // fresh
-        // variables for each formula
-
+    public static AccAutomatonInterface computeAutomaton(String input, AutomatonType type, boolean computeAcc, boolean eager,
+                                                         boolean simplify, boolean sinks_on, boolean relSlavesOnly, boolean opt_init) {
         LTLParser parser = new LTLParser(new StringReader(input));
+
         Formula formula = null;
+
         try {
             formula = parser.parse();
         } catch (ParseException e) {
             errorMessageAndExit("Exception when parsing: " + e.getLocalizedMessage());
         }
+
         if (simplify) {
             nonsilent("Formula unsimplified: " + formula);
             formula = formula.accept(SimplifyAggressivelyVisitor.getVisitor());
@@ -300,26 +294,25 @@ public class Main {
         }
 
         nonsilent("Input formula in NNF: " + formula);
-
         nonsilent("Enumeration of valuations");
-        BDDForVariables.init();
-        AllValuations.initializeValuations(BDDForVariables.bijectionIdAtom.size());
-        BDDForFormulae.init();
+
+        BDDEquivalenceClassFactory factory = new BDDEquivalenceClassFactory(formula.getPropositions());
+        BDDValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(formula.getAtoms());
 
         boolean slowerIsabelleAccForUnfolded = false;
 
         // DGRA dgra = new DTGRA(phi); for optimized
         DTGRARaw dtgra = new DTGRARaw(formula, computeAcc, eager, sinks_on, opt_init, relSlavesOnly,
-                slowerIsabelleAccForUnfolded);
+                slowerIsabelleAccForUnfolded, factory, valuationSetFactory);
         switch (type) {
         case TGR:
             return new DTGRA(dtgra);
         // case SGR:
         // return new DSGRA(dtgra);
         case TR:
-            return new DTRA(dtgra);
+            return new DTRA(dtgra, valuationSetFactory);
         case SR:
-            return new DSRA(new DTRA(dtgra));
+            return new DSRA(new DTRA(dtgra, valuationSetFactory), valuationSetFactory);
         case BUCHI:
         }
         errorMessageAndExit("Unsupported automaton type");
@@ -327,12 +320,10 @@ public class Main {
     }
 
     public enum AutomatonType {
-
         TGR, TR, SGR, SR, BUCHI
     }
 
     public enum Format {
-
         HOA, DOT, SIZE, SIZEACC
     }
 

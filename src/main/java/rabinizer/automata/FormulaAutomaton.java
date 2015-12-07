@@ -5,11 +5,7 @@
  */
 package rabinizer.automata;
 
-import rabinizer.ltl.bdd.BDDForVariables;
-import rabinizer.ltl.bdd.ValuationSet;
-import rabinizer.ltl.bdd.ValuationSetBDD;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.Literal;
+import rabinizer.ltl.*;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,30 +17,34 @@ import java.util.Set;
  */
 public abstract class FormulaAutomaton extends Automaton<FormulaState> {
 
-    public Formula formula;
-    protected Map<FormulaState, Formula> stateLabels;
+    final protected Formula formula;
+    final protected Map<FormulaState, Formula> stateLabels;
+    final protected EquivalenceClassFactory equivalenceClassFactory ;
 
-    public FormulaAutomaton(Formula formula) {
-        super();
+    public FormulaAutomaton(Formula formula, EquivalenceClassFactory eqFactory, ValuationSetFactory<String> factory) {
+        super(factory);
         this.formula = formula;
-        stateLabels = new HashMap<>();
+        this.equivalenceClassFactory = eqFactory;
+        this.stateLabels = new HashMap<>();
     }
 
-    protected static Set<ValuationSet> generatePartitioning(Formula f) { // TODO method of state
+    protected Set<ValuationSet> generatePartitioning(Formula f) { // TODO method of state
         Set<ValuationSet> result = new HashSet<>();
         Literal l = f.getAnUnguardedLiteral();
         if (l == null) {
-            result.add(new ValuationSetBDD(BDDForVariables.getTrueBDD()));
+            result.add(valuationSetFactory.createUniverseValuationSet());
         } else {
             l = l.positiveLiteral();
             //System.out.println("  gen " + f + "; " + l);
             Set<ValuationSet> pos = generatePartitioning(f.assertLiteral(l));
             Set<ValuationSet> neg = generatePartitioning(f.assertLiteral(l.not()));
             for (ValuationSet vs : pos) {
-                result.add(vs.and(l));
+                vs.restrictWith(l);
+                result.add(vs);
             }
             for (ValuationSet vs : neg) {
-                result.add(vs.and(l.not()));
+                vs.restrictWith(l.not());
+                result.add(vs);
             }
         }
         return result;
@@ -52,7 +52,10 @@ public abstract class FormulaAutomaton extends Automaton<FormulaState> {
 
     @Override
     protected Set<ValuationSet> generateSuccTransitions(FormulaState s) {
-        return generatePartitioning(s.formula);
+        return generatePartitioning(s.getFormula());
     }
 
+    public Formula getFormula() {
+        return formula;
+    }
 }

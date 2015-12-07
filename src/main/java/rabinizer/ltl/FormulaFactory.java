@@ -1,7 +1,6 @@
 package rabinizer.ltl;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class FormulaFactory {
 
@@ -94,8 +93,8 @@ public class FormulaFactory {
         return probe(z);
     }
 
-    public static Formula mkLit(String proposition, int atomId, boolean negated) {
-        Formula z = new Literal(proposition, atomId, negated);
+    public static Formula mkLit(String proposition, boolean negated) {
+        Formula z = new Literal(proposition, negated);
         return probe(z);
     }
 

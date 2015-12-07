@@ -6,14 +6,11 @@
 
 package rabinizer.ltl;
 
-import net.sf.javabdd.BDD;
-import rabinizer.ltl.bdd.BDDForFormulae;
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
 
 import java.util.Objects;
 import java.util.Set;
-
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
 
 /**
  * @author jkretinsky
@@ -24,23 +21,6 @@ public abstract class FormulaUnary extends Formula {
 
     protected FormulaUnary(Formula operand) {
         this.operand = operand;
-    }
-
-    /* TODO: Move to BDD package */
-    @Override
-    public BDD bdd() {
-        if (cachedBdd == null) {
-            int bddVar = BDDForFormulae.bijectionBooleanAtomBddVar.id(this);
-
-            if (BDDForFormulae.bddFactory.varNum() <= bddVar) {
-                BDDForFormulae.bddFactory.extVarNum(1);
-            }
-
-            cachedBdd = BDDForFormulae.bddFactory.ithVar(bddVar);
-            BDDForFormulae.representativeOfBdd(cachedBdd, this);
-        }
-
-        return cachedBdd;
     }
 
     @Override

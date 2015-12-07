@@ -5,7 +5,8 @@
  */
 package rabinizer.automata;
 
-import rabinizer.ltl.bdd.*;
+import rabinizer.ltl.ValuationSet;
+import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,7 +23,8 @@ public class DSRA extends Automaton<ProductDegenAccState> implements AccAutomato
     AccTR accTR;
     Map<ProductDegenState, Set<Integer>> stateAcceptance;
 
-    public DSRA(DTRA dtra) {
+    public DSRA(DTRA dtra, ValuationSetFactory<String> factory) {
+        super(factory);
         this.dtra = dtra;
         this.accTR = dtra.accTR;
         stateAcceptance = new HashMap<>();
@@ -30,9 +32,9 @@ public class DSRA extends Automaton<ProductDegenAccState> implements AccAutomato
             stateAcceptance.put(s, new HashSet<>());
             for (int i = 0; i < accTR.size(); i++) {
                 RabinPair<ProductDegenState> rp = accTR.get(i);
-                if (ValuationSetBDD.getAllVals().equals(rp.left.get(s))) {
+                if (valuationSetFactory.createAllValuationSets().equals(rp.left.get(s))) {
                     stateAcceptance.get(s).add(2 * i);
-                } else if (ValuationSetBDD.getAllVals().equals(rp.right.get(s))) {
+                } else if (valuationSetFactory.createAllValuationSets().equals(rp.right.get(s))) {
                     stateAcceptance.get(s).add(2 * i + 1);
                 }
             }
@@ -48,7 +50,7 @@ public class DSRA extends Automaton<ProductDegenAccState> implements AccAutomato
 
     @Override
     protected ProductDegenAccState generateSuccState(ProductDegenAccState s, ValuationSet vs) {
-        Valuation v = vs.pickAny();
+        Set<String> v = vs.pickAny();
         ProductDegenState succ = dtra.succ(s.left, v);
         Set<Integer> accSets = new HashSet<>(stateAcceptance.get(succ));
         for (int i = 0; i < accTR.size(); i++) {
@@ -74,7 +76,7 @@ public class DSRA extends Automaton<ProductDegenAccState> implements AccAutomato
 
     @Override
     protected Set<ValuationSet> generateSuccTransitions(ProductDegenAccState s) {
-        return AllValuations.allValuationsAsSets; // TODO symbolic
+        return valuationSetFactory.createAllValuationSets(); // TODO symbolic
     }
 
     @Override
@@ -109,7 +111,7 @@ public class DSRA extends Automaton<ProductDegenAccState> implements AccAutomato
     protected String outTransToHOA(ProductDegenAccState s) {
         String result = "";
         for (ValuationSet vs : transitions.get(s).keySet()) {
-            result += "[" + (new MyBDD(vs.toBdd(), true)).BDDtoNumericString() + "] "
+            result += "[" + vs.toFormula() + "] "
                     + statesToNumbers.get(transitions.get(s).get(vs)) + "\n";
         }
         return result;

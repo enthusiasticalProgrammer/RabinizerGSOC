@@ -5,11 +5,11 @@
  */
 package rabinizer.automata;
 
-import rabinizer.ltl.bdd.Valuation;
-import rabinizer.ltl.bdd.ValuationSet;
-import rabinizer.ltl.bdd.ValuationSetBDD;
+import rabinizer.ltl.ValuationSet;
+import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 
 /**
@@ -22,19 +22,20 @@ public class AccTR extends ArrayList<RabinPair<ProductDegenState>> {
      */
     private static final long serialVersionUID = -5442515295977731129L;
 
-    public AccTR(AccTGR accTGR, DTRA dtra) {
+
+    public AccTR(AccTGR accTGR, DTRA dtra, ValuationSetFactory<String> valuationSetFactory) {
         super();
         for (int i = 0; i < accTGR.size(); i++) {
             GRabinPairT grp = accTGR.get(i);
-            TranSet<ProductDegenState> fin = new TranSet<>();
-            TranSet<ProductDegenState> inf = new TranSet<>();
+            TranSet<ProductDegenState> fin = new TranSet<>(valuationSetFactory);
+            TranSet<ProductDegenState> inf = new TranSet<>(valuationSetFactory);
             for (ProductDegenState s : dtra.states) {
                 ValuationSet vsFin = grp.left.get(s.left);
                 if (vsFin != null) {
                     fin.add(s, vsFin);
                 }
                 if (s.right.get(i) == grp.right.size()) {
-                    inf.add(s, ValuationSetBDD.getAllVals());
+                    inf.add(s, valuationSetFactory.createUniverseValuationSet());
                 }
             }
             this.add(new RabinPair<>(fin, inf));
@@ -52,7 +53,7 @@ public class AccTR extends ArrayList<RabinPair<ProductDegenState>> {
         return result;
     }
 
-    String accSets(ProductDegenState s, Valuation v) {
+    String accSets(ProductDegenState s, Set<String> v) {
         String result = "";
         for (int i = 0; i < size(); i++) {
             if (get(i).left.containsKey(s) && get(i).left.get(s).contains(v)) {

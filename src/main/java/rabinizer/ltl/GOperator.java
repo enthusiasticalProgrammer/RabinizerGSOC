@@ -1,6 +1,6 @@
 package rabinizer.ltl;
 
-import rabinizer.ltl.bdd.GSet;
+import rabinizer.automata.GSet;
 
 import java.util.HashSet;
 import java.util.Set;

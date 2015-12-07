@@ -2,8 +2,6 @@ package rabinizer.ltl;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
-import net.sf.javabdd.BDD;
-import rabinizer.ltl.bdd.BDDForFormulae;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -18,15 +16,6 @@ public final class BooleanConstant extends FormulaNullary {
 
     private BooleanConstant(boolean value) {
         this.value = value;
-    }
-
-    @Override
-    public BDD bdd() {
-        if (cachedBdd == null) {
-            cachedBdd = (this.value ? BDDForFormulae.bddFactory.one() : BDDForFormulae.bddFactory.zero());
-            BDDForFormulae.representativeOfBdd(cachedBdd, this);
-        }
-        return cachedBdd;
     }
 
     @Override

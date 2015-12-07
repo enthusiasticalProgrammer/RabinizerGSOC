@@ -5,10 +5,7 @@
  */
 package rabinizer.automata;
 
-import rabinizer.ltl.bdd.AllValuations;
-import rabinizer.ltl.bdd.MyBDD;
-import rabinizer.ltl.bdd.Valuation;
-import rabinizer.ltl.bdd.ValuationSet;
+import rabinizer.ltl.ValuationSet;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,6 +22,7 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
     AccSGR accSGR;
 
     public DSGRA(DTGRARaw dtgra) {
+        super(dtgra.valuationSetFactory);
         this.dtgra = dtgra;
         accTGR = new AccTGR(dtgra.accTGR);
         generate();
@@ -42,7 +40,7 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
 
     @Override
     protected ProductAccState generateSuccState(ProductAccState s, ValuationSet vs) {
-        Valuation v = vs.pickAny();
+        Set<String> v = vs.pickAny();
         Map<Integer, Set<Integer>> accSets = new HashMap<>();
         for (int i = 0; i < accTGR.size(); i++) {
             accSets.put(i, new HashSet<>());
@@ -61,7 +59,7 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
 
     @Override
     protected Set<ValuationSet> generateSuccTransitions(ProductAccState s) {
-        return AllValuations.allValuationsAsSets; // TODO symbolic
+        return valuationSetFactory.createAllValuationSets(); // TODO symbolic
     }
 
     @Override
@@ -106,7 +104,7 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
     protected String outTransToHOA(ProductAccState s) {
         String result = "";
         for (ValuationSet vs : transitions.get(s).keySet()) {
-            result += "[" + (new MyBDD(vs.toBdd(), true)).BDDtoNumericString() + "] "
+            result += "[" + vs.toFormula() + "] "
                     + statesToNumbers.get(transitions.get(s).get(vs)) + "\n";
         }
         return result;

@@ -5,10 +5,9 @@
  */
 package rabinizer.automata;
 
-import rabinizer.ltl.bdd.MyBDD;
-import rabinizer.ltl.bdd.Valuation;
-import rabinizer.ltl.bdd.ValuationSet;
 import rabinizer.ltl.Formula;
+import rabinizer.ltl.ValuationSet;
+import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.HashSet;
 import java.util.List;
@@ -22,8 +21,8 @@ public class DTGRA extends Product implements AccAutomatonInterface {
 
     AccTGR acc;
 
-    public DTGRA(FormulaAutomaton master, Map<Formula, RabinSlave> slaves) {
-        super(master, slaves);
+    public DTGRA(FormulaAutomaton master, Map<Formula, RabinSlave> slaves, ValuationSetFactory<String> factory) {
+        super(master, slaves, factory);
     }
 
     public DTGRA(DTGRARaw raw) {
@@ -95,8 +94,8 @@ public class DTGRA extends Product implements AccAutomatonInterface {
         productVs.remove(vSets);
         Set<ValuationSet> edges = generatePartitioning(productVs);
         for (ValuationSet vsSep : edges) {
-            Valuation v = vsSep.pickAny();
-            result += "[" + (new MyBDD(vsSep.toBdd(), true)).BDDtoNumericString() + "] "
+            Set<String> v = vsSep.pickAny();
+            result += "[" + vsSep.toFormula() + "] "
                     + statesToNumbers.get(succ(s, v)) + " {" + acc.accSets(s, v) + "}\n";
         }
         return result;

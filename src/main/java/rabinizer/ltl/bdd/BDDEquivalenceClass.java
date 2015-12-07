@@ -8,17 +8,33 @@ import java.util.Objects;
 
 public class BDDEquivalenceClass implements EquivalenceClass {
 
-    private final Formula representative;
     private final BDD bdd;
+    private final BDDEquivalenceClassFactory factory;
+    private Formula representative;
+    private Formula simplifiedRepresentative;
 
-    BDDEquivalenceClass(Formula representative, BDD bdd) {
+    BDDEquivalenceClass(Formula representative, BDD bdd, BDDEquivalenceClassFactory factory) {
         this.representative = representative;
         this.bdd = bdd;
+        this.factory = factory;
     }
 
     @Override
     public Formula getRepresentative() {
+        if (representative == null) {
+            representative = getSimplifiedRepresentative();
+        }
+
         return representative;
+    }
+
+    @Override
+    public Formula getSimplifiedRepresentative() {
+        if (simplifiedRepresentative == null) {
+            simplifiedRepresentative = factory.createRepresentative(bdd);
+        }
+
+        return simplifiedRepresentative;
     }
 
     @Override

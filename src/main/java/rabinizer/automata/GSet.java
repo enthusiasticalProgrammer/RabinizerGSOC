@@ -3,15 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package rabinizer.ltl.bdd;
+package rabinizer.automata;
 
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-import com.microsoft.z3.Solver;
-import com.microsoft.z3.Status;
+import rabinizer.ltl.EquivalenceClass;
+import rabinizer.ltl.EquivalenceClassFactory;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.FormulaFactory;
-import rabinizer.ltl.z3.LTLExpr;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -27,13 +24,16 @@ public class GSet extends HashSet<Formula> {
      */
     private static final long serialVersionUID = 6122181497119884736L;
     private Formula gPremises = null;
+    private final EquivalenceClassFactory factory;
 
-    public GSet() {
+    public GSet(EquivalenceClassFactory factory) {
         super();
+        this.factory = factory;
     }
 
-    public GSet(Collection<Formula> c) {
+    public GSet(Collection<Formula> c, EquivalenceClassFactory factory) {
         super(c);
+        this.factory = factory;
     }
 
     public boolean entails(Formula formula) { // used???
@@ -45,13 +45,19 @@ public class GSet extends HashSet<Formula> {
             }
             gPremises = premise;
         }
+
+        EquivalenceClass thisClazz = factory.createEquivalenceClass(gPremises);
+        EquivalenceClass thatClazz = factory.createEquivalenceClass(formula);
+
+        return thisClazz.implies(thatClazz);
+
         //checks if gPremises (as BDD) implies formula
-        Context ctx = LTLExpr.getContext();
-        BoolExpr ant = gPremises.toExpr(ctx);
-        BoolExpr con = formula.toExpr(ctx);
-        Solver s = ctx.mkSolver();
-        s.add(ctx.mkAnd(ant, ctx.mkNot(con)));
-        return !(s.check() == Status.SATISFIABLE);
+        // Context ctx = LTLExpr.getContext();
+        // BoolExpr ant = gPremises.toExpr(ctx);
+        // BoolExpr con = formula.toExpr(ctx);
+        // Solver s = ctx.mkSolver();
+        // s.add(ctx.mkAnd(ant, ctx.mkNot(con)));
+        // return !(s.check() == Status.SATISFIABLE);
 
     }
 
