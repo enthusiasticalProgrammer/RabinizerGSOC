@@ -5,10 +5,7 @@
  */
 package rabinizer.automata;
 
-import rabinizer.ltl.EquivalenceClassFactory;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.FormulaFactory;
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.ltl.*;
 
 import java.util.Map;
 import java.util.Set;
@@ -23,11 +20,11 @@ public class AccLocalFolded extends AccLocal {
     }
 
     protected boolean slavesEntail(GSet gSet, GSet gSetComplement, ProductState ps, Map<Formula, Integer> ranking, Set<String> v, Formula consequent) {
-        Formula antecedent = FormulaFactory.mkConst(true);
+        Formula antecedent = BooleanConstant.get(true);
         for (Formula f : gSet) {
             antecedent = FormulaFactory.mkAnd(antecedent, FormulaFactory.mkG(f)); // TODO relevant for Folded version
             //antecedent = new Conjunction(antecedent, new XOperator(new GOperator(f))); // TODO:remove; relevant for Xunfolding
-            Formula slaveAntecedent = FormulaFactory.mkConst(true);
+            Formula slaveAntecedent = BooleanConstant.get(true);
             if (ps.containsKey(f)) {
                 for (FormulaState s : ps.get(f).keySet()) {
                     if (ps.get(f).get(s) >= ranking.get(f)) {

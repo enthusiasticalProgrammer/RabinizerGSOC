@@ -68,11 +68,11 @@ public class TestFormula {
 
     @Test
     public void testFormulaFactory5() {
-        Formula f0 = FormulaFactory.mkConst(false);
-        Formula f1 = FormulaFactory.mkConst(false);
-        Formula f2 = FormulaFactory.mkConst(false);
+        Formula f0 = BooleanConstant.get(false);
+        Formula f1 = BooleanConstant.get(false);
+        Formula f2 = BooleanConstant.get(false);
         Formula f3 = FormulaFactory.mkOr(f0, f1, f2);
-        assertEquals(f3, FormulaFactory.mkConst(false));
+        assertEquals(f3, BooleanConstant.get(false));
     }
 
     @Test
@@ -135,7 +135,7 @@ public class TestFormula {
     @Test
     public void simplify3() {
         Formula f0 = FormulaFactory.mkLit("p0", false);
-        Formula f1 = FormulaFactory.mkU(FormulaFactory.mkConst(true), f0);
+        Formula f1 = FormulaFactory.mkU(BooleanConstant.get(true), f0);
         Formula f2 = FormulaFactory.mkAnd(f0, f1);
         Formula f3 = FormulaFactory.mkNot(f2);
         assertNotEquals(f3, FormulaFactory.mkNot(f0));
@@ -182,7 +182,7 @@ public class TestFormula {
     public void testSetToConst1() {
         Formula f0 = FormulaFactory.mkLit("p0", false);
         Formula f1 = f0.accept(PseudoSubstitutionVisitor.getVisitor(), f0, true);
-        assertEquals(f1, FormulaFactory.mkConst(true));
+        assertEquals(f1, BooleanConstant.get(true));
     }
 
     @Test
@@ -210,7 +210,7 @@ public class TestFormula {
         Formula f2 = FormulaFactory.mkG(f1);
         Formula f3 = FormulaFactory.mkAnd(f2, f1);
 
-        assertEquals(f3.assertValuation(Collections.emptySet()), FormulaFactory.mkConst(false));
+        assertEquals(f3.evaluate(Collections.emptySet()), BooleanConstant.get(false));
     }
 
     @Test
@@ -224,7 +224,7 @@ public class TestFormula {
         Formula f6 = FormulaFactory.mkAnd(f1, f3);
         Formula f7 = FormulaFactory.mkOr(f2, f5, f6);
 
-        assertEquals(f7.assertValuation(ImmutableSet.of("p0", "p2")), FormulaFactory.mkConst(false));
+        assertEquals(f7.evaluate(ImmutableSet.of("p0", "p2")), BooleanConstant.get(false));
     }
 
     @Test
@@ -232,7 +232,7 @@ public class TestFormula {
         Formula f1 = FormulaFactory.mkLit("p2", true);
         Formula f4 = FormulaFactory.mkG(f1);
         Formula f5 = f4.unfold();
-        assertEquals(f5.temporalStep(Collections.singleton("p2")), FormulaFactory.mkConst(false));
+        assertEquals(f5.temporalStep(Collections.singleton("p2")), BooleanConstant.get(false));
     }
 
     @Test
@@ -241,7 +241,7 @@ public class TestFormula {
         Formula f2 = FormulaFactory.mkLit("p1", false);
         Formula f3 = FormulaFactory.mkLit("p2", false);
         Formula f4 = FormulaFactory.mkAnd(f1, f2, f3);
-        assertEquals(f4.assertLiteral((Literal) f1), FormulaFactory.mkAnd(f2, f3));
+        assertEquals(f4.evaluate((Literal) f1), FormulaFactory.mkAnd(f2, f3));
     }
 
     @Test
@@ -321,7 +321,7 @@ public class TestFormula {
     @Test
     public void testSimplifyAggressively3() {
         Formula f1 = FormulaFactory.mkLit("p0", false);
-        Formula f2 = FormulaFactory.mkF(FormulaFactory.mkConst(true));
+        Formula f2 = FormulaFactory.mkF(BooleanConstant.get(true));
         Formula f3 = FormulaFactory.mkAnd(f1, f2);
 
         SimplifyAggressivelyVisitor v = SimplifyAggressivelyVisitor.getVisitor();
@@ -340,7 +340,7 @@ public class TestFormula {
     @Test
     public void test_simplify_boolean1() {
         Formula f1 = FormulaFactory.mkLit("p0", false);
-        Formula f2 = FormulaFactory.mkConst(true);
+        Formula f2 = BooleanConstant.get(true);
         Formula f3 = FormulaFactory.mkAnd(f1, f2);
         assertEquals(f3, f1);
     }

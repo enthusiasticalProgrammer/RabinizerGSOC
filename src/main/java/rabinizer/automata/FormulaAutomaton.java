@@ -1,16 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.automata;
 
 import rabinizer.ltl.*;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author jkretinsky
@@ -30,20 +22,21 @@ public abstract class FormulaAutomaton extends Automaton<FormulaState> {
 
     protected Set<ValuationSet> generatePartitioning(Formula f) { // TODO method of state
         Set<ValuationSet> result = new HashSet<>();
-        Literal l = f.getAnUnguardedLiteral();
-        if (l == null) {
+        Optional<Literal> l = f.getAnUnguardedLiteral();
+
+        if (!l.isPresent()) {
             result.add(valuationSetFactory.createUniverseValuationSet());
         } else {
-            l = l.positiveLiteral();
+            Literal literal = l.get().positiveLiteral();
             //System.out.println("  gen " + f + "; " + l);
-            Set<ValuationSet> pos = generatePartitioning(f.assertLiteral(l));
-            Set<ValuationSet> neg = generatePartitioning(f.assertLiteral(l.not()));
+            Set<ValuationSet> pos = generatePartitioning(f.evaluate(literal));
+            Set<ValuationSet> neg = generatePartitioning(f.evaluate(literal.not()));
             for (ValuationSet vs : pos) {
-                vs.restrictWith(l);
+                vs.restrictWith(literal);
                 result.add(vs);
             }
             for (ValuationSet vs : neg) {
-                vs.restrictWith(l.not());
+                vs.restrictWith(literal.not());
                 result.add(vs);
             }
         }

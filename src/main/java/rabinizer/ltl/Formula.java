@@ -7,7 +7,9 @@ import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Jan Kretinsky
@@ -15,8 +17,8 @@ import java.util.Set;
 public abstract class Formula {
 
     String cachedString;
-    BoolExpr cachedLTL = null;
-    private int cachedHashCode = 0;
+    BoolExpr cachedLTL;
+    private int cachedHashCode;
 
     @Override
     public int hashCode() {
@@ -31,8 +33,6 @@ public abstract class Formula {
 
     @Override
     public abstract boolean equals(Object o);
-
-    public abstract boolean containsG();
 
     public abstract BoolExpr toExpr(Context ctx);
 
@@ -49,15 +49,7 @@ public abstract class Formula {
     public abstract Formula unfoldNoG();
 
     public Formula temporalStep(Set<String> valuation) {
-        return this.assertValuation(valuation).removeX();
-    }
-
-    public Formula assertValuation(Set<String> valuation) {
-        return evaluateValuation(valuation).removeConstants();
-    }
-
-    public Formula assertLiteral(Literal literal) {
-        return evaluateLiteral(literal).removeConstants();
+        return this.evaluate(valuation).removeX();
     }
 
     // TODO: is with the outer G (not GSet)
@@ -66,45 +58,33 @@ public abstract class Formula {
         if (getPropositions().isEmpty()) {
             return Collections.emptySet();
         }
+
         Set<Formula> result = new HashSet<>();
 
         EquivalenceClassFactory factory = new BDDEquivalenceClassFactory(getPropositions());
         EquivalenceClass clazz = factory.createEquivalenceClass(this.unfold());
 
-        for (Formula subFormula : candidates) {
-            if (hasSubformula(subFormula) && !clazz.getSimplifiedRepresentative().ignoresG(subFormula)) {
-                result.add(subFormula);
-            }
-        }
+        result.addAll(candidates.stream().filter(subFormula -> hasSubformula(subFormula) && !clazz.getSimplifiedRepresentative().ignoresG(subFormula)).collect(Collectors.toList()));
 
         return result;
-    }
-
-    /**
-     * is not recurrent and is not produced by anything recurrent from f
-     * currently, the latter is safely approximated by having a different
-     * subformula
-     */
-    public boolean isTransientwrt(Formula f) {
-        return !containsG() && isVeryDifferentFrom(f);
     }
 
     public abstract Formula not();
 
     // =============================================================
     // to be overridden by Boolean and Literal
-    public Formula evaluateValuation(Set<String> valuation) {
+    public Formula evaluate(Set<String> valuation) {
         return this;
     }
 
     // to be overridden by Boolean and Literal
-    public Formula evaluateLiteral(Literal literal) {
+    public Formula evaluate(Literal literal) {
         return this;
     }
 
     // to be overridden by Boolean and Literal
-    public Literal getAnUnguardedLiteral() {
-        return null;
+    public Optional<Literal> getAnUnguardedLiteral() {
+        return Optional.empty();
     }
 
     // to be overridden by Boolean and XOperator
@@ -118,29 +98,10 @@ public abstract class Formula {
     }
 
     // to be overridden by Boolean
-    public Formula removeConstants() {
-        return this;
-    }
-
-    // to be overridden by Boolean
-    // contains a modal/Literal not contained in f
-    public boolean isVeryDifferentFrom(Formula f) {
-        return !f.hasSubformula(this);
-    }
-
-    // to be overridden by Boolean
     public boolean ignoresG(Formula f) {
         // return false;
         return !hasSubformula(f);
     }
-
-    /**
-     * This method removes boolean constants such as true/false also inside of
-     * temporary operators,
-     * 
-     * @return Forumula, where all boolean constants are ommitted (if possible)
-     */
-    public abstract Formula rmAllConstants();
 
     /**
      * For the propositional view on LTL modal operators (F, G, U, X) and

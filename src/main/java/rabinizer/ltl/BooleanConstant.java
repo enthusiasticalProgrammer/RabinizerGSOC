@@ -9,13 +9,17 @@ import java.util.Set;
 
 public final class BooleanConstant extends FormulaNullary {
 
-    static public final BooleanConstant TRUE = new BooleanConstant(true);
-    static public final BooleanConstant FALSE = new BooleanConstant(false);
+    public static final BooleanConstant TRUE = new BooleanConstant(true);
+    public static final BooleanConstant FALSE = new BooleanConstant(false);
 
     public final boolean value;
 
     private BooleanConstant(boolean value) {
         this.value = value;
+    }
+
+    public static BooleanConstant get(boolean value) {
+        return value ? TRUE : FALSE;
     }
 
     @Override
@@ -49,11 +53,6 @@ public final class BooleanConstant extends FormulaNullary {
     @Override
     public Set<String> getAtoms() {
         return new HashSet<>();
-    }
-
-    @Override
-    public Formula rmAllConstants() {
-        return FormulaFactory.mkConst(value);
     }
 
     @Override

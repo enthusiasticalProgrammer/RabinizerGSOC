@@ -5,10 +5,7 @@
  */
 package rabinizer.automata;
 
-import rabinizer.ltl.EquivalenceClass;
-import rabinizer.ltl.EquivalenceClassFactory;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.FormulaFactory;
+import rabinizer.ltl.*;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -38,7 +35,7 @@ public class GSet extends HashSet<Formula> {
 
     public boolean entails(Formula formula) { // used???
         if (gPremises == null) {
-            Formula premise = FormulaFactory.mkConst(true);
+            Formula premise = BooleanConstant.get(true);
             for (Formula f : this) {
                 premise = FormulaFactory.mkAnd(premise, FormulaFactory.mkG(f));
 

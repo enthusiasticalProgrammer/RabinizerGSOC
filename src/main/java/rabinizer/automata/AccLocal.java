@@ -60,11 +60,11 @@ public class AccLocal {
     }
 
     protected boolean slavesEntail(GSet gSet, GSet gSetComplement, ProductState ps, Map<Formula, Integer> ranking, Set<String> v, Formula consequent) {
-        Formula antecedent = FormulaFactory.mkConst(true);
+        Formula antecedent = BooleanConstant.get(true);
         for (Formula f : gSet) {
             antecedent = FormulaFactory.mkAnd(antecedent, FormulaFactory.mkG(f)); // TODO compute these lines once for all states
             antecedent = FormulaFactory.mkAnd(antecedent, f.substituteGsToFalse(gSetComplement));
-            Formula slaveAntecedent = FormulaFactory.mkConst(true);
+            Formula slaveAntecedent = BooleanConstant.get(true);
             if (ps.containsKey(f)) {
                 for (FormulaState s : ps.get(f).keySet()) {
                     if (ps.get(f).get(s) >= ranking.get(f)) {

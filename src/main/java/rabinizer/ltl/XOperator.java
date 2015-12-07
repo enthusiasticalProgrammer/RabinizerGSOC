@@ -33,17 +33,6 @@ public final class XOperator extends FormulaUnary {
     }
 
     @Override
-    public Formula rmAllConstants() {
-        Formula child = operand.rmAllConstants();
-
-        if (child instanceof BooleanConstant) {
-            return child;
-        }
-
-        return FormulaFactory.mkX(child);
-    }
-
-    @Override
     public <R> R accept(Visitor<R> v) {
         return v.visit(this);
     }

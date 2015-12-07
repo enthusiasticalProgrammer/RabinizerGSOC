@@ -8,7 +8,6 @@ public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
     private static ImplicationVisitor instance = new ImplicationVisitor();
 
     private ImplicationVisitor() {
-        super();
     }
 
     public static ImplicationVisitor getVisitor() {

@@ -20,7 +20,7 @@ public class LTLExpr {
 
     //in order to communicate properly with the Z3-Solver,
     // e.g. to store the atomar propositions
-    private static Context ctx = null;
+    private static Context ctx;
 
 
     //stores all Formulae, gets emptied in dispose-Method

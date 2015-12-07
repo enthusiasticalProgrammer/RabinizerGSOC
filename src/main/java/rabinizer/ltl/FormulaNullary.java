@@ -39,8 +39,4 @@ public abstract class FormulaNullary extends Formula {
         return Collections.emptySet();
     }
 
-    @Override
-    public boolean containsG() {
-        return false;
-    }
 }

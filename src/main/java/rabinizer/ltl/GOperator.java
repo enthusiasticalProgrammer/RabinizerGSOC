@@ -31,12 +31,6 @@ public final class GOperator extends FormulaUnary {
         return new FOperator(operand.not());
     }
 
-    // ============== OVERRIDE ====================
-    @Override
-    public boolean containsG() {
-        return true;
-    }
-
     @Override
     public Set<Formula> gSubformulas() {
         Set<Formula> r = operand.gSubformulas();
@@ -54,19 +48,10 @@ public final class GOperator extends FormulaUnary {
     @Override
     public Formula substituteGsToFalse(GSet gSet) {
         if (gSet.contains(operand)) {
-            return FormulaFactory.mkConst(false);
+            return BooleanConstant.get(false);
         } else {
             return this;
         }
-    }
-
-    @Override
-    public Formula rmAllConstants() {
-        Formula child = operand.rmAllConstants();
-        if (child instanceof BooleanConstant) {
-            return child;
-        }
-        return FormulaFactory.mkG(child);
     }
 
     @Override

@@ -13,7 +13,8 @@ import java.util.Set;
  */
 public final class UOperator extends Formula {
 
-    final Formula left, right;
+    final Formula left;
+    final Formula right;
 
     public UOperator(Formula left, Formula right) {
         this.left = left;
@@ -26,11 +27,6 @@ public final class UOperator extends Formula {
             cachedString = "(" + left + operator() + right + ")";
         }
         return cachedString;
-    }
-
-    @Override
-    public boolean containsG() {
-        return left.containsG() || right.containsG();
     }
 
     @Override
@@ -112,24 +108,6 @@ public final class UOperator extends Formula {
         Set<String> atoms = left.getAtoms();
         atoms.addAll(right.getAtoms());
         return atoms;
-    }
-
-    @Override
-    public Formula rmAllConstants() {
-        Formula l = left.rmAllConstants();
-        Formula r = right.rmAllConstants();
-        if (l instanceof BooleanConstant) {
-            if (((BooleanConstant) l).value) {
-                return FormulaFactory.mkF(r);
-            } else {
-                return r;
-            }
-        }
-
-        if (r instanceof BooleanConstant) {
-            return r;
-        }
-        return FormulaFactory.mkU(l, r);
     }
 
     @Override

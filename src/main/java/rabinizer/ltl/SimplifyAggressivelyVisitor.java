@@ -3,13 +3,13 @@ package rabinizer.ltl;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
 
     private static SimplifyAggressivelyVisitor instance = new SimplifyAggressivelyVisitor();
 
     private SimplifyAggressivelyVisitor() {
-        super();
     }
 
     public static SimplifyAggressivelyVisitor getVisitor() {
@@ -26,8 +26,8 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
         // I want a,b, and c, because you can simplify it more
 
         Set<Formula> set = c.getAllChildrenOfConjunction();
-        Set<Formula> toRemove = new HashSet<Formula>();
-        Set<Formula> toAdd = new HashSet<Formula>();
+        Set<Formula> toRemove = new HashSet<>();
+        Set<Formula> toAdd = new HashSet<>();
 
         for (Formula form : set) {
             Formula f = form.accept(this);
@@ -38,7 +38,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
 
             if (f instanceof BooleanConstant) {
                 if (!((BooleanConstant) f).value) {
-                    return FormulaFactory.mkConst(false);
+                    return BooleanConstant.get(false);
                 }
                 toRemove.add(f);
             }
@@ -80,8 +80,8 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
 
     public Formula visit(Disjunction d) {
         Set<Formula> set = d.getAllChildrenOfDisjunction();
-        Set<Formula> toRemove = new HashSet<Formula>();
-        Set<Formula> toAdd = new HashSet<Formula>();
+        Set<Formula> toRemove = new HashSet<>();
+        Set<Formula> toAdd = new HashSet<>();
 
         for (Formula form : set) {
             Formula f = form.accept(this);
@@ -91,7 +91,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
             }
             if (f instanceof BooleanConstant) {
                 if (((BooleanConstant) f).value) {
-                    return FormulaFactory.mkConst(true);
+                    return BooleanConstant.get(true);
                 }
                 toRemove.add(f);
             }
@@ -140,10 +140,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
         } else if (child instanceof XOperator) {
             return FormulaFactory.mkX(FormulaFactory.mkF(((FormulaUnary) child).operand)).accept(this);
         } else if (child instanceof Disjunction) {
-            ArrayList<Formula> newChildren = new ArrayList<>();
-            for (Formula grandchild : ((PropositionalFormula) child).children) {
-                newChildren.add(FormulaFactory.mkF(grandchild));
-            }
+            ArrayList<Formula> newChildren = ((PropositionalFormula) child).children.stream().map(FormulaFactory::mkF).collect(Collectors.toCollection(ArrayList::new));
             return FormulaFactory.mkOr(newChildren).accept(this);
         } else {
             return FormulaFactory.mkF(child);

@@ -12,7 +12,7 @@ public class FormulaFactory {
     }
 
     public static Formula mkAnd(Formula... af) {
-        Set<Formula> conjuncts = new HashSet<Formula>();
+        Set<Formula> conjuncts = new HashSet<>();
 
         for (Formula anAf : af) {
             if (anAf instanceof Conjunction) {
@@ -27,7 +27,7 @@ public class FormulaFactory {
         }
 
         if (conjuncts.isEmpty()) {
-            return FormulaFactory.mkConst(true);
+            return BooleanConstant.get(true);
         } else if (conjuncts.size() == 1) {
             Formula onlyOne = null;
             for (Formula a : conjuncts) {
@@ -42,7 +42,7 @@ public class FormulaFactory {
 
     public static Formula mkOr(Formula... af) {
 
-        Set<Formula> disjuncts = new HashSet<Formula>();
+        Set<Formula> disjuncts = new HashSet<>();
 
         for (Formula anAf : af) {
             if (anAf instanceof Disjunction) {
@@ -53,7 +53,7 @@ public class FormulaFactory {
         }
 
         if (disjuncts.isEmpty()) {
-            return FormulaFactory.mkConst(false);
+            return BooleanConstant.get(false);
         } else if (disjuncts.size() == 1) {
             Formula onlyOne = null;
             for (Formula a : disjuncts) {
@@ -76,11 +76,6 @@ public class FormulaFactory {
         Formula[] helper = new Formula[af.size()];
         helper = af.toArray(helper);
         return mkAnd(helper);
-    }
-
-    public static Formula mkConst(boolean t) {
-        Formula z = t ? BooleanConstant.TRUE : BooleanConstant.FALSE;
-        return probe(z);
     }
 
     public static Formula mkF(Formula child) {

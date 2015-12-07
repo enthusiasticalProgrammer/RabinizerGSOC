@@ -9,7 +9,6 @@ public class SimplifyBooleanVisitor implements Visitor<Formula> {
     private static SimplifyBooleanVisitor instance = new SimplifyBooleanVisitor();
 
     private SimplifyBooleanVisitor() {
-        super();
     }
 
     public static SimplifyBooleanVisitor getVisitor() {
@@ -25,12 +24,12 @@ public class SimplifyBooleanVisitor implements Visitor<Formula> {
     public Formula visit(Conjunction c) {
         Set<Formula> set = c.getAllChildrenOfConjunction();
         ArrayList<Formula> helper = new ArrayList<>();
-        Set<Formula> toRemove = new HashSet<Formula>();
+        Set<Formula> toRemove = new HashSet<>();
 
         for (Formula form : set) {
             if (form instanceof BooleanConstant) {
                 if (!((BooleanConstant) form).value) {
-                    return FormulaFactory.mkConst(false);
+                    return BooleanConstant.get(false);
                 }
                 toRemove.add(form);
             }
@@ -40,13 +39,11 @@ public class SimplifyBooleanVisitor implements Visitor<Formula> {
 
         // put all Literals together (and check for trivial
         // tautologies/contradictions like a and a /a and !a
-        for (Formula form : set) {
-            if (form instanceof Literal) {
-                helper.add(form);
-                toRemove.add(form);
+        set.stream().filter(form -> form instanceof Literal).forEach(form -> {
+            helper.add(form);
+            toRemove.add(form);
 
-            }
-        }
+        });
         set.removeAll(toRemove);
         toRemove.clear();
         for (int i = 0; i < helper.size(); i++) {
@@ -56,7 +53,7 @@ public class SimplifyBooleanVisitor implements Visitor<Formula> {
                     if (((Literal) helper.get(i)).negated == (((Literal) helper.get(j)).negated)) {
                         helper.remove(j);
                     } else {
-                        return FormulaFactory.mkConst(false);
+                        return BooleanConstant.get(false);
                     }
                 }
             }
@@ -75,12 +72,12 @@ public class SimplifyBooleanVisitor implements Visitor<Formula> {
 
         Set<Formula> set = d.getAllChildrenOfDisjunction();
         ArrayList<Formula> helper = new ArrayList<>();
-        Set<Formula> toRemove = new HashSet<Formula>();
+        Set<Formula> toRemove = new HashSet<>();
 
         for (Formula form : set) {
             if (form instanceof BooleanConstant) {
                 if (((BooleanConstant) form).value) {
-                    return FormulaFactory.mkConst(true);
+                    return BooleanConstant.get(true);
                 }
                 toRemove.add(form);
             }
@@ -91,13 +88,11 @@ public class SimplifyBooleanVisitor implements Visitor<Formula> {
         // put all Literals together (and check for trivial
         // tautologies/contradictions like a and a /a and !a
 
-        for (Formula form : set) {
-            if (form instanceof Literal) {
-                helper.add(form);
-                toRemove.add(form);
+        set.stream().filter(form -> form instanceof Literal).forEach(form -> {
+            helper.add(form);
+            toRemove.add(form);
 
-            }
-        }
+        });
         set.removeAll(toRemove);
         toRemove.clear();
 
@@ -108,7 +103,7 @@ public class SimplifyBooleanVisitor implements Visitor<Formula> {
                     if (((Literal) helper.get(i)).negated == (((Literal) helper.get(j)).negated)) {
                         helper.remove(j);
                     } else {
-                        return FormulaFactory.mkConst(true);
+                        return BooleanConstant.get(true);
                     }
                 }
             }

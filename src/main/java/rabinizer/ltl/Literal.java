@@ -5,6 +5,7 @@ import com.microsoft.z3.Context;
 
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 public final class Literal extends FormulaNullary {
@@ -34,16 +35,16 @@ public final class Literal extends FormulaNullary {
     }
 
     @Override
-    public Formula evaluateValuation(Set<String> valuation) {
-        return FormulaFactory.mkConst(valuation.contains(atom) ^ negated);
+    public Formula evaluate(Set<String> valuation) {
+        return BooleanConstant.get(valuation.contains(atom) ^ negated);
     }
 
     @Override
-    public Formula evaluateLiteral(Literal literal) {
+    public Formula evaluate(Literal literal) {
         if (!literal.atom.equals(this.atom)) {
             return this;
         } else {
-            return FormulaFactory.mkConst(literal.negated == this.negated);
+            return BooleanConstant.get(literal.negated == this.negated);
         }
     }
 
@@ -53,8 +54,8 @@ public final class Literal extends FormulaNullary {
     }
 
     @Override
-    public Literal getAnUnguardedLiteral() {
-        return this;
+    public Optional<Literal> getAnUnguardedLiteral() {
+        return Optional.of(this);
     }
 
     @Override
@@ -81,12 +82,6 @@ public final class Literal extends FormulaNullary {
         Set<String> atoms = new HashSet<>();
         atoms.add(this.atom);
         return atoms;
-    }
-
-    @Override
-    public Formula rmAllConstants() {
-        return FormulaFactory.mkLit(atom, negated);
-
     }
 
     public String getAtom() {

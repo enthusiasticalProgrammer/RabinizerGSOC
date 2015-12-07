@@ -29,15 +29,6 @@ public final class FOperator extends FormulaUnary {
     }
 
     @Override
-    public Formula rmAllConstants() {
-        Formula child = operand.rmAllConstants();
-        if (child instanceof BooleanConstant) {
-            return child;
-        }
-        return FormulaFactory.mkF(child);
-    }
-
-    @Override
     public <R> R accept(Visitor<R> v) {
         return v.visit(this);
     }

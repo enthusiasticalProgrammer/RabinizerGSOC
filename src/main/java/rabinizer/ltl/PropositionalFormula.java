@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSet;
 import rabinizer.automata.GSet;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -34,70 +35,42 @@ public abstract class PropositionalFormula extends Formula {
 
     @Override
     public Formula unfold() {
-        ArrayList<Formula> unfolded = new ArrayList<>();
-        for (Formula child : children) {
-            unfolded.add(child.unfold());
-        }
+        Set<Formula> unfolded = children.stream().map(Formula::unfold).collect(Collectors.toSet());
         return ThisTypeBoolean(unfolded);
     }
 
     @Override
     public Formula unfoldNoG() {
-        ArrayList<Formula> unfoldedNoG = new ArrayList<>();
-        for (Formula child : children) {
-            unfoldedNoG.add(child.unfoldNoG());
-        }
+        Set<Formula> unfoldedNoG = children.stream().map(Formula::unfoldNoG).collect(Collectors.toSet());
         return ThisTypeBoolean(unfoldedNoG);
     }
 
     @Override
-    public Formula evaluateValuation(Set<String> valuation) {
-        ArrayList<Formula> evaluated = new ArrayList<>();
-        for (Formula child : children) {
-            evaluated.add(child.evaluateValuation(valuation));
-        }
-        return ThisTypeBoolean(evaluated);
+    public Formula evaluate(Set<String> valuation) {
+        return ThisTypeBoolean(children.stream().map(c -> c.evaluate(valuation)).collect(Collectors.toSet()));
     }
 
     @Override
-    public Formula evaluateLiteral(Literal literal) {
-        ArrayList<Formula> evaluated = new ArrayList<>();
-        for (Formula child : children) {
-            evaluated.add(child.evaluateLiteral(literal));
-        }
-        return ThisTypeBoolean(evaluated);
-    }
-
-    @Override
-    public Formula removeConstants() {
-        Set<Formula> newChildren = new HashSet<>();
-        for (Formula child : children) {
-            Formula newChild = child.removeConstants();
-            newChildren.add(newChild);
-        }
-        if (!newChildren.equals(children)) {
-            return ThisTypeBoolean(newChildren);
-        }
-        return this;
+    public Formula evaluate(Literal literal) {
+        return ThisTypeBoolean(children.stream().map(c -> c.evaluate(literal)).collect(Collectors.toSet()));
     }
 
     @Override
     public Formula removeX() {
-        ArrayList<Formula> xRemoved = new ArrayList<>();
-        for (Formula child : children) {
-            xRemoved.add(child.removeX());
-        }
-        return ThisTypeBoolean(xRemoved);
+        return ThisTypeBoolean(children.stream().map(Formula::removeX).collect(Collectors.toSet()));
     }
 
     @Override
-    public Literal getAnUnguardedLiteral() {
+    public Optional<Literal> getAnUnguardedLiteral() {
         for (Formula child : children) {
-            if (child.getAnUnguardedLiteral() != null) {
-                return child.getAnUnguardedLiteral();
+            Optional<Literal> literal = child.getAnUnguardedLiteral();
+
+            if (literal.isPresent()) {
+                return literal;
             }
         }
-        return null;
+
+        return Optional.empty();
     }
 
     @Override
@@ -107,18 +80,6 @@ public abstract class PropositionalFormula extends Formula {
             result.addAll(child.topmostGs());
         }
         return result;
-    }
-
-    @Override
-    public Formula rmAllConstants() {
-        Set<Formula> newChildren = new HashSet<>();
-        newChildren.addAll(children);
-        newChildren.stream().forEach(Formula::rmAllConstants);
-
-        if (!newChildren.equals(children)) {
-            return ThisTypeBoolean(newChildren);
-        }
-        return this;
     }
 
     @Override
@@ -148,11 +109,7 @@ public abstract class PropositionalFormula extends Formula {
 
     @Override
     public Formula substituteGsToFalse(GSet gSet) {
-        ArrayList<Formula> gSubstituted = new ArrayList<>();
-        for (Formula child : children) {
-            gSubstituted.add(child.substituteGsToFalse(gSet));
-        }
-
+        Set<Formula> gSubstituted = children.stream().map(child -> child.substituteGsToFalse(gSet)).collect(Collectors.toSet());
         return ThisTypeBoolean(gSubstituted);
     }
 
@@ -172,24 +129,6 @@ public abstract class PropositionalFormula extends Formula {
             subform = subform || child.hasSubformula(f);
         }
         return subform;
-    }
-
-    @Override
-    public boolean containsG() {
-        boolean contG = false;
-        for (Formula child : children) {
-            contG = contG || child.containsG();
-        }
-        return contG;
-    }
-
-    @Override
-    public boolean isVeryDifferentFrom(Formula f) {
-        boolean diff = false;
-        for (Formula child : children) {
-            diff = diff || child.isVeryDifferentFrom(f);
-        }
-        return diff;
     }
 
     @Override

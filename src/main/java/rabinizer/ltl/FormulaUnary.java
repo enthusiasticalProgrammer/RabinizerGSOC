@@ -38,12 +38,6 @@ public abstract class FormulaUnary extends Formula {
 
     @Override
     // to be overrridden by GOperator
-    public boolean containsG() {
-        return operand.containsG();
-    }
-
-    @Override
-    // to be overrridden by GOperator
     public Set<Formula> gSubformulas() {
         return operand.gSubformulas();
     }

@@ -3,10 +3,7 @@ package rabinizer.ltl;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -42,10 +39,7 @@ public final class Disjunction extends PropositionalFormula {
     @Override
     public BoolExpr toExpr(Context ctx) {
         if (cachedLTL == null) {
-            ArrayList<BoolExpr> exprs = new ArrayList<>();
-            for (Formula child : children) {
-                exprs.add(child.toExpr(ctx));
-            }
+            List<BoolExpr> exprs = children.stream().map(child -> child.toExpr(ctx)).collect(Collectors.toList());
             BoolExpr[] helper = new BoolExpr[exprs.size()];
             exprs.toArray(helper);
             cachedLTL = ctx.mkOr(helper);

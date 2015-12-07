@@ -15,7 +15,6 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
     private static PseudoSubstitutionVisitor instance = new PseudoSubstitutionVisitor();
 
     private PseudoSubstitutionVisitor() {
-        super();
     }
 
     public static PseudoSubstitutionVisitor getVisitor() {
@@ -30,9 +29,9 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
     @Override
     public Formula visit(Conjunction co, Formula b, Boolean c) {
         if (co.equals(b)) {
-            return FormulaFactory.mkConst(c);
+            return BooleanConstant.get(c);
         } else {
-            Set<Formula> set = new HashSet<Formula>();
+            Set<Formula> set = new HashSet<>();
             set.addAll(co.children);
             for (Formula form : set) {
                 Formula f = form.accept(this, b, c);
@@ -51,9 +50,9 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
     @Override
     public Formula visit(Disjunction d, Formula b, Boolean c) {
         if (d.equals(b)) {
-            return FormulaFactory.mkConst(c);
+            return BooleanConstant.get(c);
         } else {
-            Set<Formula> set = new HashSet<Formula>();
+            Set<Formula> set = new HashSet<>();
             set.addAll(d.children);
             for (Formula form : set) {
                 Formula f = form.accept(this, b, c);
@@ -72,11 +71,11 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
     @Override
     public Formula visit(FOperator f, Formula b, Boolean c) {
         if (f.equals(b)) {
-            return FormulaFactory.mkConst(c);
+            return BooleanConstant.get(c);
         } else {
             if (c) {
                 if (f.operand.equals(b)) {
-                    return FormulaFactory.mkConst(c);
+                    return BooleanConstant.get(c);
                 }
             }
             return f;
@@ -86,7 +85,7 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
     @Override
     public Formula visit(GOperator g, Formula b, Boolean c) {
         if (g.equals(b)) {
-            return FormulaFactory.mkConst(c);
+            return BooleanConstant.get(c);
         } else {
             if (!c) {
                 return FormulaFactory.mkG(g.operand.accept(this, b, c));
@@ -99,7 +98,7 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
     @Override
     public Formula visit(Literal l, Formula b, Boolean c) {
         if (l.equals(b)) {
-            return FormulaFactory.mkConst(c);
+            return BooleanConstant.get(c);
         }
         return l;
     }
@@ -107,7 +106,7 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
     @Override
     public Formula visit(UOperator u, Formula b, Boolean c) {
         if (u.equals(b) || u.right.equals(b)) {
-            return FormulaFactory.mkConst(c);
+            return BooleanConstant.get(c);
         }
         return u;
     }
@@ -115,7 +114,7 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
     @Override
     public Formula visit(XOperator x, Formula b, Boolean c) {
         if (x.equals(b)) {
-            return FormulaFactory.mkConst(c);
+            return BooleanConstant.get(c);
         }
         return x;
     }
