@@ -1,26 +1,15 @@
 package rabinizer.ltl;
 
-public final class FOperator extends FormulaUnary {
+public final class FOperator extends ModalOperator {
 
     public FOperator(Formula f) {
         super(f);
     }
 
     @Override
-    public String operator() {
-        return "F";
-    }
-
-    @Override
-    public Formula unfold() {
+    public Formula unfold(boolean unfoldG) {
         // U(F phi) = U(phi) \/ X F U(phi)
-        return FormulaFactory.mkOr(operand.unfold(), (this));
-    }
-
-    @Override
-    public Formula unfoldNoG() {
-        // U(F phi) = U(phi) \/ X F U(phi)
-        return FormulaFactory.mkOr(operand.unfoldNoG(), (this));
+        return new Disjunction(operand.unfold(unfoldG), this);
     }
 
     @Override
@@ -56,6 +45,11 @@ public final class FOperator extends FormulaUnary {
     @Override
     public boolean isSuspendable() {
         return operand.isPureUniversal() || operand.isSuspendable();
+    }
+
+    @Override
+    protected char getOperator() {
+        return 'F';
     }
 
 }

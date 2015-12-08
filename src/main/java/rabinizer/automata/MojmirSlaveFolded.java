@@ -29,13 +29,13 @@ public class MojmirSlaveFolded extends FormulaAutomaton {
 
     @Override
     public FormulaState generateSuccState(FormulaState s, ValuationSet vs) {
-        Formula succ = s.getFormula().unfoldNoG().temporalStep(vs.pickAny());
+        Formula succ = s.getFormula().unfold(false).temporalStep(vs.pickAny());
         return new FormulaState(equivalenceClassFactory.createEquivalenceClass(formula));
     }
 
     @Override
     protected Set<ValuationSet> generateSuccTransitions(FormulaState s) {
-        return generatePartitioning(s.getFormula().unfoldNoG());
+        return generatePartitioning(s.getFormula().unfold(false));
     }
 
 }

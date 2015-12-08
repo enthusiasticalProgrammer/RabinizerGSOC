@@ -118,4 +118,8 @@ public class FormulaFactory {
         return probe(formula.not());
     }
 
+    public static Formula simplify(Formula f) {
+        return f.accept(getVis());
+    }
+
 }

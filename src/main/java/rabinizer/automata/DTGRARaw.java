@@ -8,11 +8,13 @@ package rabinizer.automata;
 import rabinizer.exec.Main;
 import rabinizer.ltl.EquivalenceClassFactory;
 import rabinizer.ltl.Formula;
+import rabinizer.ltl.GOperator;
 import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author jkretinsky
@@ -51,7 +53,7 @@ public class DTGRARaw /*implements AccAutomatonInterface*/ {
         master.generate();
         Main.verboseln("========================================");
         Main.nonsilent("Generating Mojmir & Rabin slaves");
-        Set<Formula> gSubformulas = phi.gSubformulas(); // without outer G
+        Set<Formula> gSubformulas = phi.gSubformulas().stream().map(c -> c.getOperand()).collect(Collectors.toSet()); // without outer G
         Map<Formula, RabinSlave> slaves = new HashMap<>();
         for (Formula f : gSubformulas) {
             FormulaAutomaton mSlave;

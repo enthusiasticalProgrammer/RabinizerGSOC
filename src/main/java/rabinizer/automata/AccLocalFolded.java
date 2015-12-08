@@ -19,7 +19,7 @@ public class AccLocalFolded extends AccLocal {
         super(product, factory, factory2);
     }
 
-    protected boolean slavesEntail(GSet gSet, GSet gSetComplement, ProductState ps, Map<Formula, Integer> ranking, Set<String> v, Formula consequent) {
+    protected boolean slavesEntail(Set<GOperator> gSet, ProductState ps, Map<Formula, Integer> ranking, Set<String> v, Formula consequent) {
         Formula antecedent = BooleanConstant.get(true);
         for (Formula f : gSet) {
             antecedent = FormulaFactory.mkAnd(antecedent, FormulaFactory.mkG(f)); // TODO relevant for Folded version
@@ -32,16 +32,16 @@ public class AccLocalFolded extends AccLocal {
                     }
                 }
             }
-            slaveAntecedent = slaveAntecedent.substituteGsToFalse(gSetComplement);
+            slaveAntecedent = slaveAntecedent.evaluate(gSet);
             antecedent = FormulaFactory.mkAnd(antecedent, slaveAntecedent);
         }
         return entails(antecedent, consequent);
     }
 
     @Override
-    protected TranSet<ProductState> computeAccMasterForState(GSet gSet, GSet gSetComplement, Map<Formula, Integer> ranking, ProductState ps) {
+    protected TranSet<ProductState> computeAccMasterForState(Set<GOperator> gSet, Map<Formula, Integer> ranking, ProductState ps) {
         TranSet<ProductState> result = new TranSet<>(valuationSetFactory);
-        if (!slavesEntail(gSet, gSetComplement, ps, ranking, null, ps.masterState.getFormula())) {
+        if (!slavesEntail(gSet, ps, ranking, null, ps.masterState.getFormula())) {
             result.add(ps, valuationSetFactory.createUniverseValuationSet());
         }
         return result;

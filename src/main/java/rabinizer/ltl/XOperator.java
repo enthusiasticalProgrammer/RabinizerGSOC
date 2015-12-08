@@ -1,23 +1,15 @@
 package rabinizer.ltl;
 
-public final class XOperator extends FormulaUnary {
+import java.util.Set;
+
+public final class XOperator extends ModalOperator {
 
     public XOperator(Formula f) {
         super(f);
     }
 
     @Override
-    public String operator() {
-        return "X";
-    }
-
-    @Override
-    public Formula unfold() {
-        return this;
-    }
-
-    @Override
-    public Formula unfoldNoG() {
+    public Formula unfold(boolean unfoldG) {
         return this;
     }
 
@@ -26,9 +18,8 @@ public final class XOperator extends FormulaUnary {
         return new XOperator(operand.not());
     }
 
-    // ============== OVERRIDE ====================
     @Override
-    public Formula removeX() {
+    public Formula temporalStep(Set<String> valuation) {
         return operand;
     }
 
@@ -60,5 +51,10 @@ public final class XOperator extends FormulaUnary {
     @Override
     public boolean isSuspendable() {
         return operand.isSuspendable();
+    }
+
+    @Override
+    protected char getOperator() {
+        return 'X';
     }
 }

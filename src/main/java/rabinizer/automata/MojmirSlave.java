@@ -18,7 +18,7 @@ public class MojmirSlave extends FormulaAutomaton {
 
     @Override
     public FormulaState generateInitialState() {
-        EquivalenceClass clazz = equivalenceClassFactory.createEquivalenceClass(formula.unfoldNoG());
+        EquivalenceClass clazz = equivalenceClassFactory.createEquivalenceClass(formula.unfold(false));
         FormulaState init = new FormulaState(clazz);
         stateLabels.put(init, formula);
         return init;
@@ -27,7 +27,7 @@ public class MojmirSlave extends FormulaAutomaton {
     @Override
     public FormulaState generateSuccState(FormulaState s, ValuationSet vs) {
         Formula label = s.getFormula().temporalStep(vs.pickAny()); // any element of the equivalence class
-        EquivalenceClass clazz = equivalenceClassFactory.createEquivalenceClass(label.unfoldNoG());
+        EquivalenceClass clazz = equivalenceClassFactory.createEquivalenceClass(label.unfold(false));
         FormulaState state = new FormulaState(clazz);
 
         if (!states.contains(state)) {

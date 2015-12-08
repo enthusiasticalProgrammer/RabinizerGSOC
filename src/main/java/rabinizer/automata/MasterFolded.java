@@ -29,13 +29,13 @@ public class MasterFolded extends FormulaAutomaton {
 
     @Override
     public FormulaState generateSuccState(FormulaState s, ValuationSet vs) {
-        Formula succ = s.getFormula().unfold().temporalStep(vs.pickAny()); // any element of the equivalence class
+        Formula succ = s.getFormula().unfold(true).temporalStep(vs.pickAny()); // any element of the equivalence class
         return new FormulaState(equivalenceClassFactory.createEquivalenceClass(succ));
     }
 
     @Override
     protected Set<ValuationSet> generateSuccTransitions(FormulaState s) {
-        return generatePartitioning(s.getFormula().unfold());
+        return generatePartitioning(s.getFormula().unfold(true));
     }
 
 }

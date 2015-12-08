@@ -1,28 +1,26 @@
 package rabinizer.ltl;
 
-import rabinizer.automata.GSet;
+import com.google.common.collect.Sets;
 
-import java.util.HashSet;
 import java.util.Set;
 
-public final class GOperator extends FormulaUnary {
+public final class GOperator extends ModalOperator {
 
     public GOperator(Formula f) {
         super(f);
     }
 
     @Override
-    public String operator() {
-        return "G";
+    public char getOperator() {
+        return 'G';
     }
 
     @Override
-    public Formula unfold() {
-        return FormulaFactory.mkAnd(operand.unfold(), (this));
-    }
+    public Formula unfold(boolean unfoldG) {
+        if (unfoldG) {
+            return new Conjunction(operand.unfold(true), this);
+        }
 
-    @Override
-    public Formula unfoldNoG() {
         return this;
     }
 
@@ -32,26 +30,20 @@ public final class GOperator extends FormulaUnary {
     }
 
     @Override
-    public Set<Formula> gSubformulas() {
-        Set<Formula> r = operand.gSubformulas();
-        r.add(operand);
+    public Set<GOperator> gSubformulas() {
+        Set<GOperator> r = operand.gSubformulas();
+        r.add(this);
         return r;
     }
 
     @Override
-    public Set<Formula> topmostGs() {
-        Set<Formula> result = new HashSet<>();
-        result.add(this.operand);
-        return result;
+    public BooleanConstant evaluate(Set<GOperator> Gs) {
+        return BooleanConstant.get(Gs.contains(this));
     }
 
     @Override
-    public Formula substituteGsToFalse(GSet gSet) {
-        if (gSet.contains(operand)) {
-            return BooleanConstant.get(false);
-        } else {
-            return this;
-        }
+    public Set<GOperator> topmostGs() {
+        return Sets.newHashSet(this);
     }
 
     @Override

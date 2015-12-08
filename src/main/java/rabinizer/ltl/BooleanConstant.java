@@ -5,6 +5,7 @@ import com.microsoft.z3.Context;
 
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 public final class BooleanConstant extends FormulaNullary {
@@ -24,16 +25,22 @@ public final class BooleanConstant extends FormulaNullary {
 
     @Override
     public String toString() {
-        if (cachedString == null) {
-            cachedString = (value ? "true" : "false");
-        }
-
-        return cachedString;
+        return value ? "true" : "false";
     }
 
     @Override
     public BooleanConstant not() {
         return value ? FALSE : TRUE;
+    }
+
+    @Override
+    public Formula evaluate(Literal literal) {
+        return this;
+    }
+
+    @Override
+    public Optional<Literal> getAnUnguardedLiteral() {
+        return Optional.empty();
     }
 
     @Override
@@ -43,6 +50,11 @@ public final class BooleanConstant extends FormulaNullary {
         }
 
         return cachedLTL;
+    }
+
+    @Override
+    public Formula temporalStep(Set<String> valuation) {
+        return this;
     }
 
     @Override

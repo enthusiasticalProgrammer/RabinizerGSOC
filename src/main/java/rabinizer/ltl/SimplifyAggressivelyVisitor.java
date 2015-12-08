@@ -138,7 +138,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
         } else if (child instanceof FOperator) {
             return child;
         } else if (child instanceof XOperator) {
-            return FormulaFactory.mkX(FormulaFactory.mkF(((FormulaUnary) child).operand)).accept(this);
+            return FormulaFactory.mkX(FormulaFactory.mkF(((ModalOperator) child).operand)).accept(this);
         } else if (child instanceof Disjunction) {
             ArrayList<Formula> newChildren = ((PropositionalFormula) child).children.stream().map(FormulaFactory::mkF).collect(Collectors.toCollection(ArrayList::new));
             return FormulaFactory.mkOr(newChildren).accept(this);
@@ -149,12 +149,10 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
 
     public Formula visit(GOperator g) {
         Formula child = g.operand.accept(this);
-        if (child instanceof BooleanConstant) {
-            return child;
-        } else if (child instanceof GOperator) {
+        if (child instanceof BooleanConstant || child instanceof GOperator) {
             return child;
         } else if (child instanceof XOperator) {
-            return FormulaFactory.mkX(FormulaFactory.mkG(((FormulaUnary) child).operand)).accept(this);
+            return FormulaFactory.mkX(FormulaFactory.mkG(((ModalOperator) child).operand)).accept(this);
         }
         return FormulaFactory.mkG(child);
     }
@@ -170,9 +168,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
             Formula l = u.left.accept(this);
             Formula r = u.right.accept(this);
             ImplicationVisitor imp = ImplicationVisitor.getVisitor();
-            if (l.accept(imp, r)) {
-                return r;
-            } else if (r instanceof BooleanConstant) {
+            if (l.accept(imp, r) || r instanceof BooleanConstant) {
                 return r;
             } else if (l instanceof BooleanConstant) {
                 if (((BooleanConstant) l).value) {
@@ -190,7 +186,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
             } else if (l instanceof GOperator) {
                 return FormulaFactory.mkOr(FormulaFactory.mkAnd(l, FormulaFactory.mkF(r)), r).accept(this);
             } else if (l instanceof XOperator && r instanceof XOperator) {
-                return FormulaFactory.mkX(FormulaFactory.mkU(((FormulaUnary) l).operand, ((FormulaUnary) r).operand));
+                return FormulaFactory.mkX(FormulaFactory.mkU(((ModalOperator) l).operand, ((ModalOperator) r).operand));
             }
             return FormulaFactory.mkU(l, r);
         }

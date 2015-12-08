@@ -1,34 +1,26 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package rabinizer.ltl;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
  * @author jkretinsky
  */
-public abstract class FormulaUnary extends Formula {
+public abstract class ModalOperator extends Formula {
 
     public final Formula operand;
 
-    protected FormulaUnary(Formula operand) {
+    protected ModalOperator(Formula operand) {
         this.operand = operand;
     }
 
     @Override
     public String toString() {
-        if (cachedString == null) {
-            cachedString = operator() + operand;
-        }
-        return cachedString;
+        return getOperator() + operand.toString();
     }
 
     @Override
@@ -38,13 +30,13 @@ public abstract class FormulaUnary extends Formula {
 
     @Override
     // to be overrridden by GOperator
-    public Set<Formula> gSubformulas() {
+    public Set<GOperator> gSubformulas() {
         return operand.gSubformulas();
     }
 
     @Override
     // to be overrridden by GOperator
-    public Set<Formula> topmostGs() {
+    public Set<GOperator> topmostGs() {
         return operand.topmostGs();
     }
 
@@ -63,7 +55,7 @@ public abstract class FormulaUnary extends Formula {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        FormulaUnary that = (FormulaUnary) o;
+        ModalOperator that = (ModalOperator) o;
         return Objects.equals(operand, that.operand);
     }
 
@@ -72,7 +64,10 @@ public abstract class FormulaUnary extends Formula {
         return Objects.hash(operand);
     }
 
-    public abstract String operator();
+    @Override
+    public Formula temporalStep(Set<String> valuation) {
+        return this;
+    }
 
     @Override
     public Set<Formula> getPropositions() {
@@ -85,4 +80,26 @@ public abstract class FormulaUnary extends Formula {
     public Set<String> getAtoms() {
         return operand.getAtoms();
     }
+
+    @Override
+    public Formula evaluate(Literal literal) {
+        return this;
+    }
+
+    public Formula getOperand() {
+        return operand;
+    }
+
+    @Override
+    public Formula evaluate(Set<GOperator> Gs) {
+        return this;
+    }
+
+    @Override
+    public Optional<Literal> getAnUnguardedLiteral() {
+        return Optional.empty();
+    }
+
+    protected abstract char getOperator();
+
 }

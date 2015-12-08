@@ -1,12 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.ltl;
 
+import com.google.common.collect.Sets;
+
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -15,12 +11,7 @@ import java.util.Set;
 public abstract class FormulaNullary extends Formula {
 
     @Override
-    public Formula unfold() {
-        return this;
-    }
-
-    @Override
-    public Formula unfoldNoG() {
+    public Formula unfold(boolean unfoldG) {
         return this;
     }
 
@@ -30,12 +21,17 @@ public abstract class FormulaNullary extends Formula {
     }
 
     @Override
-    public Set<Formula> gSubformulas() {
-        return new HashSet<>();
+    public FormulaNullary evaluate(Set<GOperator> Gs) {
+        return this;
     }
 
     @Override
-    public Set<Formula> topmostGs() {
+    public Set<GOperator> gSubformulas() {
+        return Sets.newHashSet();
+    }
+
+    @Override
+    public Set<GOperator> topmostGs() {
         return Collections.emptySet();
     }
 

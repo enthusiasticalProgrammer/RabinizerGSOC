@@ -3,7 +3,10 @@ package rabinizer.ltl;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -12,7 +15,7 @@ import java.util.stream.Stream;
  */
 public final class Conjunction extends PropositionalFormula {
 
-    public Conjunction(Collection<Formula> conjuncts) {
+    public Conjunction(Collection<? extends Formula> conjuncts) {
         super(conjuncts);
     }
 
@@ -20,25 +23,11 @@ public final class Conjunction extends PropositionalFormula {
         super(conjuncts);
     }
 
-    public Conjunction(Stream<Formula> formulaStream) {
+    public Conjunction(Stream<? extends Formula> formulaStream) {
         super(formulaStream);
     }
 
-    @Override
-    public Formula ThisTypeBoolean(Collection<Formula> af) {
-        return FormulaFactory.mkAnd(af);
-    }
-
-    @Override
-    public String operator() {
-        return "&";
-    }
-
-    @Override
-    public Formula not() {
-        return new Disjunction(children.stream().map(Formula::not).collect(Collectors.toSet()));
-    }
-
+    @Deprecated
     @Override
     public BoolExpr toExpr(Context ctx) {
         if (cachedLTL == null) {
@@ -50,24 +39,9 @@ public final class Conjunction extends PropositionalFormula {
         return cachedLTL;
     }
 
-    /**
-     * helps the SimplifyBooleanVisitor
-     * 
-     * @return every non-conjunction child of this Conjunction, and the children
-     *         of the Conjunction-children
-     */
-    protected Set<Formula> getAllChildrenOfConjunction() {
-        Set<Formula> al = new HashSet<>(children.size());
-
-        for (Formula child : children) {
-            if (child instanceof Conjunction) {
-                al.addAll(((Conjunction) child).getAllChildrenOfConjunction());
-            } else {
-                al.add(child);
-            }
-        }
-
-        return al;
+    @Override
+    public Formula not() {
+        return new Disjunction(children.stream().map(Formula::not));
     }
 
     @Override
@@ -86,17 +60,32 @@ public final class Conjunction extends PropositionalFormula {
     }
 
     @Override
-    public boolean isPureEventual() {
-        return children.stream().allMatch(Formula::isPureEventual);
+    protected char getOperator() {
+        return '&';
     }
 
     @Override
-    public boolean isPureUniversal() {
-        return children.stream().allMatch(Formula::isPureUniversal);
+    protected PropositionalFormula create(Stream<? extends Formula> formulaStream) {
+        return new Conjunction(formulaStream);
     }
 
-    @Override
-    public boolean isSuspendable() {
-        return children.stream().allMatch(Formula::isSuspendable);
+    /**
+     * helps the SimplifyBooleanVisitor
+     *
+     * @return every non-conjunction child of this Conjunction, and the children
+     * of the Conjunction-children
+     */
+    protected Set<Formula> getAllChildrenOfConjunction() {
+        Set<Formula> al = new HashSet<>(children.size());
+
+        for (Formula child : children) {
+            if (child instanceof Conjunction) {
+                al.addAll(((Conjunction) child).getAllChildrenOfConjunction());
+            } else {
+                al.add(child);
+            }
+        }
+
+        return al;
     }
 }

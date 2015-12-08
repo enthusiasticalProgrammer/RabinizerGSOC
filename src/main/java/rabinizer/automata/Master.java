@@ -22,7 +22,7 @@ public class Master extends FormulaAutomaton {
 
     @Override
     public FormulaState generateInitialState() {
-        FormulaState init = new FormulaState(equivalenceClassFactory.createEquivalenceClass(formula.unfold()));
+        FormulaState init = new FormulaState(equivalenceClassFactory.createEquivalenceClass(formula.unfold(true)));
         stateLabels.put(init, formula);
         return init;
     }
@@ -30,7 +30,7 @@ public class Master extends FormulaAutomaton {
     @Override
     public FormulaState generateSuccState(FormulaState s, ValuationSet vs) {
         Formula label = s.getFormula().temporalStep(vs.pickAny()); // any element of the equivalence class
-        FormulaState state = new FormulaState(equivalenceClassFactory.createEquivalenceClass(label.unfold()));
+        FormulaState state = new FormulaState(equivalenceClassFactory.createEquivalenceClass(label.unfold(true)));
         if (!states.contains(state)) {
             stateLabels.put(state, label);
         }

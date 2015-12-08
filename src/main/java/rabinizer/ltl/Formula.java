@@ -2,7 +2,6 @@ package rabinizer.ltl;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
-import rabinizer.automata.GSet;
 import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 
 import java.util.Collections;
@@ -16,7 +15,6 @@ import java.util.stream.Collectors;
  */
 public abstract class Formula {
 
-    String cachedString;
     BoolExpr cachedLTL;
     private int cachedHashCode;
 
@@ -29,28 +27,33 @@ public abstract class Formula {
         return cachedHashCode;
     }
 
-    protected abstract int hashCodeOnce();
-
     @Override
     public abstract boolean equals(Object o);
 
+    @Deprecated
     public abstract BoolExpr toExpr(Context ctx);
 
     public abstract boolean hasSubformula(Formula f);
 
-    public abstract Set<Formula> gSubformulas();
+    public abstract Set<GOperator> gSubformulas();
 
-    public abstract Set<Formula> topmostGs();
+    public abstract Set<GOperator> topmostGs();
 
-    // unfold everything, used in master automaton
-    public abstract Formula unfold();
+    /**
+     * Unfold temporal operators. This is also called LTL Formula expansion.
+     *
+     * @param unfoldG If unfoldG is set to true the G-operator is also unfolded. This is used in for the master transition system.
+     * @return The unfolded formula
+     */
+    public abstract Formula unfold(boolean unfoldG);
 
-    // unfold everything but G's, used in slave automata
-    public abstract Formula unfoldNoG();
-
-    public Formula temporalStep(Set<String> valuation) {
-        return this.evaluate(valuation).removeX();
-    }
+    /**
+     * Do a single temporal step. This means that one layer of X-operators is removed and literals are replaced by their valuations.
+     *
+     * @param valuation
+     * @return
+     */
+    public abstract Formula temporalStep(Set<String> valuation);
 
     // TODO: is with the outer G (not GSet)
     public Set<Formula> relevantGFormulas(Set<Formula> candidates) {
@@ -62,8 +65,7 @@ public abstract class Formula {
         Set<Formula> result = new HashSet<>();
 
         EquivalenceClassFactory factory = new BDDEquivalenceClassFactory(getPropositions());
-        EquivalenceClass clazz = factory.createEquivalenceClass(this.unfold());
-
+        EquivalenceClass clazz = factory.createEquivalenceClass(this.unfold(true));
         result.addAll(candidates.stream().filter(subFormula -> hasSubformula(subFormula) && !clazz.getSimplifiedRepresentative().ignoresG(subFormula)).collect(Collectors.toList()));
 
         return result;
@@ -71,35 +73,14 @@ public abstract class Formula {
 
     public abstract Formula not();
 
-    // =============================================================
-    // to be overridden by Boolean and Literal
-    public Formula evaluate(Set<String> valuation) {
-        return this;
-    }
+    public abstract Formula evaluate(Literal literal);
 
-    // to be overridden by Boolean and Literal
-    public Formula evaluate(Literal literal) {
-        return this;
-    }
+    public abstract Formula evaluate(Set<GOperator> Gs);
 
-    // to be overridden by Boolean and Literal
-    public Optional<Literal> getAnUnguardedLiteral() {
-        return Optional.empty();
-    }
-
-    // to be overridden by Boolean and XOperator
-    public Formula removeX() {
-        return this;
-    }
-
-    // to be overridden by Boolean and GOperator
-    public Formula substituteGsToFalse(GSet gSet) {
-        return this;
-    }
+    public abstract Optional<Literal> getAnUnguardedLiteral();
 
     // to be overridden by Boolean
     public boolean ignoresG(Formula f) {
-        // return false;
         return !hasSubformula(f);
     }
 
@@ -128,4 +109,5 @@ public abstract class Formula {
 
     public abstract boolean isSuspendable();
 
+    protected abstract int hashCodeOnce();
 }

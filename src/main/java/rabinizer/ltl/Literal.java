@@ -28,24 +28,16 @@ public final class Literal extends FormulaNullary {
 
     @Override
     public String toString() {
-        if (cachedString == null) {
-            cachedString = (negated ? "!" : "") + atom;
-        }
-        return cachedString;
-    }
-
-    @Override
-    public Formula evaluate(Set<String> valuation) {
-        return BooleanConstant.get(valuation.contains(atom) ^ negated);
+        return negated ? '!' + atom : atom;
     }
 
     @Override
     public Formula evaluate(Literal literal) {
-        if (!literal.atom.equals(this.atom)) {
-            return this;
-        } else {
+        if (literal.atom.equals(this.atom)) {
             return BooleanConstant.get(literal.negated == this.negated);
         }
+
+        return this;
     }
 
     @Override
@@ -58,9 +50,9 @@ public final class Literal extends FormulaNullary {
         return Optional.of(this);
     }
 
+    @Deprecated
     @Override
     public BoolExpr toExpr(Context ctx) {
-
         if (cachedLTL == null) {
             cachedLTL = ctx.mkBoolConst(atom);
             if (negated) {
@@ -68,6 +60,11 @@ public final class Literal extends FormulaNullary {
             }
         }
         return cachedLTL;
+    }
+
+    @Override
+    public Formula temporalStep(Set<String> valuation) {
+        return BooleanConstant.get(valuation.contains(atom) ^ negated);
     }
 
     @Override

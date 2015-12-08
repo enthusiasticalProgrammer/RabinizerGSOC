@@ -6,10 +6,10 @@
 package rabinizer.ltl;
 
 import com.google.common.collect.ImmutableSet;
-import rabinizer.automata.GSet;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
@@ -17,9 +17,9 @@ import java.util.stream.Stream;
  */
 public abstract class PropositionalFormula extends Formula {
 
-    final Set<Formula> children;
+    protected final Set<Formula> children;
 
-    protected PropositionalFormula(Collection<Formula> children) {
+    protected PropositionalFormula(Collection<? extends Formula> children) {
         this.children = ImmutableSet.copyOf(children);
     }
 
@@ -27,37 +27,23 @@ public abstract class PropositionalFormula extends Formula {
         this.children = ImmutableSet.copyOf(children);
     }
 
-    public PropositionalFormula(Stream<Formula> formulaStream) {
+    protected PropositionalFormula(Stream<? extends Formula> formulaStream) {
         this.children = ImmutableSet.copyOf(formulaStream.iterator());
     }
 
-    public abstract Formula ThisTypeBoolean(Collection<Formula> children);
-
     @Override
-    public Formula unfold() {
-        Set<Formula> unfolded = children.stream().map(Formula::unfold).collect(Collectors.toSet());
-        return ThisTypeBoolean(unfolded);
-    }
-
-    @Override
-    public Formula unfoldNoG() {
-        Set<Formula> unfoldedNoG = children.stream().map(Formula::unfoldNoG).collect(Collectors.toSet());
-        return ThisTypeBoolean(unfoldedNoG);
-    }
-
-    @Override
-    public Formula evaluate(Set<String> valuation) {
-        return ThisTypeBoolean(children.stream().map(c -> c.evaluate(valuation)).collect(Collectors.toSet()));
+    public Formula unfold(boolean unfoldG) {
+        return create(children.stream().map(c -> c.unfold(unfoldG)));
     }
 
     @Override
     public Formula evaluate(Literal literal) {
-        return ThisTypeBoolean(children.stream().map(c -> c.evaluate(literal)).collect(Collectors.toSet()));
+        return create(children.stream().map(c -> c.evaluate(literal)));
     }
 
     @Override
-    public Formula removeX() {
-        return ThisTypeBoolean(children.stream().map(Formula::removeX).collect(Collectors.toSet()));
+    public Formula evaluate(Set<GOperator> Gs) {
+        return create(children.stream().map(c -> c.evaluate(Gs)));
     }
 
     @Override
@@ -74,21 +60,16 @@ public abstract class PropositionalFormula extends Formula {
     }
 
     @Override
-    public Set<Formula> topmostGs() {
-        Set<Formula> result = new HashSet<>();
-        for (Formula child : children) {
-            result.addAll(child.topmostGs());
-        }
-        return result;
+    public Set<GOperator> topmostGs() {
+        return collect(Formula::topmostGs);
     }
 
     @Override
     public boolean ignoresG(Formula f) {
-
-        if (!hasSubformula(f)) {
-            return true;
-        } else {
+        if (hasSubformula(f)) {
             return children.stream().allMatch(c -> c.ignoresG(f));
+        } else {
+            return true;
         }
     }
 
@@ -108,40 +89,34 @@ public abstract class PropositionalFormula extends Formula {
     }
 
     @Override
-    public Formula substituteGsToFalse(GSet gSet) {
-        Set<Formula> gSubstituted = children.stream().map(child -> child.substituteGsToFalse(gSet)).collect(Collectors.toSet());
-        return ThisTypeBoolean(gSubstituted);
-    }
-
-    @Override
-    public Set<Formula> gSubformulas() {
-        Set<Formula> gSub = new HashSet<>();
-        for (Formula child : children) {
-            gSub.addAll(child.gSubformulas());
-        }
-        return gSub;
+    public Set<GOperator> gSubformulas() {
+        return collect(Formula::gSubformulas);
     }
 
     @Override
     public boolean hasSubformula(Formula f) {
-        boolean subform = this.equals(f);
-        for (Formula child : children) {
-            subform = subform || child.hasSubformula(f);
-        }
-        return subform;
+        return this.equals(f) || anyMatch(c -> c.hasSubformula(f));
     }
 
     @Override
     public String toString() {
-        if (cachedString == null) {
-            cachedString = "(";
-            for (Formula child : children) {
-                cachedString = cachedString + (cachedString.equals("(") ? "" : operator()) + child;
-            }
-            cachedString = cachedString + ")";
+        StringBuilder s = new StringBuilder(3 * children.size());
 
+        s.append('(');
+
+        Iterator<Formula> iter = children.iterator();
+
+        while (iter.hasNext()) {
+            s.append(iter.next());
+
+            if (iter.hasNext()) {
+                s.append(getOperator());
+            }
         }
-        return cachedString;
+
+        s.append(')');
+
+        return s.toString();
     }
 
     @Override
@@ -154,25 +129,55 @@ public abstract class PropositionalFormula extends Formula {
         return Objects.equals(children, that.children);
     }
 
-    @Override
-    protected int hashCodeOnce() {
-        return Objects.hash(children);
-    }
-
-    public abstract String operator();
-
     public Set<Formula> getChildren() {
         return children;
     }
 
     @Override
     public Set<String> getAtoms() {
-        Set<String> atoms = new HashSet<>();
+        return collect(Formula::getAtoms);
+    }
 
-        for (Formula child : children) {
-            atoms.addAll(child.getAtoms());
-        }
+    @Override
+    public boolean isPureEventual() {
+        return allMatch(Formula::isPureEventual);
+    }
 
-        return atoms;
+    @Override
+    public boolean isPureUniversal() {
+        return allMatch(Formula::isPureUniversal);
+    }
+
+    @Override
+    public boolean isSuspendable() {
+        return allMatch(Formula::isSuspendable);
+    }
+
+    @Override
+    public Formula temporalStep(Set<String> valuation) {
+        return create(children.stream().map(c -> c.temporalStep(valuation)));
+    }
+
+    protected abstract PropositionalFormula create(Stream<? extends Formula> formulaStream);
+
+    @Override
+    protected int hashCodeOnce() {
+        return Objects.hash(children);
+    }
+
+    protected abstract char getOperator();
+
+    private <E> Set<E> collect(Function<Formula, Collection<E>> f) {
+        Set<E> set = new HashSet<>();
+        children.forEach(c -> set.addAll(f.apply(c)));
+        return set;
+    }
+
+    private boolean anyMatch(Predicate<Formula> p) {
+        return children.stream().anyMatch(p);
+    }
+
+    private boolean allMatch(Predicate<Formula> p) {
+        return children.stream().allMatch(p);
     }
 }

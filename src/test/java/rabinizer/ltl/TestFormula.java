@@ -1,6 +1,7 @@
 package rabinizer.ltl;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -199,18 +200,18 @@ public class TestFormula {
         Formula f0 = FormulaFactory.mkLit("p0", false);
         Formula f1 = FormulaFactory.mkLit("p1", false);
         Formula f2 = FormulaFactory.mkU(f0, f1);
-        Formula f3 = f2.unfold();
+        Formula f3 = f2.unfold(true);
         Formula f4 = FormulaFactory.mkOr(f1, FormulaFactory.mkAnd(f0, f2));
         assertEquals(f3, f4);
     }
 
     @Test
     public void testAssertValuation1() {
-        Formula f1 = FormulaFactory.mkLit("p2", true);
+        Formula f1 = FormulaFactory.mkLit("p2", false);
         Formula f2 = FormulaFactory.mkG(f1);
         Formula f3 = FormulaFactory.mkAnd(f2, f1);
 
-        assertEquals(f3.evaluate(Collections.emptySet()), BooleanConstant.get(false));
+        assertEquals(FormulaFactory.simplify(f3.temporalStep(Collections.emptySet())), BooleanConstant.get(false));
     }
 
     @Test
@@ -224,14 +225,14 @@ public class TestFormula {
         Formula f6 = FormulaFactory.mkAnd(f1, f3);
         Formula f7 = FormulaFactory.mkOr(f2, f5, f6);
 
-        assertEquals(f7.evaluate(ImmutableSet.of("p0", "p2")), BooleanConstant.get(false));
+        assertEquals(FormulaFactory.simplify(f7.evaluate(new Literal("p0", false)).evaluate(new Literal("p2", false))), BooleanConstant.get(false));
     }
 
     @Test
     public void testAssertValuation3() {
         Formula f1 = FormulaFactory.mkLit("p2", true);
         Formula f4 = FormulaFactory.mkG(f1);
-        Formula f5 = f4.unfold();
+        Formula f5 = f4.unfold(true);
         assertEquals(f5.temporalStep(Collections.singleton("p2")), BooleanConstant.get(false));
     }
 
@@ -246,13 +247,10 @@ public class TestFormula {
 
     @Test
     public void gSubformulas() {
-
         Formula f1 = FormulaFactory.mkLit("p1", false);
         Formula f2 = FormulaFactory.mkF(FormulaFactory.mkG(f1));
-        Set<Formula> test = new HashSet<Formula>();
-        test.add(f1);
 
-        assertEquals(test, f2.gSubformulas());
+        assertEquals(Collections.singleton(new GOperator(f1)), f2.gSubformulas());
     }
 
     @Test
@@ -283,7 +281,8 @@ public class TestFormula {
         Formula f4 = FormulaFactory.mkG(f2);
         Formula f5 = FormulaFactory.mkAnd(f3, f4);
         Formula f6 = FormulaFactory.mkAnd(f5, f1, f2);
-        assertEquals(f6, f5.unfold());
+
+        assertEquals(f6, FormulaFactory.simplify(f5.unfold(true)));
     }
 
     @Test

@@ -8,6 +8,7 @@ package rabinizer.automata;
 import rabinizer.exec.Main;
 import rabinizer.ltl.EquivalenceClassFactory;
 import rabinizer.ltl.Formula;
+import rabinizer.ltl.GOperator;
 import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.HashSet;
@@ -52,7 +53,7 @@ public class AccTGRRaw extends HashSet<GRabinPairRaw> {
         allTrans = accLocal.allTrans;
         this.valuationSetFactory = factory;
         this.equivalenceClassFactory = factory2;
-        for (GSet gSet : accLocal.accMasterOptions.keySet()) {
+        for (Set<GOperator> gSet : accLocal.accMasterOptions.keySet()) {
             Main.verboseln("\tGSet " + gSet);
             for (Map<Formula, Integer> ranking : accLocal.accMasterOptions.get(gSet).keySet()) {
                 Main.verboseln("\t  Ranking " + ranking);
@@ -60,7 +61,7 @@ public class AccTGRRaw extends HashSet<GRabinPairRaw> {
                 Set<TranSet<ProductState>> Infs = new HashSet<>();
                 Fin.addAll((TranSet<ProductState>) accLocal.accMasterOptions.get(gSet).get(ranking).left);
                 for (Formula f : gSet) {
-                    GSet localGSet = new GSet(gSet, equivalenceClassFactory);
+                    Set<GOperator> localGSet = new HashSet<>(gSet);
                     localGSet.retainAll(accLocal.topmostGs.get(f));
                     RabinPair fPair = accLocal.accSlavesOptions.get(f).get(localGSet).get(ranking.get(f));
                     Fin.addAll((TranSet<ProductState>) fPair.left);

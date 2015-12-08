@@ -55,7 +55,7 @@ public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
 
     public Boolean visit(FOperator f, Formula fo) {
         if (fo instanceof FOperator) {
-            return f.operand.accept(this, ((FormulaUnary) fo).operand);
+            return f.operand.accept(this, ((ModalOperator) fo).operand);
         }
         return false;
     }
@@ -80,17 +80,15 @@ public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
                 imp = imp || g.accept(this, fochild);
             }
             return imp;
-        } else if (fo instanceof FOperator) {
-            return g.accept(this, ((FormulaUnary) fo).operand);
-        } else if (fo instanceof GOperator) {
-            return g.accept(this, ((FormulaUnary) fo).operand);
+        } else if (fo instanceof FOperator || fo instanceof GOperator) {
+            return g.accept(this, ((ModalOperator) fo).operand);
         } else if (fo instanceof Literal) {
             return g.operand.accept(this, fo);
         } else if (fo instanceof UOperator) {
             return g.accept(this, ((UOperator) fo).right) || g.accept(this, FormulaFactory
                     .mkAnd(FormulaFactory.mkG(((UOperator) fo).left), FormulaFactory.mkF(((UOperator) fo).right)));
         } else if (fo instanceof XOperator) {
-            return g.accept(this, ((FormulaUnary) fo).operand) || g.operand.accept(this, fo);
+            return g.accept(this, ((ModalOperator) fo).operand) || g.operand.accept(this, fo);
         }
         return false;
     }
@@ -112,7 +110,7 @@ public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
         } else if (fo instanceof BooleanConstant) {
             return ((BooleanConstant) fo).value;
         } else if (fo instanceof FOperator) {
-            return l.accept(this, ((FormulaUnary) fo).operand);
+            return l.accept(this, ((ModalOperator) fo).operand);
         }
         return false;
     }
@@ -124,7 +122,7 @@ public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
         if (fo instanceof UOperator) {
             return u.left.accept(this, ((UOperator) fo).left) && u.right.accept(this, ((UOperator) fo).right);
         } else if (fo instanceof FOperator) {
-            return u.right.accept(this, ((FormulaUnary) fo).operand);
+            return u.right.accept(this, ((ModalOperator) fo).operand);
         } else {
             return FormulaFactory.mkAnd(u.left, u.right).accept(SimplifyAggressivelyVisitor.getVisitor()).accept(this,
                     fo);
@@ -151,16 +149,12 @@ public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
             }
             return imp;
         } else if (fo instanceof FOperator) {
-            return x.operand.accept(this, fo) || x.accept(this, ((FormulaUnary) fo).operand)
-                    || x.operand.accept(this, ((FormulaUnary) fo).operand);
-        } else if (fo instanceof GOperator) {
-            return false;
-        } else if (fo instanceof Literal) {
-            return false;
-        } else if (fo instanceof UOperator) {
+            return x.operand.accept(this, fo) || x.accept(this, ((ModalOperator) fo).operand)
+                    || x.operand.accept(this, ((ModalOperator) fo).operand);
+        } else if (fo instanceof GOperator || fo instanceof Literal || fo instanceof UOperator) {
             return false;
         } else if (fo instanceof XOperator) {
-            return x.operand.accept(this, ((FormulaUnary) fo).operand);
+            return x.operand.accept(this, ((ModalOperator) fo).operand);
         }
         return false;
 
