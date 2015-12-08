@@ -95,11 +95,19 @@ class BDDLibraryWrapper<K extends Formula> {
 
         @Override
         public BDD visit(Conjunction c) {
+            if (c.getChildren().contains(BooleanConstant.FALSE)) {
+                return factory.zero();
+            }
+
             return c.getChildren().stream().map(x -> x.accept(this)).reduce(factory.one(), BDD::andWith);
         }
 
         @Override
         public BDD visit(Disjunction d) {
+            if (d.getChildren().contains(BooleanConstant.TRUE)) {
+                return factory.one();
+            }
+
             return d.getChildren().stream().map(x -> x.accept(this)).reduce(factory.zero(), BDD::orWith);
         }
 
