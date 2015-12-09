@@ -100,16 +100,6 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
         return "\n{" + accSGR.accSets(s) + "}";
     }
 
-    @Override
-    protected String outTransToHOA(ProductAccState s) {
-        String result = "";
-        for (ValuationSet vs : transitions.get(s).keySet()) {
-            result += "[" + vs.toFormula() + "] "
-                    + statesToNumbers.get(transitions.get(s).get(vs)) + "\n";
-        }
-        return result;
-    }
-
     public int pairNumber() {
         return accSGR.size();
     }

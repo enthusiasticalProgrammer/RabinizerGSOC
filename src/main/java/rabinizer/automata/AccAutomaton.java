@@ -7,12 +7,14 @@ package rabinizer.automata;
 
 import rabinizer.ltl.ValuationSetFactory;
 
+import java.util.Map;
+
 /**
  * @author jkretinsky
  */
 public abstract class AccAutomaton<State> extends Automaton<State> {
 
-    public AccAutomaton(ValuationSetFactory<String> valuationSetFactory) {
+    protected AccAutomaton(ValuationSetFactory<String> valuationSetFactory) {
         super(valuationSetFactory);
     }
 
@@ -23,6 +25,6 @@ public abstract class AccAutomaton<State> extends Automaton<State> {
     protected abstract String stateAcc(State s);
 
     @Override
-    protected abstract String outTransToHOA(State s);
+    protected abstract String outTransToHOA(State s, Map<State, Integer> statesToNumbers);
 
 }

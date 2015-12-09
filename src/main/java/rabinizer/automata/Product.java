@@ -71,20 +71,20 @@ public class Product extends Automaton<ProductState> {
     @Override
     protected Set<ValuationSet> generateSuccTransitions(ProductState s) {
         Set<Set<ValuationSet>> product = new HashSet<>();
-        product.add(master.transitions.get(s.masterState).keySet());
+        product.add(master.transitions.row(s.masterState).keySet());
         for (Map.Entry<Formula, RankingState> formulaRankingStateEntry : s.entrySet()) {
-            product.add(slaves.get(formulaRankingStateEntry.getKey()).transitions.get(formulaRankingStateEntry.getValue()).keySet());
+            product.add(slaves.get(formulaRankingStateEntry.getKey()).transitions.row(formulaRankingStateEntry.getValue()).keySet());
         }
         return generatePartitioning(product);
     }
 
     Set<ValuationSet> generateSuccTransitionsReflectingSinks(ProductState s) {
         Set<Set<ValuationSet>> product = new HashSet<>();
-        product.add(master.transitions.get(s.masterState).keySet());
+        product.add(master.transitions.row(s.masterState).keySet());
         for (Formula slaveFormula : s.keySet()) {
             FormulaAutomaton m = slaves.get(slaveFormula).mojmir;
             for (FormulaState fs : m.states) {
-                product.add(m.transitions.get(fs).keySet());
+                product.add(m.transitions.row(fs).keySet());
             }
         }
         product.removeIf(Set::isEmpty); // removing empty trans due to sinks

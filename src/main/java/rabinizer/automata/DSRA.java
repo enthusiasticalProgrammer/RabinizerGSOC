@@ -107,16 +107,6 @@ public class DSRA extends Automaton<ProductDegenAccState> implements AccAutomato
         return accSR.accSets(s);
     }
 
-    @Override
-    protected String outTransToHOA(ProductDegenAccState s) {
-        String result = "";
-        for (ValuationSet vs : transitions.get(s).keySet()) {
-            result += "[" + vs.toFormula() + "] "
-                    + statesToNumbers.get(transitions.get(s).get(vs)) + "\n";
-        }
-        return result;
-    }
-
     public int pairNumber() {
         return accSR.size() / 2;
     }

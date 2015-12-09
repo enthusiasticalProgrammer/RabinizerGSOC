@@ -1,12 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.automata;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import rabinizer.exec.Main;
-import rabinizer.exec.Tuple;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
@@ -18,43 +14,33 @@ import java.util.*;
  */
 public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
 
-    public Set<State> states;
-    public Map<State, HashMap<ValuationSet, State>> transitions;
-    public State initialState;
-    public Set<State> sinks;
-    //AccCondition accCondition;
-    public Map<Tuple<State, State>, ValuationSet> edgeBetween;
-    public Map<State, Integer> statesToNumbers = null;
+    protected Set<State> states;
+    protected Set<State> sinks;
+    protected Table<State, ValuationSet, State> transitions;
+    protected Table<State, State, ValuationSet> edgeBetween;
+    protected State initialState;
 
     protected final ValuationSetFactory<String> valuationSetFactory;
 
-    public Automaton(ValuationSetFactory<String> valuationSetFactory) {
+    protected Automaton(ValuationSetFactory<String> valuationSetFactory) {
         states = new HashSet<>();
-        transitions = new HashMap<>();
-        initialState = null;
         sinks = new HashSet<>();
-        //stateLabels = new HashMap();
-        edgeBetween = new HashMap<>();
-        statesToNumbers = new HashMap<>();
+
+        transitions = HashBasedTable.create();
+        edgeBetween = HashBasedTable.create();
+
         this.valuationSetFactory = valuationSetFactory;
-        //this.generate();
     }
 
-    public Automaton(Automaton<State> a) {
+    protected Automaton(Automaton<State> a) {
         states = a.states;
         transitions = a.transitions;
         initialState = a.initialState;
         sinks = a.sinks;
         edgeBetween = a.edgeBetween;
-        statesToNumbers = a.statesToNumbers;
         this.valuationSetFactory = a.valuationSetFactory;
     }
 
-    /*
-     protected String nameOfState(State s) {
-     return stateLabels.get(s);
-     }
-     */
     // TODO to abstract ProductAutomaton ?
     protected Set<ValuationSet> generatePartitioning(Set<Set<ValuationSet>> product) {
         Set<ValuationSet> partitioning = new HashSet<>();
@@ -83,79 +69,81 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
 
     protected abstract Set<ValuationSet> generateSuccTransitions(State s);
 
-    public Automaton<State> generate() {
+    public void generate() {
         initialState = generateInitialState();
         states.add(initialState);
-        //stateLabels.put(initialState, init.right);
-        statesToNumbers.put(initialState, 0);
+
+        // TODO: Move this to a statistics class
         Main.nonsilent("  Generating automaton for " + initialState);
 
-        Stack<State> workstack = new Stack<>();
-        State curr = initialState;
-        workstack.push(curr);
+        Queue<State> workList = new ArrayDeque<>();
+        workList.add(initialState);
 
-        while (!workstack.empty()) {
-            curr = workstack.pop();
+        while (!workList.isEmpty()) {
+            State curr = workList.remove();
+
             Main.verboseln("\tCurrState: " + curr);
             Set<ValuationSet> succValSets = generateSuccTransitions(curr);
             Main.verboseln("\t  CurrTrans: " + succValSets);
-            //if (succValSets.isEmpty()) {  // TODO empty or true and non-progress or just selfloops?
-            //    sinks.add(curr);
-            //} else {
-            transitions.put(curr, new HashMap<>());
+
+            Map<State, ValuationSet> succMapping = new HashMap<>();
+
+            // Construct all successor states
             for (ValuationSet succVals : succValSets) {
-                if (succVals.isEmpty()) { // TODO: fix generateSuccTransitions
+                // TODO: fix generateSuccTransitions
+                if (succVals.isEmpty()) {
                     continue;
                 }
 
-                //Tuple<State, String> succStateLabel = generateSuccState(curr, succVals);
                 State succ = generateSuccState(curr, succVals);
                 Main.verboseln("\t  SuccState: " + succ);
+
+                // Combine with existing transition
+                ValuationSet vs = succMapping.remove(succ);
+
+                if (vs != null) {
+                    vs.addAll(succVals);
+                } else {
+                    vs = succVals;
+                }
+
+                succMapping.put(succ, vs);
+            }
+
+            // Register all outgoing transitions
+            for (Map.Entry<State, ValuationSet> entry : succMapping.entrySet()) {
+                State succ = entry.getKey();
+                ValuationSet vs = entry.getValue();
+
+                transitions.put(curr, vs, succ);
+                edgeBetween.put(curr, succ, vs);
+
                 if (!states.contains(succ)) {
                     states.add(succ);
-                    statesToNumbers.put(succ, statesToNumbers.size());
-                    //stateLabels.put(succ, succStateLabel.right);
-                    workstack.push(succ);
+                    workList.add(succ);
                 }
-                Tuple<State, State> statePair = new Tuple<>(curr, succ);
-                ValuationSet newVals;
-
-                if (edgeBetween.containsKey(statePair)) {  // update edge
-                    ValuationSet oldVals = edgeBetween.get(statePair);
-                    succVals.addAll(oldVals);
-                    transitions.get(curr).remove(oldVals);
-                    edgeBetween.remove(statePair, oldVals);
-                }
-
-                newVals = succVals;
-                edgeBetween.put(statePair, newVals);
-                transitions.get(curr).put(newVals, succ);
             }
-            //}
+
+            // Mark as a sink
+            if (edgeBetween.contains(curr, curr) && edgeBetween.get(curr, curr).isUniverse()) {
+                sinks.add(curr);
+            }
         }
+
         Main.nonsilent("  Number of states: " + states.size());
-        //Misc.verboseln("\tStates: " + states);
-        //Misc.verboseln("\tEdges:  " + transitions);
-        return this;
     }
 
-    public Automaton<State> useSinks() {
-        for (State s : states) {
-            Tuple<State, State> selfloop = new Tuple<>(s, s);
-            if (edgeBetween.containsKey(selfloop) && edgeBetween.get(selfloop).isUniverse() && !s.equals(initialState)) {
-                //(transitions.get(s).size()==1) && (transitions.get(s).values().contains(s))
-                sinks.add(s);
-                edgeBetween.remove(selfloop);
-                transitions.put(s, new HashMap<>());
-            }
+    public void removeSinks() {
+        for (State s : sinks) {
+            transitions.row(s).clear();
+            edgeBetween.row(s).clear();
         }
-        return this;
     }
 
     public State succ(State s, Set<String> v) {
-        for (ValuationSet vs : transitions.get(s).keySet()) {
+        for (ValuationSet vs : transitions.row(s).keySet()) {
             if (vs.contains(v)) {
-                return transitions.get(s).get(vs);
+                return transitions.get(s, vs);
             }
         }
 
@@ -168,6 +156,7 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
 
     public String toDotty() {
         String r = "digraph \"Automaton for " + initialState + "\" \n{\n";
+
         for (State s : states) {
             /*if (finalStates.contains(s)) {
              r += "node [shape=Msquare, label=\"" + displayLabels.get(s) + "\"]\"" + displayLabels.get(s) + "\";\n";
@@ -178,16 +167,19 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
                 r += "node [shape=rectangle, label=\"" + s + "\"]\"" + s + "\";\n";
             }
         }
-        for (Map.Entry<State, HashMap<ValuationSet, State>> stateHashMapEntry : transitions.entrySet()) {
-            for (Map.Entry<ValuationSet, State> edge : stateHashMapEntry.getValue().entrySet()) {
-                r += "\"" + stateHashMapEntry.getKey() + "\" -> \"" + edge.getValue()
-                        + "\" [label=\"" + edge.getKey() + "\"];\n";
-            }
+
+        for (Table.Cell<State, ValuationSet, State> cell : transitions.cellSet()) {
+            r += "\"" + cell.getRowKey() + "\" -> \"" + cell.getColumnKey() + "\" [label=\"" + cell.getValue() + "\"];\n";
         }
+
         return r + "}";
     }
 
     public String toHOA() {
+        Map<State, Integer> statesToNumbers = new HashMap<>();
+
+        statesToNumbers.put(initialState, 0);
+
         String dot = "";
         dot += "HOA: v1\n";
         dot += "tool: \"Rabinizer\" \"3.1\"\n";
@@ -207,11 +199,12 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
 
         // Map<Tuple<Formula, KState>, Tuple<Formula, KState>> normalStates = new HashMap<Tuple<Formula, KState>, Tuple<Formula, KState>>();        
         for (State s : states) {
+            statesToNumbers.put(s, statesToNumbers.size());
             dot += "State: " + statesToNumbers.get(s) + " \"" + s + "\" " + stateAcc(s) + "\n";
-            dot += outTransToHOA(s);
+            dot += outTransToHOA(s, statesToNumbers);
         }
-        return dot + "--END--\n";
 
+        return dot + "--END--\n";
     }
 
     public String acc() {
@@ -230,14 +223,11 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
         return "";
     }
 
-    protected String outTransToHOA(State s) {
+    protected String outTransToHOA(State s, Map<State, Integer> statesToNumbers) {
         String result = "";
-        for (ValuationSet vs : transitions.get(s).keySet()) {
-            result += "[" + vs.toFormula() + "] "
-                    + statesToNumbers.get(transitions.get(s).get(vs)) + "\n";
+        for (Map.Entry<ValuationSet, State> entry : transitions.row(s).entrySet()) {
+            result += "[" + entry.getKey().toFormula() + "] " + statesToNumbers.get(entry.getValue()) + "\n";
         }
         return result;
     }
-
-
 }

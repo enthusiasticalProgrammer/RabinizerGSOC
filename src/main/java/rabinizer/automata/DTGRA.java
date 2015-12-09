@@ -69,10 +69,10 @@ public class DTGRA extends Product implements AccAutomatonInterface {
     }
 
     @Override
-    protected String outTransToHOA(ProductState s) {
+    protected String outTransToHOA(ProductState s, Map<ProductState, Integer> statesToNumbers) {
         String result = "";
         Set<Set<ValuationSet>> productVs = new HashSet<>();
-        productVs.add(transitions.get(s).keySet());
+        productVs.add(transitions.row(s).keySet());
         Set<ValuationSet> vSets;
         for (GRabinPairT rp : acc) {
             vSets = new HashSet<>();

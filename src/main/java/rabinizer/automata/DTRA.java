@@ -93,10 +93,10 @@ public class DTRA extends AccAutomaton<ProductDegenState> implements AccAutomato
     }
 
     @Override
-    protected String outTransToHOA(ProductDegenState s) {
+    protected String outTransToHOA(ProductDegenState s, Map<ProductDegenState, Integer> statesToNumbers) {
         String result = "";
         Set<Set<ValuationSet>> productVs = new HashSet<>();
-        productVs.add(transitions.get(s).keySet());
+        productVs.add(transitions.row(s).keySet());
         Set<ValuationSet> vSets;
         for (RabinPair<ProductDegenState> rp : accTR) {
             vSets = new HashSet<>();

@@ -78,29 +78,24 @@ public class RabinSlave extends Automaton<RankingState> {
     protected Set<ValuationSet> generateSuccTransitions(RankingState s) {
         Set<Set<ValuationSet>> product = new HashSet<>();
         for (FormulaState fs : s.keySet()) {
-            product.add(mojmir.transitions.get(fs).keySet());
+            product.add(mojmir.transitions.row(fs).keySet());
         }
         return generatePartitioning(product);
     }
 
     public RabinSlave optimizeInitialState() { // TODO better: reach BSCC
-        while (noIncomingTransitions(initialState) && !transitions.get(initialState).isEmpty()) {
+        while (noIncomingTransitions(initialState) && !transitions.row(initialState).isEmpty()) {
             Main.verboseln("Optimizing initial states");
             RankingState oldInit = initialState;
             initialState = succ(initialState, Collections.emptySet());
-            transitions.remove(oldInit);
+            transitions.row(oldInit).clear();
             states.remove(oldInit);
         }
         return this;
     }
 
     private boolean noIncomingTransitions(RankingState in) {
-        for (RankingState out : states) {
-            if (edgeBetween.containsKey(new Tuple<>(out, in))) {
-                return false;
-            }
-        }
-        return true;
+        return !transitions.values().contains(in);
     }
 
 }

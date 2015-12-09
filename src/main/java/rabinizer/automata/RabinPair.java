@@ -37,7 +37,7 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
         TranSet<FormulaState> failM = new TranSet<>(valuationSetFactory);
         for (FormulaState fs : slave.mojmir.states) {
             //if (!slave.mojmir.sinks.contains(fs)) {
-            for (Map.Entry<ValuationSet, FormulaState> vsfs : slave.mojmir.transitions.get(fs).entrySet()) {
+            for (Map.Entry<ValuationSet, FormulaState> vsfs : slave.mojmir.transitions.row(fs).entrySet()) {
                 if (slave.mojmir.sinks.contains(vsfs.getValue()) && !finalStates.get(vsfs.getValue())) {
                     failM.add(fs, vsfs.getKey());
                 }
@@ -62,14 +62,14 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
         TranSet<FormulaState> succeedM = new TranSet<>(valuationSetFactory);
         if (finalStates.get(slave.mojmir.initialState)) {
             for (FormulaState fs : slave.mojmir.states) {
-                for (Map.Entry<ValuationSet, FormulaState> vsfs : slave.mojmir.transitions.get(fs).entrySet()) {
+                for (Map.Entry<ValuationSet, FormulaState> vsfs : slave.mojmir.transitions.row(fs).entrySet()) {
                     succeedM.add(fs, vsfs.getKey());
                 }
             }
         } else {
             for (FormulaState fs : slave.mojmir.states) {
                 if (!finalStates.get(fs)) {
-                    for (Map.Entry<ValuationSet, FormulaState> vsfs : slave.mojmir.transitions.get(fs).entrySet()) {
+                    for (Map.Entry<ValuationSet, FormulaState> vsfs : slave.mojmir.transitions.row(fs).entrySet()) {
                         if (finalStates.get(vsfs.getValue())) {
                             succeedM.add(fs, vsfs.getKey());
                         }
@@ -99,8 +99,8 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
                         for (FormulaState succ : slave.mojmir.states) {
                             ValuationSet vs1, vs2;
                             if (!finalStates.get(succ)
-                                    && ((vs1 = slave.mojmir.edgeBetween.get(new Tuple<>(fs, succ))) != null)
-                                    && ((vs2 = slave.mojmir.edgeBetween.get(new Tuple<>(fs2, succ))) != null)) {
+                                    && ((vs1 = slave.mojmir.edgeBetween.get(fs, succ)) != null)
+                                    && ((vs2 = slave.mojmir.edgeBetween.get(fs2, succ)) != null)) {
                                 if (!fs.equals(fs2)) {
                                     ValuationSet vs1copy = valuationSetFactory.createValuationSet(vs1);
                                     vs1copy.retainAll(vs2);

@@ -8,7 +8,6 @@ package rabinizer.automata;
 import rabinizer.exec.Main;
 import rabinizer.ltl.EquivalenceClassFactory;
 import rabinizer.ltl.Formula;
-import rabinizer.ltl.GOperator;
 import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.HashMap;
@@ -64,7 +63,7 @@ public class DTGRARaw /*implements AccAutomatonInterface*/ {
             }
             mSlave.generate();
             if (sinksOn) {  // selfloop-only states keep no tokens
-                mSlave.useSinks();
+                mSlave.removeSinks();
             }
             RabinSlave rSlave = new RabinSlave(mSlave, valuationSetFactory);
             rSlave.generate();
