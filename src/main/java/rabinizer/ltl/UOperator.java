@@ -75,8 +75,7 @@ public final class UOperator extends Formula {
 
     @Override
     public Formula not() {
-        return FormulaFactory.mkOr(FormulaFactory.mkG(right.not()),
-                FormulaFactory.mkU(right.not(), FormulaFactory.mkAnd(left.not(), right.not())));
+        return new Disjunction(new GOperator(right.not()), new UOperator(right.not(), new Conjunction(left.not(), right.not())));
     }
 
     @Override
