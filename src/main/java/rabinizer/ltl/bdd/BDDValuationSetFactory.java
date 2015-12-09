@@ -34,22 +34,20 @@ public class BDDValuationSetFactory extends BDDLibraryWrapper<Literal> implement
 
     @Override
     public BDDValuationSet createValuationSet(Set<String> valuation) {
-        assert (alphabet.containsAll(valuation));
-
-        Formula f = new Conjunction(valuation.stream().map(s -> new Literal(s, !valuation.contains(s))));
+        Formula f = new Conjunction(alphabet.stream().map(s -> new Literal(s, !valuation.contains(s))));
         BDD bdd = createBDD(f);
         return new BDDValuationSet(bdd, this);
     }
 
     @Override
-    public ValuationSet createValuationSet2(Set<Set<String>> set) {
+    public BDDValuationSet createValuationSet2(Set<Set<String>> set) {
         BDDValuationSet vs = createEmptyValuationSet();
         vs.addAll(set);
         return vs;
     }
 
     @Override
-    public ValuationSet createValuationSet(ValuationSet set) {
+    public BDDValuationSet createValuationSet(ValuationSet set) {
         if (set instanceof BDDValuationSet) {
             return ((BDDValuationSet) set).clone();
         }

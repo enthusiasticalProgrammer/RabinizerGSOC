@@ -37,7 +37,7 @@ public class BDDValuationSet extends AbstractSet<Set<String>> implements Valuati
     public boolean equals(Object o) {
         if (o instanceof BDDValuationSet) {
             BDD otherBDD = ((BDDValuationSet) o).valuations;
-            return otherBDD.biimp(valuations).isOne();
+            return otherBDD.equals(valuations);
         }
 
         return false;
@@ -62,7 +62,7 @@ public class BDDValuationSet extends AbstractSet<Set<String>> implements Valuati
         Set<String> valuation = (Set<String>) o;
         BDDValuationSet set = factory.createValuationSet(valuation);
 
-        return !valuations.andWith(set.valuations).isZero();
+        return !valuations.and(set.valuations).isZero();
     }
 
     @Override
@@ -124,5 +124,10 @@ public class BDDValuationSet extends AbstractSet<Set<String>> implements Valuati
 
         this.valuations = newValue;
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return Sets.newHashSet(this.iterator()).toString();
     }
 }

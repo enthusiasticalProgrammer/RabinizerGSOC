@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -75,5 +76,24 @@ public abstract class ValuationSetTest {
     @Test(expected = NoSuchElementException.class)
     public void testPickAnyNoSuchElement() throws Exception {
         empty.pickAny();
+    }
+
+    @Test
+    public void testIterator() {
+        for (Set<String> valuation : universe) {
+            assertTrue(Sets.powerSet(alphabet).contains(valuation));
+        }
+
+        for (Set<String> valuation : containsA) {
+            assertTrue(valuation.contains("a"));
+        }
+
+        for (Set<String> valuation : abcd) {
+            assertTrue(valuation.containsAll(Arrays.asList("a", "b", "c", "d")));
+        }
+
+        for (Set<String> valuation : empty) {
+            fail("empty should be empty...");
+        }
     }
 }
