@@ -233,7 +233,8 @@ public class TestFormula {
         Formula f1 = FormulaFactory.mkLit("p2", true);
         Formula f4 = FormulaFactory.mkG(f1);
         Formula f5 = f4.unfold(true);
-        assertEquals(f5.temporalStep(Collections.singleton("p2")), BooleanConstant.get(false));
+        Formula f6 = SimplifyBooleanVisitor.simplify(f5.temporalStep(Collections.singleton("p2")));
+        assertEquals(f6, BooleanConstant.get(false));
     }
 
     @Test
@@ -242,7 +243,8 @@ public class TestFormula {
         Formula f2 = FormulaFactory.mkLit("p1", false);
         Formula f3 = FormulaFactory.mkLit("p2", false);
         Formula f4 = FormulaFactory.mkAnd(f1, f2, f3);
-        assertEquals(f4.evaluate((Literal) f1), FormulaFactory.mkAnd(f2, f3));
+        Formula f6 = SimplifyBooleanVisitor.simplify(f4.evaluate((Literal) f1));
+        assertEquals(f6, FormulaFactory.mkAnd(f2, f3));
     }
 
     @Test

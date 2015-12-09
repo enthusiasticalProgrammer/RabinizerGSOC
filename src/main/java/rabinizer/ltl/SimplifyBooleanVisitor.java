@@ -1,18 +1,24 @@
 package rabinizer.ltl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class SimplifyBooleanVisitor implements Visitor<Formula> {
+public final class SimplifyBooleanVisitor implements Visitor<Formula> {
 
-    private static SimplifyBooleanVisitor instance = new SimplifyBooleanVisitor();
+    private final static SimplifyBooleanVisitor instance = new SimplifyBooleanVisitor();
 
     private SimplifyBooleanVisitor() {
+
     }
 
     public static SimplifyBooleanVisitor getVisitor() {
         return instance;
+    }
+
+    public static Formula simplify(Formula formula) {
+        return formula.accept(instance);
     }
 
     @Override
@@ -20,101 +26,71 @@ public class SimplifyBooleanVisitor implements Visitor<Formula> {
         return f;
     }
 
+    private static Set<Formula> flatten(Stream<Formula> workStream, Predicate<PropositionalFormula> shouldUnfold, BooleanConstant breakC, BooleanConstant continueC) {
+        Set<Formula> flattSet = new HashSet<>();
+        Iterator<Formula> iter = workStream.iterator();
+
+        while (iter.hasNext()) {
+            Formula child = iter.next();
+
+            if (breakC.equals(child)) {
+                return Collections.singleton(breakC);
+            }
+
+            if (continueC.equals(child)) {
+                continue;
+            }
+
+            if (child instanceof PropositionalFormula && shouldUnfold.test((PropositionalFormula) child)) {
+                flattSet.addAll(((PropositionalFormula) child).getChildren());
+            } else {
+                flattSet.add(child);
+            }
+        }
+
+        return flattSet;
+    }
+
     @Override
     public Formula visit(Conjunction c) {
-        Set<Formula> set = c.getAllChildrenOfConjunction();
-        ArrayList<Formula> helper = new ArrayList<>();
-        Set<Formula> toRemove = new HashSet<>();
+        Stream<Formula> workStream = c.getChildren().stream().map(e -> e.accept(this));
+        Set<Formula> set = flatten(workStream, e -> e instanceof Conjunction, BooleanConstant.FALSE, BooleanConstant.TRUE);
 
-        for (Formula form : set) {
-            if (form instanceof BooleanConstant) {
-                if (!((BooleanConstant) form).value) {
-                    return BooleanConstant.get(false);
-                }
-                toRemove.add(form);
-            }
+        if (set.isEmpty()) {
+            return BooleanConstant.TRUE;
         }
-        set.removeAll(toRemove);
-        toRemove.clear();
 
-        // put all Literals together (and check for trivial
-        // tautologies/contradictions like a and a /a and !a
-        set.stream().filter(form -> form instanceof Literal).forEach(form -> {
-            helper.add(form);
-            toRemove.add(form);
-
-        });
-        set.removeAll(toRemove);
-        toRemove.clear();
-        for (int i = 0; i < helper.size(); i++) {
-
-            for (int j = helper.size() - 1; j > i; j--) {
-                if (((Literal) helper.get(i)).atom.equals(((Literal) helper.get(j)).atom)) {
-                    if (((Literal) helper.get(i)).negated == (((Literal) helper.get(j)).negated)) {
-                        helper.remove(j);
-                    } else {
-                        return BooleanConstant.get(false);
-                    }
-                }
-            }
+        if (set.size() == 1) {
+            return set.iterator().next();
         }
-        set.addAll(helper);
 
-        if (set.equals(c.children)) {
-            return c;
-        } else {
-            return FormulaFactory.mkAnd(set);
+        // This check may be to strong...
+        if (set.stream().anyMatch(e -> set.contains(e.not()))) {
+            return BooleanConstant.FALSE;
         }
+
+        return new Conjunction(set);
     }
 
     @Override
     public Formula visit(Disjunction d) {
+        Stream<Formula> workStream = d.getChildren().stream().map(e -> e.accept(this));
+        Set<Formula> set = flatten(workStream, e -> e instanceof Disjunction, BooleanConstant.TRUE, BooleanConstant.FALSE);
 
-        Set<Formula> set = d.getAllChildrenOfDisjunction();
-        ArrayList<Formula> helper = new ArrayList<>();
-        Set<Formula> toRemove = new HashSet<>();
-
-        for (Formula form : set) {
-            if (form instanceof BooleanConstant) {
-                if (((BooleanConstant) form).value) {
-                    return BooleanConstant.get(true);
-                }
-                toRemove.add(form);
-            }
+        if (set.isEmpty()) {
+            return BooleanConstant.FALSE;
         }
-        set.removeAll(toRemove);
-        toRemove.clear();
 
-        // put all Literals together (and check for trivial
-        // tautologies/contradictions like a and a /a and !a
-
-        set.stream().filter(form -> form instanceof Literal).forEach(form -> {
-            helper.add(form);
-            toRemove.add(form);
-
-        });
-        set.removeAll(toRemove);
-        toRemove.clear();
-
-        for (int i = 0; i < helper.size(); i++) {
-
-            for (int j = i + 1; j < helper.size(); j++) {
-                if (((Literal) helper.get(i)).atom.equals(((Literal) helper.get(j)).atom)) {
-                    if (((Literal) helper.get(i)).negated == (((Literal) helper.get(j)).negated)) {
-                        helper.remove(j);
-                    } else {
-                        return BooleanConstant.get(true);
-                    }
-                }
-            }
+        if (set.size() == 1) {
+            return set.iterator().next();
         }
-        set.addAll(helper);
 
-        if (set.equals(d.children)) {
-            return d;
-        } else {
-            return FormulaFactory.mkOr(set);
+        // This check may be to strong...
+        if (set.stream().anyMatch(e -> set.contains(e.not()))) {
+            return BooleanConstant.TRUE;
         }
+
+        return new Disjunction(set);
     }
 
     @Override
