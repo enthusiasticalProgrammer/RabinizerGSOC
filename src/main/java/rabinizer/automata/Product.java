@@ -48,7 +48,7 @@ public class Product extends Automaton<ProductState> {
         return init;
     }
 
-    protected Set<Formula> relevantSlaves(FormulaState masterState) {
+    protected Set<Formula> relevantSlaves(FormulaAutomatonState masterState) {
         return masterState.getFormula().relevantGFormulas(allSlaves);
     }
 
@@ -83,7 +83,7 @@ public class Product extends Automaton<ProductState> {
         product.add(master.transitions.row(s.masterState).keySet());
         for (Formula slaveFormula : s.keySet()) {
             FormulaAutomaton m = slaves.get(slaveFormula).mojmir;
-            for (FormulaState fs : m.states) {
+            for (FormulaAutomatonState fs : m.states) {
                 product.add(m.transitions.row(fs).keySet());
             }
         }

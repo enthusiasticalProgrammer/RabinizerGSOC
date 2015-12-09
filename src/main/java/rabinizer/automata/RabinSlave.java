@@ -6,7 +6,6 @@
 package rabinizer.automata;
 
 import rabinizer.exec.Main;
-import rabinizer.exec.Tuple;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
@@ -40,25 +39,25 @@ public class RabinSlave extends Automaton<RankingState> {
         RankingState succ = new RankingState();
 
         // move tokens, keeping the lowest only
-        for (FormulaState currFormula : curr.keySet()) {
-            FormulaState succFormula = mojmir.succ(currFormula, val);
+        for (FormulaAutomatonState currFormula : curr.keySet()) {
+            FormulaAutomatonState succFormula = mojmir.succ(currFormula, val);
             if ((succ.get(succFormula) == null) || (succ.get(succFormula) > curr.get(currFormula))) {
                 succ.put(succFormula, curr.get(currFormula));
             }
         }
-        for (FormulaState s : mojmir.sinks) {
+        for (FormulaAutomatonState s : mojmir.sinks) {
             succ.remove(s);
         }
 
         //TODO recompute tokens, eliminating gaps
         int[] tokens = new int[succ.keySet().size()];
         int i = 0;
-        for (FormulaState f : succ.keySet()) {
+        for (FormulaAutomatonState f : succ.keySet()) {
             tokens[i] = succ.get(f);
             i++;
         }
         Arrays.sort(tokens);
-        for (FormulaState f : succ.keySet()) {
+        for (FormulaAutomatonState f : succ.keySet()) {
             for (int j = 0; j < tokens.length; j++) {
                 if (succ.get(f).equals(tokens[j])) {
                     succ.put(f, j + 1);
@@ -77,7 +76,7 @@ public class RabinSlave extends Automaton<RankingState> {
     @Override
     protected Set<ValuationSet> generateSuccTransitions(RankingState s) {
         Set<Set<ValuationSet>> product = new HashSet<>();
-        for (FormulaState fs : s.keySet()) {
+        for (FormulaAutomatonState fs : s.keySet()) {
             product.add(mojmir.transitions.row(fs).keySet());
         }
         return generatePartitioning(product);

@@ -1,15 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.automata;
 
-import rabinizer.ltl.*;
+import rabinizer.ltl.EquivalenceClass;
+import rabinizer.ltl.EquivalenceClassFactory;
+import rabinizer.ltl.Formula;
+import rabinizer.ltl.ValuationSetFactory;
 
-/**
- * @author jkretinsky
- */
+import java.util.Set;
+
 public class MojmirSlave extends FormulaAutomaton {
 
     public MojmirSlave(Formula formula, EquivalenceClassFactory eqFactory, ValuationSetFactory<String> factory) {
@@ -17,24 +14,12 @@ public class MojmirSlave extends FormulaAutomaton {
     }
 
     @Override
-    public FormulaState generateInitialState() {
-        EquivalenceClass clazz = equivalenceClassFactory.createEquivalenceClass(formula.unfold(false));
-        FormulaState init = new FormulaState(clazz);
-        stateLabels.put(init, formula);
-        return init;
+    protected EquivalenceClass init(EquivalenceClass clazz) {
+        return clazz.unfold(false);
     }
 
     @Override
-    public FormulaState generateSuccState(FormulaState s, ValuationSet vs) {
-        Formula label = s.getFormula().temporalStep(vs.pickAny()); // any element of the equivalence class
-        EquivalenceClass clazz = equivalenceClassFactory.createEquivalenceClass(label.unfold(false));
-        FormulaState state = new FormulaState(clazz);
-
-        if (!states.contains(state)) {
-            stateLabels.put(state, label);
-        }
-
-        return state;
+    protected EquivalenceClass step(EquivalenceClass clazz, Set<String> valuation) {
+        return clazz.temporalStep(valuation).unfold(false);
     }
-
 }

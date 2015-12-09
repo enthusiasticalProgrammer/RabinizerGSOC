@@ -26,7 +26,7 @@ public class AccLocalFolded extends AccLocal {
             //antecedent = new Conjunction(antecedent, new XOperator(new GOperator(f))); // TODO:remove; relevant for Xunfolding
             Formula slaveAntecedent = BooleanConstant.get(true);
             if (ps.containsKey(f)) {
-                for (FormulaState s : ps.get(f).keySet()) {
+                for (FormulaAutomatonState s : ps.get(f).keySet()) {
                     if (ps.get(f).get(s) >= ranking.get(f)) {
                         slaveAntecedent = FormulaFactory.mkAnd(slaveAntecedent, s.getFormula());
                     }

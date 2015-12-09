@@ -18,9 +18,9 @@ public class ProductState extends HashMap<Formula, RankingState> {
      *
      */
     private static final long serialVersionUID = -6381479732194884618L;
-    public FormulaState masterState;
+    public FormulaAutomatonState masterState;
 
-    public ProductState(FormulaState masterState) {
+    public ProductState(FormulaAutomatonState masterState) {
         super();
         this.masterState = masterState;
     }

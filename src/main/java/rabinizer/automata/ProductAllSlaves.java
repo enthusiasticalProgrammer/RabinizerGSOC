@@ -21,7 +21,7 @@ public class ProductAllSlaves extends Product {
     }
 
     @Override
-    protected Set<Formula> relevantSlaves(FormulaState masterState) {
+    protected Set<Formula> relevantSlaves(FormulaAutomatonState masterState) {
         return allSlaves;
     }
 

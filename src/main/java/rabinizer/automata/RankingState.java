@@ -11,16 +11,15 @@ import java.util.HashMap;
 /**
  * @author jkretinsky
  */
-public class RankingState extends HashMap<FormulaState, Integer> {
+public class RankingState extends HashMap<FormulaAutomatonState, Integer> {
 
     public RankingState() {
         super();
     }
-
-
+    
     public String toString() {
         String result = "";
-        for (FormulaState f : keySet()) {
+        for (FormulaAutomatonState f : keySet()) {
             result += " " + f + "=" + get(f);
         }
         return result;

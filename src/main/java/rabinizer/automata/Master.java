@@ -1,18 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.automata;
 
-/**
- * @author jkretinsky
- */
-
+import rabinizer.ltl.EquivalenceClass;
 import rabinizer.ltl.EquivalenceClassFactory;
 import rabinizer.ltl.Formula;
-import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
+
+import java.util.Set;
 
 public class Master extends FormulaAutomaton {
 
@@ -21,20 +14,12 @@ public class Master extends FormulaAutomaton {
     }
 
     @Override
-    public FormulaState generateInitialState() {
-        FormulaState init = new FormulaState(equivalenceClassFactory.createEquivalenceClass(formula.unfold(true)));
-        stateLabels.put(init, formula);
-        return init;
+    protected EquivalenceClass init(EquivalenceClass clazz) {
+        return clazz.unfold(true);
     }
 
     @Override
-    public FormulaState generateSuccState(FormulaState s, ValuationSet vs) {
-        Formula label = s.getFormula().temporalStep(vs.pickAny()); // any element of the equivalence class
-        FormulaState state = new FormulaState(equivalenceClassFactory.createEquivalenceClass(label.unfold(true)));
-        if (!states.contains(state)) {
-            stateLabels.put(state, label);
-        }
-        return state;
+    protected EquivalenceClass step(EquivalenceClass clazz, Set<String> valuation) {
+        return clazz.temporalStep(valuation).unfold(true);
     }
-
 }

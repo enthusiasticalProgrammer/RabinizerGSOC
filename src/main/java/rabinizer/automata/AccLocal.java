@@ -36,7 +36,7 @@ public class AccLocal {
 
     public AccLocal(Product product, ValuationSetFactory<String> factory, EquivalenceClassFactory factory2) {
         this.product = product;
-        this.formula = product.master.formula;
+        this.formula = product.master.getFormula();
         this.valuationSetFactory = factory;
         this.equivalenceClassFactory = factory2;
         allTrans = new TranSet<>(valuationSetFactory);
@@ -67,7 +67,7 @@ public class AccLocal {
             antecedent = FormulaFactory.mkAnd(antecedent, f.evaluate(gSet));
             Formula slaveAntecedent = BooleanConstant.get(true);
             if (ps.containsKey(f)) {
-                for (FormulaState s : ps.get(f).keySet()) {
+                for (FormulaAutomatonState s : ps.get(f).keySet()) {
                     if (ps.get(f).get(s) >= ranking.get(f)) {
                         slaveAntecedent = FormulaFactory.mkAnd(slaveAntecedent, s.getFormula());
                     }
@@ -92,8 +92,8 @@ public class AccLocal {
         RabinSlave rSlave = product.slaves.get(f);
         Set<Set<GOperator>> gSets = Sets.powerSet(topmostGs.get(f));
         for (Set<GOperator> gSet : gSets) {
-            Map<FormulaState, Boolean> finalStates = new HashMap<>();
-            for (FormulaState fs : rSlave.mojmir.states) {
+            Map<FormulaAutomatonState, Boolean> finalStates = new HashMap<>();
+            for (FormulaAutomatonState fs : rSlave.mojmir.states) {
                 finalStates.put(fs, entails(new Conjunction(gSet),fs.getFormula()));
             }
             result.put(gSet, new HashMap<>());
