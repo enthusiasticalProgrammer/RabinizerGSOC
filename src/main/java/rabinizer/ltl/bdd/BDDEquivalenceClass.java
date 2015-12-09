@@ -1,10 +1,13 @@
 package rabinizer.ltl.bdd;
 
 import net.sf.javabdd.BDD;
+import rabinizer.ltl.Conjunction;
+import rabinizer.ltl.Disjunction;
 import rabinizer.ltl.EquivalenceClass;
 import rabinizer.ltl.Formula;
 
 import java.util.Objects;
+import java.util.Set;
 
 public class BDDEquivalenceClass implements EquivalenceClass {
 
@@ -55,6 +58,44 @@ public class BDDEquivalenceClass implements EquivalenceClass {
     @Override
     public boolean equivalent(EquivalenceClass equivalenceClass) {
         return this.equals(equivalenceClass);
+    }
+
+    @Override
+    public EquivalenceClass unfold(boolean unfoldG) {
+        return factory.createEquivalenceClass(getRepresentative().unfold(unfoldG));
+    }
+
+    @Override
+    public EquivalenceClass temporalStep(Set<String> valuation) {
+        return factory.createEquivalenceClass(getRepresentative().temporalStep(valuation));
+    }
+
+    @Override
+    public EquivalenceClass and(EquivalenceClass eq) {
+        if (eq instanceof BDDEquivalenceClass) {
+            return new BDDEquivalenceClass(new Conjunction(getRepresentative(), eq.getRepresentative()), bdd.and(((BDDEquivalenceClass) eq).bdd), factory);
+        }
+
+        return factory.createEquivalenceClass(new Conjunction(getRepresentative(), eq.getRepresentative()));
+    }
+
+    @Override
+    public EquivalenceClass or(EquivalenceClass eq) {
+        if (eq instanceof BDDEquivalenceClass) {
+            return new BDDEquivalenceClass(new Disjunction(getRepresentative(), eq.getRepresentative()), bdd.or(((BDDEquivalenceClass) eq).bdd), factory);
+        }
+
+        return factory.createEquivalenceClass(new Disjunction(getRepresentative(), eq.getRepresentative()));
+    }
+
+    @Override
+    public boolean isTrue() {
+        return bdd.isOne();
+    }
+
+    @Override
+    public boolean isFalse() {
+        return bdd.isZero();
     }
 
     @Override
