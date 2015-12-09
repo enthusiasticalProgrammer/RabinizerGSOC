@@ -197,7 +197,6 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
         dot += "\n";
         dot += "--BODY--\n";
 
-        // Map<Tuple<Formula, KState>, Tuple<Formula, KState>> normalStates = new HashMap<Tuple<Formula, KState>, Tuple<Formula, KState>>();        
         for (State s : states) {
             statesToNumbers.put(s, statesToNumbers.size());
             dot += "State: " + statesToNumbers.get(s) + " \"" + s + "\" " + stateAcc(s) + "\n";
@@ -209,6 +208,18 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
 
     public String acc() {
         return "";
+    }
+
+    public Set<State> getStates() {
+        return states;
+    }
+
+    public Table<State, ValuationSet, State> getTransitions() {
+        return transitions;
+    }
+
+    public State getInitialState() {
+        return initialState;
     }
 
     protected String accName() {
