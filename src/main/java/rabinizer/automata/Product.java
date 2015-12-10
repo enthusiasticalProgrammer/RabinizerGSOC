@@ -11,7 +11,7 @@ import java.util.Set;
 
 public class Product extends GenericProduct<FormulaAutomatonState, GOperator, RankingState, FormulaAutomaton<Formula>, RabinSlave, ProductState> {
 
-    public Product(FormulaAutomaton primaryAutomaton, Map<GOperator, RabinSlave> slaves, ValuationSetFactory<String> factory) {
+    public Product(FormulaAutomaton<Formula> primaryAutomaton, Map<GOperator, RabinSlave> slaves, ValuationSetFactory<String> factory) {
         super(primaryAutomaton, slaves, factory);
     }
 
@@ -23,8 +23,8 @@ public class Product extends GenericProduct<FormulaAutomatonState, GOperator, Ra
         Set<Set<ValuationSet>> product = new HashSet<>();
         product.add(primaryAutomaton.transitions.row(s.getPrimaryState()).keySet());
         for (GOperator slaveFormula : s.getSecondaryMap().keySet()) {
-            FormulaAutomaton m = secondaryAutomata.get(slaveFormula).mojmir;
-            for (Object fs : m.getStates()) {
+            FormulaAutomaton<GOperator> m = secondaryAutomata.get(slaveFormula).mojmir;
+            for (FormulaAutomatonState fs : m.getStates()) {
                 product.add(m.transitions.row(fs).keySet());
             }
         }
