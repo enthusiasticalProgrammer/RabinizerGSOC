@@ -56,13 +56,13 @@ public abstract class Formula {
     public abstract Formula temporalStep(Set<String> valuation);
 
     // TODO: is with the outer G (not GSet)
-    public Set<Formula> relevantGFormulas(Set<Formula> candidates) {
+    public Set<GOperator> relevantGFormulas(Set<GOperator> candidates) {
         // TODO: Remove adhoc hack to compute relevant G -> move EquivClass
         if (getPropositions().isEmpty()) {
             return Collections.emptySet();
         }
 
-        Set<Formula> result = new HashSet<>();
+        Set<GOperator> result = new HashSet<>();
 
         EquivalenceClassFactory factory = new BDDEquivalenceClassFactory(getPropositions());
         EquivalenceClass clazz = factory.createEquivalenceClass(this.unfold(true));

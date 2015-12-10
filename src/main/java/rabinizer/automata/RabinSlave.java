@@ -6,6 +6,7 @@
 package rabinizer.automata;
 
 import rabinizer.exec.Main;
+import rabinizer.ltl.GOperator;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
@@ -19,9 +20,9 @@ import java.util.Set;
  */
 public class RabinSlave extends Automaton<RankingState> {
 
-    public FormulaAutomaton mojmir;
+    public FormulaAutomaton<GOperator> mojmir;
 
-    public RabinSlave(FormulaAutomaton mojmir, ValuationSetFactory<String> factory) {
+    public RabinSlave(FormulaAutomaton<GOperator> mojmir, ValuationSetFactory<String> factory) {
         super(factory);
         this.mojmir = mojmir;
     }

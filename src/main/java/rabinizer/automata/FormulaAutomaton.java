@@ -4,9 +4,9 @@ import rabinizer.ltl.*;
 
 import java.util.Set;
 
-public abstract class FormulaAutomaton extends GenericFormulaAutomaton<FormulaAutomatonState> {
+public abstract class FormulaAutomaton<L extends Formula> extends GenericFormulaAutomaton<FormulaAutomatonState, L> {
 
-    protected FormulaAutomaton(Formula formula, EquivalenceClassFactory eqFactory, ValuationSetFactory<String> factory) {
+    protected FormulaAutomaton(L formula, EquivalenceClassFactory eqFactory, ValuationSetFactory<String> factory) {
         super(formula, eqFactory, factory);
     }
 

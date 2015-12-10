@@ -8,12 +8,12 @@ package rabinizer.automata;
 import rabinizer.exec.Main;
 import rabinizer.ltl.EquivalenceClassFactory;
 import rabinizer.ltl.Formula;
+import rabinizer.ltl.GOperator;
 import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author jkretinsky
@@ -42,7 +42,7 @@ public class DTGRARaw /*implements AccAutomatonInterface*/ {
 
         // phi assumed in NNF
         Main.verboseln("========================================");
-        Main.nonsilent("Generating master");
+        Main.nonsilent("Generating primaryAutomaton");
         FormulaAutomaton master;
         if (unfoldedOn) { // unfold upon arrival to state
             master = new Master(phi, equivalenceClassFactory, valuationSetFactory);
@@ -51,10 +51,10 @@ public class DTGRARaw /*implements AccAutomatonInterface*/ {
         }
         master.generate();
         Main.verboseln("========================================");
-        Main.nonsilent("Generating Mojmir & Rabin slaves");
-        Set<Formula> gSubformulas = phi.gSubformulas().stream().map(c -> c.getOperand()).collect(Collectors.toSet()); // without outer G
-        Map<Formula, RabinSlave> slaves = new HashMap<>();
-        for (Formula f : gSubformulas) {
+        Main.nonsilent("Generating Mojmir & Rabin secondaryAutomata");
+        Set<GOperator> gSubformulas = phi.gSubformulas();
+        Map<GOperator, RabinSlave> slaves = new HashMap<>();
+        for (GOperator f : gSubformulas) {
             FormulaAutomaton mSlave;
             if (unfoldedOn) {  // unfold upon arrival to state
                 mSlave = new MojmirSlave(f, equivalenceClassFactory, valuationSetFactory);
@@ -74,9 +74,9 @@ public class DTGRARaw /*implements AccAutomatonInterface*/ {
         }
         Main.verboseln("========================================");
         Main.nonsilent("Generating product");
-        if (relevantSlavesOnlyOn) {  // relevant slaves dynamically computed from master formula
+        if (relevantSlavesOnlyOn) {  // relevant secondaryAutomata dynamically computed from primaryAutomaton formula
             automaton = new Product(master, slaves, valuationSetFactory);
-        } else {  // all slaves monitor
+        } else {  // all secondaryAutomata monitor
             automaton = new ProductAllSlaves(master, slaves, valuationSetFactory);
         }
         automaton.generate();

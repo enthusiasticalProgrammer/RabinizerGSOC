@@ -1,50 +1,18 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.automata;
 
-import rabinizer.ltl.Formula;
+import rabinizer.ltl.GOperator;
 
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.Function;
 
-/**
- * @author jkretinsky
- */
-public class ProductState extends HashMap<Formula, RankingState> {
+public class ProductState extends GenericProductState<FormulaAutomatonState, GOperator, RankingState> {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = -6381479732194884618L;
-    public FormulaAutomatonState masterState;
-
-    public ProductState(FormulaAutomatonState masterState) {
-        super();
-        this.masterState = masterState;
+    public ProductState(FormulaAutomatonState primaryState, Map<GOperator, RankingState> secondaryStates) {
+        super(primaryState, secondaryStates);
     }
 
-    @Override
-    public int hashCode() {
-        return 17 * super.hashCode() + 5 * masterState.hashCode();
+    public ProductState(FormulaAutomatonState primaryState, Collection<GOperator> keys, Function<GOperator, RankingState> constructor) {
+        super(primaryState, keys, constructor);
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (!super.equals(o)) {
-            return false;
-        } else {
-            return ((ProductState) o).masterState.equals(this.masterState);
-        }
-    }
-
-    public String toString() {
-        String result = masterState + "::";
-        for (Formula slave : keySet()) {
-            result += get(slave) + ";";
-        }
-        return result;//masterState + "::" + super.toString();
-    }
-
 }

@@ -47,7 +47,7 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
         // Product
         TranSet<ProductState> failP = new TranSet<>(valuationSetFactory);
         for (ProductState ps : product.states) {
-            RankingState rs = ps.get(slave.mojmir.getFormula());
+            RankingState rs = ps.getSecondaryState(slave.mojmir.getFormula());
             if (rs != null) { // relevant slave
                 for (FormulaAutomatonState fs : rs.keySet()) {
                     if (failM.containsKey(fs)) {
@@ -80,7 +80,7 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
         // Product
         TranSet<ProductState> succeedP = new TranSet<>(valuationSetFactory);
         for (ProductState ps : product.states) {
-            RankingState rs = ps.get(slave.mojmir.getFormula());
+            RankingState rs = ps.getSecondaryState(slave.mojmir.getFormula());
             if (rs != null) { // relevant slave
                 for (FormulaAutomatonState fs : rs.keySet()) {
                     if (succeedM.containsKey(fs) && (rs.get(fs) == rank)) {
@@ -118,7 +118,7 @@ public class RabinPair<State> extends Tuple<TranSet<State>, TranSet<State>> {
         // Product
         TranSet<ProductState> buyP = new TranSet<>(valuationSetFactory);
         for (ProductState ps : product.states) {
-            RankingState rs = ps.get(slave.mojmir.getFormula());
+            RankingState rs = ps.getSecondaryState(slave.mojmir.getFormula());
             if (rs != null) { // relevant slave
                 if (buyR.containsKey(rs)) {
                     buyP.add(ps, buyR.get(rs));

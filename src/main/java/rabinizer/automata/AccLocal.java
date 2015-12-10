@@ -1,10 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.automata;
-
 
 import com.google.common.collect.Sets;
 import rabinizer.exec.Main;
@@ -15,10 +9,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-
-/**
- * @author jkretinsky & Christopher Ziegler
- */
 public class AccLocal {
 
     protected final ValuationSetFactory<String> valuationSetFactory;
@@ -36,13 +26,13 @@ public class AccLocal {
 
     public AccLocal(Product product, ValuationSetFactory<String> factory, EquivalenceClassFactory factory2) {
         this.product = product;
-        this.formula = product.master.getFormula();
+        this.formula = product.primaryAutomaton.getFormula();
         this.valuationSetFactory = factory;
         this.equivalenceClassFactory = factory2;
         allTrans = new TranSet<>(valuationSetFactory);
-        for (Formula f : formula.gSubformulas()) {
+        for (GOperator f : formula.gSubformulas()) {
             int maxRankF = 0;
-            for (RankingState rs : product.slaves.get(f).states) {
+            for (RankingState rs : product.secondaryAutomata.get(f).states) {
                 maxRankF = maxRankF >= rs.size() ? maxRankF : rs.size();
             }
             maxRank.put(f, maxRankF);
@@ -50,25 +40,25 @@ public class AccLocal {
             Map<Set<GOperator>, Map<Integer, RabinPair>> optionForf = computeAccSlavesOptions(f);
             accSlavesOptions.put(f, optionForf);
         }
-        Main.verboseln("Acceptance for slaves:\n" + this.accSlavesOptions);
+        Main.verboseln("Acceptance for secondaryAutomata:\n" + this.accSlavesOptions);
         ValuationSet allVals = valuationSetFactory.createUniverseValuationSet();
         for (ProductState ps : product.states) {
             allTrans.add(ps, allVals);
         }
 
         accMasterOptions = computeAccMasterOptions();
-        Main.verboseln("Acceptance for master:\n" + this.accMasterOptions);
+        Main.verboseln("Acceptance for primaryAutomaton:\n" + this.accMasterOptions);
     }
 
     protected boolean slavesEntail(Set<GOperator> gSet, ProductState ps, Map<Formula, Integer> ranking, Set<String> v, Formula consequent) {
         Formula antecedent = BooleanConstant.get(true);
         for (GOperator f : gSet) {
-            antecedent = FormulaFactory.mkAnd(antecedent, FormulaFactory.mkG(f)); // TODO compute these lines once for all states
-            antecedent = FormulaFactory.mkAnd(antecedent, f.evaluate(gSet));
+            antecedent = FormulaFactory.mkAnd(antecedent, f); // TODO compute these lines once for all states
+            antecedent = FormulaFactory.mkAnd(antecedent, f.operand.evaluate(gSet));
             Formula slaveAntecedent = BooleanConstant.get(true);
-            if (ps.containsKey(f)) {
-                for (FormulaAutomatonState s : ps.get(f).keySet()) {
-                    if (ps.get(f).get(s) >= ranking.get(f)) {
+            if (ps.getSecondaryMap().containsKey(f)) {
+                for (FormulaAutomatonState s : ps.getSecondaryState(f).keySet()) {
+                    if (ps.getSecondaryState(f).get(s) >= ranking.get(f)) {
                         slaveAntecedent = FormulaFactory.mkAnd(slaveAntecedent, s.getFormula());
                     }
                 }
@@ -89,7 +79,7 @@ public class AccLocal {
 
     protected Map<Set<GOperator>, Map<Integer, RabinPair>> computeAccSlavesOptions(Formula f) {
         Map<Set<GOperator>, Map<Integer, RabinPair>> result = new HashMap<>();
-        RabinSlave rSlave = product.slaves.get(f);
+        RabinSlave rSlave = product.secondaryAutomata.get(f);
         Set<Set<GOperator>> gSets = Sets.powerSet(topmostGs.get(f));
         for (Set<GOperator> gSet : gSets) {
             Map<FormulaAutomatonState, Boolean> finalStates = new HashMap<>();
@@ -166,7 +156,7 @@ public class AccLocal {
         TranSet<ProductState> result = new TranSet<>(valuationSetFactory);
         Set<ValuationSet> fineSuccVs = product.generateSuccTransitionsReflectingSinks(ps);
         for (ValuationSet vs : fineSuccVs) {
-            if (!slavesEntail(gSet, ps, ranking, vs.pickAny(), ps.masterState.getFormula())) {
+            if (!slavesEntail(gSet, ps, ranking, vs.pickAny(), ps.getPrimaryState().getFormula())) {
                 result.add(ps, vs);
             }
         }
@@ -177,7 +167,7 @@ public class AccLocal {
     protected TranSet<ProductState> computeAccMasterForState2(Set<GOperator> gSet, Map<Formula, Integer> ranking, ProductState ps) {
         TranSet<ProductState> result = new TranSet<>(valuationSetFactory);
         for (Set<String> v : valuationSetFactory.createUniverseValuationSet()) { // TODO !!! expl vs bdd
-            if (!slavesEntail(gSet, ps, ranking, v, ps.masterState.getFormula())) {
+            if (!slavesEntail(gSet, ps, ranking, v, ps.getPrimaryState().getFormula())) {
                 result.add(ps, valuationSetFactory.createValuationSet(v));
             }
         }

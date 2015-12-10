@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.automata;
 
 import rabinizer.exec.Tuple;
@@ -10,10 +5,7 @@ import rabinizer.exec.Tuple;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * @author jkretinsky
- */
-class ProductAccState extends Tuple<ProductState, Map<Integer, Set<Integer>>> {
+public class ProductAccState extends Tuple<ProductState, Map<Integer, Set<Integer>>> {
 
     public ProductAccState(ProductState ps, Map<Integer, Set<Integer>> accSets) {
         super(ps, accSets);

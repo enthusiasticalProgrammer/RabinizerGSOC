@@ -4,9 +4,9 @@ import rabinizer.ltl.*;
 
 import java.util.Set;
 
-public class MojmirSlaveFolded extends FormulaAutomaton {
+public class MojmirSlaveFolded extends FormulaAutomaton<GOperator> {
 
-    public MojmirSlaveFolded(Formula formula, EquivalenceClassFactory eqFactory, ValuationSetFactory<String> factory) {
+    public MojmirSlaveFolded(GOperator formula, EquivalenceClassFactory eqFactory, ValuationSetFactory<String> factory) {
         super(formula, eqFactory, factory);
     }
 

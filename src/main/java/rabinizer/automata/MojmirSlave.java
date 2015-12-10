@@ -2,14 +2,14 @@ package rabinizer.automata;
 
 import rabinizer.ltl.EquivalenceClass;
 import rabinizer.ltl.EquivalenceClassFactory;
-import rabinizer.ltl.Formula;
+import rabinizer.ltl.GOperator;
 import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.Set;
 
-public class MojmirSlave extends FormulaAutomaton {
+public class MojmirSlave extends FormulaAutomaton<GOperator> {
 
-    public MojmirSlave(Formula formula, EquivalenceClassFactory eqFactory, ValuationSetFactory<String> factory) {
+    public MojmirSlave(GOperator formula, EquivalenceClassFactory eqFactory, ValuationSetFactory<String> factory) {
         super(formula, eqFactory, factory);
     }
 

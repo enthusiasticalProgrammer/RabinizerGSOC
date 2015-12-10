@@ -5,7 +5,7 @@
  */
 package rabinizer.automata;
 
-import rabinizer.ltl.Formula;
+import rabinizer.ltl.GOperator;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
@@ -21,7 +21,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
 
     AccTGR acc;
 
-    public DTGRA(FormulaAutomaton master, Map<Formula, RabinSlave> slaves, ValuationSetFactory<String> factory) {
+    public DTGRA(FormulaAutomaton master, Map<GOperator, RabinSlave> slaves, ValuationSetFactory<String> factory) {
         super(master, slaves, factory);
     }
 

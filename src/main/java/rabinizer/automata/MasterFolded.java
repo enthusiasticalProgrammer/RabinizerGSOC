@@ -4,7 +4,7 @@ import rabinizer.ltl.*;
 
 import java.util.Set;
 
-public class MasterFolded extends FormulaAutomaton {
+public class MasterFolded extends FormulaAutomaton<Formula> {
 
     public MasterFolded(Formula formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory<String> valuationSetFactory) {
         super(formula, equivalenceClassFactory, valuationSetFactory);

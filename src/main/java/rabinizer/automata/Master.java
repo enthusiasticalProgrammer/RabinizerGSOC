@@ -7,7 +7,7 @@ import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.Set;
 
-public class Master extends FormulaAutomaton {
+public class Master extends FormulaAutomaton<Formula> {
 
     public Master(Formula formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory<String> valuationSetFactory) {
         super(formula, equivalenceClassFactory, valuationSetFactory);

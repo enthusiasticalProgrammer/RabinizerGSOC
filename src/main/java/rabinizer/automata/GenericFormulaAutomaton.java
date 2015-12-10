@@ -6,14 +6,14 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public abstract class GenericFormulaAutomaton<S> extends Automaton<S> {
+public abstract class GenericFormulaAutomaton<S, L extends Formula> extends Automaton<S> {
 
-    final protected EquivalenceClassFactory equivalenceClassFactory;
     final protected EquivalenceClass initial;
+    final protected L formulaLabel;
 
-    protected GenericFormulaAutomaton(Formula formula, EquivalenceClassFactory eqFactory, ValuationSetFactory<String> factory) {
+    protected GenericFormulaAutomaton(L formula, EquivalenceClassFactory eqFactory, ValuationSetFactory<String> factory) {
         super(factory);
-        this.equivalenceClassFactory = eqFactory;
+        formulaLabel = formula;
         initial = eqFactory.createEquivalenceClass(formula);
     }
 
@@ -40,7 +40,7 @@ public abstract class GenericFormulaAutomaton<S> extends Automaton<S> {
         return result;
     }
 
-    public Formula getFormula() {
-        return initial.getRepresentative();
+    public L getFormula() {
+        return formulaLabel;
     }
 }
