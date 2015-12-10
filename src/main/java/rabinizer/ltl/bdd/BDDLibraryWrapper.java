@@ -112,28 +112,8 @@ class BDDLibraryWrapper<K extends Formula> {
         }
 
         @Override
-        public BDD visit(FOperator f) {
+        public BDD defaultAction(Formula f) {
             return mapping.get(f).id();
-        }
-
-        @Override
-        public BDD visit(GOperator g) {
-            return mapping.get(g).id();
-        }
-
-        @Override
-        public BDD visit(Literal l) {
-            return mapping.get(l).id();
-        }
-
-        @Override
-        public BDD visit(UOperator u) {
-            return mapping.get(u).id();
-        }
-
-        @Override
-        public BDD visit(XOperator x) {
-            return mapping.get(x).id();
         }
     }
 }
