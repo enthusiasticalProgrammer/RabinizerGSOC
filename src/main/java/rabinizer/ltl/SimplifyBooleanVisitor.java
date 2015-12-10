@@ -2,16 +2,11 @@ package rabinizer.ltl;
 
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class SimplifyBooleanVisitor implements Visitor<Formula> {
 
     private final static SimplifyBooleanVisitor instance = new SimplifyBooleanVisitor();
-
-    private SimplifyBooleanVisitor() {
-
-    }
 
     public static SimplifyBooleanVisitor getVisitor() {
         return instance;
@@ -19,11 +14,6 @@ public final class SimplifyBooleanVisitor implements Visitor<Formula> {
 
     public static Formula simplify(Formula formula) {
         return formula.accept(instance);
-    }
-
-    @Override
-    public Formula visit(FOperator f) {
-        return f;
     }
 
     private static Set<Formula> flatten(Stream<Formula> workStream, Predicate<PropositionalFormula> shouldUnfold, BooleanConstant breakC, BooleanConstant continueC) {
@@ -94,27 +84,7 @@ public final class SimplifyBooleanVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula visit(BooleanConstant b) {
-        return b;
-    }
-
-    @Override
-    public Formula visit(Literal l) {
-        return l;
-    }
-
-    @Override
-    public Formula visit(GOperator g) {
-        return g;
-    }
-
-    @Override
-    public Formula visit(UOperator u) {
-        return u;
-    }
-
-    @Override
-    public Formula visit(XOperator x) {
-        return x;
+    public Formula defaultAction(Formula f) {
+        return f;
     }
 }

@@ -5,10 +5,6 @@ import rabinizer.automata.DTGRARaw;
 import rabinizer.automata.MasterFolded;
 import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 import rabinizer.ltl.bdd.BDDValuationSetFactory;
-import rabinizer.parser.LTLParser;
-import rabinizer.parser.ParseException;
-
-import java.io.StringReader;
 
 import static org.junit.Assert.assertEquals;
 
@@ -30,14 +26,7 @@ public class TestAutomata {
 
     @Test
     public void testDTGRARawConstructor() {
-        LTLParser parser = new LTLParser(new StringReader("(p1) U (X((G(F(G(p2)))) & (F(X(X(G(p2)))))))"));
-
-        Formula formula = null;
-        try {
-            formula = parser.parse();
-        } catch (ParseException e) {
-            throw new RuntimeException("Exception when parsing: " + e.getLocalizedMessage());
-        }
+        Formula formula = Util.createFormula("(p1) U (X((G(F(G(p2)))) & (F(X(X(G(p2)))))))");
 
         EquivalenceClassFactory equivalenceClassFactory = new BDDEquivalenceClassFactory(formula.getPropositions());
         ValuationSetFactory<String> valuationSetFactory = new BDDValuationSetFactory(formula.getAtoms());

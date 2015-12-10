@@ -16,8 +16,9 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
         return instance;
     }
 
-    public Formula visit(BooleanConstant b) {
-        return b;
+    @Override
+    public Formula defaultAction(Formula f) {
+        return f;
     }
 
     public Formula visit(Conjunction c) {
@@ -155,10 +156,6 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
             return FormulaFactory.mkX(FormulaFactory.mkG(((ModalOperator) child).operand)).accept(this);
         }
         return FormulaFactory.mkG(child);
-    }
-
-    public Formula visit(Literal l) {
-        return l;
     }
 
     public Formula visit(UOperator u) {

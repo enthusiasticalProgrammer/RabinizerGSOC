@@ -1,19 +1,38 @@
 package rabinizer.ltl;
 
 public interface Visitor<R> {
-    R visit(BooleanConstant b);
 
-    R visit(Conjunction c);
+    R defaultAction(Formula f);
 
-    R visit(Disjunction b);
+    default R visit(BooleanConstant b) {
+        return defaultAction(b);
+    }
 
-    R visit(FOperator f);
+    default R visit(Conjunction c) {
+        return defaultAction(c);
+    }
 
-    R visit(GOperator g);
+    default R visit(Disjunction d) {
+        return defaultAction(d);
+    }
 
-    R visit(Literal l);
+    default R visit(FOperator f) {
+        return defaultAction(f);
+    }
 
-    R visit(UOperator u);
+    default R visit(GOperator g) {
+        return defaultAction(g);
+    }
 
-    R visit(XOperator x);
+    default R visit(Literal l) {
+        return defaultAction(l);
+    }
+
+    default R visit(UOperator u) {
+        return defaultAction(u);
+    }
+
+    default R visit(XOperator x) {
+        return defaultAction(x);
+    }
 }
