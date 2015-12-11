@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.automata;
 
 import rabinizer.ltl.GOperator;
@@ -37,7 +32,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
     protected String accName() {
         String result = "acc-name: generalized-Rabin " + acc.size();
         for (GRabinPairT anAcc : acc) {
-            result += " " + anAcc.right.size();
+            result += " " + anAcc.getRight().size();
         }
         return result + "\n";
     }
@@ -53,7 +48,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
             result += i == 0 ? "" : " | ";
             result += "Fin(" + sum + ")";
             sum++;
-            List<TranSet<ProductState>> right = acc.get(i).right;
+            List<TranSet<ProductState>> right = acc.get(i).getRight();
             for (int j = 0; j < right.size(); j++) {
                 right.get(j);
                 result += "&Inf(" + sum + ")";
@@ -73,16 +68,19 @@ public class DTGRA extends Product implements AccAutomatonInterface {
         String result = "";
         Set<Set<ValuationSet>> productVs = new HashSet<>();
         productVs.add(transitions.row(s).keySet());
+        System.out.println("transitions: " + transitions);
+        System.out.println("s: " + s);
+        System.out.println("trans.get(s):" + transitions.row(s));
         Set<ValuationSet> vSets;
         for (GRabinPairT rp : acc) {
-            vSets = new HashSet<>();
-            if (rp.left.containsKey(s)) {
-                vSets.add(rp.left.get(s));
-                vSets.add(rp.left.get(s).complement());
+            vSets = new HashSet<ValuationSet>();
+            if (rp.getLeft().containsKey(s)) {
+                vSets.add(rp.getLeft().get(s));
+                vSets.add(rp.getLeft().get(s).complement());
             }
             productVs.add(vSets);
-            for (TranSet<ProductState> ts : rp.right) {
-                vSets = new HashSet<>();
+            for (TranSet<ProductState> ts : rp.getRight()) {
+                vSets = new HashSet<ValuationSet>();
                 if (ts.containsKey(s)) {
                     vSets.add(ts.get(s));
                     vSets.add(ts.get(s).complement());
@@ -95,8 +93,8 @@ public class DTGRA extends Product implements AccAutomatonInterface {
         Set<ValuationSet> edges = generatePartitioning(productVs);
         for (ValuationSet vsSep : edges) {
             Set<String> v = vsSep.pickAny();
-            result += "[" + vsSep.toFormula() + "] "
-                    + statesToNumbers.get(succ(s, v)) + " {" + acc.accSets(s, v) + "}\n";
+            result += "[" + vsSep.toFormula() + "] " + statesToNumbers.get(succ(s, v)) + " {" + acc.accSets(s, v)
+                    + "}\n";
         }
         return result;
     }
@@ -106,6 +104,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
         return acc.toString();
     }
 
+    @Override
     public int pairNumber() {
         return acc.size();
     }

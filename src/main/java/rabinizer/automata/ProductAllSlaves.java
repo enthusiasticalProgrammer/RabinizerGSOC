@@ -9,7 +9,8 @@ import java.util.Set;
 
 public class ProductAllSlaves extends Product {
 
-    public ProductAllSlaves(FormulaAutomaton<Formula> master, Map<GOperator, RabinSlave> slaves, ValuationSetFactory<String> factory) {
+    public ProductAllSlaves(FormulaAutomaton<Formula> master, Map<GOperator, RabinSlave> slaves,
+            ValuationSetFactory<String> factory) {
         super(master, slaves, factory);
     }
 

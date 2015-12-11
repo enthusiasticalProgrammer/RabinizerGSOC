@@ -21,10 +21,10 @@ public class ProductDegenAccState extends Tuple<ProductDegenState, Set<Integer>>
 
     @Override
     public String toString() {
-        String result = left.toString();
-        int[] orderedSets = new int[right.size()];
+        String result = getLeft().toString();
+        int[] orderedSets = new int[getRight().size()];
         int i = 0;
-        for (Integer set : right) {
+        for (Integer set : getRight()) {
             orderedSets[i] = set;
             i++;
         }

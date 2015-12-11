@@ -35,6 +35,7 @@ public class Product extends GenericProduct<FormulaAutomatonState, GOperator, Ra
     @Override
     protected ProductState generateInitialState() {
         return new ProductState(primaryAutomaton.getInitialState(), relevantSecondary(primaryAutomaton.getInitialState()), k -> secondaryAutomata.get(k).getInitialState());
+        // val)) + "::";
     }
 
     @Override

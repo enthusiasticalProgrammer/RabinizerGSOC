@@ -28,5 +28,6 @@ public abstract class FormulaAutomaton<L extends Formula> extends GenericFormula
     protected abstract EquivalenceClass init(EquivalenceClass clazz);
 
     protected abstract EquivalenceClass step(EquivalenceClass clazz, Set<String> valuation);
+
 }
 

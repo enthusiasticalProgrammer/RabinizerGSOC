@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.automata;
 
 import rabinizer.exec.Main;
@@ -50,7 +45,7 @@ public class RabinSlave extends Automaton<RankingState> {
             succ.remove(s);
         }
 
-        //TODO recompute tokens, eliminating gaps
+        // TODO recompute tokens, eliminating gaps
         int[] tokens = new int[succ.keySet().size()];
         int i = 0;
         for (FormulaAutomatonState f : succ.keySet()) {
@@ -66,7 +61,7 @@ public class RabinSlave extends Automaton<RankingState> {
             }
         }
 
-        //TODO add token to the initial state
+        // TODO add token to the initial state
         if (!succ.containsKey(mojmir.initialState)) {
             succ.put(mojmir.initialState, succ.keySet().size() + 1);
         }

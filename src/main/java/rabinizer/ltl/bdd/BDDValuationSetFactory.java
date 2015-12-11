@@ -62,6 +62,7 @@ public class BDDValuationSetFactory extends BDDLibraryWrapper<Literal> implement
 
     Set<String> pickAny(BDD bdd) {
         Set<Literal> satAssignment = getSatAssignment(bdd);
-        return satAssignment.stream().filter(literal -> !literal.getNegated()).map(Literal::getAtom).collect(Collectors.toSet());
+        return satAssignment.stream().filter(literal -> !literal.getNegated()).map(Literal::getAtom)
+                .collect(Collectors.toSet());
     }
 }

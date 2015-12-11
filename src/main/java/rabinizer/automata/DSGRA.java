@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.automata;
 
 import rabinizer.ltl.ValuationSet;
@@ -45,16 +40,18 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
         for (int i = 0; i < accTGR.size(); i++) {
             accSets.put(i, new HashSet<>());
             GRabinPairT grp = accTGR.get(i);
-            if (grp.left != null && grp.left.get(s.left) != null && grp.left.get(s.left).contains(v)) {
+            if (grp.getLeft() != null && grp.getLeft().get(s.getLeft()) != null
+                    && grp.getLeft().get(s.getLeft()).contains(v)) {
                 accSets.get(i).add(-1);
             }
-            for (int j = 0; j < grp.right.size(); j++) {
-                if (grp.right.get(j).get(s.left) != null && grp.right.get(j).get(s.left).contains(v)) {
+            for (int j = 0; j < grp.getRight().size(); j++) {
+                if (grp.getRight().get(j).get(s.getLeft()) != null
+                        && grp.getRight().get(j).get(s.getLeft()).contains(v)) {
                     accSets.get(i).add(j);
                 }
             }
         }
-        return new ProductAccState(dtgra.automaton.succ(s.left, v), accSets);
+        return new ProductAccState(dtgra.automaton.succ(s.getLeft(), v), accSets);
     }
 
     @Override
@@ -71,7 +68,7 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
     protected String accName() {
         String result = "acc-name: generalized-Rabin " + accSGR.size();
         for (GRabinPair<Set<ProductAccState>> anAccSGR : accSGR) {
-            result += " " + (anAccSGR.right.size());
+            result += " " + (anAccSGR.getRight().size());
         }
         return result + "\n";
     }
@@ -87,7 +84,7 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
             result += i == 0 ? "" : " | ";
             result += "Fin(" + sum + ")";
             sum++;
-            for (Set<ProductAccState> set : accSGR.get(i).right) {
+            for (Set<ProductAccState> set : accSGR.get(i).getRight()) {
                 result += "&Inf(" + sum + ")";
                 sum++;
             }

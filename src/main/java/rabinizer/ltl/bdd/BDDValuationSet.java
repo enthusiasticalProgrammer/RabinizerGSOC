@@ -113,6 +113,7 @@ public class BDDValuationSet extends AbstractSet<Set<String>> implements Valuati
         return new BDDValuationSet(valuations.not(), factory);
     }
 
+    @Override
     public BDDValuationSet clone() {
         return new BDDValuationSet(valuations.id(), factory);
     }

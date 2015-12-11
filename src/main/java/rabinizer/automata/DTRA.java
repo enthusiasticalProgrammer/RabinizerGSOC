@@ -45,18 +45,18 @@ public class DTRA extends AccAutomaton<ProductDegenState> implements AccAutomato
         Map<Integer, Integer> awaitedIndices = new HashMap<>();
         for (int i = 0; i < accTGR.size(); i++) {
             GRabinPairT grp = accTGR.get(i);
-            int awaited = s.right.get(i);
+            int awaited = s.getRight().get(i);
             // System.out.print("$$$"+v+awaited);
-            if (awaited == grp.right.size()) {
+            if (awaited == grp.getRight().size()) {
                 awaited = 0;
             }
-            while (awaited < grp.right.size() && grp.right.get(awaited).containsKey(s.left)
-                    && grp.right.get(awaited).get(s.left).contains(v)) {
+            while (awaited < grp.getRight().size() && grp.getRight().get(awaited).containsKey(s.getLeft())
+                    && grp.getRight().get(awaited).get(s.getLeft()).contains(v)) {
                 awaited++;
             } // System.out.println(awaited);
             awaitedIndices.put(i, awaited);
         }
-        return new ProductDegenState(dtgra.automaton.succ(s.left, v), awaitedIndices);
+        return new ProductDegenState(dtgra.automaton.succ(s.getLeft(), v), awaitedIndices);
     }
 
     @Override
@@ -100,15 +100,15 @@ public class DTRA extends AccAutomaton<ProductDegenState> implements AccAutomato
         Set<ValuationSet> vSets;
         for (RabinPair<ProductDegenState> rp : accTR) {
             vSets = new HashSet<>();
-            if (rp.left.containsKey(s)) {
-                vSets.add(rp.left.get(s));
-                vSets.add(rp.left.get(s).complement());
+            if (rp.getLeft().containsKey(s)) {
+                vSets.add(rp.getLeft().get(s));
+                vSets.add(rp.getLeft().get(s).complement());
             }
             productVs.add(vSets);
             vSets = new HashSet<>();
-            if (rp.right.containsKey(s)) {
-                vSets.add(rp.right.get(s));
-                vSets.add(rp.right.get(s).complement());
+            if (rp.getRight().containsKey(s)) {
+                vSets.add(rp.getRight().get(s));
+                vSets.add(rp.getRight().get(s).complement());
             }
             productVs.add(vSets);
         }
@@ -117,12 +117,13 @@ public class DTRA extends AccAutomaton<ProductDegenState> implements AccAutomato
         Set<ValuationSet> edges = generatePartitioning(productVs);
         for (ValuationSet vsSep : edges) {
             Set<String> v = vsSep.pickAny();
-            result += "[" + vsSep.toFormula() + "] "
-                    + statesToNumbers.get(succ(s, v)) + " {" + accTR.accSets(s, v) + "}\n";
+            result += "[" + vsSep.toFormula() + "] " + statesToNumbers.get(succ(s, v)) + " {" + accTR.accSets(s, v)
+                    + "}\n";
         }
         return result;
     }
 
+    @Override
     public int pairNumber() {
         return accTR.size();
     }

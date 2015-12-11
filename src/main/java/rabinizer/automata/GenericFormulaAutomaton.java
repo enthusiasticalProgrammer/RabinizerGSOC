@@ -11,13 +11,15 @@ public abstract class GenericFormulaAutomaton<S, L extends Formula> extends Auto
     final protected EquivalenceClass initial;
     final protected L formulaLabel;
 
-    protected GenericFormulaAutomaton(L formula, EquivalenceClassFactory eqFactory, ValuationSetFactory<String> factory) {
+    protected GenericFormulaAutomaton(L formula, EquivalenceClassFactory eqFactory,
+            ValuationSetFactory<String> factory) {
         super(factory);
         formulaLabel = formula;
         initial = eqFactory.createEquivalenceClass(formula);
     }
 
-    protected Set<ValuationSet> generatePartitioning(Formula f) { // TODO method of state
+    protected Set<ValuationSet> generatePartitioning(Formula f) { // TODO method
+                                                                  // of state
         Set<ValuationSet> result = new HashSet<>();
         Optional<Literal> l = f.getAnUnguardedLiteral();
 
@@ -25,7 +27,7 @@ public abstract class GenericFormulaAutomaton<S, L extends Formula> extends Auto
             result.add(valuationSetFactory.createUniverseValuationSet());
         } else {
             Literal literal = l.get().positiveLiteral();
-            //System.out.println("  gen " + f + "; " + l);
+            // System.out.println(" gen " + f + "; " + l);
             Set<ValuationSet> pos = generatePartitioning(f.evaluate(literal));
             Set<ValuationSet> neg = generatePartitioning(f.evaluate(literal.not()));
             for (ValuationSet vs : pos) {

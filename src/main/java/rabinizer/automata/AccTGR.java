@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.automata;
 
 import java.util.ArrayList;
@@ -10,9 +5,6 @@ import java.util.Set;
 
 public class AccTGR extends ArrayList<GRabinPairT> {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = 2472964991141498843L;
 
     public AccTGR(AccTGRRaw accTGR) {
@@ -26,11 +18,11 @@ public class AccTGR extends ArrayList<GRabinPairT> {
         String result = "";
         int sum = 0;
         for (GRabinPairT gRabinPairT : this) {
-            if (gRabinPairT.left.containsKey(s) && gRabinPairT.left.get(s).contains(v)) {
+            if (gRabinPairT.getLeft().containsKey(s) && gRabinPairT.getLeft().get(s).contains(v)) {
                 result += sum + " ";
             }
             sum++;
-            for (TranSet<ProductState> ts : gRabinPairT.right) {
+            for (TranSet<ProductState> ts : gRabinPairT.getRight()) {
                 if (ts.containsKey(s) && ts.get(s).contains(v)) {
                     result += sum + " ";
                 }

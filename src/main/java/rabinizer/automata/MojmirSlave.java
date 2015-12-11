@@ -21,5 +21,9 @@ public class MojmirSlave extends FormulaAutomaton<GOperator> {
     @Override
     protected EquivalenceClass step(EquivalenceClass clazz, Set<String> valuation) {
         return clazz.temporalStep(valuation).unfold(false);
+                                                                   // element of
+                                                                   // the
+                                                                   // equivalence
+                                                                   // class
     }
 }
