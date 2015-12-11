@@ -16,7 +16,8 @@ public final class SimplifyBooleanVisitor implements Visitor<Formula> {
         return formula.accept(instance);
     }
 
-    private static Set<Formula> flatten(Stream<Formula> workStream, Predicate<PropositionalFormula> shouldUnfold, BooleanConstant breakC, BooleanConstant continueC) {
+    private static Set<Formula> flatten(Stream<Formula> workStream, Predicate<PropositionalFormula> shouldUnfold,
+            BooleanConstant breakC, BooleanConstant continueC) {
         Set<Formula> flattSet = new HashSet<>();
         Iterator<Formula> iter = workStream.iterator();
 
@@ -44,7 +45,8 @@ public final class SimplifyBooleanVisitor implements Visitor<Formula> {
     @Override
     public Formula visit(Conjunction c) {
         Stream<Formula> workStream = c.getChildren().stream().map(e -> e.accept(this));
-        Set<Formula> set = flatten(workStream, e -> e instanceof Conjunction, BooleanConstant.FALSE, BooleanConstant.TRUE);
+        Set<Formula> set = flatten(workStream, e -> e instanceof Conjunction, BooleanConstant.FALSE,
+                BooleanConstant.TRUE);
 
         if (set.isEmpty()) {
             return BooleanConstant.TRUE;
@@ -65,7 +67,8 @@ public final class SimplifyBooleanVisitor implements Visitor<Formula> {
     @Override
     public Formula visit(Disjunction d) {
         Stream<Formula> workStream = d.getChildren().stream().map(e -> e.accept(this));
-        Set<Formula> set = flatten(workStream, e -> e instanceof Disjunction, BooleanConstant.TRUE, BooleanConstant.FALSE);
+        Set<Formula> set = flatten(workStream, e -> e instanceof Disjunction, BooleanConstant.TRUE,
+                BooleanConstant.FALSE);
 
         if (set.isEmpty()) {
             return BooleanConstant.FALSE;

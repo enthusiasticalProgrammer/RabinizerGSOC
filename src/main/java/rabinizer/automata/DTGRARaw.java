@@ -1,24 +1,27 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.automata;
 
 import rabinizer.exec.Main;
 import rabinizer.ltl.EquivalenceClassFactory;
 import rabinizer.ltl.Formula;
-import rabinizer.ltl.GOperator;
+import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.ltl.GOperator;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+
+import com.google.common.collect.Table.Cell;
 
 /**
  * @author jkretinsky
  */
-public class DTGRARaw /*implements AccAutomatonInterface*/ {
+public class DTGRARaw {
 
     public Product automaton;
     public AccTGRRaw accTGR;
@@ -27,16 +30,9 @@ public class DTGRARaw /*implements AccAutomatonInterface*/ {
     final EquivalenceClassFactory equivalenceClassFactory;
     final ValuationSetFactory<String> valuationSetFactory;
 
-    /**
-     * @param phi
-     * @param computeAcc
-     * @param unfoldedOn
-     * @param sinksOn
-     * @param optimizeInitialStatesOn
-     * @param relevantSlavesOnlyOn
-     * @param slowerIsabelleAccForUnfolded
-     */
-    public DTGRARaw(Formula phi, boolean computeAcc, boolean unfoldedOn, boolean sinksOn, boolean optimizeInitialStatesOn, boolean relevantSlavesOnlyOn, boolean slowerIsabelleAccForUnfolded, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory<String> valuationSetFactory) {
+    public DTGRARaw(Formula phi, boolean computeAcc, boolean unfoldedOn, boolean sinksOn,
+            boolean optimizeInitialStatesOn, boolean relevantSlavesOnlyOn, boolean slowerIsabelleAccForUnfolded,
+            EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory<String> valuationSetFactory) {
         this.valuationSetFactory = valuationSetFactory;
         this.equivalenceClassFactory = equivalenceClassFactory;
 
@@ -56,27 +52,29 @@ public class DTGRARaw /*implements AccAutomatonInterface*/ {
         Map<GOperator, RabinSlave> slaves = new HashMap<>();
         for (GOperator f : gSubformulas) {
             FormulaAutomaton mSlave;
-            if (unfoldedOn) {  // unfold upon arrival to state
+            if (unfoldedOn) { // unfold upon arrival to state
                 mSlave = new MojmirSlave(f, equivalenceClassFactory, valuationSetFactory);
             } else {
                 mSlave = new MojmirSlaveFolded(f, equivalenceClassFactory, valuationSetFactory);
             }
             mSlave.generate();
-            if (sinksOn) {  // selfloop-only states keep no tokens
+            if (sinksOn) { // selfloop-only states keep no tokens
                 mSlave.removeSinks();
             }
             RabinSlave rSlave = new RabinSlave(mSlave, valuationSetFactory);
             rSlave.generate();
-            if (optimizeInitialStatesOn) {  // remove transient part
+            if (optimizeInitialStatesOn) { // remove transient part
                 rSlave.optimizeInitialState();
             }
             slaves.put(f, rSlave);
         }
         Main.verboseln("========================================");
         Main.nonsilent("Generating product");
-        if (relevantSlavesOnlyOn) {  // relevant secondaryAutomata dynamically computed from primaryAutomaton formula
+        if (relevantSlavesOnlyOn) { // relevant secondaryAutomata dynamically
+                                    // computed from primaryAutomaton formula
+                                    // master formula
             automaton = new Product(master, slaves, valuationSetFactory);
-        } else {  // all secondaryAutomata monitor
+        } else { // all secondaryAutomata monitor
             automaton = new ProductAllSlaves(master, slaves, valuationSetFactory);
         }
         automaton.generate();
@@ -97,5 +95,14 @@ public class DTGRARaw /*implements AccAutomatonInterface*/ {
         }
     }
 
+    /**
+     * Side effect: empty sink-SCCs get deleted, acceptance condition gets
+     * reduced when possible
+     * 
+     * @return true if automaton together witch acceptance condition is empty
+     */
+    public boolean checkIfEmpty(ValuationSetFactory<String> val) {
+        return EmptinessCheck.<ProductState> checkEmptiness((Automaton<ProductState>) automaton, accTGR, val);
+    }
 
 }

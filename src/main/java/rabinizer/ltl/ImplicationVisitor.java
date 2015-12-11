@@ -1,8 +1,10 @@
 package rabinizer.ltl;
 
-//visitY(a,b) returns true if a=>b, and if we don't know it or a doesn't imply b then false.
-//it is highly recommended to have the formulae agressively simplified before
-//the class is written to be used only in simplifyAggressively for a Con- or Disjunction
+/**
+ * visitY(a,b) returns true if a=>b, and if we don't know it or a doesn't imply
+ * b then false. it is highly recommended to have the subformulae aggressively
+ * simplified before the Visitor is applied.
+ */
 public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
 
     private static ImplicationVisitor instance = new ImplicationVisitor();
@@ -14,6 +16,7 @@ public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
         return instance;
     }
 
+    @Override
     public Boolean visit(BooleanConstant b, Formula fo) {
         if (b.value) {
             return b.equals(fo);
@@ -22,66 +25,79 @@ public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
         }
     }
 
+    @Override
     public Boolean visit(Conjunction c, Formula fo) {
-        if (c.equals(fo)) {
+        if (c.equals(fo) || fo.equals(BooleanConstant.TRUE)) {
             return true;
         }
         if (fo instanceof Conjunction) {
             boolean imp = true;
             for (Formula fochild : ((PropositionalFormula) fo).children) {
-                boolean impClause = false;
-                for (Formula child : c.children) {
-                    impClause = impClause || child.accept(this, fochild);
-                }
-                imp = imp && impClause;
+                imp = imp && c.children.stream().anyMatch(ch -> ch.accept(this, fochild));
             }
             return imp;
-        } else {
-            boolean imp = false;
-            for (Formula child : c.children) {
-                imp = imp || child.accept(this, fo);
+        } else if (fo instanceof UOperator) {
+            if (c.accept(this, ((UOperator) fo).right)) {
+                return true;
             }
-            return imp;
+        } else if (fo instanceof Disjunction) {
+            if (((Disjunction) fo).children.stream().anyMatch(ch -> c.accept(this, ch)))
+                return true;
         }
+
+        return c.children.stream().anyMatch(ch -> ch.accept(this, fo));
     }
 
+    @Override
     public Boolean visit(Disjunction d, Formula fo) {
-        boolean imp = true;
-        for (Formula child : d.children) {
-            imp = imp && child.accept(this, fo);
+        if (d.equals(fo) || fo.equals(BooleanConstant.TRUE)) {
+            return true;
+        } else if (fo instanceof UOperator) {
+            if (d.accept(this, ((UOperator) fo).right)) {
+                return true;
+            }
+        } else if (fo instanceof Conjunction) {
+            if (((Conjunction) fo).children.stream().allMatch(ch -> d.accept(this, ch)))
+                return true;
+        } else if (fo instanceof Disjunction) {
+            if (((Disjunction) fo).children.stream().anyMatch(ch -> d.accept(this, ch)))
+                return true;
         }
-        return imp;
+        return d.children.stream().allMatch(c -> c.accept(this, fo));
     }
 
+    @Override
     public Boolean visit(FOperator f, Formula fo) {
+        if (f.equals(fo) || fo.equals(BooleanConstant.TRUE)) {
+            return true;
+        }
         if (fo instanceof FOperator) {
             return f.operand.accept(this, ((ModalOperator) fo).operand);
+        } else if (fo instanceof UOperator) {
+            if (f.accept(this, ((UOperator) fo).right)) {
+                return true;
+            }
+        } else if (fo instanceof Conjunction) {
+            return ((Conjunction) fo).children.stream().allMatch(ch -> f.accept(this, ch));
+        } else if (fo instanceof Disjunction) {
+            return ((Disjunction) fo).children.stream().anyMatch(ch -> f.accept(this, ch));
         }
         return false;
     }
 
+    @Override
     public Boolean visit(GOperator g, Formula fo) {
-        if (g.equals(fo)) {
+        if (g.equals(fo) || fo.equals(BooleanConstant.TRUE)) {
             return true;
         }
-        if (fo.equals(g.operand)) {
+        if (g.operand.accept(this, fo)) {
             return true;
-        } else if (fo instanceof BooleanConstant) {
-            return ((BooleanConstant) fo).value;
         } else if (fo instanceof Conjunction) {
-            boolean imp = true;
-            for (Formula fochild : ((PropositionalFormula) fo).children) {
-                imp = imp && g.accept(this, fochild);
-            }
-            return imp;
+            return ((Conjunction) fo).children.stream().allMatch(ch -> g.accept(this, ch));
         } else if (fo instanceof Disjunction) {
-            boolean imp = false;
-            for (Formula fochild : ((PropositionalFormula) fo).children) {
-                imp = imp || g.accept(this, fochild);
-            }
-            return imp;
+            return ((Disjunction) fo).children.stream().anyMatch(ch -> g.accept(this, ch));
         } else if (fo instanceof FOperator || fo instanceof GOperator) {
-            return g.accept(this, ((ModalOperator) fo).operand);
+            return g.operand.accept(this, ((ModalOperator) fo).operand) || g.accept(this, ((ModalOperator) fo).operand);
         } else if (fo instanceof Literal) {
             return g.operand.accept(this, fo);
         } else if (fo instanceof UOperator) {
@@ -93,61 +109,49 @@ public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
         return false;
     }
 
+    @Override
     public Boolean visit(Literal l, Formula fo) {
+        if (l.equals(fo) || fo.equals(BooleanConstant.TRUE)) {
+            return true;
+        }
         if (fo instanceof Conjunction) {
-            boolean imp = true;
-            for (Formula child : ((PropositionalFormula) fo).children) {
-                imp = imp && l.accept(this, child);
-            }
-            return imp;
+            return ((Conjunction) fo).children.stream().allMatch(ch -> l.accept(this, ch));
         } else if (fo instanceof Disjunction) {
-            boolean imp = false;
-            for (Formula child : ((PropositionalFormula) fo).children) {
-                imp = imp || l.accept(this, child);
-            }
-        } else if (fo instanceof Literal) {
-            return l.equals(fo);
-        } else if (fo instanceof BooleanConstant) {
-            return ((BooleanConstant) fo).value;
+            return ((Disjunction) fo).children.stream().anyMatch(ch -> l.accept(this, ch));
         } else if (fo instanceof FOperator) {
             return l.accept(this, ((ModalOperator) fo).operand);
         }
         return false;
     }
 
+    @Override
     public Boolean visit(UOperator u, Formula fo) {
-        if (u.equals(fo)) {
+        if (u.equals(fo) || fo.equals(BooleanConstant.TRUE)) {
             return true;
         }
         if (fo instanceof UOperator) {
-            return u.left.accept(this, ((UOperator) fo).left) && u.right.accept(this, ((UOperator) fo).right);
+            return (u.left.accept(this, ((UOperator) fo).left) && u.right.accept(this, ((UOperator) fo).right))
+                    || u.accept(this, ((UOperator) fo).right);
         } else if (fo instanceof FOperator) {
             return u.right.accept(this, ((ModalOperator) fo).operand);
-        } else {
-            return FormulaFactory.mkAnd(u.left, u.right).accept(SimplifyAggressivelyVisitor.getVisitor()).accept(this,
-                    fo);
+        } else if (fo instanceof Conjunction) {
+            if (((Conjunction) fo).children.stream().allMatch(ch -> u.accept(this, ch)))
+                return true;
+        } else if (fo instanceof Disjunction) {
+            if (((Disjunction) fo).children.stream().anyMatch(ch -> u.accept(this, ch)))
+                return true;
         }
-
+        return FormulaFactory.mkOr(u.left, u.right).accept(SimplifyAggressivelyVisitor.getVisitor()).accept(this, fo);
     }
 
+    @Override
     public Boolean visit(XOperator x, Formula fo) {
-        if (x.equals(fo)) {
+        if (x.equals(fo) || fo.equals(BooleanConstant.TRUE)) {
             return true;
-        }
-        if (fo instanceof BooleanConstant) {
-            return ((BooleanConstant) fo).value;
         } else if (fo instanceof Conjunction) {
-            boolean imp = true;
-            for (Formula child : ((PropositionalFormula) fo).children) {
-                imp = imp && x.accept(this, child);
-            }
-            return imp;
+            return ((Conjunction) fo).children.stream().allMatch(ch -> x.accept(this, ch));
         } else if (fo instanceof Disjunction) {
-            boolean imp = false;
-            for (Formula child : ((PropositionalFormula) fo).children) {
-                imp = imp || x.accept(this, child);
-            }
-            return imp;
+            return ((Disjunction) fo).children.stream().anyMatch(ch -> x.accept(this, ch));
         } else if (fo instanceof FOperator) {
             return x.operand.accept(this, fo) || x.accept(this, ((ModalOperator) fo).operand)
                     || x.operand.accept(this, ((ModalOperator) fo).operand);

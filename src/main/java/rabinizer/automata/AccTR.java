@@ -11,7 +11,6 @@ import rabinizer.ltl.ValuationSetFactory;
 import java.util.ArrayList;
 import java.util.Set;
 
-
 /**
  * @author jkretinsky
  */
@@ -22,7 +21,6 @@ public class AccTR extends ArrayList<RabinPair<ProductDegenState>> {
      */
     private static final long serialVersionUID = -5442515295977731129L;
 
-
     public AccTR(AccTGR accTGR, DTRA dtra, ValuationSetFactory<String> valuationSetFactory) {
         super();
         for (int i = 0; i < accTGR.size(); i++) {
@@ -30,11 +28,11 @@ public class AccTR extends ArrayList<RabinPair<ProductDegenState>> {
             TranSet<ProductDegenState> fin = new TranSet<>(valuationSetFactory);
             TranSet<ProductDegenState> inf = new TranSet<>(valuationSetFactory);
             for (ProductDegenState s : dtra.states) {
-                ValuationSet vsFin = grp.left.get(s.left);
+                ValuationSet vsFin = grp.getLeft().get(s.getLeft());
                 if (vsFin != null) {
                     fin.add(s, vsFin);
                 }
-                if (s.right.get(i) == grp.right.size()) {
+                if (s.getRight().get(i) == grp.getRight().size()) {
                     inf.add(s, valuationSetFactory.createUniverseValuationSet());
                 }
             }
@@ -56,10 +54,10 @@ public class AccTR extends ArrayList<RabinPair<ProductDegenState>> {
     String accSets(ProductDegenState s, Set<String> v) {
         String result = "";
         for (int i = 0; i < size(); i++) {
-            if (get(i).left.containsKey(s) && get(i).left.get(s).contains(v)) {
+            if (get(i).getLeft().containsKey(s) && get(i).getLeft().get(s).contains(v)) {
                 result += 2 * i + " ";
             }
-            if (get(i).right.containsKey(s) && get(i).right.get(s).contains(v)) {
+            if (get(i).getRight().containsKey(s) && get(i).getRight().get(s).contains(v)) {
                 result += (2 * i + 1) + " ";
             }
         }

@@ -2,6 +2,8 @@ package rabinizer.automata;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import com.google.common.collect.Table.Cell;
+
 import rabinizer.exec.Main;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
@@ -12,7 +14,7 @@ import java.util.*;
  * @param <State>
  * @author jkretinsky
  */
-public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
+public abstract class Automaton<State> {
 
     protected Set<State> states;
     protected Set<State> sinks;
@@ -158,9 +160,6 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
         String r = "digraph \"Automaton for " + initialState + "\" \n{\n";
 
         for (State s : states) {
-            /*if (finalStates.contains(s)) {
-             r += "node [shape=Msquare, label=\"" + displayLabels.get(s) + "\"]\"" + displayLabels.get(s) + "\";\n";
-             } else*/
             if (s == initialState) {
                 r += "node [shape=oval, label=\"" + s + "\"]\"" + s + "\";\n";
             } else {
@@ -169,7 +168,8 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
         }
 
         for (Table.Cell<State, ValuationSet, State> cell : transitions.cellSet()) {
-            r += "\"" + cell.getRowKey() + "\" -> \"" + cell.getColumnKey() + "\" [label=\"" + cell.getValue() + "\"];\n";
+            r += "\"" + cell.getRowKey() + "\" -> \"" + cell.getColumnKey() + "\" [label=\"" + cell.getValue()
+                    + "\"];\n";
         }
 
         return r + "}";
@@ -189,8 +189,10 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
         dot += "States: " + states.size() + "\n";
         dot += "Start: " + statesToNumbers.get(initialState) + "\n";
         dot += accName();
-        dot += "Acceptance: " + accTypeNumerical() + "\n"; //TODO: handle trivial sets
+        dot += "Acceptance: " + accTypeNumerical() + "\n"; // TODO: handle
         dot += "AP: " + valuationSetFactory.getAlphabet().size();
+
+        // trivial sets
         for (String letter : valuationSetFactory.getAlphabet()) {
             dot += " \"" + letter + "\"";
         }
@@ -240,5 +242,103 @@ public abstract class Automaton<State> /*implements AccAutomatonInterface*/ {
             result += "[" + entry.getKey().toFormula() + "] " + statesToNumbers.get(entry.getValue()) + "\n";
         }
         return result;
+    }
+
+    /**
+     * This method removes unused states and their in- and outgoing transitions.
+     * If the set contains the initial state, it becomes an automaton with the
+     * only state false. Use this method only if you are really sure you want to
+     * remove the states! The method is designed for the assumptions, that only
+     * nonaccepting SCCs are deleted, and the idea is also that everything,
+     * which is deleted will be replaced with a trap state (in makeComplete).
+     * 
+     * @param statess:
+     *            Set of states that is to be removed
+     */
+    protected void removeStates(Set<State> statess) {
+        if (statess.contains(initialState)) {
+            states = Collections.emptySet();
+            transitions = HashBasedTable.create();
+            initialState = null;
+            sinks = Collections.emptySet();
+            edgeBetween = HashBasedTable.create();
+        } else {
+            states.removeAll(statess);
+            sinks.removeAll(statess);
+
+            // fix transitions
+            Cell<State, ValuationSet, State> entry = null;
+            for (Iterator<Cell<State, ValuationSet, State>> it = transitions.cellSet().iterator(); it
+                    .hasNext(); entry = it.next()) {
+
+                if (statess.contains(entry.getRowKey())) {
+                    it.remove();
+                } else if (statess.contains(entry.getValue())) {
+                    it.remove();
+                }
+            }
+
+            // fix edgeBetwwen
+            Cell<State, State, ValuationSet> entry2 = null;
+            for (Iterator<Cell<State, State, ValuationSet>> it = edgeBetween.cellSet().iterator(); it
+                    .hasNext(); entry2 = it.next()) {
+                if (statess.contains(entry2.getRowKey())) {
+                    it.remove();
+                } else if (statess.contains(entry2.getColumnKey())) {
+                    it.remove();
+                }
+            }
+        }
+    }
+
+    /**
+     * 
+     * @param scc:
+     *            an SCC for which the transitions inside need to be determined
+     * @return all transitions where start is in the SCC
+     */
+
+    protected Set<Table.Cell<State, ValuationSet, State>> getTransitionsInSCC(Set<State> scc) {
+        Set<Table.Cell<State, ValuationSet, State>> result = new HashSet<Table.Cell<State, ValuationSet, State>>();
+        for (Table.Cell<State, ValuationSet, State> entry : transitions.cellSet()) {
+
+            if (scc.contains(entry.getRowKey())) {
+                result.add(entry);
+            }
+
+        }
+        return result;
+
+    }
+
+    /**
+     * This method has no side effects
+     * 
+     * @param scc:
+     *            set of states
+     * @return true if the only transitions from scc go to scc again and false
+     *         otherwise
+     */
+    protected boolean isSink(Set<State> scc) {
+        Set<State> nonSCCStates = new HashSet<>(states);
+        nonSCCStates.removeAll(scc);
+        return scc.stream().filter(s -> transitions.row(s) != null)
+                .allMatch(s -> (Collections.disjoint(transitions.row(s).values(), nonSCCStates)));
+    }
+
+    /**
+     * if the automaton is not complete anymore (e.g. because of optimization),
+     * this method makes it complete by adding a trap state.
+     */
+    public void makeComplete() {
+        throw new RuntimeException("Not yet implemented");
+    }
+
+    public List<Set<State>> SCCs() {
+        return SCCAnalyser.<State> SCCs(this);
+    }
+
+    public List<Set<State>> subSCCs(Set<State> SCC, Map<State, ValuationSet> forbiddenEdges) {
+        return SCCAnalyser.<State> subSCCs(this, SCC, forbiddenEdges);
     }
 }

@@ -32,9 +32,9 @@ public class DSRA extends Automaton<ProductDegenAccState> implements AccAutomato
             stateAcceptance.put(s, new HashSet<>());
             for (int i = 0; i < accTR.size(); i++) {
                 RabinPair<ProductDegenState> rp = accTR.get(i);
-                if (valuationSetFactory.createAllValuationSets().equals(rp.left.get(s))) {
+                if (valuationSetFactory.createAllValuationSets().equals(rp.getLeft().get(s))) {
                     stateAcceptance.get(s).add(2 * i);
-                } else if (valuationSetFactory.createAllValuationSets().equals(rp.right.get(s))) {
+                } else if (valuationSetFactory.createAllValuationSets().equals(rp.getRight().get(s))) {
                     stateAcceptance.get(s).add(2 * i + 1);
                 }
             }
@@ -51,20 +51,21 @@ public class DSRA extends Automaton<ProductDegenAccState> implements AccAutomato
     @Override
     protected ProductDegenAccState generateSuccState(ProductDegenAccState s, ValuationSet vs) {
         Set<String> v = vs.pickAny();
-        ProductDegenState succ = dtra.succ(s.left, v);
+        ProductDegenState succ = dtra.succ(s.getLeft(), v);
         Set<Integer> accSets = new HashSet<>(stateAcceptance.get(succ));
         for (int i = 0; i < accTR.size(); i++) {
             RabinPair<ProductDegenState> rp = accTR.get(i);
-            if (rp.left != null && rp.left.get(s.left) != null && rp.left.get(s.left).contains(v)
-                    && !stateAcceptance.get(s.left).contains(2 * i)) { // acceptance
+            if (rp.getLeft() != null && rp.getLeft().get(s.getLeft()) != null
+                    && rp.getLeft().get(s.getLeft()).contains(v) && !stateAcceptance.get(s.getLeft()).contains(2 * i)) { // acceptance
                 // dealt
                 // with
                 // already
                 // in s
                 accSets.add(2 * i);
             }
-            if (rp.right != null && rp.right.get(s.left) != null && rp.right.get(s.left).contains(v)
-                    && !stateAcceptance.get(s.left).contains(2 * i + 1)) {
+            if (rp.getRight() != null && rp.getRight().get(s.getLeft()) != null
+                    && rp.getRight().get(s.getLeft()).contains(v)
+                    && !stateAcceptance.get(s.getLeft()).contains(2 * i + 1)) {
                 accSets.add(2 * i + 1);
             }
             if (accSets.contains(2 * i) && accSets.contains(2 * i + 1)) {

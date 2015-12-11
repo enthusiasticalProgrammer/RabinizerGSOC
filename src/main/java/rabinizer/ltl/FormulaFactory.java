@@ -122,4 +122,12 @@ public class FormulaFactory {
         return f.accept(getVis());
     }
 
+    /**
+     * this method is important for testing, because otherwise different
+     * junit-tests interfere with each other
+     */
+    public static void reInitialise() {
+        formulae = new HashMap<Formula, Formula>();
+    }
+
 }

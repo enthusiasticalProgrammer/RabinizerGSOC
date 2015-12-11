@@ -42,13 +42,16 @@ public abstract class Formula {
     /**
      * Unfold temporal operators. This is also called LTL Formula expansion.
      *
-     * @param unfoldG If unfoldG is set to true the G-operator is also unfolded. This is used in for the master transition system.
+     * @param unfoldG
+     *            If unfoldG is set to true the G-operator is also unfolded.
+     *            This is used in for the master transition system.
      * @return The unfolded formula
      */
     public abstract Formula unfold(boolean unfoldG);
 
     /**
-     * Do a single temporal step. This means that one layer of X-operators is removed and literals are replaced by their valuations.
+     * Do a single temporal step. This means that one layer of X-operators is
+     * removed and literals are replaced by their valuations.
      *
      * @param valuation
      * @return
@@ -66,7 +69,11 @@ public abstract class Formula {
 
         EquivalenceClassFactory factory = new BDDEquivalenceClassFactory(getPropositions());
         EquivalenceClass clazz = factory.createEquivalenceClass(this.unfold(true));
-        result.addAll(candidates.stream().filter(subFormula -> hasSubformula(subFormula) && !clazz.getSimplifiedRepresentative().ignoresG(subFormula)).collect(Collectors.toList()));
+        result.addAll(
+                candidates.stream()
+                        .filter(subFormula -> hasSubformula(subFormula)
+                                && !clazz.getSimplifiedRepresentative().ignoresG(subFormula))
+                .collect(Collectors.toList()));
 
         return result;
     }

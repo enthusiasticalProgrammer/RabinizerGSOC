@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package rabinizer.automata;
 
 import rabinizer.exec.Tuple;
@@ -21,7 +15,7 @@ public class ProductDegenState extends Tuple<ProductState, Map<Integer, Integer>
 
     @Override
     public String toString() {
-        return left + " " + right;
+        return getLeft() + " " + getRight();
     }
 
 }

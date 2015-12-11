@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.automata;
 
 import java.util.ArrayList;
@@ -14,9 +9,6 @@ import java.util.Set;
  */
 public class AccSR extends ArrayList<Set<ProductDegenAccState>> {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = 1L;
 
     AccSR(AccTR accTR, DSRA dsra) {
@@ -25,7 +17,7 @@ public class AccSR extends ArrayList<Set<ProductDegenAccState>> {
             this.add(new HashSet<>());
         }
         for (ProductDegenAccState s : dsra.states) {
-            for (Integer i : s.right) {
+            for (Integer i : s.getRight()) {
                 this.get(i).add(s);
             }
         }
@@ -42,7 +34,7 @@ public class AccSR extends ArrayList<Set<ProductDegenAccState>> {
 
     String accSets(ProductDegenAccState s) {
         String result = "{";
-        Set<Integer> accSets = s.right;
+        Set<Integer> accSets = s.getRight();
         for (int i = 0; i < 2 * size(); i++) {
             if (accSets.contains(i)) {
                 result += i + " ";

@@ -1,13 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.automata;
 
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
-
 import java.util.HashMap;
 
 /**
@@ -15,9 +9,6 @@ import java.util.HashMap;
  */
 public class TranSet<State> extends HashMap<State, ValuationSet> {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = 1013653255527479470L;
     private final ValuationSetFactory<String> factory;
 
@@ -65,6 +56,7 @@ public class TranSet<State> extends HashMap<State, ValuationSet> {
         }
     }
 
+    @Override
     public String toString() {
         String result = "{";
         boolean first = true;

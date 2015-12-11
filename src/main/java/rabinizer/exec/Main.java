@@ -10,6 +10,7 @@ import rabinizer.ltl.Formula;
 import rabinizer.ltl.SimplifyAggressivelyVisitor;
 import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 import rabinizer.ltl.bdd.BDDValuationSetFactory;
+import rabinizer.ltl.ValuationSetFactory;
 import rabinizer.parser.LTLParser;
 import rabinizer.parser.ParseException;
 
@@ -91,7 +92,7 @@ public class Main {
         Format format = Format.DOT;
         boolean inFormula = true;
         boolean outFile = true;
-        String argument = "(F G a) | X b";
+        String argument = null;
         boolean simplifyFormula = false; // NULL Pointer
         boolean eager = true;
         boolean relSlavesOnly = true;
@@ -232,8 +233,8 @@ public class Main {
             stopwatch();
 
             AccAutomatonInterface automaton = computeAutomaton(input, type,
-                    format != Format.SIZE || type != AutomatonType.TGR, eager, simplifyFormula, sinksOn,
-                    relSlavesOnly, optInit);
+                    format != Format.SIZE || type != AutomatonType.TGR, eager, simplifyFormula, sinksOn, relSlavesOnly,
+                    optInit);
 
             nonsilent("Time for construction: " + stopwatch() + " s");
             nonsilent("Outputting DGRA");
@@ -273,8 +274,8 @@ public class Main {
         writer.close();
     }
 
-    public static AccAutomatonInterface computeAutomaton(String input, AutomatonType type, boolean computeAcc, boolean eager,
-                                                         boolean simplify, boolean sinks_on, boolean relSlavesOnly, boolean opt_init) {
+    public static AccAutomatonInterface computeAutomaton(String input, AutomatonType type, boolean computeAcc,
+            boolean eager, boolean simplify, boolean sinks_on, boolean relSlavesOnly, boolean opt_init) {
         LTLParser parser = new LTLParser(new StringReader(input));
 
         Formula formula = null;

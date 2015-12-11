@@ -2,8 +2,8 @@ package rabinizer.exec;
 
 public class Tuple<L, R> {
 
-    public final L left;
-    public final R right;
+    private final L left;
+    private final R right;
     private String strTuple = null;
 
     public Tuple(L l, R r) {
@@ -14,10 +14,10 @@ public class Tuple<L, R> {
     @Override
     public String toString() {
         if (strTuple == null) {
-            strTuple = "<" + (left == null ? "null" : left.toString()) + ", " + (right == null ? "null" : right.toString()) + ">";
+            strTuple = "<" + (left == null ? "null" : left.toString()) + ", "
+                    + (right == null ? "null" : right.toString()) + ">";
         }
         return strTuple;
-//		return "(" + left.toString() + ", " + right.toString() + ")";
     }
 
     @Override
@@ -44,5 +44,13 @@ public class Tuple<L, R> {
             r = right.hashCode();
         }
         return 17 * l + 5 * r;
+    }
+
+    public L getLeft() {
+        return left;
+    }
+
+    public R getRight() {
+        return right;
     }
 }

@@ -21,10 +21,8 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
         return f;
     }
 
+    @Override
     public Formula visit(Conjunction c) {
-        // first of all, get all subformulae beyound Conjunction(e.g. for c and
-        // (a and b)
-        // I want a,b, and c, because you can simplify it more
 
         Set<Formula> set = c.getAllChildrenOfConjunction();
         Set<Formula> toRemove = new HashSet<>();
@@ -51,6 +49,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
         toAdd.clear();
 
         // remove ltl that are implied by other Formulas
+        // TODO: first: PseudoSubstitution, then Implication
         for (Formula form : set) {
             for (Formula form2 : set) {
                 if (!form.equals(form2)) {
@@ -79,6 +78,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
         return FormulaFactory.mkAnd(set);
     }
 
+    @Override
     public Formula visit(Disjunction d) {
         Set<Formula> set = d.getAllChildrenOfDisjunction();
         Set<Formula> toRemove = new HashSet<>();
@@ -130,6 +130,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
         return FormulaFactory.mkOr((Formula[]) set.toArray());
     }
 
+    @Override
     public Formula visit(FOperator f) {
         Formula child = f.operand.accept(this);
         if (child instanceof BooleanConstant) {
@@ -141,13 +142,15 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
         } else if (child instanceof XOperator) {
             return FormulaFactory.mkX(FormulaFactory.mkF(((ModalOperator) child).operand)).accept(this);
         } else if (child instanceof Disjunction) {
-            ArrayList<Formula> newChildren = ((PropositionalFormula) child).children.stream().map(FormulaFactory::mkF).collect(Collectors.toCollection(ArrayList::new));
+            ArrayList<Formula> newChildren = ((PropositionalFormula) child).children.stream().map(FormulaFactory::mkF)
+                    .collect(Collectors.toCollection(ArrayList::new));
             return FormulaFactory.mkOr(newChildren).accept(this);
         } else {
             return FormulaFactory.mkF(child);
         }
     }
 
+    @Override
     public Formula visit(GOperator g) {
         Formula child = g.operand.accept(this);
         if (child instanceof BooleanConstant || child instanceof GOperator) {
@@ -158,6 +161,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
         return FormulaFactory.mkG(child);
     }
 
+    @Override
     public Formula visit(UOperator u) {
         if (u.right.isSuspendable() || u.right.isPureEventual()) {
             return u.right.accept(this);
@@ -189,6 +193,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
         }
     }
 
+    @Override
     public Formula visit(XOperator x) {
         Formula child = x.operand.accept(this);
         if (child.isSuspendable()) {

@@ -210,7 +210,6 @@ public class TestFormula {
         Formula f1 = FormulaFactory.mkLit("p2", false);
         Formula f2 = FormulaFactory.mkG(f1);
         Formula f3 = FormulaFactory.mkAnd(f2, f1);
-
         assertEquals(FormulaFactory.simplify(f3.temporalStep(Collections.emptySet())), BooleanConstant.get(false));
     }
 
@@ -225,7 +224,8 @@ public class TestFormula {
         Formula f6 = FormulaFactory.mkAnd(f1, f3);
         Formula f7 = FormulaFactory.mkOr(f2, f5, f6);
 
-        assertEquals(FormulaFactory.simplify(f7.evaluate(new Literal("p0", false)).evaluate(new Literal("p2", false))), BooleanConstant.get(false));
+        assertEquals(FormulaFactory.simplify(f7.evaluate(new Literal("p0", false)).evaluate(new Literal("p2", false))),
+                BooleanConstant.get(false));
     }
 
     @Test

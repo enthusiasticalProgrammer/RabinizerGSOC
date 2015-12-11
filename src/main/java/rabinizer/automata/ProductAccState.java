@@ -13,7 +13,7 @@ public class ProductAccState extends Tuple<ProductState, Map<Integer, Set<Intege
 
     @Override
     public String toString() {
-        return left + " " + right;
+        return getLeft() + " " + getRight();
     }
 
 }
