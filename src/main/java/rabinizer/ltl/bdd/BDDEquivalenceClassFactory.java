@@ -1,5 +1,7 @@
 package rabinizer.ltl.bdd;
 
+import rabinizer.ltl.BooleanConstant;
+import rabinizer.ltl.EquivalenceClass;
 import rabinizer.ltl.EquivalenceClassFactory;
 import rabinizer.ltl.Formula;
 
@@ -9,6 +11,16 @@ public class BDDEquivalenceClassFactory extends BDDLibraryWrapper<Formula> imple
 
     public BDDEquivalenceClassFactory(Set<Formula> domain) {
         super(domain);
+    }
+
+    @Override
+    public EquivalenceClass getTrue() {
+        return new BDDEquivalenceClass(BooleanConstant.TRUE, factory.one(), this);
+    }
+
+    @Override
+    public EquivalenceClass getFalse() {
+        return new BDDEquivalenceClass(BooleanConstant.FALSE, factory.zero(), this);
     }
 
     @Override

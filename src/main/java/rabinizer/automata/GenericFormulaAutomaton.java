@@ -10,11 +10,13 @@ public abstract class GenericFormulaAutomaton<S, L extends Formula> extends Auto
 
     final protected EquivalenceClass initial;
     final protected L formulaLabel;
+    final protected EquivalenceClassFactory factory;
 
     protected GenericFormulaAutomaton(L formula, EquivalenceClassFactory eqFactory,
             ValuationSetFactory<String> factory) {
         super(factory);
         formulaLabel = formula;
+        this.factory = eqFactory;
         initial = eqFactory.createEquivalenceClass(formula);
     }
 

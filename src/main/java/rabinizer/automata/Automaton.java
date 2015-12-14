@@ -10,10 +10,6 @@ import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.*;
 
-/**
- * @param <State>
- * @author jkretinsky
- */
 public abstract class Automaton<State> {
 
     protected Set<State> states;
@@ -47,6 +43,7 @@ public abstract class Automaton<State> {
     protected Set<ValuationSet> generatePartitioning(Set<Set<ValuationSet>> product) {
         Set<ValuationSet> partitioning = new HashSet<>();
         partitioning.add(valuationSetFactory.createUniverseValuationSet());
+
         for (Set<ValuationSet> vSets : product) {
             Set<ValuationSet> partitioningNew = new HashSet<>();
 
@@ -72,11 +69,15 @@ public abstract class Automaton<State> {
     protected abstract Set<ValuationSet> generateSuccTransitions(State s);
 
     public void generate() {
-        initialState = generateInitialState();
+        initialState = getInitialState();
+        generate(initialState);
+    }
+
+    public void generate(State initialState) {
         states.add(initialState);
 
         // TODO: Move this to a statistics class
-        Main.nonsilent("  Generating automaton for " + initialState);
+        Main.nonsilent("  Generating transitions for " + initialState);
 
         Queue<State> workList = new ArrayDeque<>();
         workList.add(initialState);
@@ -233,6 +234,10 @@ public abstract class Automaton<State> {
     }
 
     public State getInitialState() {
+        if (initialState == null) {
+            initialState = generateInitialState();
+        }
+
         return initialState;
     }
 
