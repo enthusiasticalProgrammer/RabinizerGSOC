@@ -105,7 +105,13 @@ public final class UOperator extends Formula {
     @Override
     public Set<Formula> getPropositions() {
         Set<Formula> propositions = left.getPropositions();
-        propositions.addAll(right.getPropositions());
+
+        for (Formula proposition : right.getPropositions()) {
+            if (!propositions.contains(proposition.not())) {
+                propositions.add(proposition);
+            }
+        }
+
         propositions.add(this);
         return propositions;
     }
