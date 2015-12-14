@@ -1,8 +1,6 @@
 package rabinizer.automata;
 
-import rabinizer.ltl.GOperator;
-import rabinizer.ltl.ValuationSet;
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.ltl.*;
 
 import java.util.HashSet;
 import java.util.List;
@@ -63,6 +61,8 @@ public class DTGRA extends Product implements AccAutomatonInterface {
         return "";
     }
 
+
+
     @Override
     protected String outTransToHOA(ProductState s, Map<ProductState, Integer> statesToNumbers) {
         String result = "";
@@ -93,7 +93,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
         Set<ValuationSet> edges = generatePartitioning(productVs);
         for (ValuationSet vsSep : edges) {
             Set<String> v = vsSep.pickAny();
-            result += "[" + vsSep.toFormula() + "] " + statesToNumbers.get(succ(s, v)) + " {" + acc.accSets(s, v)
+            result += "[" + Simplifier.simplify(vsSep.toFormula(), Simplifier.Strategy.PROPOSITIONAL) + "] " + getId(statesToNumbers, succ(s, v)) + " {" + acc.accSets(s, v)
                     + "}\n";
         }
         return result;

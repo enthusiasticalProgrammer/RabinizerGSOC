@@ -4,13 +4,6 @@ import java.util.*;
 
 public class FormulaFactory {
 
-    /* TODO: Merge this with simplify Visitors */
-    private static Map<Formula, Formula> formulae = new HashMap<>();
-
-    private static SimplifyBooleanVisitor getVis() {
-        return SimplifyBooleanVisitor.getVisitor();
-    }
-
     public static Formula mkAnd(Formula... af) {
         Set<Formula> conjuncts = new HashSet<>();
 
@@ -36,8 +29,7 @@ public class FormulaFactory {
             return onlyOne;
         }
 
-        Formula z = (new Conjunction(conjuncts)).accept(getVis());
-        return probe(z);
+        return Simplifier.simplify(new Conjunction(conjuncts));
     }
 
     public static Formula mkOr(Formula... af) {
@@ -61,9 +53,7 @@ public class FormulaFactory {
             }
             return onlyOne;
         }
-        Formula z = (new Disjunction(disjuncts)).accept(getVis());
-        return probe(z);
-
+        return Simplifier.simplify(new Disjunction(disjuncts));
     }
 
     public static Formula mkOr(Collection<Formula> af) {
@@ -79,55 +69,26 @@ public class FormulaFactory {
     }
 
     public static Formula mkF(Formula child) {
-        Formula z = new FOperator(child).accept(getVis());
-        return probe(z);
+        return new FOperator(child);
     }
 
     public static Formula mkG(Formula child) {
-        Formula z = new GOperator(child).accept(getVis());
-        return probe(z);
+        return new GOperator(child);
     }
 
     public static Formula mkLit(String proposition, boolean negated) {
-        Formula z = new Literal(proposition, negated);
-        return probe(z);
+        return new Literal(proposition, negated);
     }
 
     public static Formula mkU(Formula l, Formula r) {
-        Formula z = new UOperator(l, r).accept(getVis());
-        return probe(z);
-
+        return new UOperator(l, r);
     }
 
     public static Formula mkX(Formula child) {
-        Formula z = new XOperator(child).accept(getVis());
-        return probe(z);
-    }
-
-    private static Formula probe(Formula z) {
-        Formula inMap = formulae.get(z);
-        if (inMap == null) {
-            formulae.put(z, z);
-            return z;
-        } else {
-            return inMap;
-        }
+        return new XOperator(child);
     }
 
     public static Formula mkNot(Formula formula) {
-        return probe(formula.not());
+        return formula.not();
     }
-
-    public static Formula simplify(Formula f) {
-        return f.accept(getVis());
-    }
-
-    /**
-     * this method is important for testing, because otherwise different
-     * junit-tests interfere with each other
-     */
-    public static void reInitialise() {
-        formulae = new HashMap<Formula, Formula>();
-    }
-
 }

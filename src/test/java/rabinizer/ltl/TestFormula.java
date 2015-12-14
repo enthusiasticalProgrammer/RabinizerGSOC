@@ -1,12 +1,8 @@
 package rabinizer.ltl;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import org.junit.Test;
 
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -210,7 +206,7 @@ public class TestFormula {
         Formula f1 = FormulaFactory.mkLit("p2", false);
         Formula f2 = FormulaFactory.mkG(f1);
         Formula f3 = FormulaFactory.mkAnd(f2, f1);
-        assertEquals(FormulaFactory.simplify(f3.temporalStep(Collections.emptySet())), BooleanConstant.get(false));
+        assertEquals(Simplifier.simplify(f3.temporalStep(Collections.emptySet())), BooleanConstant.get(false));
     }
 
     @Test
@@ -224,7 +220,7 @@ public class TestFormula {
         Formula f6 = FormulaFactory.mkAnd(f1, f3);
         Formula f7 = FormulaFactory.mkOr(f2, f5, f6);
 
-        assertEquals(FormulaFactory.simplify(f7.evaluate(new Literal("p0", false)).evaluate(new Literal("p2", false))),
+        assertEquals(Simplifier.simplify(f7.evaluate(new Literal("p0", false)).evaluate(new Literal("p2", false))),
                 BooleanConstant.get(false));
     }
 
@@ -233,7 +229,7 @@ public class TestFormula {
         Formula f1 = FormulaFactory.mkLit("p2", true);
         Formula f4 = FormulaFactory.mkG(f1);
         Formula f5 = f4.unfold(true);
-        Formula f6 = SimplifyBooleanVisitor.simplify(f5.temporalStep(Collections.singleton("p2")));
+        Formula f6 = Simplifier.simplify(f5.temporalStep(Collections.singleton("p2")));
         assertEquals(f6, BooleanConstant.get(false));
     }
 
@@ -243,7 +239,7 @@ public class TestFormula {
         Formula f2 = FormulaFactory.mkLit("p1", false);
         Formula f3 = FormulaFactory.mkLit("p2", false);
         Formula f4 = FormulaFactory.mkAnd(f1, f2, f3);
-        Formula f6 = SimplifyBooleanVisitor.simplify(f4.evaluate((Literal) f1));
+        Formula f6 = Simplifier.simplify(f4.evaluate((Literal) f1));
         assertEquals(f6, FormulaFactory.mkAnd(f2, f3));
     }
 
@@ -284,7 +280,7 @@ public class TestFormula {
         Formula f5 = FormulaFactory.mkAnd(f3, f4);
         Formula f6 = FormulaFactory.mkAnd(f5, f1, f2);
 
-        assertEquals(f6, FormulaFactory.simplify(f5.unfold(true)));
+        assertEquals(f6, Simplifier.simplify(f5.unfold(true)));
     }
 
     @Test

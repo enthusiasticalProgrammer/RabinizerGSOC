@@ -2,7 +2,7 @@ package rabinizer.automata;
 
 import rabinizer.ltl.EquivalenceClass;
 import rabinizer.ltl.Formula;
-import rabinizer.ltl.SimplifyBooleanVisitor;
+import rabinizer.ltl.Simplifier;
 
 import java.util.Objects;
 
@@ -19,7 +19,7 @@ public class FormulaAutomatonState {
     }
 
     public Formula getFormula() {
-        return SimplifyBooleanVisitor.simplify(clazz.getRepresentative());
+        return Simplifier.simplify(clazz.getRepresentative(), Simplifier.Strategy.PROPOSITIONAL);
     }
 
     @Override
