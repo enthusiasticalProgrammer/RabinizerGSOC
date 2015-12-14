@@ -17,6 +17,10 @@ public class Product extends GenericProduct<FormulaAutomatonState, GOperator, Ra
 
     public Product(Product a) {
         super(a.primaryAutomaton, a.secondaryAutomata, a.valuationSetFactory);
+        this.transitions = a.transitions;
+        this.states = a.states;
+        this.edgeBetween = a.edgeBetween;
+        this.sinks = a.sinks;
     }
 
     Set<ValuationSet> generateSuccTransitionsReflectingSinks(ProductState s) {

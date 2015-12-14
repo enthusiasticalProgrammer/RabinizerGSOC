@@ -175,6 +175,18 @@ public abstract class Automaton<State> {
         return r + "}";
     }
 
+    protected static <K> int getId(Map<K, Integer> map, K key) {
+        Integer r = map.get(key);
+
+        if (r == null) {
+            int id = map.size();
+            map.put(key, id);
+            return id;
+        }
+
+        return r;
+    }
+
     public String toHOA() {
         Map<State, Integer> statesToNumbers = new HashMap<>();
 
@@ -199,8 +211,8 @@ public abstract class Automaton<State> {
         dot += "\n";
         dot += "--BODY--\n";
 
-        for (State s : states) {
-            statesToNumbers.put(s, statesToNumbers.size());
+        for (State s : this.states) {
+            getId(statesToNumbers, s);
             dot += "State: " + statesToNumbers.get(s) + " \"" + s + "\" " + stateAcc(s) + "\n";
             dot += outTransToHOA(s, statesToNumbers);
         }
