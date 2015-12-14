@@ -6,6 +6,7 @@ import rabinizer.ltl.BooleanConstant;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.FormulaFactory;
 
+@SuppressWarnings("ALL")
 public class LTLParser implements LTLParserConstants {
   /**
    * Parse with new bijection between identifiers and atoms.

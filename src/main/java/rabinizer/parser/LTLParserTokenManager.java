@@ -3,7 +3,8 @@
 package rabinizer.parser;
 
 /** Token Manager. */
-@SuppressWarnings("unused")public class LTLParserTokenManager implements LTLParserConstants {
+@SuppressWarnings("ALL")
+public class LTLParserTokenManager implements LTLParserConstants {
 
   /** Debug output. */
   public  java.io.PrintStream debugStream = System.out;

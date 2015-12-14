@@ -7,6 +7,7 @@ package rabinizer.parser;
  * contain only ASCII characters (without unicode processing).
  */
 
+@SuppressWarnings("ALL")
 public class SimpleCharStream
 {
 /** Whether parser is static. */

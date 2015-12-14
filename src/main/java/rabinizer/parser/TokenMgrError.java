@@ -3,6 +3,7 @@
 package rabinizer.parser;
 
 /** Token Manager Error. */
+@SuppressWarnings("ALL")
 public class TokenMgrError extends Error
 {
 

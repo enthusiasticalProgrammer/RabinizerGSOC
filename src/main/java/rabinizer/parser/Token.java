@@ -6,6 +6,7 @@ package rabinizer.parser;
  * Describes the input token stream.
  */
 
+@SuppressWarnings("ALL")
 public class Token implements java.io.Serializable {
 
   /**
