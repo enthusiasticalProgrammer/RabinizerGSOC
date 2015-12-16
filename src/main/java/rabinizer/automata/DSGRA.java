@@ -19,6 +19,7 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
     public DSGRA(DTGRARaw dtgra) {
         super(dtgra.valuationSetFactory);
         this.dtgra = dtgra;
+        trapState = new ProductAccState(dtgra.automaton.trapState, new HashMap<>());
         accTGR = new AccTGR(dtgra.accTGR);
         generate();
         accSGR = new AccSGR(accTGR, this);
@@ -97,6 +98,7 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
         return "\n{" + accSGR.accSets(s) + "}";
     }
 
+    @Override
     public int pairNumber() {
         return accSGR.size();
     }

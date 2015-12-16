@@ -1,10 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.automata;
 
+import rabinizer.ltl.EquivalenceClass;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
@@ -26,6 +22,7 @@ public class DSRA extends Automaton<ProductDegenAccState> implements AccAutomato
     public DSRA(DTRA dtra, ValuationSetFactory<String> factory) {
         super(factory);
         this.dtra = dtra;
+        trapState = new ProductDegenAccState(dtra.trapState, new HashSet<>());
         this.accTR = dtra.accTR;
         stateAcceptance = new HashMap<>();
         for (ProductDegenState s : dtra.states) {
@@ -108,7 +105,9 @@ public class DSRA extends Automaton<ProductDegenAccState> implements AccAutomato
         return accSR.accSets(s);
     }
 
+    @Override
     public int pairNumber() {
         return accSR.size() / 2;
     }
+
 }

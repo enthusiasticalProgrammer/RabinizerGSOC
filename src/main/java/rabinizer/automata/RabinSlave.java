@@ -1,6 +1,7 @@
 package rabinizer.automata;
 
 import rabinizer.exec.Main;
+import rabinizer.ltl.EquivalenceClass;
 import rabinizer.ltl.GOperator;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
@@ -20,6 +21,11 @@ public class RabinSlave extends Automaton<RankingState> {
     public RabinSlave(FormulaAutomaton<GOperator> mojmir, ValuationSetFactory<String> factory) {
         super(factory);
         this.mojmir = mojmir;
+
+        FormulaAutomatonState f = mojmir.trapState;
+        RankingState trap = new RankingState();
+        trap.put(f, 1);
+        trapState = trap;
     }
 
     @Override

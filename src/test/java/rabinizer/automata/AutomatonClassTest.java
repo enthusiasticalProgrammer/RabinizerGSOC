@@ -139,20 +139,37 @@ public class AutomatonClassTest {
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
         List<Set<ProductState>> SCC = dtgra.automaton.SCCs();
 
-        boolean everythingOk = true;
-        everythingOk = everythingOk
-                && SCC.get(6).stream().allMatch(s -> s.toString().compareTo("(XXXXa&XXa&XXXa&Xa)::") == 0);
-        everythingOk = everythingOk
-                && SCC.get(5).stream().allMatch(s -> s.toString().compareTo(("(XXa&XXXa&a&Xa)::")) == 0);
-        everythingOk = everythingOk && SCC.get(4).stream().allMatch(s -> s.toString().compareTo("(XXa&a&Xa)::") == 0);
-        everythingOk = everythingOk && SCC.get(3).stream().allMatch(s -> s.toString().compareTo("(a&Xa)::") == 0);
-        everythingOk = everythingOk && SCC.get(2).stream().allMatch(s -> s.toString().compareTo("a::") == 0);
-        everythingOk = everythingOk && (SCC.get(1).stream().allMatch(s -> s.toString().compareTo("false::") == 0)
-                && SCC.get(0).stream().allMatch(s -> s.toString().compareTo("true::") == 0))
-                ^ (SCC.get(1).stream().allMatch(s -> s.toString().compareTo("true::") == 0)
-                        && SCC.get(0).stream().allMatch(s -> s.toString().compareTo("false::") == 0));
+        assertTrue(SCC.get(6).stream().allMatch(s -> s.equals(
+                new DTGRARaw(formula, true, false, false, false, false, false, factory, val).automaton.initialState)));
 
-        assertTrue(everythingOk);
+        Formula f2 = Util.createFormula("(X a) & (X X a) & (X X X a) & a");
+        assertTrue(SCC.get(5).stream().allMatch(s -> s.equals(
+                new DTGRARaw(f2, true, false, false, false, false, false, factory, val).automaton.initialState)));
+
+        Formula f3 = Util.createFormula("(X a) & (X X a)  & a");
+        assertTrue(SCC.get(4).stream().allMatch(s -> s.equals(
+                new DTGRARaw(f3, true, false, false, false, false, false, factory, val).automaton.initialState)));
+
+        Formula f4 = Util.createFormula("(X a)  & a");
+        assertTrue(SCC.get(3).stream().allMatch(s -> s.equals(
+                new DTGRARaw(f4, true, false, false, false, false, false, factory, val).automaton.initialState)));
+
+        Formula f5 = Util.createFormula("a");
+        assertTrue(SCC.get(2).stream().allMatch(s -> s.equals(
+                new DTGRARaw(f5, true, false, false, false, false, false, factory, val).automaton.initialState)));
+
+        Formula f = Util.createFormula("false");
+        Formula t = Util.createFormula("true");
+
+        ProductState fal = new DTGRARaw(f, true, false, false, false, false, false, factory,
+                val).automaton.initialState;
+        ProductState tru = new DTGRARaw(t, true, false, false, false, false, false, factory,
+                val).automaton.initialState;
+
+        assertTrue(
+                (SCC.get(1).stream().allMatch(s -> s.equals(fal)) && SCC.get(0).stream().allMatch(s -> s.equals(tru)))
+                        ^ (SCC.get(1).stream().allMatch(s -> s.equals(tru)))
+                        && SCC.get(0).stream().allMatch(s -> s.equals(fal)));
     }
 
     @Test
