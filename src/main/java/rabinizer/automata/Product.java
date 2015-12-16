@@ -1,62 +1,51 @@
 package rabinizer.automata;
 
-import rabinizer.ltl.Formula;
 import rabinizer.ltl.GOperator;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 
-public class Product extends
-        GenericProduct<FormulaAutomatonState, GOperator, RankingState, FormulaAutomaton<Formula>, RabinSlave, ProductState> {
+public class Product extends GenericProduct<GOperator, Master.State, RabinSlave.State> {
 
-    public Product(FormulaAutomaton<Formula> primaryAutomaton, Map<GOperator, RabinSlave> slaves,
-            ValuationSetFactory<String> factory) {
-        super(primaryAutomaton, slaves, factory);
+    public Product(Master primaryAutomaton, Map<GOperator, ? extends Automaton<RabinSlave.State>> slaves, ValuationSetFactory<String> factory, Collection<Optimisation> optimisations) {
+        super(primaryAutomaton, slaves, factory, optimisations);
+        this.trapState = new ProductState(primaryAutomaton.trapState, Collections.emptyMap());
     }
 
-    public Product(Product a) {
-        super(a.primaryAutomaton, a.secondaryAutomata, a.valuationSetFactory);
-        this.transitions = a.transitions;
-        this.states = a.states;
-        this.edgeBetween = a.edgeBetween;
-        this.sinks = a.sinks;
-
-        FormulaAutomatonState f = primaryAutomaton.trapState;
-        this.trapState = new ProductState(f, relevantSecondary(f), k -> secondaryAutomata.get(k).trapState);
-    }
-
-    Set<ValuationSet> generateSuccTransitionsReflectingSinks(ProductState s) {
+    Set<ValuationSet> generateSuccTransitionsReflectingSinks(GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState s) {
         Set<Set<ValuationSet>> product = new HashSet<>();
+
         product.add(primaryAutomaton.transitions.row(s.getPrimaryState()).keySet());
+
         for (GOperator slaveFormula : s.getSecondaryMap().keySet()) {
-            FormulaAutomaton<GOperator> m = secondaryAutomata.get(slaveFormula).mojmir;
-            for (FormulaAutomatonState fs : m.getStates()) {
+            Automaton<RabinSlave.State> m = secondaryAutomata.get(slaveFormula);
+            for (RabinSlave.State fs : m.getStates()) {
                 product.add(m.transitions.row(fs).keySet());
             }
         }
+
         product.removeIf(Set::isEmpty); // removing empty trans due to sinks
         return generatePartitioning(product);
     }
 
-    @Override
-    protected ProductState generateInitialState() {
-        return new ProductState(primaryAutomaton.getInitialState(),
-                relevantSecondary(primaryAutomaton.getInitialState()), k -> secondaryAutomata.get(k).getInitialState());
-        // val)) + "::";
+    protected GenericProduct.GenericProductState generateInitialState() {
+        return new GenericProduct.GenericProductState(primaryAutomaton.getInitialState(), relevantSecondary(primaryAutomaton.getInitialState()), k -> secondaryAutomata.get(k).getInitialState());
     }
 
-    @Override
-    protected Set<GOperator> relevantSecondary(FormulaAutomatonState primaryState) {
-        return primaryState.getFormula().relevantGFormulas(secondaryAutomata.keySet());
+    protected Set<GOperator> relevantSecondary(Master.State primaryState) {
+        return primaryState.getClazz().getRepresentative().relevantGFormulas(secondaryAutomata.keySet());
     }
 
-    @Override
-    protected ProductState buildProductState(FormulaAutomatonState primaryState,
-            Map<GOperator, RankingState> secondaryStates) {
-        return new ProductState(primaryState, secondaryStates);
-    }
+    public class ProductState extends GenericProductState {
 
+        public ProductState(Master.State primaryState, Map<GOperator, RabinSlave.State> secondaryStates) {
+            super(primaryState, secondaryStates);
+        }
+
+        public ProductState(Master.State primaryState, Collection<GOperator> keys, Function<GOperator, RabinSlave.State> constructor) {
+            super(primaryState, keys, constructor);
+        }
+    }
 }

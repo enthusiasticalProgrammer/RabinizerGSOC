@@ -15,20 +15,22 @@ public class AccLocalFolded extends AccLocal {
     }
 
     @Override
-    protected boolean slavesEntail(Set<GOperator> gSet, ProductState ps, Map<Formula, Integer> ranking, Set<String> v,
-            Formula consequent) {
+    protected boolean slavesEntail(Set<GOperator> gSet, GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState ps, Map<Formula, Integer> ranking, Set<String> v,
+                                   EquivalenceClass consequent) {
         Formula antecedent = BooleanConstant.get(true);
         for (GOperator f : gSet) {
             antecedent = FormulaFactory.mkAnd(antecedent, f); // TODO relevant
-                                                              // for Folded
-                                                              // version
+            // for Folded
+            // version
             // antecedent = new Conjunction(antecedent, new XOperator(new
             // GOperator(f))); // TODO:remove; relevant for Xunfolding
             Formula slaveAntecedent = BooleanConstant.get(true);
             if (ps.getSecondaryState(f) != null) {
-                for (FormulaAutomatonState s : ps.getSecondaryState(f).keySet()) {
-                    if (ps.getSecondaryState(f).get(s) >= ranking.get(f)) {
-                        slaveAntecedent = FormulaFactory.mkAnd(slaveAntecedent, s.getFormula());
+                RabinSlave.State rs = ps.getSecondaryState(f);
+
+                for (Map.Entry<MojmirSlave.State, Integer> entry : rs.entrySet()) {
+                    if (entry.getValue() >= ranking.get(f)) {
+                        slaveAntecedent = FormulaFactory.mkAnd(slaveAntecedent, entry.getKey().getClazz().getRepresentative());
                     }
                 }
             }
@@ -39,10 +41,9 @@ public class AccLocalFolded extends AccLocal {
     }
 
     @Override
-    protected TranSet<ProductState> computeAccMasterForState(Set<GOperator> gSet, Map<Formula, Integer> ranking,
-            ProductState ps) {
-        TranSet<ProductState> result = new TranSet<>(valuationSetFactory);
-        if (!slavesEntail(gSet, ps, ranking, null, ps.getPrimaryState().getFormula())) {
+    protected TranSet computeAccMasterForState(Set<GOperator> gSet, Map<Formula, Integer> ranking, GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState ps) {
+        TranSet result = new TranSet(valuationSetFactory);
+        if (!slavesEntail(gSet, ps, ranking, null, (ps.getPrimaryState()).getClazz())) {
             result.add(ps, valuationSetFactory.createUniverseValuationSet());
         }
         return result;

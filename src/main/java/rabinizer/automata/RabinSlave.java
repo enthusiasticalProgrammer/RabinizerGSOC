@@ -1,93 +1,32 @@
 package rabinizer.automata;
 
 import rabinizer.exec.Main;
-import rabinizer.ltl.EquivalenceClass;
-import rabinizer.ltl.GOperator;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author jkretinsky
  */
-public class RabinSlave extends Automaton<RankingState> {
+public class RabinSlave extends Automaton<RabinSlave.State> {
 
-    public FormulaAutomaton<GOperator> mojmir;
+    public MojmirSlave mojmir;
 
-    public RabinSlave(FormulaAutomaton<GOperator> mojmir, ValuationSetFactory<String> factory) {
+    public RabinSlave(MojmirSlave mojmir, ValuationSetFactory<String> factory) {
         super(factory);
         this.mojmir = mojmir;
 
-        FormulaAutomatonState f = mojmir.trapState;
-        RankingState trap = new RankingState();
+        MojmirSlave.State f = mojmir.trapState;
+        State trap = new State();
         trap.put(f, 1);
         trapState = trap;
-    }
-
-    @Override
-    protected RankingState generateInitialState() {
-        RankingState init = new RankingState();
-        init.put(mojmir.initialState, 1);
-        return init;
-    }
-
-    @Override
-    protected RankingState generateSuccState(RankingState curr, ValuationSet vs) {
-        Set<String> val = vs.pickAny();
-        RankingState succ = new RankingState();
-
-        // move tokens, keeping the lowest only
-        for (FormulaAutomatonState currFormula : curr.keySet()) {
-            FormulaAutomatonState succFormula = mojmir.succ(currFormula, val);
-            if ((succ.get(succFormula) == null) || (succ.get(succFormula) > curr.get(currFormula))) {
-                succ.put(succFormula, curr.get(currFormula));
-            }
-        }
-        for (FormulaAutomatonState s : mojmir.sinks) {
-            succ.remove(s);
-        }
-
-        // TODO recompute tokens, eliminating gaps
-        int[] tokens = new int[succ.keySet().size()];
-        int i = 0;
-        for (FormulaAutomatonState f : succ.keySet()) {
-            tokens[i] = succ.get(f);
-            i++;
-        }
-        Arrays.sort(tokens);
-        for (FormulaAutomatonState f : succ.keySet()) {
-            for (int j = 0; j < tokens.length; j++) {
-                if (succ.get(f).equals(tokens[j])) {
-                    succ.put(f, j + 1);
-                }
-            }
-        }
-
-        // TODO add token to the initial state
-        if (!succ.containsKey(mojmir.initialState)) {
-            succ.put(mojmir.initialState, succ.keySet().size() + 1);
-        }
-
-        return succ;
-    }
-
-    @Override
-    protected Set<ValuationSet> generateSuccTransitions(RankingState s) {
-        Set<Set<ValuationSet>> product = new HashSet<>();
-        for (FormulaAutomatonState fs : s.keySet()) {
-            product.add(mojmir.transitions.row(fs).keySet());
-        }
-        return generatePartitioning(product);
     }
 
     public RabinSlave optimizeInitialState() { // TODO better: reach BSCC
         while (noIncomingTransitions(initialState) && !transitions.row(initialState).isEmpty()) {
             Main.verboseln("Optimizing initial states");
-            RankingState oldInit = initialState;
+            State oldInit = initialState;
             initialState = succ(initialState, Collections.emptySet());
             transitions.row(oldInit).clear();
             states.remove(oldInit);
@@ -95,8 +34,84 @@ public class RabinSlave extends Automaton<RankingState> {
         return this;
     }
 
-    private boolean noIncomingTransitions(RankingState in) {
+    @Override
+    protected State generateInitialState() {
+        State init = new State();
+        init.put(mojmir.getInitialState(), 1);
+        return init;
+    }
+
+    private boolean noIncomingTransitions(IState in) {
         return !transitions.values().contains(in);
     }
 
+    public class State extends HashMap<MojmirSlave.State, Integer> implements IState<State> {
+        private static final long serialVersionUID = 1L;
+
+        public State() {
+            super();
+        }
+
+        @Override
+        public String toString() {
+            String result = "";
+            for (MojmirSlave.State f : keySet()) {
+                result += " " + f + "=" + get(f);
+            }
+            return result;
+        }
+
+        @Override
+        public Set<ValuationSet> partitionSuccessors() {
+            Set<Set<ValuationSet>> product = new HashSet<>();
+            for (MojmirSlave.State fs : keySet()) {
+                product.add(mojmir.transitions.row(fs).keySet());
+            }
+            return generatePartitioning(product);
+        }
+
+        @Override
+        public State getSuccessor(Set<String> valuation) {
+            State succ = new State();
+
+            // move tokens, keeping the lowest only
+            for (MojmirSlave.State currFormula : keySet()) {
+                MojmirSlave.State succFormula = currFormula.getSuccessor(valuation);
+                if ((succ.get(succFormula) == null) || (succ.get(succFormula) > get(currFormula))) {
+                    succ.put(succFormula, get(currFormula));
+                }
+            }
+            for (IState s : mojmir.sinks) {
+                succ.remove(s);
+            }
+
+            // TODO recompute tokens, eliminating gaps
+            int[] tokens = new int[succ.keySet().size()];
+            int i = 0;
+            for (IState f : succ.keySet()) {
+                tokens[i] = succ.get(f);
+                i++;
+            }
+            Arrays.sort(tokens);
+            for (MojmirSlave.State f : succ.keySet()) {
+                for (int j = 0; j < tokens.length; j++) {
+                    if (succ.get(f).equals(tokens[j])) {
+                        succ.put(f, j + 1);
+                    }
+                }
+            }
+
+            // TODO add token to the initial state
+            if (!succ.containsKey(mojmir.getInitialState())) {
+                succ.put(mojmir.getInitialState(), succ.keySet().size() + 1);
+            }
+
+            return succ;
+        }
+
+        @Override
+        public boolean isAccepting(Set<String> valuation) {
+            return false;
+        }
+    }
 }

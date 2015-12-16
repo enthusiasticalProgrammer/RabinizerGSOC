@@ -1,21 +1,24 @@
 package rabinizer.automata.nxt;
 
-import rabinizer.automata.Automaton;
-import rabinizer.automata.FormulaAutomatonState;
 import rabinizer.automata.GenericProduct;
-import rabinizer.ltl.GOperator;
-import rabinizer.ltl.ValuationSet;
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.automata.Master;
+import rabinizer.automata.Optimisation;
+import rabinizer.ltl.*;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-public class DetLimitProduct extends GenericProduct<FormulaAutomatonState, GOperator, DetLimitSlaveState, DetLimitMaster, DetLimitSlave, DetLimitProductState> {
+public class DetLimitProduct extends GenericProduct<GOperator, Master.State, DetLimitSlave.State> {
 
-    public DetLimitProduct(DetLimitMaster primaryAutomaton, Collection<GOperator> keys, Function<GOperator, DetLimitSlave> constructor, ValuationSetFactory<String> valuationSetFactory) {
-        super(primaryAutomaton, keys, constructor, valuationSetFactory);
+    private final EquivalenceClass GConjunction;
+    private final EquivalenceClassFactory equivalenceClassFactory;
+
+    public DetLimitProduct(DetLimitMaster primaryAutomaton, Collection<GOperator> keys, Function<GOperator, DetLimitSlave> constructor, EquivalenceClassFactory factory, ValuationSetFactory<String> valuationSetFactory, Collection<Optimisation> optimisations) {
+        super(primaryAutomaton, keys, constructor, valuationSetFactory, optimisations);
+        GConjunction = factory.createEquivalenceClass(new Conjunction(keys));
+        this.equivalenceClassFactory = factory;
     }
 
     public int numberOfSecondary() {
@@ -23,27 +26,34 @@ public class DetLimitProduct extends GenericProduct<FormulaAutomatonState, GOper
     }
 
     @Override
-    protected Set<GOperator> relevantSecondary(FormulaAutomatonState primaryState) {
+    protected Set<GOperator> relevantSecondary(Master.State primaryState) {
         return secondaryAutomata.keySet();
     }
 
     @Override
-    protected DetLimitProductState buildProductState(FormulaAutomatonState primaryState, Map<GOperator, DetLimitSlaveState> secondaryStates) {
-        return new DetLimitProductState(primaryState, secondaryStates);
-    }
-
-    @Override
-    protected DetLimitProductState generateInitialState() {
+    protected State generateInitialState() {
         return generateInitialState(primaryAutomaton.getInitialState());
     }
 
-    protected DetLimitProductState generateInitialState(FormulaAutomatonState master) {
-        secondaryAutomata.values().forEach(Automaton::generate);
-        return new DetLimitProductState(master, secondaryAutomata.keySet(), g -> secondaryAutomata.get(g).generateInitialState());
+    protected State generateInitialState(Master.State master) {
+        return new State(master, secondaryAutomata.keySet(), g -> secondaryAutomata.get(g).getInitialState());
     }
 
-    @Override
-    protected Set<ValuationSet> generateSuccTransitions(DetLimitProductState s) {
-        return valuationSetFactory.createAllValuationSets();
+    public class State extends GenericProductState {
+
+        public State(Master.State primaryState, Map<GOperator, DetLimitSlave.State> secondaryStates) {
+            super(primaryState, secondaryStates);
+        }
+
+        public State(Master.State primaryState, Collection<GOperator> keys, Function<GOperator, DetLimitSlave.State> constructor) {
+            super(primaryState, keys, constructor);
+        }
+
+        @Override
+        public boolean isAccepting(Set<String> valuation) {
+            EquivalenceClass slaveConjunction = secondaryStates.values().stream().map(state -> state.next.and(state.current)).reduce(equivalenceClassFactory.getTrue(), EquivalenceClass::and);
+            EquivalenceClass antecedent = GConjunction.and(slaveConjunction);
+            return antecedent.implies(primaryState.getClazz());
+        }
     }
 }

@@ -5,9 +5,9 @@ import java.util.List;
 /**
  * @author jkretinsky
  */
-public class GRabinPairT extends GRabinPair<TranSet<ProductState>> {
+public class GRabinPairT<S extends IState<S>> extends GRabinPair<TranSet<S>> {
 
-    public GRabinPairT(TranSet<ProductState> l, List<TranSet<ProductState>> r) {
+    public GRabinPairT(TranSet<S> l, List<TranSet<S>> r) {
         super(l, r);
     }
 

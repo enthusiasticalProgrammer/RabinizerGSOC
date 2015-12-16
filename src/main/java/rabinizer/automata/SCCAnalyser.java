@@ -1,29 +1,33 @@
 package rabinizer.automata;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.lang.Math;
-
 import rabinizer.collections.HashTarjanStack;
 import rabinizer.collections.TarjanStack;
 import rabinizer.ltl.ValuationSet;
 
+import java.util.*;
+
 /**
  * @author Christopher Ziegler
  */
-public class SCCAnalyser<State> {
+public class SCCAnalyser<S extends IState<S>> {
+    private final Map<S, Integer> lowlink = new HashMap<>();
+    private final Map<S, Integer> number = new HashMap<>();
+    private final TarjanStack<S> stack = new HashTarjanStack<>();
+    private final Automaton<S> a;
+    private final Map<S, ValuationSet> forbiddenEdges;
+    private final Set<S> allowedStates;
     private int n = 0;
-    private final Map<State, Integer> lowlink = new HashMap<State, Integer>();
-    private final Map<State, Integer> number = new HashMap<State, Integer>();
-    private final TarjanStack<State> stack = new HashTarjanStack<State>();
-    private final Automaton<State> a;
-    private final Map<State, ValuationSet> forbiddenEdges;
-    private final Set<State> allowedStates;
+
+    private SCCAnalyser(Automaton<S> a) {
+        this(a, a.states, Collections.emptyMap());
+    }
+
+    private SCCAnalyser(Automaton<S> a, Set<S> s, Map<S, ValuationSet> forbiddenEdges) {
+        this.a = a;
+        this.allowedStates = s;
+        this.forbiddenEdges = forbiddenEdges;
+
+    }
 
     /**
      * This method computes the SCCs of the state-/transition-graph of the
@@ -33,18 +37,16 @@ public class SCCAnalyser<State> {
      * which is acc. to java Documentation the case if the hash-function is good
      * enough, also the checks for forbiddenEdges and allowedState need to be
      * constant for the function to run in linear time.
-     * 
-     * @param a:
-     *            Automaton, for which the class is analysed
-     * 
+     *
+     * @param a: Automaton, for which the class is analysed
      * @return list of set of states, where each set corresponds to a (maximal)
-     *         SCC.. The list is ordered according to the topological ordering
-     *         in the "condensation graph", aka the graph where the SCCs are
-     *         vertices, ordered such that for each transition a->b in the
-     *         condensation graph, a is in the list before b
+     * SCC.. The list is ordered according to the topological ordering
+     * in the "condensation graph", aka the graph where the SCCs are
+     * vertices, ordered such that for each transition a->b in the
+     * condensation graph, a is in the list before b
      */
-    public static <State> List<Set<State>> SCCs(Automaton<State> a) {
-        SCCAnalyser<State> s = new SCCAnalyser<State>(a);
+    public static <S extends IState<S>> List<Set<S>> SCCs(Automaton<S> a) {
+        SCCAnalyser<S> s = new SCCAnalyser<>(a);
         return s.SCCs();
 
     }
@@ -52,63 +54,49 @@ public class SCCAnalyser<State> {
     /**
      * This method refines the SCC in order to have the sub-SCCs if
      * forbiddenEdges are not allowed to use
-     * 
-     * @parem a: Automaton, for which the SCC-Analysis has to be made
-     * 
-     * @param SCC:
-     *            the SCC that will be processed
-     * @param forbiddenEdges:
-     *            the edges that are forbidden
+     *
+     * @param SCC:            the SCC that will be processed
+     * @param forbiddenEdges: the edges that are forbidden
      * @return the sub-SCCs of the SCC as list in topologic ordering
+     * @parem a: Automaton, for which the SCC-Analysis has to be made
      */
-    public static <State> List<Set<State>> subSCCs(Automaton<State> a, Set<State> SCC,
-            Map<State, ValuationSet> forbiddenEdges) {
-        SCCAnalyser<State> s = new SCCAnalyser<State>(a, SCC, forbiddenEdges);
+    public static <S extends IState<S>> List<Set<S>> subSCCs(Automaton<S> a, Set<S> SCC,
+                                                             Map<S, ValuationSet> forbiddenEdges) {
+        SCCAnalyser<S> s = new SCCAnalyser<>(a, SCC, forbiddenEdges);
         return s.subSCCs();
 
     }
 
-    private SCCAnalyser(Automaton<State> a) {
-        this(a, a.states, Collections.<State, ValuationSet> emptyMap());
-    }
-
-    private SCCAnalyser(Automaton<State> a, Set<State> s, Map<State, ValuationSet> forbiddenEdges) {
-        this.a = a;
-        this.allowedStates = s;
-        this.forbiddenEdges = forbiddenEdges;
-
-    }
-
-    public List<Set<State>> SCCs() {
+    public List<Set<S>> SCCs() {
         stack.push(a.initialState);
         return SCCsRecursively();
     }
 
-    private List<Set<State>> subSCCs() {
-        List<Set<State>> result = new ArrayList<Set<State>>();
-        Set<State> notYetProcessed = new HashSet<>(allowedStates);
+    private List<Set<S>> subSCCs() {
+        List<Set<S>> result = new ArrayList<>();
+        Set<S> notYetProcessed = new HashSet<>(allowedStates);
         while (!notYetProcessed.isEmpty()) {
 
-            State state = notYetProcessed.iterator().next();
+            S state = notYetProcessed.iterator().next();
             stack.push(state);
             result.addAll(SCCsRecursively());
 
-            result.stream().forEach(scc -> notYetProcessed.removeAll(scc));
+            result.stream().forEach(notYetProcessed::removeAll);
         }
         return result;
     }
 
-    private List<Set<State>> SCCsRecursively() {
+    private List<Set<S>> SCCsRecursively() {
         n++;
-        State v = stack.peek();
+        S v = stack.peek();
         lowlink.put(v, n);
         number.put(v, n);
-        Map<ValuationSet, State> trans = a.transitions.row(v);
-        List<Set<State>> result = new ArrayList<Set<State>>();
+        Map<ValuationSet, S> trans = a.transitions.row(v);
+        List<Set<S>> result = new ArrayList<>();
 
         for (ValuationSet vs : trans.keySet()) {
 
-            State w = trans.get(vs);
+            S w = trans.get(vs);
             if (allowedStates.contains(w) && !number.containsKey(w) && forbiddenEdges.get(v) != vs) {
                 stack.push(w);
                 result.addAll(SCCsRecursively());
@@ -120,9 +108,9 @@ public class SCCAnalyser<State> {
         }
 
         if (lowlink.get(v).equals(number.get(v))) {
-            Set<State> set = new HashSet<State>();
+            Set<S> set = new HashSet<>();
             while (!stack.isEmpty() && number.get(stack.peek()) >= number.get(v)) {
-                State w = stack.pop();
+                S w = stack.pop();
                 set.add(w);
             }
             result.add(set);

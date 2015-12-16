@@ -1,43 +1,67 @@
 package rabinizer.automata;
 
-import rabinizer.ltl.EquivalenceClass;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.Simplifier;
+import rabinizer.ltl.*;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
-public class FormulaAutomatonState {
+public abstract class FormulaAutomatonState {
 
-    final private EquivalenceClass clazz;
+    final protected EquivalenceClass clazz;
 
     public FormulaAutomatonState(EquivalenceClass clazz) {
         this.clazz = clazz;
     }
 
-    public EquivalenceClass getEquivalenceClass() {
-        return clazz;
-    }
-
-    public Formula getFormula() {
-        return Simplifier.simplify(clazz.getRepresentative(), Simplifier.Strategy.PROPOSITIONAL);
-    }
-
     @Override
     public String toString() {
-        return getFormula().toString();
+        return Simplifier.simplify(clazz.getRepresentative(), Simplifier.Strategy.PROPOSITIONAL).toString();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof FormulaAutomatonState)) {
-            return false;
-        } else {
-            return clazz.equals(((FormulaAutomatonState) o).clazz);
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FormulaAutomatonState that = (FormulaAutomatonState) o;
+        return Objects.equals(this.getOuter(), that.getOuter()) && Objects.equals(clazz, that.clazz);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(clazz);
+        return Objects.hash(clazz);
+    }
+
+    public EquivalenceClass getClazz() {
+        return clazz;
+    }
+
+    protected abstract Object getOuter();
+
+    protected abstract ValuationSet createUniverseValuationSet();
+
+    protected Set<ValuationSet> generatePartitioning(Formula f) {
+        Set<ValuationSet> result = new HashSet<>();
+        Optional<Literal> l = f.getAnUnguardedLiteral();
+
+        if (!l.isPresent()) {
+            result.add(createUniverseValuationSet());
+        } else {
+            Literal literal = l.get().positiveLiteral();
+            Set<ValuationSet> pos = generatePartitioning(f.evaluate(literal));
+            Set<ValuationSet> neg = generatePartitioning(f.evaluate(literal.not()));
+            for (ValuationSet vs : pos) {
+                vs.restrictWith(literal);
+                result.add(vs);
+            }
+            for (ValuationSet vs : neg) {
+                vs.restrictWith(literal.not());
+                result.add(vs);
+            }
+        }
+
+        return result;
     }
 }
+

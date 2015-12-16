@@ -3,12 +3,17 @@ package rabinizer.automata.nxt;
 import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Test;
-import rabinizer.exec.Main;
+import rabinizer.automata.IState;
+import rabinizer.automata.Optimisation;
 import rabinizer.ltl.*;
 import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 import rabinizer.ltl.bdd.BDDValuationSetFactory;
 
-import static org.junit.Assert.*;
+import java.util.Collections;
+import java.util.EnumSet;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class DetLimitSlaveTest {
 
@@ -23,21 +28,16 @@ public class DetLimitSlaveTest {
         formula = new Disjunction(new FOperator(new Literal("a", false)), new XOperator(new Literal("b", false)));
         valuationSetFactory = new BDDValuationSetFactory(formula.getAtoms());
         equivalenceClassFactory = new BDDEquivalenceClassFactory(formula.getPropositions());
-        automaton = new DetLimitSlave(formula, false, equivalenceClassFactory, valuationSetFactory);
-        automatonImp = new DetLimitSlave(formula, true, equivalenceClassFactory, valuationSetFactory);
-    }
-
-    @Test
-    public void testGenerateInitialState() throws Exception {
-        assertEquals(automaton.generateInitialState(), new DetLimitSlaveState(equivalenceClassFactory.createEquivalenceClass(formula), equivalenceClassFactory.createEquivalenceClass(BooleanConstant.TRUE)));
+        automaton = new DetLimitSlave(formula, equivalenceClassFactory, valuationSetFactory, Collections.emptySet());
+        automatonImp = new DetLimitSlave(formula, equivalenceClassFactory, valuationSetFactory, EnumSet.allOf(Optimisation.class));
     }
 
     @Test
     public void testGenerateSuccState() throws Exception {
-        DetLimitSlaveState initialState = automaton.generateInitialState();
+        IState initialState = automaton.generateInitialState();
 
-        assertEquals(initialState, automaton.generateSuccState(initialState, valuationSetFactory.createValuationSet(ImmutableSet.of("a"))));
-        assertNotEquals(initialState, automaton.generateSuccState(initialState, valuationSetFactory.createValuationSet(ImmutableSet.of("b"))));
+        assertEquals(initialState, initialState.getSuccessor(ImmutableSet.of("a")));
+        assertNotEquals(initialState, initialState.getSuccessor(ImmutableSet.of("b")));
     }
 
     @Test

@@ -6,12 +6,16 @@ import jhoafparser.ast.AtomLabel;
 import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import rabinizer.automata.FormulaAutomatonState;
+import rabinizer.automata.GenericProduct;
+import rabinizer.automata.IState;
+import rabinizer.automata.Master;
+import rabinizer.automata.Optimisation;
 import rabinizer.ltl.*;
 import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 import rabinizer.ltl.bdd.BDDValuationSetFactory;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class DetLimitAutomaton {
 
@@ -20,14 +24,14 @@ public class DetLimitAutomaton {
     private final EquivalenceClassFactory equivalenceClassFactory;
     private final ValuationSetFactory<String> valuationSetFactory;
 
-    public DetLimitAutomaton(Formula formula) {
+    public DetLimitAutomaton(Formula formula, Collection<Optimisation> optimisations) {
         initialFormula = formula;
 
         Set<Set<GOperator>> keys = Sets.powerSet(formula.gSubformulas());
         Set<Formula> props = new HashSet<>();
 
         for (Set<GOperator> gSet : keys) {
-            GSubstitutionVisitor masterVisitor = new GSubstitutionVisitor(g -> gSet.contains(g) ? null : BooleanConstant.FALSE);
+            Visitor<Formula> masterVisitor = new GSubstitutionVisitor(g -> gSet.contains(g) ? null : BooleanConstant.FALSE);
             props.addAll(Simplifier.simplify(initialFormula.accept(masterVisitor)).getPropositions());
         }
 
@@ -35,7 +39,7 @@ public class DetLimitAutomaton {
         valuationSetFactory = new BDDValuationSetFactory(initialFormula.getAtoms());
         components = new HashMap<>();
 
-        keys.forEach(k -> components.put(k, new DetLimitAutomatonComponent(initialFormula, k, equivalenceClassFactory, valuationSetFactory)));
+        keys.forEach(k -> components.put(k, new DetLimitAutomatonComponent(initialFormula, k, equivalenceClassFactory, valuationSetFactory, optimisations)));
     }
 
     static private <T> List<T> toList(Collection<T> collection) {
@@ -64,7 +68,7 @@ public class DetLimitAutomaton {
         consumer.setName("Automaton for " + initialFormula);
 
         for (DetLimitAutomatonComponent c : components.values()) {
-            FormulaAutomatonState e = c.nondetComponent.getInitialState();
+            IState e = c.nondetComponent.getInitialState();
             consumer.addStartStates(Collections.singletonList(Util.getId(ids, e)));
         }
 
@@ -97,16 +101,19 @@ class DetLimitAutomatonComponent {
     final protected DetLimitMaster nondetComponent;
     final protected DetLimitProduct detComponent;
     final private Set<GOperator> gset;
+    final private ValuationSetFactory<String> factory;
 
-    protected DetLimitAutomatonComponent(Formula initialFormula, Set<GOperator> Gset, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory<String> valuationSetFactory) {
-        GSubstitutionVisitor masterVisitor = new GSubstitutionVisitor(g -> Gset.contains(g) ? null : BooleanConstant.FALSE);
-        GSubstitutionVisitor slaveVisitor = new GSubstitutionVisitor(g -> BooleanConstant.get(Gset.contains(g)));
+    protected DetLimitAutomatonComponent(Formula initialFormula, Set<GOperator> Gset, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory<String> valuationSetFactory, Collection<Optimisation> optimisations) {
+        Visitor<Formula> masterVisitor = new GSubstitutionVisitor(g -> Gset.contains(g) ? null : BooleanConstant.FALSE);
+        Visitor<Formula> slaveVisitor = new GSubstitutionVisitor(g -> BooleanConstant.get(Gset.contains(g)));
 
+        factory = valuationSetFactory;
         gset = Gset;
         Formula substInit = Simplifier.simplify(initialFormula.accept(masterVisitor));
 
-        nondetComponent = new DetLimitMaster(substInit, equivalenceClassFactory, valuationSetFactory);
-        detComponent = new DetLimitProduct(nondetComponent, Gset, g -> new DetLimitSlave(Simplifier.simplify(g.getOperand().accept(slaveVisitor)), true, equivalenceClassFactory, valuationSetFactory), valuationSetFactory);
+        nondetComponent = new DetLimitMaster(substInit, equivalenceClassFactory, valuationSetFactory, optimisations);
+        Function<GOperator, DetLimitSlave> constructor = (g -> new DetLimitSlave(Simplifier.simplify(g.getOperand().accept(slaveVisitor)), equivalenceClassFactory, valuationSetFactory, optimisations));
+        detComponent = new DetLimitProduct(nondetComponent, Gset, constructor, equivalenceClassFactory, valuationSetFactory, optimisations);
     }
 
     protected void toHOA(HOAConsumer consumer, Map<Object, Integer> stateIDs, int maxAcc) throws HOAConsumerException {
@@ -115,12 +122,12 @@ class DetLimitAutomatonComponent {
         final int sizeSec = detComponent.numberOfSecondary();
         Map<GOperator, Integer> infSetMapping = new HashMap<>();
 
-        for (FormulaAutomatonState masterState : nondetComponent.getStates()) {
+        for (Master.State masterState : nondetComponent.getStates()) {
             consumer.addState(Util.getId(stateIDs, masterState), masterState.toString(), null, null);
 
-            for (Map.Entry<ValuationSet, FormulaAutomatonState> entry : nondetComponent.getTransitions().row(masterState).entrySet()) {
-                FormulaAutomatonState succ = entry.getValue();
-                DetLimitProductState init = detComponent.generateInitialState(succ);
+            for (Map.Entry<ValuationSet, Master.State> entry : nondetComponent.getTransitions().row(masterState).entrySet()) {
+                Master.State succ = entry.getValue();
+                GenericProduct.GenericProductState init = detComponent.generateInitialState(succ);
                 detComponent.generate(init);
 
                 BooleanExpression<AtomLabel> edgeLabel = Simplifier.simplify(entry.getKey().toFormula()).accept(converter);
@@ -130,31 +137,33 @@ class DetLimitAutomatonComponent {
             }
         }
 
-        for (DetLimitProductState productState : detComponent.getStates()) {
+        for (GenericProduct<GOperator, Master.State, DetLimitSlave.State>.GenericProductState productState : detComponent.getStates()) {
             consumer.addState(Util.getId(stateIDs, productState), productState.toString(), null, null);
 
-            for (Map.Entry<ValuationSet, DetLimitProductState> entry : detComponent.getTransitions().row(productState).entrySet()) {
-                DetLimitProductState succ = entry.getValue();
+            for (Map.Entry<ValuationSet, GenericProduct<GOperator, Master.State, DetLimitSlave.State>.GenericProductState> entry : detComponent.getTransitions().row(productState).entrySet()) {
+                IState succ = entry.getValue();
 
-                BooleanExpression<AtomLabel> edgeLabel = Simplifier.simplify(entry.getKey().toFormula()).accept(converter);
+                for (Set<String> valuation : entry.getKey()) {
+                    BooleanExpression<AtomLabel> edgeLabel = Simplifier.simplify(factory.createValuationSet(valuation).toFormula()).accept(converter);
 
-                List<Integer> accSet = new ArrayList<>();
+                    List<Integer> accSet = new ArrayList<>();
 
-                if (nondetComponent.isAcceptingTransition(productState.getPrimaryState(), entry.getKey(), gset, productState.getSecondaryStates())) {
-                    accSet.add(0);
-                }
-
-                for (Map.Entry<GOperator, DetLimitSlaveState> entry2 : productState.getSecondaryMap().entrySet()) {
-                    if (DetLimitSlave.isAcceptingTransition(entry2.getValue(), entry.getKey())) {
-                        accSet.add(Util.getId(infSetMapping, entry2.getKey()) + 1);
+                    if (productState.isAccepting(valuation)) {
+                        accSet.add(0);
                     }
-                }
 
-                for (int i = sizeSec + 1; i < maxAcc; i++) {
-                    accSet.add(i);
-                }
+                    for (Map.Entry<GOperator, DetLimitSlave.State> entry2 : productState.getSecondaryMap().entrySet()) {
+                        if (succ.isAccepting(valuation)) {
+                            accSet.add(Util.getId(infSetMapping, entry2.getKey()) + 1);
+                        }
+                    }
 
-                consumer.addEdgeWithLabel(Util.getId(stateIDs, productState), edgeLabel, Collections.singletonList(Util.getId(stateIDs, succ)), accSet);
+                    for (int i = sizeSec + 1; i < maxAcc; i++) {
+                        accSet.add(i);
+                    }
+
+                    consumer.addEdgeWithLabel(Util.getId(stateIDs, productState), edgeLabel, Collections.singletonList(Util.getId(stateIDs, succ)), accSet);
+                }
             }
         }
     }

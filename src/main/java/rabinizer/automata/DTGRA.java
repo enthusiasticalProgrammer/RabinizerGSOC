@@ -1,25 +1,25 @@
 package rabinizer.automata;
 
-import rabinizer.ltl.*;
+import rabinizer.ltl.GOperator;
+import rabinizer.ltl.Simplifier;
+import rabinizer.ltl.ValuationSet;
+import rabinizer.ltl.ValuationSetFactory;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author jkretinsky
  */
 public class DTGRA extends Product implements AccAutomatonInterface {
 
-    AccTGR acc;
+    AccTGR<? extends IState<?>> acc;
 
-    public DTGRA(FormulaAutomaton master, Map<GOperator, RabinSlave> slaves, ValuationSetFactory<String> factory) {
-        super(master, slaves, factory);
+    public DTGRA(Master master, Map<GOperator, RabinSlave> slaves, ValuationSetFactory<String> factory, Collection<Optimisation> optimisations) {
+        super(master, slaves, factory, optimisations);
     }
 
     public DTGRA(DTGRARaw raw) {
-        super(raw.automaton);
+        super((Master) raw.automaton.primaryAutomaton, raw.automaton.secondaryAutomata, raw.automaton.valuationSetFactory, Collections.emptySet());
         if (raw.accTGR != null) { // for computing the state space only (with no
             // acc. condition)
             this.acc = new AccTGR(raw.accTGR);
@@ -27,9 +27,19 @@ public class DTGRA extends Product implements AccAutomatonInterface {
     }
 
     @Override
+    public String acc() {
+        return acc.toString();
+    }
+
+    @Override
+    public int pairNumber() {
+        return acc.size();
+    }
+
+    @Override
     protected String accName() {
         String result = "acc-name: generalized-Rabin " + acc.size();
-        for (GRabinPairT anAcc : acc) {
+        for (GRabinPairT<?> anAcc : acc) {
             result += " " + anAcc.getRight().size();
         }
         return result + "\n";
@@ -46,7 +56,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
             result += i == 0 ? "" : " | ";
             result += "Fin(" + sum + ")";
             sum++;
-            List<TranSet<ProductState>> right = acc.get(i).getRight();
+            List<? extends TranSet<? extends IState<?>>> right = acc.get(i).getRight();
             for (int j = 0; j < right.size(); j++) {
                 right.get(j);
                 result += "&Inf(" + sum + ")";
@@ -56,15 +66,11 @@ public class DTGRA extends Product implements AccAutomatonInterface {
         return sum + " " + result;
     }
 
-    @Override
-    protected String stateAcc(ProductState s) {
+    protected String stateAcc(GenericProduct.GenericProductState s) {
         return "";
     }
 
-
-
-    @Override
-    protected String outTransToHOA(ProductState s, Map<ProductState, Integer> statesToNumbers) {
+    protected String outTransToHOA(GenericProduct.GenericProductState s, Map<IState, Integer> statesToNumbers) {
         String result = "";
         Set<Set<ValuationSet>> productVs = new HashSet<>();
         productVs.add(transitions.row(s).keySet());
@@ -72,15 +78,15 @@ public class DTGRA extends Product implements AccAutomatonInterface {
         System.out.println("s: " + s);
         System.out.println("trans.get(s):" + transitions.row(s));
         Set<ValuationSet> vSets;
-        for (GRabinPairT rp : acc) {
-            vSets = new HashSet<ValuationSet>();
+        for (GRabinPairT<? extends IState<?>> rp : acc) {
+            vSets = new HashSet<>();
             if (rp.getLeft().containsKey(s)) {
                 vSets.add(rp.getLeft().get(s));
                 vSets.add(rp.getLeft().get(s).complement());
             }
             productVs.add(vSets);
-            for (TranSet<ProductState> ts : rp.getRight()) {
-                vSets = new HashSet<ValuationSet>();
+            for (TranSet<? extends IState<?>> ts : rp.getRight()) {
+                vSets = new HashSet<>();
                 if (ts.containsKey(s)) {
                     vSets.add(ts.get(s));
                     vSets.add(ts.get(s).complement());
@@ -97,16 +103,6 @@ public class DTGRA extends Product implements AccAutomatonInterface {
                     + "}\n";
         }
         return result;
-    }
-
-    @Override
-    public String acc() {
-        return acc.toString();
-    }
-
-    @Override
-    public int pairNumber() {
-        return acc.size();
     }
 
 }

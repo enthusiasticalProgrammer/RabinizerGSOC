@@ -2,12 +2,13 @@ package rabinizer.automata;
 
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
+
 import java.util.HashMap;
 
 /**
  * @author jkretinsky
  */
-public class TranSet<State> extends HashMap<State, ValuationSet> {
+public class TranSet<S extends IState<S>> extends HashMap<S, ValuationSet> {
 
     private static final long serialVersionUID = 1013653255527479470L;
     private final ValuationSetFactory<String> factory;
@@ -16,7 +17,7 @@ public class TranSet<State> extends HashMap<State, ValuationSet> {
         this.factory = factory;
     }
 
-    public TranSet<State> add(State s, ValuationSet vs) {
+    public TranSet<S> add(S s, ValuationSet vs) {
         if (!this.containsKey(s)) {
             this.put(s, vs);
         } else {
@@ -27,15 +28,26 @@ public class TranSet<State> extends HashMap<State, ValuationSet> {
         return this;
     }
 
-    public TranSet<State> addAll(TranSet<State> ts) {
-        for (State s : ts.keySet()) {
+    public TranSet<S> addAll(TranSet<S> ts) {
+        for (S s : ts.keySet()) {
             this.add(s, ts.get(s));
         }
         return this;
     }
 
-    boolean subsetOf(TranSet<State> ts) {
-        for (State s : this.keySet()) {
+    @Override
+    public String toString() {
+        String result = "{";
+        boolean first = true;
+        for (IState s : this.keySet()) {
+            result += (first ? "" : ";\n") + s + "  ->  " + get(s);
+            first = false;
+        }
+        return result + "}";
+    }
+
+    boolean subsetOf(TranSet<S> ts) {
+        for (IState s : this.keySet()) {
             if (!ts.containsKey(s) || !ts.get(s).contains(this.get(s))) {
                 return false;
             }
@@ -43,8 +55,8 @@ public class TranSet<State> extends HashMap<State, ValuationSet> {
         return true;
     }
 
-    void removeAll(TranSet<State> ts) {
-        for (State s : ts.keySet()) {
+    void removeAll(TranSet<S> ts) {
+        for (S s : ts.keySet()) {
             if (this.containsKey(s)) {
                 ValuationSet old = factory.createValuationSet(this.get(s));
                 old.remove(ts.get(s));
@@ -54,17 +66,6 @@ public class TranSet<State> extends HashMap<State, ValuationSet> {
                 }
             }
         }
-    }
-
-    @Override
-    public String toString() {
-        String result = "{";
-        boolean first = true;
-        for (State s : this.keySet()) {
-            result += (first ? "" : ";\n") + s + "  ->  " + get(s);
-            first = false;
-        }
-        return result + "}";
     }
 
 }

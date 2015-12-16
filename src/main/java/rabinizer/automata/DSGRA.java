@@ -1,5 +1,6 @@
 package rabinizer.automata;
 
+import rabinizer.exec.Tuple;
 import rabinizer.ltl.ValuationSet;
 
 import java.util.HashMap;
@@ -10,19 +11,29 @@ import java.util.Set;
 /**
  * @author jkretinsky
  */
-public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInterface {
+public class DSGRA extends Automaton implements AccAutomatonInterface {
 
     DTGRARaw dtgra;
-    AccTGR accTGR;
+    AccTGR<? extends IState<?>> accTGR;
     AccSGR accSGR;
 
     public DSGRA(DTGRARaw dtgra) {
         super(dtgra.valuationSetFactory);
         this.dtgra = dtgra;
-        trapState = new ProductAccState(dtgra.automaton.trapState, new HashMap<>());
+        trapState = new ProductAccState((Product.ProductState) dtgra.automaton.trapState, new HashMap<>());
         accTGR = new AccTGR(dtgra.accTGR);
         generate();
         accSGR = new AccSGR(accTGR, this);
+    }
+
+    @Override
+    public String acc() {
+        return accSGR.toString();
+    }
+
+    @Override
+    public int pairNumber() {
+        return accSGR.size();
     }
 
     @Override
@@ -31,38 +42,7 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
         for (int i = 0; i < accTGR.size(); i++) {
             accSets.put(i, new HashSet<>());
         }
-        return new ProductAccState(dtgra.automaton.initialState, accSets);
-    }
-
-    @Override
-    protected ProductAccState generateSuccState(ProductAccState s, ValuationSet vs) {
-        Set<String> v = vs.pickAny();
-        Map<Integer, Set<Integer>> accSets = new HashMap<>();
-        for (int i = 0; i < accTGR.size(); i++) {
-            accSets.put(i, new HashSet<>());
-            GRabinPairT grp = accTGR.get(i);
-            if (grp.getLeft() != null && grp.getLeft().get(s.getLeft()) != null
-                    && grp.getLeft().get(s.getLeft()).contains(v)) {
-                accSets.get(i).add(-1);
-            }
-            for (int j = 0; j < grp.getRight().size(); j++) {
-                if (grp.getRight().get(j).get(s.getLeft()) != null
-                        && grp.getRight().get(j).get(s.getLeft()).contains(v)) {
-                    accSets.get(i).add(j);
-                }
-            }
-        }
-        return new ProductAccState(dtgra.automaton.succ(s.getLeft(), v), accSets);
-    }
-
-    @Override
-    protected Set<ValuationSet> generateSuccTransitions(ProductAccState s) {
-        return valuationSetFactory.createAllValuationSets(); // TODO symbolic
-    }
-
-    @Override
-    public String acc() {
-        return accSGR.toString();
+        return new ProductAccState((Product.ProductState) dtgra.automaton.initialState, accSets);
     }
 
     @Override
@@ -93,14 +73,49 @@ public class DSGRA extends Automaton<ProductAccState> implements AccAutomatonInt
         return sum + " " + result;
     }
 
-    @Override
     protected String stateAcc(ProductAccState s) {
         return "\n{" + accSGR.accSets(s) + "}";
     }
 
-    @Override
-    public int pairNumber() {
-        return accSGR.size();
-    }
+    public class ProductAccState extends Tuple<Product.ProductState, Map<Integer, Set<Integer>>> implements IState<ProductAccState> {
 
+        public ProductAccState(Product.ProductState ps, Map<Integer, Set<Integer>> accSets) {
+            super(ps, accSets);
+        }
+
+        @Override
+        public String toString() {
+            return getLeft() + " " + getRight();
+        }
+
+        @Override
+        public ProductAccState getSuccessor(Set<String> valuation) {
+            Map<Integer, Set<Integer>> accSets = new HashMap<>();
+            for (int i = 0; i < accTGR.size(); i++) {
+                accSets.put(i, new HashSet<>());
+                GRabinPairT<? extends IState<?>> grp = accTGR.get(i);
+                if (grp.getLeft() != null && grp.getLeft().get(getLeft()) != null
+                        && grp.getLeft().get(getLeft()).contains(valuation)) {
+                    accSets.get(i).add(-1);
+                }
+                for (int j = 0; j < grp.getRight().size(); j++) {
+                    if (grp.getRight().get(j).get(getLeft()) != null
+                            && grp.getRight().get(j).get(getLeft()).contains(valuation)) {
+                        accSets.get(i).add(j);
+                    }
+                }
+            }
+            return new ProductAccState((Product.ProductState) dtgra.automaton.succ(getLeft(), valuation), accSets);
+        }
+
+        @Override
+        public boolean isAccepting(Set<String> valuation) {
+            return false;
+        }
+
+        @Override
+        public Set<ValuationSet> partitionSuccessors() {
+            return valuationSetFactory.createAllValuationSets(); // TODO symbolic
+        }
+    }
 }

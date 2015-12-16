@@ -1,5 +1,7 @@
 package rabinizer.automata;
 
+import rabinizer.exec.Tuple;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -7,7 +9,7 @@ import java.util.Set;
 /**
  * @author jkretinsky
  */
-public class AccSR extends ArrayList<Set<ProductDegenAccState>> {
+public class AccSR extends ArrayList<Set<DSRA.ProductDegenAccState>> {
 
     private static final long serialVersionUID = 1L;
 
@@ -16,7 +18,7 @@ public class AccSR extends ArrayList<Set<ProductDegenAccState>> {
         for (int i = 0; i < 2 * accTR.size(); i++) {
             this.add(new HashSet<>());
         }
-        for (ProductDegenAccState s : dsra.states) {
+        for (DSRA.ProductDegenAccState s : dsra.states) {
             for (Integer i : s.getRight()) {
                 this.get(i).add(s);
             }
@@ -32,7 +34,7 @@ public class AccSR extends ArrayList<Set<ProductDegenAccState>> {
         return result;
     }
 
-    String accSets(ProductDegenAccState s) {
+    String accSets(DSRA.ProductDegenAccState s) {
         String result = "{";
         Set<Integer> accSets = s.getRight();
         for (int i = 0; i < 2 * size(); i++) {

@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * @author jkretinsky
  */
-public abstract class AccAutomaton<State> extends Automaton<State> {
+public abstract class AccAutomaton<S extends IState<S>> extends Automaton<S> {
 
     protected AccAutomaton(ValuationSetFactory<String> valuationSetFactory) {
         super(valuationSetFactory);
@@ -17,9 +17,9 @@ public abstract class AccAutomaton<State> extends Automaton<State> {
     protected abstract String accTypeNumerical();
 
     @Override
-    protected abstract String stateAcc(State s);
+    protected abstract String stateAcc(S s);
 
     @Override
-    protected abstract String outTransToHOA(State s, Map<State, Integer> statesToNumbers);
+    protected abstract String outTransToHOA(S s, Map<S, Integer> statesToNumbers);
 
 }

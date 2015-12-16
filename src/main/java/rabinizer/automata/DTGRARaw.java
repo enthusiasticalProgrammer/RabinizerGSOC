@@ -3,41 +3,36 @@ package rabinizer.automata;
 import rabinizer.exec.Main;
 import rabinizer.ltl.EquivalenceClassFactory;
 import rabinizer.ltl.Formula;
-import rabinizer.ltl.ValuationSetFactory;
 import rabinizer.ltl.GOperator;
+import rabinizer.ltl.ValuationSetFactory;
 
-import java.util.HashMap;
-
-import java.util.Map;
-
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author jkretinsky
  */
 public class DTGRARaw {
 
+    final EquivalenceClassFactory equivalenceClassFactory;
+    final ValuationSetFactory<String> valuationSetFactory;
     public Product automaton;
     public AccTGRRaw accTGR;
     AccLocal accLocal;
 
-    final EquivalenceClassFactory equivalenceClassFactory;
-    final ValuationSetFactory<String> valuationSetFactory;
-
     public DTGRARaw(Formula phi, boolean computeAcc, boolean unfoldedOn, boolean sinksOn,
-            boolean optimizeInitialStatesOn, boolean relevantSlavesOnlyOn, boolean slowerIsabelleAccForUnfolded,
-            EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory<String> valuationSetFactory) {
+                    boolean optimizeInitialStatesOn, boolean relevantSlavesOnlyOn, boolean slowerIsabelleAccForUnfolded,
+                    EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory<String> valuationSetFactory) {
         this.valuationSetFactory = valuationSetFactory;
         this.equivalenceClassFactory = equivalenceClassFactory;
 
         // phi assumed in NNF
         Main.verboseln("========================================");
         Main.nonsilent("Generating primaryAutomaton");
-        FormulaAutomaton master;
+        Master master;
         if (unfoldedOn) { // unfold upon arrival to state
-            master = new Master(phi, equivalenceClassFactory, valuationSetFactory);
+            master = new Master(phi, equivalenceClassFactory, valuationSetFactory, EnumSet.of(Optimisation.EAGER));
         } else {
-            master = new MasterFolded(phi, equivalenceClassFactory, valuationSetFactory);
+            master = new Master(phi, equivalenceClassFactory, valuationSetFactory, Collections.emptySet());
         }
         master.generate();
         Main.verboseln("========================================");
@@ -45,11 +40,11 @@ public class DTGRARaw {
         Set<GOperator> gSubformulas = phi.gSubformulas();
         Map<GOperator, RabinSlave> slaves = new HashMap<>();
         for (GOperator f : gSubformulas) {
-            FormulaAutomaton mSlave;
+            MojmirSlave mSlave;
             if (unfoldedOn) { // unfold upon arrival to state
-                mSlave = new MojmirSlave(f, equivalenceClassFactory, valuationSetFactory);
+                mSlave = new MojmirSlave(f, equivalenceClassFactory, valuationSetFactory, EnumSet.of(Optimisation.EAGER));
             } else {
-                mSlave = new MojmirSlaveFolded(f, equivalenceClassFactory, valuationSetFactory);
+                mSlave = new MojmirSlave(f, equivalenceClassFactory, valuationSetFactory, Collections.emptySet());
             }
             mSlave.generate();
             if (sinksOn) { // selfloop-only states keep no tokens
@@ -65,11 +60,11 @@ public class DTGRARaw {
         Main.verboseln("========================================");
         Main.nonsilent("Generating product");
         if (relevantSlavesOnlyOn) { // relevant secondaryAutomata dynamically
-                                    // computed from primaryAutomaton formula
-                                    // master formula
-            automaton = new Product(master, slaves, valuationSetFactory);
+            // computed from primaryAutomaton formula
+            // master formula
+            automaton = new Product(master, slaves, valuationSetFactory, Collections.emptySet());
         } else { // all secondaryAutomata monitor
-            automaton = new ProductAllSlaves(master, slaves, valuationSetFactory);
+            automaton = new ProductAllSlaves(master, slaves, valuationSetFactory, Collections.emptySet());
         }
         automaton.generate();
         if (computeAcc) {
@@ -92,11 +87,11 @@ public class DTGRARaw {
     /**
      * Side effect: empty sink-SCCs get deleted, acceptance condition gets
      * reduced when possible
-     * 
+     *
      * @return true if automaton together witch acceptance condition is empty
      */
     public boolean checkIfEmpty(ValuationSetFactory<String> val) {
-        return EmptinessCheck.<ProductState> checkEmptiness((Automaton<ProductState>) automaton, accTGR, val);
+        return false; // EmptinessCheck.<ProductState> checkEmptiness((Automaton<ProductState>) automaton, accTGR, val);
     }
 
 }

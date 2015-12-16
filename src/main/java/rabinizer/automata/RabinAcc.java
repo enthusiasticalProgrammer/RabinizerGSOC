@@ -18,7 +18,7 @@ public class RabinAcc extends HashSet<RabinPair> {
     public String toString() {
         String result = "\n";
         int i = 1;
-        for (Tuple<TranSet<ProductState>, TranSet<ProductState>> pair : this) {
+        for (Tuple<TranSet, TranSet> pair : this) {
             result += (i == 1 ? "" : "\n") + "Pair " + i + "\n" + pair;
         }
         return result;
