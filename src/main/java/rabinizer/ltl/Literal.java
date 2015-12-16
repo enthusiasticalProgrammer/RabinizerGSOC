@@ -23,7 +23,7 @@ public final class Literal extends FormulaNullary {
     }
 
     public Literal positiveLiteral() {
-        return (Literal) FormulaFactory.mkLit(this.atom, false);
+        return new Literal(this.atom, false);
     }
 
     @Override
