@@ -5,6 +5,9 @@ import com.google.common.collect.Table;
 import com.google.common.collect.Table.Cell;
 
 import rabinizer.exec.Main;
+import rabinizer.ltl.BooleanConstant;
+import rabinizer.ltl.EquivalenceClass;
+import rabinizer.ltl.EquivalenceClassFactory;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
@@ -17,6 +20,7 @@ public abstract class Automaton<State> {
     protected Table<State, ValuationSet, State> transitions;
     protected Table<State, State, ValuationSet> edgeBetween;
     protected State initialState;
+    protected State trapState;
 
     protected final ValuationSetFactory<String> valuationSetFactory;
 
@@ -28,6 +32,7 @@ public abstract class Automaton<State> {
         edgeBetween = HashBasedTable.create();
 
         this.valuationSetFactory = valuationSetFactory;
+        trapState = null;
     }
 
     protected Automaton(Automaton<State> a) {
@@ -37,6 +42,7 @@ public abstract class Automaton<State> {
         sinks = a.sinks;
         edgeBetween = a.edgeBetween;
         this.valuationSetFactory = a.valuationSetFactory;
+        trapState = a.trapState;
     }
 
     // TODO to abstract ProductAutomaton ?
@@ -274,10 +280,10 @@ public abstract class Automaton<State> {
      */
     protected void removeStates(Set<State> statess) {
         if (statess.contains(initialState)) {
-            states = Collections.emptySet();
+            states = new HashSet<State>();
             transitions = HashBasedTable.create();
             initialState = null;
-            sinks = Collections.emptySet();
+            sinks = new HashSet<State>();
             edgeBetween = HashBasedTable.create();
         } else {
             states.removeAll(statess);
@@ -285,8 +291,8 @@ public abstract class Automaton<State> {
 
             // fix transitions
             Cell<State, ValuationSet, State> entry = null;
-            for (Iterator<Cell<State, ValuationSet, State>> it = transitions.cellSet().iterator(); it
-                    .hasNext(); entry = it.next()) {
+            for (Iterator<Cell<State, ValuationSet, State>> it = transitions.cellSet().iterator(); it.hasNext();) {
+                entry = it.next();
 
                 if (statess.contains(entry.getRowKey())) {
                     it.remove();
@@ -297,8 +303,8 @@ public abstract class Automaton<State> {
 
             // fix edgeBetwwen
             Cell<State, State, ValuationSet> entry2 = null;
-            for (Iterator<Cell<State, State, ValuationSet>> it = edgeBetween.cellSet().iterator(); it
-                    .hasNext(); entry2 = it.next()) {
+            for (Iterator<Cell<State, State, ValuationSet>> it = edgeBetween.cellSet().iterator(); it.hasNext();) {
+                entry2 = it.next();
                 if (statess.contains(entry2.getRowKey())) {
                     it.remove();
                 } else if (statess.contains(entry2.getColumnKey())) {
@@ -347,8 +353,38 @@ public abstract class Automaton<State> {
      * if the automaton is not complete anymore (e.g. because of optimization),
      * this method makes it complete by adding a trap state.
      */
-    public void makeComplete() {
-        throw new RuntimeException("Not yet implemented");
+    public void makeComplete(ValuationSetFactory valuationFactory) {
+        State trapState = this.trapState;
+        if (initialState == null) {
+            initialState = trapState;
+            states.add(trapState);
+            sinks.add(trapState);
+            this.trapState = trapState;
+        }
+
+        Map<State, Map<ValuationSet, State>> trans = transitions.rowMap();
+        for (State s : states) {
+            ValuationSet vs = valuationFactory.createEmptyValuationSet();
+            Set<Map.Entry<ValuationSet, State>> transOfS;
+            if (trans.get(s) != null) {
+                transOfS = trans.get(s).entrySet();
+            } else {
+                transOfS = Collections.emptySet();
+            }
+
+            transOfS.stream().forEach(edge -> vs.addAll(edge.getKey()));
+            ValuationSet vs2 = vs.complement(); // because vs has to be
+                                                // final or effectively
+                                                // final acc. to compiler
+            if (!vs2.isEmpty()) {
+                states.add(trapState);
+                sinks.add(trapState);
+                transitions.put(s, vs2, trapState);
+                edgeBetween.put(s, trapState, vs2);
+                this.trapState = trapState;
+            }
+        }
+
     }
 
     public List<Set<State>> SCCs() {
@@ -358,4 +394,5 @@ public abstract class Automaton<State> {
     public List<Set<State>> subSCCs(Set<State> SCC, Map<State, ValuationSet> forbiddenEdges) {
         return SCCAnalyser.<State> subSCCs(this, SCC, forbiddenEdges);
     }
+
 }

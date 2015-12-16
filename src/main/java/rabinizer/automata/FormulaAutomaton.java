@@ -8,6 +8,7 @@ public abstract class FormulaAutomaton<L extends Formula> extends GenericFormula
 
     protected FormulaAutomaton(L formula, EquivalenceClassFactory eqFactory, ValuationSetFactory<String> factory) {
         super(formula, eqFactory, factory);
+        trapState = new FormulaAutomatonState(eqFactory.getFalse());
     }
 
     @Override
@@ -30,4 +31,3 @@ public abstract class FormulaAutomaton<L extends Formula> extends GenericFormula
     protected abstract EquivalenceClass step(EquivalenceClass clazz, Set<String> valuation);
 
 }
-

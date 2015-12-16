@@ -118,12 +118,6 @@ public class AccLocal {
                 Main.verboseln("\t  Ranking " + ranking);
                 TranSet<ProductState> avoidP = new TranSet<>(valuationSetFactory);
                 for (ProductState ps : product.states) {
-                    /*
-                     * for (Valuation v : AllValuations.allValuations) { // TODO
-                     * !!! expl vs bdd if (!slavesEntail(gSet, gSetComplement,
-                     * ps, ranking, v, ps.masterState.formula)) { avoidP.add(ps,
-                     * new ValuationSetExplicit(v)); } }
-                     */
                     avoidP.addAll(computeAccMasterForState(gSet, ranking, ps));
                 }
                 if (avoidP.equals(allTrans)) {

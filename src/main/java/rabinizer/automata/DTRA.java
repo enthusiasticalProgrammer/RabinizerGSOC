@@ -1,10 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package rabinizer.automata;
 
+import rabinizer.ltl.EquivalenceClass;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
@@ -25,6 +21,7 @@ public class DTRA extends AccAutomaton<ProductDegenState> implements AccAutomato
     public DTRA(DTGRARaw dtgra, ValuationSetFactory<String> factory) {
         super(factory);
         this.dtgra = dtgra;
+        trapState = new ProductDegenState(dtgra.automaton.trapState, new HashMap<>());
         accTGR = new AccTGR(dtgra.accTGR);
         generate();
         accTR = new AccTR(accTGR, this, valuationSetFactory);

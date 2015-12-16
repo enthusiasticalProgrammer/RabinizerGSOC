@@ -9,9 +9,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class Product extends GenericProduct<FormulaAutomatonState, GOperator, RankingState, FormulaAutomaton<Formula>, RabinSlave, ProductState> {
+public class Product extends
+        GenericProduct<FormulaAutomatonState, GOperator, RankingState, FormulaAutomaton<Formula>, RabinSlave, ProductState> {
 
-    public Product(FormulaAutomaton<Formula> primaryAutomaton, Map<GOperator, RabinSlave> slaves, ValuationSetFactory<String> factory) {
+    public Product(FormulaAutomaton<Formula> primaryAutomaton, Map<GOperator, RabinSlave> slaves,
+            ValuationSetFactory<String> factory) {
         super(primaryAutomaton, slaves, factory);
     }
 
@@ -21,6 +23,9 @@ public class Product extends GenericProduct<FormulaAutomatonState, GOperator, Ra
         this.states = a.states;
         this.edgeBetween = a.edgeBetween;
         this.sinks = a.sinks;
+
+        FormulaAutomatonState f = primaryAutomaton.trapState;
+        this.trapState = new ProductState(f, relevantSecondary(f), k -> secondaryAutomata.get(k).trapState);
     }
 
     Set<ValuationSet> generateSuccTransitionsReflectingSinks(ProductState s) {
@@ -38,7 +43,8 @@ public class Product extends GenericProduct<FormulaAutomatonState, GOperator, Ra
 
     @Override
     protected ProductState generateInitialState() {
-        return new ProductState(primaryAutomaton.getInitialState(), relevantSecondary(primaryAutomaton.getInitialState()), k -> secondaryAutomata.get(k).getInitialState());
+        return new ProductState(primaryAutomaton.getInitialState(),
+                relevantSecondary(primaryAutomaton.getInitialState()), k -> secondaryAutomata.get(k).getInitialState());
         // val)) + "::";
     }
 
@@ -48,7 +54,8 @@ public class Product extends GenericProduct<FormulaAutomatonState, GOperator, Ra
     }
 
     @Override
-    protected ProductState buildProductState(FormulaAutomatonState primaryState, Map<GOperator, RankingState> secondaryStates) {
+    protected ProductState buildProductState(FormulaAutomatonState primaryState,
+            Map<GOperator, RankingState> secondaryStates) {
         return new ProductState(primaryState, secondaryStates);
     }
 
