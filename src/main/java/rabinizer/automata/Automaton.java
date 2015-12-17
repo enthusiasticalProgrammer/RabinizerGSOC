@@ -218,7 +218,7 @@ public abstract class Automaton<S extends IState<S>> {
      * if the automaton is not complete anymore (e.g. because of optimization),
      * this method makes it complete by adding a trap state.
      */
-    public void makeComplete(ValuationSetFactory valuationFactory) {
+    public void makeComplete() {
         S trapState = this.trapState;
         if (initialState == null) {
             initialState = trapState;
@@ -229,7 +229,7 @@ public abstract class Automaton<S extends IState<S>> {
 
         Map<S, Map<ValuationSet, S>> trans = transitions.rowMap();
         for (S s : states) {
-            ValuationSet vs = valuationFactory.createEmptyValuationSet();
+            ValuationSet vs = valuationSetFactory.createEmptyValuationSet();
             Set<Map.Entry<ValuationSet, S>> transOfS;
             if (trans.get(s) != null) {
                 transOfS = trans.get(s).entrySet();
