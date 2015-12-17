@@ -15,7 +15,7 @@ public class AccLocalFolded extends AccLocal {
     }
 
     @Override
-    protected boolean slavesEntail(Set<GOperator> gSet, GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState ps, Map<Formula, Integer> ranking, Set<String> v,
+    protected boolean slavesEntail(Set<GOperator> gSet, Product.ProductState ps, Map<Formula, Integer> ranking, Set<String> v,
                                    EquivalenceClass consequent) {
         Formula antecedent = BooleanConstant.get(true);
         for (GOperator f : gSet) {
@@ -41,7 +41,7 @@ public class AccLocalFolded extends AccLocal {
     }
 
     @Override
-    protected TranSet computeAccMasterForState(Set<GOperator> gSet, Map<Formula, Integer> ranking, GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState ps) {
+    protected TranSet computeAccMasterForState(Set<GOperator> gSet, Map<Formula, Integer> ranking, Product.ProductState ps) {
         TranSet result = new TranSet(valuationSetFactory);
         if (!slavesEntail(gSet, ps, ranking, null, (ps.getPrimaryState()).getClazz())) {
             result.add(ps, valuationSetFactory.createUniverseValuationSet());

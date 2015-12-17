@@ -25,7 +25,7 @@ public class AccTGR<S extends IState<S>> extends ArrayList<GRabinPairT<S>> {
         return result;
     }
 
-    String accSets(GenericProduct.GenericProductState s, Set<String> v) {
+    String accSets(AbstractProductState s, Set<String> v) {
         String result = "";
         int sum = 0;
         for (GRabinPairT<S> gRabinPairT : this) {

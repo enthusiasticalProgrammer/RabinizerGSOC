@@ -7,11 +7,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-public abstract class FormulaAutomatonState {
+public abstract class AbstractFormulaState {
 
-    final protected EquivalenceClass clazz;
+    protected final EquivalenceClass clazz;
 
-    public FormulaAutomatonState(EquivalenceClass clazz) {
+    protected AbstractFormulaState(EquivalenceClass clazz) {
         this.clazz = clazz;
     }
 
@@ -24,7 +24,7 @@ public abstract class FormulaAutomatonState {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        FormulaAutomatonState that = (FormulaAutomatonState) o;
+        AbstractFormulaState that = (AbstractFormulaState) o;
         return Objects.equals(this.getOuter(), that.getOuter()) && Objects.equals(clazz, that.clazz);
     }
 
@@ -45,9 +45,7 @@ public abstract class FormulaAutomatonState {
         Set<ValuationSet> result = new HashSet<>();
         Optional<Literal> l = f.getAnUnguardedLiteral();
 
-        if (!l.isPresent()) {
-            result.add(createUniverseValuationSet());
-        } else {
+        if (l.isPresent()) {
             Literal literal = l.get().positiveLiteral();
             Set<ValuationSet> pos = generatePartitioning(f.evaluate(literal));
             Set<ValuationSet> neg = generatePartitioning(f.evaluate(literal.not()));
@@ -59,6 +57,8 @@ public abstract class FormulaAutomatonState {
                 vs.restrictWith(literal.not());
                 result.add(vs);
             }
+        } else {
+            result.add(createUniverseValuationSet());
         }
 
         return result;

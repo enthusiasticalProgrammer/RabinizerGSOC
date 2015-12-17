@@ -1,20 +1,18 @@
 package rabinizer.automata;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.*;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import rabinizer.exec.Main;
 import rabinizer.ltl.*;
 import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 import rabinizer.ltl.bdd.BDDValuationSetFactory;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.*;
 
 public class AutomatonClassTest {
     private boolean silent;
@@ -63,7 +61,7 @@ public class AutomatonClassTest {
         BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
-        List<Set<GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState>> SCC = dtgra.automaton.SCCs();
+        List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
         assertEquals(SCC.size(), 31);
 
     }
@@ -76,7 +74,7 @@ public class AutomatonClassTest {
         BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
-        List<Set<GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState>> SCC = dtgra.automaton.SCCs();
+        List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
         assertEquals(SCC.size(), 3);
 
     }
@@ -89,7 +87,7 @@ public class AutomatonClassTest {
         BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
-        List<Set<GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState>> SCC = dtgra.automaton.SCCs();
+        List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
         assertEquals(SCC.size(), 7);
 
     }
@@ -102,7 +100,7 @@ public class AutomatonClassTest {
         BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
-        List<Set<GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState>> SCC = dtgra.automaton.SCCs();
+        List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
         assertTrue(SCC.get(30).contains(dtgra.automaton.initialState));
     }
 
@@ -114,7 +112,7 @@ public class AutomatonClassTest {
         BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
-        List<Set<GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState>> SCC = dtgra.automaton.SCCs();
+        List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
         assertTrue(SCC.get(2).contains(dtgra.automaton.initialState));
     }
 
@@ -126,7 +124,7 @@ public class AutomatonClassTest {
         BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
-        List<Set<GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState>> SCC = dtgra.automaton.SCCs();
+        List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
 
         assertTrue(SCC.get(6).stream().allMatch(s -> s.equals(
                 new DTGRARaw(formula, true, false, false, false, false, false, factory, val).automaton.initialState)));
@@ -169,7 +167,7 @@ public class AutomatonClassTest {
         BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
-        List<Set<GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState>> SCC = dtgra.automaton.SCCs();
+        List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
 
         assertTrue(dtgra.automaton.isSink(SCC.get(0)));
     }
@@ -182,7 +180,7 @@ public class AutomatonClassTest {
         BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
-        List<Set<GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState>> SCC = dtgra.automaton.SCCs();
+        List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
 
         assertFalse(dtgra.automaton.isSink(SCC.get(5)));
     }

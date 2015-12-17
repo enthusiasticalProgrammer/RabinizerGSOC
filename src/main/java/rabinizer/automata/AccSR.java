@@ -1,7 +1,5 @@
 package rabinizer.automata;
 
-import rabinizer.exec.Tuple;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;

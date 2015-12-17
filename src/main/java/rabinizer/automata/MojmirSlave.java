@@ -28,7 +28,7 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
         }
     }
 
-    public final class State extends FormulaAutomatonState implements IState<State> {
+    public final class State extends AbstractFormulaState implements IState<State> {
         State(EquivalenceClass clazz) {
             super(clazz);
         }

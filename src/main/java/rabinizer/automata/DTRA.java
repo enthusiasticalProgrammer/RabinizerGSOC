@@ -132,7 +132,7 @@ public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegen
                 awaitedIndices.put(i, awaited);
             }
 
-            return new ProductDegenState((T) dtgra.automaton.succ((GenericProduct<rabinizer.ltl.GOperator, Master.State, RabinSlave.State>.GenericProductState) this.getLeft(), valuation), awaitedIndices);
+            return new ProductDegenState((T) dtgra.automaton.succ((Product.ProductState) this.getLeft(), valuation), awaitedIndices);
         }
 
         @Override

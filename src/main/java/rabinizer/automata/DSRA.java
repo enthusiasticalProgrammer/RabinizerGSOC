@@ -1,7 +1,6 @@
 package rabinizer.automata;
 
 import rabinizer.exec.Tuple;
-import rabinizer.ltl.GOperator;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
@@ -17,7 +16,7 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
     AccTR<? extends IState<?>> accTR;
     Map<IState, Set<Integer>> stateAcceptance;
 
-    public DSRA(DTRA<GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState> dtra, ValuationSetFactory<String> factory) {
+    public DSRA(DTRA<Product.ProductState> dtra, ValuationSetFactory<String> factory) {
         super(factory);
         this.dtra = dtra;
         trapState = new ProductDegenAccState(dtra.trapState, new HashSet<>());

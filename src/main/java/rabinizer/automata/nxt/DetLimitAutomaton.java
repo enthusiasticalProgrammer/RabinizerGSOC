@@ -6,7 +6,6 @@ import jhoafparser.ast.AtomLabel;
 import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import rabinizer.automata.GenericProduct;
 import rabinizer.automata.IState;
 import rabinizer.automata.Master;
 import rabinizer.automata.Optimisation;
@@ -112,8 +111,8 @@ class DetLimitAutomatonComponent {
         Formula substInit = Simplifier.simplify(initialFormula.accept(masterVisitor));
 
         nondetComponent = new DetLimitMaster(substInit, equivalenceClassFactory, valuationSetFactory, optimisations);
-        Function<GOperator, DetLimitSlave> constructor = (g -> new DetLimitSlave(Simplifier.simplify(g.getOperand().accept(slaveVisitor)), equivalenceClassFactory, valuationSetFactory, optimisations));
-        detComponent = new DetLimitProduct(nondetComponent, Gset, constructor, equivalenceClassFactory, valuationSetFactory, optimisations);
+        Function<GOperator, DetLimitSlave> constructor = g -> new DetLimitSlave(Simplifier.simplify(g.getOperand().accept(slaveVisitor)), equivalenceClassFactory, valuationSetFactory, optimisations);
+        detComponent = new DetLimitProduct(nondetComponent, Gset, constructor, equivalenceClassFactory, valuationSetFactory);
     }
 
     protected void toHOA(HOAConsumer consumer, Map<Object, Integer> stateIDs, int maxAcc) throws HOAConsumerException {
@@ -127,7 +126,7 @@ class DetLimitAutomatonComponent {
 
             for (Map.Entry<ValuationSet, Master.State> entry : nondetComponent.getTransitions().row(masterState).entrySet()) {
                 Master.State succ = entry.getValue();
-                GenericProduct.GenericProductState init = detComponent.generateInitialState(succ);
+                DetLimitProduct.State init = detComponent.generateInitialState(succ);
                 detComponent.generate(init);
 
                 BooleanExpression<AtomLabel> edgeLabel = Simplifier.simplify(entry.getKey().toFormula()).accept(converter);
@@ -137,11 +136,11 @@ class DetLimitAutomatonComponent {
             }
         }
 
-        for (GenericProduct<GOperator, Master.State, DetLimitSlave.State>.GenericProductState productState : detComponent.getStates()) {
+        for (DetLimitProduct.State productState : detComponent.getStates()) {
             consumer.addState(Util.getId(stateIDs, productState), productState.toString(), null, null);
 
-            for (Map.Entry<ValuationSet, GenericProduct<GOperator, Master.State, DetLimitSlave.State>.GenericProductState> entry : detComponent.getTransitions().row(productState).entrySet()) {
-                IState succ = entry.getValue();
+            for (Map.Entry<ValuationSet, DetLimitProduct.State> entry : detComponent.getTransitions().row(productState).entrySet()) {
+                DetLimitProduct.State succ = entry.getValue();
 
                 for (Set<String> valuation : entry.getKey()) {
                     BooleanExpression<AtomLabel> edgeLabel = Simplifier.simplify(factory.createValuationSet(valuation).toFormula()).accept(converter);

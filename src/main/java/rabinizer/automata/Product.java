@@ -7,14 +7,22 @@ import rabinizer.ltl.ValuationSetFactory;
 import java.util.*;
 import java.util.function.Function;
 
-public class Product extends GenericProduct<GOperator, Master.State, RabinSlave.State> {
+public class Product extends Automaton<Product.ProductState> {
 
-    public Product(Master primaryAutomaton, Map<GOperator, ? extends Automaton<RabinSlave.State>> slaves, ValuationSetFactory<String> factory, Collection<Optimisation> optimisations) {
-        super(primaryAutomaton, slaves, factory, optimisations);
+    protected final Master primaryAutomaton;
+    protected final Map<GOperator, RabinSlave> secondaryAutomata;
+
+    protected final boolean allSlaves;
+
+    public Product(Master primaryAutomaton, Map<GOperator, RabinSlave> slaves, ValuationSetFactory<String> factory, Collection<Optimisation> optimisations) {
+        super(factory);
+        this.primaryAutomaton = primaryAutomaton;
+        this.secondaryAutomata = slaves;
         this.trapState = new ProductState(primaryAutomaton.trapState, Collections.emptyMap());
+        this.allSlaves = optimisations.contains(Optimisation.ALL_SLAVES);
     }
 
-    Set<ValuationSet> generateSuccTransitionsReflectingSinks(GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState s) {
+    Set<ValuationSet> generateSuccTransitionsReflectingSinks(ProductState s) {
         Set<Set<ValuationSet>> product = new HashSet<>();
 
         product.add(primaryAutomaton.transitions.row(s.getPrimaryState()).keySet());
@@ -30,15 +38,11 @@ public class Product extends GenericProduct<GOperator, Master.State, RabinSlave.
         return generatePartitioning(product);
     }
 
-    protected GenericProduct.GenericProductState generateInitialState() {
-        return new GenericProduct.GenericProductState(primaryAutomaton.getInitialState(), relevantSecondary(primaryAutomaton.getInitialState()), k -> secondaryAutomata.get(k).getInitialState());
+    protected Product.ProductState generateInitialState() {
+        return new ProductState(primaryAutomaton.getInitialState(), secondaryAutomata.keySet(), k -> secondaryAutomata.get(k).getInitialState());
     }
 
-    protected Set<GOperator> relevantSecondary(Master.State primaryState) {
-        return primaryState.getClazz().getRepresentative().relevantGFormulas(secondaryAutomata.keySet());
-    }
-
-    public class ProductState extends GenericProductState {
+    public class ProductState extends AbstractProductState<Master.State, GOperator, RabinSlave.State, ProductState> implements IState<ProductState> {
 
         public ProductState(Master.State primaryState, Map<GOperator, RabinSlave.State> secondaryStates) {
             super(primaryState, secondaryStates);
@@ -46,6 +50,30 @@ public class Product extends GenericProduct<GOperator, Master.State, RabinSlave.
 
         public ProductState(Master.State primaryState, Collection<GOperator> keys, Function<GOperator, RabinSlave.State> constructor) {
             super(primaryState, keys, constructor);
+        }
+
+        @Override
+        public boolean isAccepting(Set<String> valuation) {
+            return false;
+        }
+
+        @Override
+        protected Set<GOperator> relevantSecondary(Master.State primaryState) {
+            if (allSlaves) {
+                return secondaryStates.keySet();
+            } else {
+                return primaryState.getClazz().getRepresentative().relevantGFormulas(secondaryAutomata.keySet());
+            }
+        }
+
+        @Override
+        protected ProductState constructState(Master.State primaryState, Map<GOperator, RabinSlave.State> secondaryStates) {
+            return new ProductState(primaryState, secondaryStates);
+        }
+
+        @Override
+        protected ValuationSet createUniverseValuationSet() {
+            return valuationSetFactory.createUniverseValuationSet();
         }
     }
 }

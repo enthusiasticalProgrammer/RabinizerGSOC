@@ -2,7 +2,6 @@ package rabinizer.automata;
 
 import rabinizer.exec.Main;
 import rabinizer.exec.Tuple;
-import rabinizer.ltl.GOperator;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
@@ -40,8 +39,8 @@ public class RabinPair<S extends IState<S>> extends Tuple<TranSet<S>, TranSet<S>
             // }
         }
         // Product
-        TranSet<GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState> failP = new TranSet<>(valuationSetFactory);
-        for (GenericProduct.GenericProductState ps : product.states) {
+        TranSet<Product.ProductState> failP = new TranSet<>(valuationSetFactory);
+        for (Product.ProductState ps : product.states) {
             RabinSlave.State rs = (RabinSlave.State) ps.getSecondaryState(slave.mojmir.label);
             if (rs != null) { // relevant slave
                 for (IState fs : rs.keySet()) {
@@ -75,8 +74,8 @@ public class RabinPair<S extends IState<S>> extends Tuple<TranSet<S>, TranSet<S>
             }
         }
         // Product
-        TranSet<GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState> succeedP = new TranSet<>(valuationSetFactory);
-        for (GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState ps : product.states) {
+        TranSet<Product.ProductState> succeedP = new TranSet<>(valuationSetFactory);
+        for (Product.ProductState ps : product.states) {
             RabinSlave.State rs = ps.getSecondaryState(slave.mojmir.label);
             if (rs != null) { // relevant slave
                 for (IState fs : rs.keySet()) {
@@ -113,8 +112,8 @@ public class RabinPair<S extends IState<S>> extends Tuple<TranSet<S>, TranSet<S>
             }
         }
         // Product
-        TranSet<GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState> buyP = new TranSet<>(valuationSetFactory);
-        for (GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState ps : product.states) {
+        TranSet<Product.ProductState> buyP = new TranSet<>(valuationSetFactory);
+        for (Product.ProductState ps : product.states) {
             RabinSlave.State rs = (ps).getSecondaryState(slave.mojmir.label);
             if (rs != null) { // relevant slave
                 if (buyR.containsKey(rs)) {

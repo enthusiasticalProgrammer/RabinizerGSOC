@@ -26,7 +26,7 @@ public class Master extends Automaton<Master.State> {
         }
     }
 
-    public class State extends FormulaAutomatonState implements IState<State> {
+    public class State extends AbstractFormulaState implements IState<State> {
 
         State(EquivalenceClass clazz) {
             super(clazz);
@@ -65,7 +65,7 @@ public class Master extends Automaton<Master.State> {
 
         @Override
         protected Object getOuter() {
-            return null;
+            return Master.this;
         }
 
         @Override

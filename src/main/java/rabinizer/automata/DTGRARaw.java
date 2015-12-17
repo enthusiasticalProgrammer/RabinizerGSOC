@@ -64,7 +64,7 @@ public class DTGRARaw {
             // master formula
             automaton = new Product(master, slaves, valuationSetFactory, Collections.emptySet());
         } else { // all secondaryAutomata monitor
-            automaton = new ProductAllSlaves(master, slaves, valuationSetFactory, Collections.emptySet());
+            automaton = new Product(master, slaves, valuationSetFactory, EnumSet.of(Optimisation.ALL_SLAVES));
         }
         automaton.generate();
         if (computeAcc) {

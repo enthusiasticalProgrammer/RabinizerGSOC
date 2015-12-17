@@ -21,7 +21,7 @@ public class AccLocal {
     protected final Formula formula;
     protected final Map<Formula, Integer> maxRank = new HashMap<>();
     final Map<Formula, Set<GOperator>> topmostGs = new HashMap<>();
-    final TranSet<GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState> allTrans;
+    final TranSet<Product.ProductState> allTrans;
     // separate automata acceptance projected to the whole product
     Map<Formula, Map<Set<GOperator>, Map<Integer, RabinPair>>> accSlavesOptions = new HashMap<>();
     Map<Set<GOperator>, Map<Map<Formula, Integer>, RabinPair>> accMasterOptions = new HashMap<>();
@@ -46,7 +46,7 @@ public class AccLocal {
         }
         Main.verboseln("Acceptance for secondaryAutomata:\n" + this.accSlavesOptions);
         ValuationSet allVals = valuationSetFactory.createUniverseValuationSet();
-        for (GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState ps : product.getStates()) {
+        for (Product.ProductState ps : product.getStates()) {
             allTrans.add(ps, allVals);
         }
 
@@ -61,7 +61,7 @@ public class AccLocal {
         return antClazz.implies(consequent);
     }
 
-    protected boolean slavesEntail(Set<GOperator> gSet, GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState ps, Map<Formula, Integer> ranking, Set<String> v,
+    protected boolean slavesEntail(Set<GOperator> gSet, Product.ProductState ps, Map<Formula, Integer> ranking, Set<String> v,
                                    EquivalenceClass consequent) {
         Formula antecedent = BooleanConstant.get(true);
         for (GOperator f : gSet) {
@@ -121,7 +121,7 @@ public class AccLocal {
             for (Map<Formula, Integer> ranking : rankings) {
                 Main.verboseln("\t  Ranking " + ranking);
                 TranSet avoidP = new TranSet(valuationSetFactory);
-                for (GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState ps : product.states) {
+                for (Product.ProductState ps : product.states) {
                     avoidP.addAll(computeAccMasterForState(gSet, ranking, ps));
                 }
                 if (avoidP.equals(allTrans)) {
@@ -160,7 +160,7 @@ public class AccLocal {
     }
 
     // symbolic version
-    protected TranSet computeAccMasterForState(Set<GOperator> gSet, Map<Formula, Integer> ranking, GenericProduct<GOperator, Master.State, RabinSlave.State>.GenericProductState ps) {
+    protected TranSet computeAccMasterForState(Set<GOperator> gSet, Map<Formula, Integer> ranking, Product.ProductState ps) {
         TranSet result = new TranSet(valuationSetFactory);
         Set<ValuationSet> fineSuccVs = product.generateSuccTransitionsReflectingSinks(ps);
         for (ValuationSet vs : fineSuccVs) {

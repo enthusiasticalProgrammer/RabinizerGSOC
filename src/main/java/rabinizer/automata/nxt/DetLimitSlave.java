@@ -96,10 +96,10 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
         private State removeCover(EquivalenceClass currentSuccessor, EquivalenceClass nextCandidate) {
             EquivalenceClass nextSuccessor;
 
-            if (!currentSuccessor.implies(nextCandidate)) {
-                nextSuccessor = nextCandidate;
-            } else {
+            if (currentSuccessor.implies(nextCandidate)) {
                 nextSuccessor = True;
+            } else {
+                nextSuccessor = nextCandidate;
             }
 
             if (!currentSuccessor.implies(initialFormula)) {

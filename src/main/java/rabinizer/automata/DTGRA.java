@@ -66,11 +66,11 @@ public class DTGRA extends Product implements AccAutomatonInterface {
         return sum + " " + result;
     }
 
-    protected String stateAcc(GenericProduct.GenericProductState s) {
+    protected String stateAcc(AbstractProductState s) {
         return "";
     }
 
-    protected String outTransToHOA(GenericProduct.GenericProductState s, Map<IState, Integer> statesToNumbers) {
+    protected String outTransToHOA(ProductState s, Map<IState, Integer> statesToNumbers) {
         String result = "";
         Set<Set<ValuationSet>> productVs = new HashSet<>();
         productVs.add(transitions.row(s).keySet());
