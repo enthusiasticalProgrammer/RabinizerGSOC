@@ -11,10 +11,11 @@ import java.util.*;
 public abstract class Automaton<S extends IState<S>> {
 
     protected final ValuationSetFactory<String> valuationSetFactory;
-    protected Set<S> states;
-    protected Set<S> sinks;
-    protected Table<S, ValuationSet, S> transitions;
-    protected Table<S, S, ValuationSet> edgeBetween;
+
+    protected final Set<S> states;
+    protected final Set<S> sinks;
+    protected final Table<S, ValuationSet, S> transitions;
+    protected final Table<S, S, ValuationSet> edgeBetween;
     protected S initialState;
     protected S trapState;
 
@@ -52,8 +53,7 @@ public abstract class Automaton<S extends IState<S>> {
     }
 
     public void generate() {
-        initialState = getInitialState();
-        generate(initialState);
+        generate(getInitialState());
     }
 
     public void generate(S initialState) {
@@ -319,37 +319,31 @@ public abstract class Automaton<S extends IState<S>> {
      *
      * @param statess: Set of states that is to be removed
      */
-    protected void removeStates(Set<S> statess) {
+    public void removeStates(Set<S> statess) {
         if (statess.contains(initialState)) {
-            states = new HashSet<>();
-            transitions = HashBasedTable.create();
+            states.clear();
+            transitions.clear();
             initialState = null;
-            sinks = new HashSet<>();
-            edgeBetween = HashBasedTable.create();
+            sinks.clear();
+            edgeBetween.clear();
         } else {
             states.removeAll(statess);
             sinks.removeAll(statess);
 
-            // fix transitions
-            Cell<S, ValuationSet, S> entry = null;
-            for (Iterator<Cell<S, ValuationSet, S>> it = transitions.cellSet().iterator(); it.hasNext(); entry = it.next()) {
+            for (S state : statess) {
+                transitions.row(state).clear();
+                edgeBetween.row(state).clear();
+                edgeBetween.column(state).clear();
+            }
 
-                if (statess.contains(entry.getRowKey())) {
-                    it.remove();
-                } else if (statess.contains(entry.getValue())) {
+            Iterator<Cell<S, ValuationSet, S>> it = transitions.cellSet().iterator();
+
+            while (it.hasNext()) {
+                if (statess.contains(it.next().getValue())) {
                     it.remove();
                 }
             }
 
-            Cell<S, S, ValuationSet> entry2 = null;
-            for (Iterator<Cell<S, S, ValuationSet>> it = edgeBetween.cellSet().iterator(); it.hasNext(); entry2 = it.next()) {
-
-                if (statess.contains(entry2.getRowKey())) {
-                    it.remove();
-                } else if (statess.contains(entry2.getColumnKey())) {
-                    it.remove();
-                }
-            }
         }
     }
 
