@@ -38,7 +38,12 @@ public class DetLimitAutomaton {
         valuationSetFactory = new BDDValuationSetFactory(initialFormula.getAtoms());
         components = new HashMap<>();
 
-        keys.forEach(k -> components.put(k, new DetLimitAutomatonComponent(initialFormula, k, equivalenceClassFactory, valuationSetFactory, optimisations)));
+        for (Set<GOperator> key : keys) {
+            DetLimitAutomatonComponent component = new DetLimitAutomatonComponent(initialFormula, key, equivalenceClassFactory, valuationSetFactory, optimisations);
+            if (!component.nondetComponent.getInitialState().getClazz().isFalse()) {
+                components.put(key, component);
+            }
+        }
     }
 
     static private <T> List<T> toList(Collection<T> collection) {
@@ -67,7 +72,7 @@ public class DetLimitAutomaton {
         consumer.setName("Automaton for " + initialFormula);
 
         for (DetLimitAutomatonComponent c : components.values()) {
-            IState e = c.nondetComponent.getInitialState();
+            Master.State e = c.nondetComponent.getInitialState();
             consumer.addStartStates(Collections.singletonList(Util.getId(ids, e)));
         }
 
@@ -142,17 +147,19 @@ class DetLimitAutomatonComponent {
             for (Map.Entry<ValuationSet, DetLimitProduct.State> entry : detComponent.getTransitions().row(productState).entrySet()) {
                 DetLimitProduct.State succ = entry.getValue();
 
+                final boolean masterAccepts = productState.isAccepting(null);
+
                 for (Set<String> valuation : entry.getKey()) {
                     BooleanExpression<AtomLabel> edgeLabel = Simplifier.simplify(factory.createValuationSet(valuation).toFormula()).accept(converter);
 
                     List<Integer> accSet = new ArrayList<>();
 
-                    if (productState.isAccepting(valuation)) {
+                    if (masterAccepts) {
                         accSet.add(0);
                     }
 
                     for (Map.Entry<GOperator, DetLimitSlave.State> entry2 : productState.getSecondaryMap().entrySet()) {
-                        if (succ.isAccepting(valuation)) {
+                        if (entry2.getValue().isAccepting(valuation)) {
                             accSet.add(Util.getId(infSetMapping, entry2.getKey()) + 1);
                         }
                     }
