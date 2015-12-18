@@ -1,6 +1,6 @@
 package rabinizer.automata;
 
-import rabinizer.exec.Tuple;
+import rabinizer.collections.Tuple;
 import rabinizer.ltl.ValuationSet;
 
 import java.util.HashMap;
@@ -49,7 +49,7 @@ public class DSGRA extends Automaton implements AccAutomatonInterface {
     protected String accName() {
         String result = "acc-name: generalized-Rabin " + accSGR.size();
         for (GRabinPair<Set<ProductAccState>> anAccSGR : accSGR) {
-            result += " " + (anAccSGR.getRight().size());
+            result += " " + (anAccSGR.right.size());
         }
         return result + "\n";
     }
@@ -65,7 +65,7 @@ public class DSGRA extends Automaton implements AccAutomatonInterface {
             result += i == 0 ? "" : " | ";
             result += "Fin(" + sum + ")";
             sum++;
-            for (Set<ProductAccState> set : accSGR.get(i).getRight()) {
+            for (Set<ProductAccState> set : accSGR.get(i).right) {
                 result += "&Inf(" + sum + ")";
                 sum++;
             }
@@ -85,7 +85,7 @@ public class DSGRA extends Automaton implements AccAutomatonInterface {
 
         @Override
         public String toString() {
-            return getLeft() + " " + getRight();
+            return left + " " + right;
         }
 
         @Override
@@ -94,18 +94,18 @@ public class DSGRA extends Automaton implements AccAutomatonInterface {
             for (int i = 0; i < accTGR.size(); i++) {
                 accSets.put(i, new HashSet<>());
                 GRabinPairT<? extends IState<?>> grp = accTGR.get(i);
-                if (grp.getLeft() != null && grp.getLeft().get(getLeft()) != null
-                        && grp.getLeft().get(getLeft()).contains(valuation)) {
+                if (grp.left != null && grp.left.get(left) != null
+                        && grp.left.get(left).contains(valuation)) {
                     accSets.get(i).add(-1);
                 }
-                for (int j = 0; j < grp.getRight().size(); j++) {
-                    if (grp.getRight().get(j).get(getLeft()) != null
-                            && grp.getRight().get(j).get(getLeft()).contains(valuation)) {
+                for (int j = 0; j < grp.right.size(); j++) {
+                    if (((java.util.List<TranSet<? extends IState<?>>>) grp.right).get(j).get(left) != null
+                            && ((java.util.List<TranSet<? extends IState<?>>>) grp.right).get(j).get(left).contains(valuation)) {
                         accSets.get(i).add(j);
                     }
                 }
             }
-            return new ProductAccState((Product.ProductState) dtgra.automaton.succ(getLeft(), valuation), accSets);
+            return new ProductAccState((Product.ProductState) dtgra.automaton.succ(left, valuation), accSets);
         }
 
         @Override

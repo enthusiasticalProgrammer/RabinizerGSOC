@@ -29,11 +29,11 @@ public class AccTGR<S extends IState<S>> extends ArrayList<GRabinPairT<S>> {
         String result = "";
         int sum = 0;
         for (GRabinPairT<S> gRabinPairT : this) {
-            if (gRabinPairT.getLeft().containsKey(s) && gRabinPairT.getLeft().get(s).contains(v)) {
+            if (gRabinPairT.left.containsKey(s) && gRabinPairT.left.get(s).contains(v)) {
                 result += sum + " ";
             }
             sum++;
-            for (TranSet<S> ts : gRabinPairT.getRight()) {
+            for (TranSet<S> ts : gRabinPairT.right) {
                 if (ts.containsKey(s) && ts.get(s).contains(v)) {
                     result += sum + " ";
                 }

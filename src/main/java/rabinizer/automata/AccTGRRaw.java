@@ -51,13 +51,13 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
                 Main.verboseln("\t  Ranking " + ranking);
                 TranSet Fin = new TranSet(valuationSetFactory);
                 Set<TranSet> Infs = new HashSet<>();
-                Fin.addAll((TranSet) accLocal.accMasterOptions.get(gSet).get(ranking).getLeft());
+                Fin.addAll((TranSet) accLocal.accMasterOptions.get(gSet).get(ranking).left);
                 for (Formula f : gSet) {
                     Set<GOperator> localGSet = new HashSet<>(gSet);
                     localGSet.retainAll(accLocal.topmostGs.get(f));
                     RabinPair fPair = accLocal.accSlavesOptions.get(f).get(localGSet).get(ranking.get(f));
-                    Fin.addAll((TranSet) fPair.getLeft());
-                    Infs.add((TranSet) fPair.getRight());
+                    Fin.addAll((TranSet) fPair.left);
+                    Infs.add((TranSet) fPair.right);
                 }
                 GRabinPairRaw pair = new GRabinPairRaw(Fin, Infs);
                 Main.verboseln(pair.toString());
@@ -91,7 +91,7 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
         Main.verboseln(phase + ". Removing (F, {I1,...,In}) with complete F\n");
         removalPairs = new AccTGRRaw(valuationSetFactory, equivalenceClassFactory);
         for (GRabinPairRaw pair : this) {
-            if (pair.getLeft().equals(allTrans)) {
+            if (pair.left.equals(allTrans)) {
                 removalPairs.add(pair);
             }
         }
@@ -102,15 +102,15 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
         Main.verboseln(phase + ". Removing complete Ii in (F, {I1,...,In}), i.e. Ii U F = Q \n");
         temp = new AccTGRRaw(valuationSetFactory, equivalenceClassFactory);
         for (GRabinPairRaw<S> pair : this) {
-            copy = new HashSet<>(pair.getRight());
-            for (TranSet<S> i : pair.getRight()) {
+            copy = new HashSet<>(pair.right);
+            for (TranSet<S> i : pair.right) {
                 TranSet<S> iUf = new TranSet<>(valuationSetFactory);
-                if (iUf.addAll(i).addAll(pair.getLeft()).equals(allTrans)) {
+                if (iUf.addAll(i).addAll(pair.left).equals(allTrans)) {
                     copy.remove(i);
                     break;
                 }
             }
-            temp.add(new GRabinPairRaw(pair.getLeft(), copy));
+            temp.add(new GRabinPairRaw(pair.left, copy));
         }
         this.clear();
         this.addAll(temp);
@@ -120,15 +120,15 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
         Main.verboseln(phase + ". Removing F from each Ii: (F, {I1,...,In}) |-> (F, {I1\\F,...,In\\F})\n");
         temp = new AccTGRRaw(valuationSetFactory, equivalenceClassFactory);
         for (GRabinPairRaw<S> pair : this) {
-            copy = new HashSet<>(pair.getRight());
-            for (TranSet i : pair.getRight()) {
+            copy = new HashSet<>(pair.right);
+            for (TranSet i : pair.right) {
                 copy.remove(i); // System.out.println("101:::::::"+i);
                 TranSet inew = new TranSet(valuationSetFactory);
                 inew.addAll(i); // System.out.println("105TEMP-BEFORE"+temp+"\n=====");
-                inew.removeAll(pair.getLeft()); // System.out.println("105TEMP-BETWEEN"+temp+"\n=====");
+                inew.removeAll(pair.left); // System.out.println("105TEMP-BETWEEN"+temp+"\n=====");
                 copy.add(inew); // System.out.println("103TEMP-AFTER"+temp);
             }
-            temp.add(new GRabinPairRaw(pair.getLeft(), copy));// System.out.println("105TEMP-AFTER"+temp+"\n=====");
+            temp.add(new GRabinPairRaw(pair.left, copy));// System.out.println("105TEMP-AFTER"+temp+"\n=====");
         }
         this.clear();
         this.addAll(temp);
@@ -138,7 +138,7 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
         Main.verboseln(phase + ". Removing (F, {..., \\emptyset, ...} )\n");
         removalPairs = new AccTGRRaw(valuationSetFactory, equivalenceClassFactory);
         for (GRabinPairRaw<S> pair : this) {
-            for (TranSet<S> i : pair.getRight()) {
+            for (TranSet<S> i : pair.right) {
                 if (i.isEmpty()) {
                     removalPairs.add(pair);
                     break;
@@ -152,16 +152,16 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
         Main.verboseln(
                 phase + ". Removing redundant Ii: (F, I) |-> (F, { i | i in I and !\\exists j in I : Ij <= Ii })\n");
         for (GRabinPairRaw<S> pair : this) {
-            copy = new HashSet<>(pair.getRight());
-            for (TranSet<S> i : pair.getRight()) {
-                for (TranSet<S> j : pair.getRight()) {
+            copy = new HashSet<>(pair.right);
+            for (TranSet<S> i : pair.right) {
+                for (TranSet<S> j : pair.right) {
                     if (!j.equals(i) && j.subsetOf(i)) {
                         copy.remove(i);
                         break;
                     }
                 }
             }
-            temp.add(new GRabinPairRaw(pair.getLeft(), copy));
+            temp.add(new GRabinPairRaw(pair.left, copy));
         }
         this.clear();
         this.addAll(temp);
@@ -203,12 +203,12 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
      * True if pair1 is more restrictive than pair2
      */
     private boolean pairSubsumed(GRabinPairRaw<S> pair1, GRabinPairRaw<S> pair2) {
-        if (!pair2.getLeft().subsetOf(pair1.getLeft())) {
+        if (!pair2.left.subsetOf(pair1.left)) {
             return false;
         }
-        for (TranSet i2 : pair2.getRight()) {
+        for (TranSet i2 : pair2.right) {
             boolean i2CanBeMatched = false;
-            for (TranSet i1 : pair1.getRight()) {
+            for (TranSet i1 : pair1.right) {
                 if (i1.subsetOf(i2)) {
                     i2CanBeMatched = true;
                     break;

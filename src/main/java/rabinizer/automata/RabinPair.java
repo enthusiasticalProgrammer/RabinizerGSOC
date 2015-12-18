@@ -1,7 +1,7 @@
 package rabinizer.automata;
 
 import rabinizer.exec.Main;
-import rabinizer.exec.Tuple;
+import rabinizer.collections.Tuple;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
@@ -15,7 +15,7 @@ public class RabinPair<S extends IState<S>> extends Tuple<TranSet<S>, TranSet<S>
     }
 
     public RabinPair(RabinPair<S> rp) {
-        super(rp.getLeft(), rp.getRight());
+        super(rp.left, rp.right);
     }
 
     public RabinPair(RabinSlave slave, Set<IState> finalStates, int rank, Product product,
@@ -128,8 +128,8 @@ public class RabinPair<S extends IState<S>> extends Tuple<TranSet<S>, TranSet<S>
 
     @Override
     public String toString() {
-        return "Fin:\n" + (getLeft() == null ? "trivial" : getLeft()) + "\nInf:\n"
-                + (getRight() == null ? "trivial" : getRight());
+        return "Fin:\n" + (left == null ? "trivial" : left) + "\nInf:\n"
+                + (right == null ? "trivial" : right);
     }
 
 }

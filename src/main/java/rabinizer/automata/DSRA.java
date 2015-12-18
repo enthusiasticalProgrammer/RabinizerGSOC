@@ -1,6 +1,6 @@
 package rabinizer.automata;
 
-import rabinizer.exec.Tuple;
+import rabinizer.collections.Tuple;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
@@ -26,9 +26,9 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
             stateAcceptance.put(s, new HashSet<>());
             for (int i = 0; i < accTR.size(); i++) {
                 RabinPair<? extends IState<?>> rp = accTR.get(i);
-                if (valuationSetFactory.createAllValuationSets().equals(rp.getLeft().get(s))) {
+                if (valuationSetFactory.createAllValuationSets().equals(rp.left.get(s))) {
                     stateAcceptance.get(s).add(2 * i);
-                } else if (valuationSetFactory.createAllValuationSets().equals(rp.getRight().get(s))) {
+                } else if (valuationSetFactory.createAllValuationSets().equals(rp.right.get(s))) {
                     stateAcceptance.get(s).add(2 * i + 1);
                 }
             }
@@ -82,10 +82,10 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
 
         @Override
         public String toString() {
-            String result = getLeft().toString();
-            int[] orderedSets = new int[getRight().size()];
+            String result = left.toString();
+            int[] orderedSets = new int[right.size()];
             int i = 0;
-            for (Integer set : getRight()) {
+            for (Integer set : right) {
                 orderedSets[i] = set;
                 i++;
             }
@@ -99,12 +99,12 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
 
         @Override
         public ProductDegenAccState getSuccessor(Set<String> valuation) {
-            IState succ = dtra.succ(getLeft(), valuation);
+            IState succ = dtra.succ(left, valuation);
             Set<Integer> accSets = new HashSet<>(stateAcceptance.get(succ));
             for (int i = 0; i < accTR.size(); i++) {
                 RabinPair<? extends IState<?>> rp = (RabinPair) accTR.get(i);
-                if (rp.getLeft() != null && rp.getLeft().get(getLeft()) != null
-                        && rp.getLeft().get(getLeft()).contains(valuation) && !stateAcceptance.get(getLeft()).contains(2 * i)) {
+                if (rp.left != null && rp.left.get(left) != null
+                        && rp.left.get(left).contains(valuation) && !stateAcceptance.get(left).contains(2 * i)) {
                     // acceptance
                     // dealt
                     // with
@@ -112,9 +112,9 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
                     // in s
                     accSets.add(2 * i);
                 }
-                if (rp.getRight() != null && rp.getRight().get(getLeft()) != null
-                        && rp.getRight().get(getLeft()).contains(valuation)
-                        && !stateAcceptance.get(getLeft()).contains(2 * i + 1)) {
+                if (rp.right != null && rp.right.get(left) != null
+                        && rp.right.get(left).contains(valuation)
+                        && !stateAcceptance.get(left).contains(2 * i + 1)) {
                     accSets.add(2 * i + 1);
                 }
                 if (accSets.contains(2 * i) && accSets.contains(2 * i + 1)) {

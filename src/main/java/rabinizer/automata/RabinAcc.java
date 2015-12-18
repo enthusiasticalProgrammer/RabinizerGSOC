@@ -5,7 +5,7 @@
  */
 package rabinizer.automata;
 
-import rabinizer.exec.Tuple;
+import rabinizer.collections.Tuple;
 
 import java.util.HashSet;
 

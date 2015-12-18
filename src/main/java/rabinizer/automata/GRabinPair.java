@@ -1,6 +1,6 @@
 package rabinizer.automata;
 
-import rabinizer.exec.Tuple;
+import rabinizer.collections.Tuple;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,12 +25,12 @@ public class GRabinPair<BaseSet> extends Tuple<BaseSet, List<BaseSet>> {
 
     @Override
     public String toString() {
-        String result = "Fin:\n" + (getLeft() == null ? "trivial" : getLeft()) + "\nInf: ";
-        if (getRight() == null || getRight().isEmpty()) {
+        String result = "Fin:\n" + (left == null ? "trivial" : left) + "\nInf: ";
+        if (right == null || right.isEmpty()) {
             result += "0\ntrivial";
         } else {
-            result += getRight().size();
-            for (BaseSet inf : getRight()) {
+            result += right.size();
+            for (BaseSet inf : right) {
                 result += "\n" + inf;
             }
         }

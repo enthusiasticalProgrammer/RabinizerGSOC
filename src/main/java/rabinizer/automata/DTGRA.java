@@ -40,7 +40,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
     protected String accName() {
         String result = "acc-name: generalized-Rabin " + acc.size();
         for (GRabinPairT<?> anAcc : acc) {
-            result += " " + anAcc.getRight().size();
+            result += " " + anAcc.right.size();
         }
         return result + "\n";
     }
@@ -56,7 +56,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
             result += i == 0 ? "" : " | ";
             result += "Fin(" + sum + ")";
             sum++;
-            List<? extends TranSet<? extends IState<?>>> right = acc.get(i).getRight();
+            List<? extends TranSet<? extends IState<?>>> right = acc.get(i).right;
             for (int j = 0; j < right.size(); j++) {
                 right.get(j);
                 result += "&Inf(" + sum + ")";
@@ -80,12 +80,12 @@ public class DTGRA extends Product implements AccAutomatonInterface {
         Set<ValuationSet> vSets;
         for (GRabinPairT<? extends IState<?>> rp : acc) {
             vSets = new HashSet<>();
-            if (rp.getLeft().containsKey(s)) {
-                vSets.add(rp.getLeft().get(s));
-                vSets.add(rp.getLeft().get(s).complement());
+            if (rp.left.containsKey(s)) {
+                vSets.add(rp.left.get(s));
+                vSets.add(rp.left.get(s).complement());
             }
             productVs.add(vSets);
-            for (TranSet<? extends IState<?>> ts : rp.getRight()) {
+            for (TranSet<? extends IState<?>> ts : (List<TranSet<? extends IState<?>>>) rp.right) {
                 vSets = new HashSet<>();
                 if (ts.containsKey(s)) {
                     vSets.add(ts.get(s));

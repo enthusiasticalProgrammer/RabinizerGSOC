@@ -17,7 +17,7 @@ public class AccSR extends ArrayList<Set<DSRA.ProductDegenAccState>> {
             this.add(new HashSet<>());
         }
         for (DSRA.ProductDegenAccState s : dsra.states) {
-            for (Integer i : s.getRight()) {
+            for (Integer i : s.right) {
                 this.get(i).add(s);
             }
         }
@@ -34,7 +34,7 @@ public class AccSR extends ArrayList<Set<DSRA.ProductDegenAccState>> {
 
     String accSets(DSRA.ProductDegenAccState s) {
         String result = "{";
-        Set<Integer> accSets = s.getRight();
+        Set<Integer> accSets = s.right;
         for (int i = 0; i < 2 * size(); i++) {
             if (accSets.contains(i)) {
                 result += i + " ";

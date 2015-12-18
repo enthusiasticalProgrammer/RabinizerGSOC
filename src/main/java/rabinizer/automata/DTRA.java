@@ -1,6 +1,6 @@
 package rabinizer.automata;
 
-import rabinizer.exec.Tuple;
+import rabinizer.collections.Tuple;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
@@ -81,15 +81,15 @@ public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegen
         Set<ValuationSet> vSets;
         for (RabinPair<? extends IState<?>> rp : accTR) {
             vSets = new HashSet<>();
-            if (rp.getLeft().containsKey(s)) {
-                vSets.add(rp.getLeft().get(s));
-                vSets.add(rp.getLeft().get(s).complement());
+            if (rp.left.containsKey(s)) {
+                vSets.add(rp.left.get(s));
+                vSets.add(rp.left.get(s).complement());
             }
             productVs.add(vSets);
             vSets = new HashSet<>();
-            if (rp.getRight().containsKey(s)) {
-                vSets.add(rp.getRight().get(s));
-                vSets.add(rp.getRight().get(s).complement());
+            if (rp.right.containsKey(s)) {
+                vSets.add(rp.right.get(s));
+                vSets.add(rp.right.get(s).complement());
             }
             productVs.add(vSets);
         }
@@ -112,7 +112,7 @@ public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegen
 
         @Override
         public String toString() {
-            return getLeft() + " " + getRight();
+            return left + " " + right;
         }
 
         @Override
@@ -120,19 +120,19 @@ public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegen
             Map<Integer, Integer> awaitedIndices = new HashMap<>();
             for (int i = 0; i < accTGR.size(); i++) {
                 GRabinPairT<? extends IState<?>> grp = accTGR.get(i);
-                int awaited = getRight().get(i);
+                int awaited = right.get(i);
                 // System.out.print("$$$"+v+awaited);
-                if (awaited == grp.getRight().size()) {
+                if (awaited == grp.right.size()) {
                     awaited = 0;
                 }
-                while (awaited < grp.getRight().size() && grp.getRight().get(awaited).containsKey(getLeft())
-                        && grp.getRight().get(awaited).get(getLeft()).contains(valuation)) {
+                while (awaited < grp.right.size() && ((java.util.List<TranSet<? extends IState<?>>>) grp.right).get(awaited).containsKey(left)
+                        && ((java.util.List<TranSet<? extends IState<?>>>) grp.right).get(awaited).get(left).contains(valuation)) {
                     awaited++;
                 } // System.out.println(awaited);
                 awaitedIndices.put(i, awaited);
             }
 
-            return new ProductDegenState((T) dtgra.automaton.succ((Product.ProductState) this.getLeft(), valuation), awaitedIndices);
+            return new ProductDegenState((T) dtgra.automaton.succ((Product.ProductState) left, valuation), awaitedIndices);
         }
 
         @Override

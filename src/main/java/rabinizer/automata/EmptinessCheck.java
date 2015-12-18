@@ -1,7 +1,7 @@
 package rabinizer.automata;
 
 import com.google.common.collect.Table.Cell;
-import rabinizer.exec.Tuple;
+import rabinizer.collections.Tuple;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
@@ -56,14 +56,14 @@ public class EmptinessCheck<S extends IState<S>> {
                 trans.put(entry.getRowKey(), val);
                 if (!scc.contains(entry.getValue())) {
                     for (Tuple<TranSet<S>, Set<TranSet<S>>> pair : accTGR) {
-                        for (TranSet<S> inf : pair.getRight()) {
+                        for (TranSet<S> inf : pair.right) {
                             if (inf.get(entry.getRowKey()) != null) {
                                 ValuationSet valu = valuationFactory.createValuationSet(inf.get(entry.getRowKey()));
                                 valu.retainAll(entry.getColumnKey());
                                 inf.put(entry.getRowKey(), valu);
                             }
                         }
-                        TranSet<S> fin = pair.getLeft();
+                        TranSet<S> fin = pair.left;
                         if (fin.get(entry.getRowKey()) != null) {
                             ValuationSet valu = valuationFactory.createValuationSet(fin.get(entry.getRowKey()));
                             valu.retainAll(entry.getColumnKey());
@@ -81,14 +81,14 @@ public class EmptinessCheck<S extends IState<S>> {
                     // deleted and all components of finite sets of current scc
                     // if any infinite condition is present
 
-                    for (TranSet<S> inf : pair.getRight()) {
+                    for (TranSet<S> inf : pair.right) {
                         for (S s : scc) {
                             inf.remove(s);
                         }
                     }
-                    if (pair.getRight().stream().anyMatch(infCond -> true)) {
+                    if (pair.right.stream().anyMatch(infCond -> true)) {
                         for (S s : scc) {
-                            pair.getLeft().remove(s);
+                            pair.left.remove(s);
                         }
                     }
                 } else {
@@ -118,7 +118,7 @@ public class EmptinessCheck<S extends IState<S>> {
                                                       Map<S, ValuationSet> trans) {
 
         boolean allInfs = true;
-        for (TranSet<S> inf : pair.getRight()) {
+        for (TranSet<S> inf : pair.right) {
             Set<Map.Entry<S, ValuationSet>> intersect1 = inf.entrySet();
             Map<S, ValuationSet> intersect = new HashMap<>();
             for (Map.Entry<S, ValuationSet> i : intersect1) {
@@ -153,7 +153,7 @@ public class EmptinessCheck<S extends IState<S>> {
      */
     private boolean checkForFinTransitions(Set<S> scc, Tuple<TranSet<S>, Set<TranSet<S>>> pair,
                                            Map<S, ValuationSet> trans) {
-        Set<Map.Entry<S, ValuationSet>> intersect1 = pair.getLeft().entrySet();
+        Set<Map.Entry<S, ValuationSet>> intersect1 = pair.left.entrySet();
 
         Map<S, ValuationSet> intersect = new HashMap<>();
         for (Map.Entry<S, ValuationSet> i : intersect1) {
@@ -172,7 +172,7 @@ public class EmptinessCheck<S extends IState<S>> {
         } else {
             List<Set<S>> subSCC = automaton.subSCCs(scc, intersect);
             return subSCC.stream()
-                    .allMatch(sub -> pair.getRight().stream().allMatch(c -> !Collections.disjoint(c.keySet(), sub)));
+                    .allMatch(sub -> pair.right.stream().allMatch(c -> !Collections.disjoint(c.keySet(), sub)));
         }
     }
 
