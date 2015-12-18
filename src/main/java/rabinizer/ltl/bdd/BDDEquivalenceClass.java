@@ -62,12 +62,12 @@ public class BDDEquivalenceClass implements EquivalenceClass {
 
     @Override
     public EquivalenceClass unfold(boolean unfoldG) {
-        return factory.createEquivalenceClass(getRepresentative().unfold(unfoldG));
+        return factory.unfold(this, unfoldG);
     }
 
     @Override
     public EquivalenceClass temporalStep(Set<String> valuation) {
-        return factory.createEquivalenceClass(getRepresentative().temporalStep(valuation));
+        return factory.temporalStep(this, valuation);
     }
 
     @Override
