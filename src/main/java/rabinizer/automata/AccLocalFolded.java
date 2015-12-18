@@ -2,8 +2,7 @@ package rabinizer.automata;
 
 import rabinizer.ltl.*;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author jkretinsky
@@ -17,27 +16,28 @@ public class AccLocalFolded extends AccLocal {
     @Override
     protected boolean slavesEntail(Set<GOperator> gSet, Product.ProductState ps, Map<Formula, Integer> ranking, Set<String> v,
                                    EquivalenceClass consequent) {
-        Formula antecedent = BooleanConstant.get(true);
+        Collection<Formula> children = new ArrayList<>(2 * gSet.size());
+
         for (GOperator f : gSet) {
-            antecedent = FormulaFactory.mkAnd(antecedent, f); // TODO relevant
-            // for Folded
-            // version
-            // antecedent = new Conjunction(antecedent, new XOperator(new
-            // GOperator(f))); // TODO:remove; relevant for Xunfolding
+            children.add(f);
+
             Formula slaveAntecedent = BooleanConstant.get(true);
             if (ps.getSecondaryState(f) != null) {
                 RabinSlave.State rs = ps.getSecondaryState(f);
 
                 for (Map.Entry<MojmirSlave.State, Integer> entry : rs.entrySet()) {
                     if (entry.getValue() >= ranking.get(f)) {
-                        slaveAntecedent = FormulaFactory.mkAnd(slaveAntecedent, entry.getKey().getClazz().getRepresentative());
+                        slaveAntecedent = new Conjunction(slaveAntecedent, entry.getKey().getClazz().getRepresentative());
                     }
                 }
             }
             slaveAntecedent = slaveAntecedent.evaluate(gSet);
-            antecedent = FormulaFactory.mkAnd(antecedent, slaveAntecedent);
+
+            children.add(slaveAntecedent);
         }
-        return entails(antecedent, consequent);
+
+        EquivalenceClass antClazz = equivalenceClassFactory.createEquivalenceClass(new Conjunction(children));
+        return antClazz.implies(consequent);
     }
 
     @Override

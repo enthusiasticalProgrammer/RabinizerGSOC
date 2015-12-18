@@ -5,10 +5,10 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public abstract class EquivalenceClassTest {
     private EquivalenceClassFactory factory;
@@ -77,5 +77,11 @@ public abstract class EquivalenceClassTest {
                 }
             }
         }
+    }
+
+    @Test
+    public void testEmptyDomain() {
+        EquivalenceClassFactory factory = setUpFactory(Collections.emptySet());
+        assertNotEquals(factory, null);
     }
 }

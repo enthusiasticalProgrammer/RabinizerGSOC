@@ -54,13 +54,6 @@ public class AccLocal {
         Main.verboseln("Acceptance for primaryAutomaton:\n" + this.accMasterOptions);
     }
 
-    // checks if antecedent =>consequent
-    // Formula:
-    public boolean entails(Formula antecedent, EquivalenceClass consequent) {
-        EquivalenceClass antClazz = equivalenceClassFactory.createEquivalenceClass(antecedent);
-        return antClazz.implies(consequent);
-    }
-
     protected boolean slavesEntail(Set<GOperator> gSet, Product.ProductState ps, Map<Formula, Integer> ranking, Set<String> v,
                                    EquivalenceClass consequent) {
         Formula antecedent = BooleanConstant.get(true);
@@ -85,7 +78,8 @@ public class AccLocal {
             antecedent = FormulaFactory.mkAnd(antecedent, slaveAntecedent);
         }
 
-        return entails(antecedent, consequent.temporalStep(v));
+        EquivalenceClass antClazz = equivalenceClassFactory.createEquivalenceClass(antecedent);
+        return antClazz.implies(consequent.temporalStep(v));
     }
 
     protected Map<Set<GOperator>, Map<Integer, RabinPair>> computeAccSlavesOptions(Formula f) {

@@ -17,8 +17,10 @@ class BDDLibraryWrapper<K extends Formula> {
     private final BDDVisitor visitor;
 
     protected BDDLibraryWrapper(Set<K> domain) {
-        factory = BDDFactory.init("java", 16 * domain.size(), 1000);
-        factory.setVarNum(domain.size());
+        final int size = domain.size() > 0 ? domain.size() : 1;
+
+        factory = BDDFactory.init("java", 64 * size, 1000);
+        factory.setVarNum(size);
 
         ImmutableBiMap.Builder<K, BDD> builder = new ImmutableBiMap.Builder<>();
 
@@ -113,7 +115,13 @@ class BDDLibraryWrapper<K extends Formula> {
 
         @Override
         public BDD defaultAction(Formula f) {
-            return mapping.get(f).id();
+            BDD value = mapping.get(f);
+
+            if (value == null) {
+                throw new IllegalArgumentException("The BDDLibrary was not initialised with proposition: " + f);
+            }
+
+            return value.id();
         }
     }
 }
