@@ -19,7 +19,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
     }
 
     public DTGRA(DTGRARaw raw) {
-        super((Master) raw.automaton.primaryAutomaton, raw.automaton.secondaryAutomata, raw.automaton.valuationSetFactory, Collections.emptySet());
+        super(raw.automaton.primaryAutomaton, raw.automaton.secondaryAutomata, raw.automaton.valuationSetFactory, Collections.emptySet());
         if (raw.accTGR != null) { // for computing the state space only (with no
             // acc. condition)
             this.acc = new AccTGR(raw.accTGR);
@@ -85,7 +85,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
                 vSets.add(rp.left.get(s).complement());
             }
             productVs.add(vSets);
-            for (TranSet<? extends IState<?>> ts : (List<TranSet<? extends IState<?>>>) rp.right) {
+            for (TranSet<? extends IState<?>> ts : rp.right) {
                 vSets = new HashSet<>();
                 if (ts.containsKey(s)) {
                     vSets.add(ts.get(s));

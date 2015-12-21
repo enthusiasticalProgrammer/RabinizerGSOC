@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import net.sf.javabdd.BDD;
 import rabinizer.ltl.*;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -12,7 +13,7 @@ public class BDDValuationSetFactory extends BDDLibraryWrapper<Literal> implement
 
     private final Set<String> alphabet;
 
-    public BDDValuationSetFactory(Set<String> domain) {
+    public BDDValuationSetFactory(Collection<String> domain) {
         super(domain.stream().map(s -> new Literal(s, false)).collect(Collectors.toSet()));
         alphabet = ImmutableSet.copyOf(domain);
     }

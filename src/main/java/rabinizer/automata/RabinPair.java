@@ -90,14 +90,14 @@ public class RabinPair<S extends IState<S>> extends Tuple<TranSet<S>, TranSet<S>
         // Rabin
         TranSet<RabinSlave.State> buyR = new TranSet<>(valuationSetFactory);
         for (RabinSlave.State rs : slave.states) {
-            for (IState fs : rs.keySet()) {
-                if (rs.get(fs) < rank) {
+            for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : rs.entrySet()) {
+                if (stateIntegerEntry.getValue() < rank) {
                     for (IState fs2 : rs.keySet()) {
                         for (IState succ : slave.mojmir.states) {
                             ValuationSet vs1, vs2;
-                            if (!finalStates.contains(succ) && ((vs1 = slave.mojmir.edgeBetween.get(fs, succ)) != null)
+                            if (!finalStates.contains(succ) && ((vs1 = slave.mojmir.edgeBetween.get(stateIntegerEntry.getKey(), succ)) != null)
                                     && ((vs2 = slave.mojmir.edgeBetween.get(fs2, succ)) != null)) {
-                                if (!fs.equals(fs2)) {
+                                if (!stateIntegerEntry.getKey().equals(fs2)) {
                                     ValuationSet vs1copy = valuationSetFactory.createValuationSet(vs1);
                                     vs1copy.retainAll(vs2);
                                     buyR.add(rs, vs1copy);
