@@ -1,8 +1,5 @@
 package rabinizer.ltl;
 
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -38,15 +35,6 @@ public abstract class ModalOperator extends Formula {
     // to be overrridden by GOperator
     public Set<GOperator> topmostGs() {
         return operand.topmostGs();
-    }
-
-    @Override
-    public BoolExpr toExpr(Context ctx) {
-        if (cachedLTL == null) {
-            cachedLTL = ctx.mkBoolConst(toString());
-        }
-
-        return cachedLTL;
     }
 
     @Override

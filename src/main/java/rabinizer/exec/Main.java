@@ -1,10 +1,13 @@
 package rabinizer.exec;
 
 import rabinizer.automata.*;
+import rabinizer.ltl.EquivalenceClassFactory;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.SimplifyAggressivelyVisitor;
 import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 import rabinizer.ltl.bdd.BDDValuationSetFactory;
+import rabinizer.ltl.z3.Z3EquivalenceClassFactory;
+import rabinizer.ltl.z3.Z3ValuationSetFactory;
 import rabinizer.ltl.ValuationSetFactory;
 import rabinizer.parser.LTLParser;
 import rabinizer.parser.ParseException;
@@ -63,10 +66,14 @@ public class Main {
                 + "   -sinks-off                  : does not use the sink-optimization, default if isabelle \n"
                 + "   -optimize-initial-state     : remove transient pair in Rabin Slave, default if optimize\n"
                 + "   -not-optimize-initial-state : does not remove transient pair in Rabin Slave, default if isabelle \n"
+                + "   -z3                         : use z3 as backend\n"
+                + "   -bdd                        : use bdd as backend (default)\n"
+                + "   -emptiness-check            : perform an emptiness check and remove non-accepting sinks, per default off\n"
                 + "   -in=formula                 : formula is input as an argument (default)\n"
                 + "   -in=file                    : batch processing of one or more formula per line in the file passed as an argument\n"
                 + "   -out=file                   : print automaton to file(s) (default)\n"
                 + "   -out=std                    : print automaton to terminal\n\n");
+
     }
 
     public static double stopwatch() {
@@ -93,6 +100,8 @@ public class Main {
         boolean relSlavesOnly = true;
         boolean sinksOn = true;
         boolean optInit = true;
+        boolean z3 = false;
+        boolean emptyCheck = false;
 
         for (String arg : args) {
             if (arg.equals("-h") || arg.equals("--h") || arg.equals("-help") || arg.equals("--help")) {
@@ -155,6 +164,10 @@ public class Main {
                 optInit = true;
             } else if (arg.equals("-not-optimize-initial-state") || arg.equals("--not-optimize-initial-state")) {
                 optInit = false;
+            } else if (arg.equals("-z3") || arg.equals("--z3")) {
+                z3 = true;
+            } else if (arg.equals("-emptiness-check") || arg.equals("--emptiness-check")) {
+                emptyCheck = true;
             } else if (arg.substring(0, 1).equals("-")) {
                 System.out.println("\n\nERROR: unknown option " + arg);
                 printUsage();
@@ -229,7 +242,7 @@ public class Main {
 
             AccAutomatonInterface automaton = computeAutomaton(input, type,
                     format != Format.SIZE || type != AutomatonType.TGR, eager, simplifyFormula, sinksOn, relSlavesOnly,
-                    optInit);
+                    optInit, z3, emptyCheck);
 
             nonsilent("Time for construction: " + stopwatch() + " s");
             nonsilent("Outputting DGRA");
@@ -270,7 +283,8 @@ public class Main {
     }
 
     public static AccAutomatonInterface computeAutomaton(String input, AutomatonType type, boolean computeAcc,
-            boolean eager, boolean simplify, boolean sinks_on, boolean relSlavesOnly, boolean opt_init) {
+            boolean eager, boolean simplify, boolean sinks_on, boolean relSlavesOnly, boolean opt_init, boolean z3,
+            boolean emptyCheck) {
         LTLParser parser = new LTLParser(new StringReader(input));
 
         Formula formula = null;
@@ -292,14 +306,25 @@ public class Main {
         nonsilent("Input formula in NNF: " + formula);
         nonsilent("Enumeration of valuations");
 
-        BDDEquivalenceClassFactory factory = new BDDEquivalenceClassFactory(formula.getPropositions());
-        BDDValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(formula.getAtoms());
+        EquivalenceClassFactory factory;
+        ValuationSetFactory<String> valuationSetFactory;
+        if (z3) {
+            factory = new Z3EquivalenceClassFactory(formula.getPropositions());
+            valuationSetFactory = new Z3ValuationSetFactory(formula.getAtoms());
+
+        } else {
+            factory = new BDDEquivalenceClassFactory(formula.getPropositions());
+            valuationSetFactory = new BDDValuationSetFactory(formula.getAtoms());
+        }
 
         boolean slowerIsabelleAccForUnfolded = false;
 
         // DGRA dgra = new DTGRA(phi); for optimized
         DTGRARaw dtgra = new DTGRARaw(formula, computeAcc, eager, sinks_on, opt_init, relSlavesOnly,
                 slowerIsabelleAccForUnfolded, factory, valuationSetFactory);
+        if (emptyCheck) {
+            dtgra.checkIfEmptyAndRemoveEmptySCCs(valuationSetFactory);
+        }
         switch (type) {
         case TGR:
             return new DTGRA(dtgra);

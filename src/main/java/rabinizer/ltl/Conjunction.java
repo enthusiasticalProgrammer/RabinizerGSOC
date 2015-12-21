@@ -1,13 +1,8 @@
 package rabinizer.ltl;
 
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -25,18 +20,6 @@ public final class Conjunction extends PropositionalFormula {
 
     public Conjunction(Stream<? extends Formula> formulaStream) {
         super(formulaStream);
-    }
-
-    @Deprecated
-    @Override
-    public BoolExpr toExpr(Context ctx) {
-        if (cachedLTL == null) {
-            List<BoolExpr> exprs = children.stream().map(child -> child.toExpr(ctx)).collect(Collectors.toList());
-            BoolExpr[] helper = new BoolExpr[exprs.size()];
-            exprs.toArray(helper);
-            cachedLTL = ctx.mkAnd(helper);
-        }
-        return cachedLTL;
     }
 
     @Override
@@ -73,7 +56,7 @@ public final class Conjunction extends PropositionalFormula {
      * helps the SimplifyBooleanVisitor
      *
      * @return every non-conjunction child of this Conjunction, and the children
-     * of the Conjunction-children
+     *         of the Conjunction-children
      */
     protected Set<Formula> getAllChildrenOfConjunction() {
         Set<Formula> al = new HashSet<>(children.size());

@@ -62,7 +62,7 @@ public class FormulaFactory {
         return mkOr(helper);
     }
 
-    public static Formula mkAnd(Collection<Formula> af) {
+    public static Formula mkAnd(Collection<? extends Formula> af) {
         Formula[] helper = new Formula[af.size()];
         helper = af.toArray(helper);
         return mkAnd(helper);

@@ -1,8 +1,5 @@
 package rabinizer.ltl;
 
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
@@ -41,15 +38,6 @@ public final class BooleanConstant extends FormulaNullary {
     @Override
     public Optional<Literal> getAnUnguardedLiteral() {
         return Optional.empty();
-    }
-
-    @Override
-    public BoolExpr toExpr(Context ctx) {
-        if (cachedLTL == null) {
-            cachedLTL = (value ? ctx.mkTrue() : ctx.mkFalse());
-        }
-
-        return cachedLTL;
     }
 
     @Override

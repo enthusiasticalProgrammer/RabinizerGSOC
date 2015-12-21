@@ -1,8 +1,5 @@
 package rabinizer.ltl;
 
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -64,8 +61,7 @@ public final class UOperator extends Formula {
     @Override
     public Formula unfold(boolean unfoldG) {
         // unfold(a U b) = unfold(b) v (unfold(a) ^ X (a U b))
-        return new Disjunction(right.unfold(unfoldG),
-                new Conjunction(left.unfold(unfoldG), this));
+        return new Disjunction(right.unfold(unfoldG), new Conjunction(left.unfold(unfoldG), this));
     }
 
     @Override
@@ -75,7 +71,8 @@ public final class UOperator extends Formula {
 
     @Override
     public Formula not() {
-        return new Disjunction(new GOperator(right.not()), new UOperator(right.not(), new Conjunction(left.not(), right.not())));
+        return new Disjunction(new GOperator(right.not()),
+                new UOperator(right.not(), new Conjunction(left.not(), right.not())));
     }
 
     @Override
@@ -91,15 +88,6 @@ public final class UOperator extends Formula {
     @Override
     public Optional<Literal> getAnUnguardedLiteral() {
         return Optional.empty();
-    }
-
-    @Deprecated
-    @Override
-    public BoolExpr toExpr(Context ctx) {
-        if (cachedLTL == null) {
-            cachedLTL = ctx.mkBoolConst(this.toString());
-        }
-        return cachedLTL;
     }
 
     @Override

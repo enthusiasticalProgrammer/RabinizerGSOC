@@ -1,13 +1,8 @@
 package rabinizer.ltl;
 
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -30,18 +25,6 @@ public final class Disjunction extends PropositionalFormula {
     @Override
     public Formula not() {
         return new Conjunction(children.stream().map(Formula::not));
-    }
-
-    @Deprecated
-    @Override
-    public BoolExpr toExpr(Context ctx) {
-        if (cachedLTL == null) {
-            List<BoolExpr> exprs = children.stream().map(child -> child.toExpr(ctx)).collect(Collectors.toList());
-            BoolExpr[] helper = new BoolExpr[exprs.size()];
-            exprs.toArray(helper);
-            cachedLTL = ctx.mkOr(helper);
-        }
-        return cachedLTL;
     }
 
     @Override

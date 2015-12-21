@@ -22,8 +22,10 @@ public abstract class AbstractFormulaState {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         AbstractFormulaState that = (AbstractFormulaState) o;
         return Objects.equals(this.getOuter(), that.getOuter()) && Objects.equals(clazz, that.clazz);
     }
@@ -64,4 +66,3 @@ public abstract class AbstractFormulaState {
         return result;
     }
 }
-

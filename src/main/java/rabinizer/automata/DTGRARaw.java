@@ -20,8 +20,8 @@ public class DTGRARaw {
     AccLocal accLocal;
 
     public DTGRARaw(Formula phi, boolean computeAcc, boolean unfoldedOn, boolean sinksOn,
-                    boolean optimizeInitialStatesOn, boolean relevantSlavesOnlyOn, boolean slowerIsabelleAccForUnfolded,
-                    EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory<String> valuationSetFactory) {
+            boolean optimizeInitialStatesOn, boolean relevantSlavesOnlyOn, boolean slowerIsabelleAccForUnfolded,
+            EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory<String> valuationSetFactory) {
         this.valuationSetFactory = valuationSetFactory;
         this.equivalenceClassFactory = equivalenceClassFactory;
 
@@ -42,7 +42,8 @@ public class DTGRARaw {
         for (GOperator f : gSubformulas) {
             MojmirSlave mSlave;
             if (unfoldedOn) { // unfold upon arrival to state
-                mSlave = new MojmirSlave(f, equivalenceClassFactory, valuationSetFactory, EnumSet.of(Optimisation.EAGER));
+                mSlave = new MojmirSlave(f, equivalenceClassFactory, valuationSetFactory,
+                        EnumSet.of(Optimisation.EAGER));
             } else {
                 mSlave = new MojmirSlave(f, equivalenceClassFactory, valuationSetFactory, Collections.emptySet());
             }
@@ -90,8 +91,10 @@ public class DTGRARaw {
      *
      * @return true if automaton together witch acceptance condition is empty
      */
-    public boolean checkIfEmpty(ValuationSetFactory<String> val) {
-        return false; // EmptinessCheck.<ProductState> checkEmptiness((Automaton<ProductState>) automaton, accTGR, val);
+    public boolean checkIfEmptyAndRemoveEmptySCCs(ValuationSetFactory<String> val) {
+        boolean result = EmptinessCheck.<Product.ProductState> checkEmptiness(automaton, accTGR, val);
+        automaton.makeComplete();
+        return result;
     }
 
 }

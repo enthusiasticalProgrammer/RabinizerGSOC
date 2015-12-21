@@ -1,8 +1,5 @@
 package rabinizer.ltl;
 
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
@@ -48,18 +45,6 @@ public final class Literal extends FormulaNullary {
     @Override
     public Optional<Literal> getAnUnguardedLiteral() {
         return Optional.of(this);
-    }
-
-    @Deprecated
-    @Override
-    public BoolExpr toExpr(Context ctx) {
-        if (cachedLTL == null) {
-            cachedLTL = ctx.mkBoolConst(atom);
-            if (negated) {
-                cachedLTL = ctx.mkNot(cachedLTL);
-            }
-        }
-        return cachedLTL;
     }
 
     @Override
