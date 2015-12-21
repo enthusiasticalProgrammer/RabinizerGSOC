@@ -1,7 +1,6 @@
 package rabinizer.ltl;
 
 import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
 import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 
 import java.util.Collections;
@@ -29,9 +28,6 @@ public abstract class Formula {
 
     @Override
     public abstract boolean equals(Object o);
-
-    @Deprecated
-    public abstract BoolExpr toExpr(Context ctx);
 
     public abstract boolean hasSubformula(Formula f);
 

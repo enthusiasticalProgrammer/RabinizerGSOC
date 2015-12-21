@@ -55,38 +55,27 @@ public class AutomatonClassTest {
 
     @Test
     public void testSCC1() {
-
-        Formula formula = Util.createFormula("(p1) U (X((G(F(G(p2)))) & (F(X(X(G(p2)))))))");
-        BDDEquivalenceClassFactory factory = new BDDEquivalenceClassFactory(formula.getPropositions());
-        BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
-
-        DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
-        List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
-        assertEquals(SCC.size(), 31);
-
-    }
-
-    @Test
-    public void testSCC2() {
         Formula formula = Util.createFormula("(p1&(p2|p3))");
 
         BDDEquivalenceClassFactory factory = new BDDEquivalenceClassFactory(formula.getPropositions());
         BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
+        dtgra.checkIfEmptyAndRemoveEmptySCCs(val);
         List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
         assertEquals(SCC.size(), 3);
 
     }
 
     @Test
-    public void testSCC3() {
+    public void testSCC2() {
         Formula formula = Util.createFormula("(X a) & (X X a) & (X X X a) & (X X X X a)");
 
         BDDEquivalenceClassFactory factory = new BDDEquivalenceClassFactory(formula.getPropositions());
         BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
+        dtgra.checkIfEmptyAndRemoveEmptySCCs(val);
         List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
         assertEquals(SCC.size(), 7);
 
@@ -94,69 +83,49 @@ public class AutomatonClassTest {
 
     @Test
     public void testSCCtopSort1() {
-        Formula formula = Util.createFormula("(p1) U (X((G(F(G(p2)))) & (F(X(X(G(p2)))))))");
-
-        BDDEquivalenceClassFactory factory = new BDDEquivalenceClassFactory(formula.getPropositions());
-        BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
-
-        DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
-        List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
-        assertTrue(SCC.get(30).contains(dtgra.automaton.initialState));
-    }
-
-    @Test
-    public void testSCCtopSort2() {
         Formula formula = Util.createFormula("(p1&(p2|p3))");
 
         BDDEquivalenceClassFactory factory = new BDDEquivalenceClassFactory(formula.getPropositions());
         BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
+        dtgra.checkIfEmptyAndRemoveEmptySCCs(val);
         List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
         assertTrue(SCC.get(2).contains(dtgra.automaton.initialState));
     }
 
     @Test
-    public void testSCCtopSort3() {
+    public void testSCCtopSort2() {
         Formula formula = Util.createFormula("(X a) & (X X a) & (X X X a) & (X X X X a)");
 
         BDDEquivalenceClassFactory factory = new BDDEquivalenceClassFactory(formula.getPropositions());
         BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
+        dtgra.checkIfEmptyAndRemoveEmptySCCs(val);
         List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
 
-        assertTrue(SCC.get(6).stream().allMatch(s -> s.equals(
-                new DTGRARaw(formula, true, false, false, false, false, false, factory, val).automaton.initialState)));
+        DTGRARaw dtgra2 = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
+        dtgra2.checkIfEmptyAndRemoveEmptySCCs(val);
+
+        assertTrue(SCC.get(6).stream()
+                .allMatch(s -> s.primaryState.clazz.equals(dtgra2.automaton.initialState.primaryState.clazz)));
 
         Formula f2 = Util.createFormula("(X a) & (X X a) & (X X X a) & a");
-        assertTrue(SCC.get(5).stream().allMatch(s -> s.equals(
-                new DTGRARaw(f2, true, false, false, false, false, false, factory, val).automaton.initialState)));
+        assertTrue(SCC.get(5).stream().allMatch(s -> s.primaryState.clazz.equals(new DTGRARaw(f2, true, false, false,
+                false, false, false, factory, val).automaton.initialState.primaryState.clazz)));
 
         Formula f3 = Util.createFormula("(X a) & (X X a)  & a");
-        assertTrue(SCC.get(4).stream().allMatch(s -> s.equals(
-                new DTGRARaw(f3, true, false, false, false, false, false, factory, val).automaton.initialState)));
+        assertTrue(SCC.get(4).stream().allMatch(s -> s.primaryState.clazz.equals(new DTGRARaw(f3, true, false, false,
+                false, false, false, factory, val).automaton.initialState.primaryState.clazz)));
 
         Formula f4 = Util.createFormula("(X a)  & a");
-        assertTrue(SCC.get(3).stream().allMatch(s -> s.equals(
-                new DTGRARaw(f4, true, false, false, false, false, false, factory, val).automaton.initialState)));
+        assertTrue(SCC.get(3).stream().allMatch(s -> s.primaryState.clazz.equals(new DTGRARaw(f4, true, false, false,
+                false, false, false, factory, val).automaton.initialState.primaryState.clazz)));
 
         Formula f5 = Util.createFormula("a");
-        assertTrue(SCC.get(2).stream().allMatch(s -> s.equals(
-                new DTGRARaw(f5, true, false, false, false, false, false, factory, val).automaton.initialState)));
-
-        Formula f = Util.createFormula("false");
-        Formula t = Util.createFormula("true");
-
-        IState fal = new DTGRARaw(f, true, false, false, false, false, false, factory,
-                val).automaton.initialState;
-        IState tru = new DTGRARaw(t, true, false, false, false, false, false, factory,
-                val).automaton.initialState;
-
-        assertTrue(
-                (SCC.get(1).stream().allMatch(s -> s.equals(fal)) && SCC.get(0).stream().allMatch(s -> s.equals(tru)))
-                        ^ (SCC.get(1).stream().allMatch(s -> s.equals(tru)))
-                        && SCC.get(0).stream().allMatch(s -> s.equals(fal)));
+        assertTrue(SCC.get(2).stream().allMatch(s -> s.primaryState.clazz.equals(new DTGRARaw(f5, true, false, false,
+                false, false, false, factory, val).automaton.initialState.primaryState.clazz)));
     }
 
     @Test

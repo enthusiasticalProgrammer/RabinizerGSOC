@@ -3,7 +3,6 @@ package rabinizer.collections;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 public class HashTarjanStack<E> extends TarjanStack<E> {
@@ -28,7 +27,7 @@ public class HashTarjanStack<E> extends TarjanStack<E> {
     @Override
     public HashTarjanStack<E> clone() {
         HashTarjanStack<E> stack = new HashTarjanStack<>();
-        stack.stack = new ArrayDeque(this.stack);
+        stack.stack = new ArrayDeque<>(this.stack);
         stack.elementsInTheStack = new HashSet<>(this.elementsInTheStack);
         return stack;
 

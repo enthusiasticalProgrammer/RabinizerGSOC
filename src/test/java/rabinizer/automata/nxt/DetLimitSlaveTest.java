@@ -29,7 +29,8 @@ public class DetLimitSlaveTest {
         valuationSetFactory = new BDDValuationSetFactory(formula.getAtoms());
         equivalenceClassFactory = new BDDEquivalenceClassFactory(formula.getPropositions());
         automaton = new DetLimitSlave(formula, equivalenceClassFactory, valuationSetFactory, Collections.emptySet());
-        automatonImp = new DetLimitSlave(formula, equivalenceClassFactory, valuationSetFactory, EnumSet.allOf(Optimisation.class));
+        automatonImp = new DetLimitSlave(formula, equivalenceClassFactory, valuationSetFactory,
+                EnumSet.allOf(Optimisation.class));
     }
 
     @Test

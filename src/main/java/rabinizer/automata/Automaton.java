@@ -60,7 +60,7 @@ public abstract class Automaton<S extends IState<S>> {
         states.add(initialState);
 
         // TODO: Move this to a statistics class
-        //Main.nonsilent("  Generating transitions for " + initialState);
+        // Main.nonsilent(" Generating transitions for " + initialState);
 
         Queue<S> workList = new ArrayDeque<>();
         workList.add(initialState);
@@ -68,9 +68,9 @@ public abstract class Automaton<S extends IState<S>> {
         while (!workList.isEmpty()) {
             S curr = workList.remove();
 
-            //Main.verboseln("\tCurrState: " + curr);
+            // Main.verboseln("\tCurrState: " + curr);
             Set<ValuationSet> succValSets = generateSuccTransitions(curr);
-            //Main.verboseln("\t  CurrTrans: " + succValSets);
+            // Main.verboseln("\t CurrTrans: " + succValSets);
 
             Map<S, ValuationSet> succMapping = new HashMap<>();
 
@@ -82,7 +82,7 @@ public abstract class Automaton<S extends IState<S>> {
                 }
 
                 S succ = curr.getSuccessor(succVals.pickAny());
-                //Main.verboseln("\t  SuccState: " + succ);
+                // Main.verboseln("\t SuccState: " + succ);
 
                 if (succ != null) {
                     // Combine with existing transition
@@ -118,7 +118,7 @@ public abstract class Automaton<S extends IState<S>> {
             }
         }
 
-        //Main.nonsilent("  Number of states: " + states.size());
+        // Main.nonsilent(" Number of states: " + states.size());
     }
 
     public void removeSinks() {
@@ -219,15 +219,15 @@ public abstract class Automaton<S extends IState<S>> {
      * this method makes it complete by adding a trap state.
      */
     public void makeComplete() {
-        S trapState = this.trapState;
+        boolean usedTrapState = false;
         if (initialState == null) {
             initialState = trapState;
-            states.add(trapState);
             sinks.add(trapState);
-            this.trapState = trapState;
+            usedTrapState = true;
         }
 
         Map<S, Map<ValuationSet, S>> trans = transitions.rowMap();
+
         for (S s : states) {
             ValuationSet vs = valuationSetFactory.createEmptyValuationSet();
             Set<Map.Entry<ValuationSet, S>> transOfS;
@@ -242,12 +242,16 @@ public abstract class Automaton<S extends IState<S>> {
             // final or effectively
             // final acc. to compiler
             if (!vs2.isEmpty()) {
-                states.add(trapState);
                 sinks.add(trapState);
                 transitions.put(s, vs2, trapState);
                 edgeBetween.put(s, trapState, vs2);
-                this.trapState = trapState;
+                usedTrapState = true;
             }
+        }
+        if (usedTrapState) {
+            transitions.put(trapState, valuationSetFactory.createUniverseValuationSet(), trapState);
+            edgeBetween.put(trapState, trapState, valuationSetFactory.createUniverseValuationSet());
+            states.add(trapState);
         }
 
     }
@@ -317,7 +321,8 @@ public abstract class Automaton<S extends IState<S>> {
      * nonaccepting SCCs are deleted, and the idea is also that everything,
      * which is deleted will be replaced with a trap state (in makeComplete).
      *
-     * @param statess: Set of states that is to be removed
+     * @param statess:
+     *            Set of states that is to be removed
      */
     public void removeStates(Set<S> statess) {
         if (statess.contains(initialState)) {
@@ -334,21 +339,21 @@ public abstract class Automaton<S extends IState<S>> {
                 transitions.row(state).clear();
                 edgeBetween.row(state).clear();
                 edgeBetween.column(state).clear();
+
             }
 
             Iterator<Cell<S, ValuationSet, S>> it = transitions.cellSet().iterator();
-
             while (it.hasNext()) {
                 if (statess.contains(it.next().getValue())) {
                     it.remove();
                 }
             }
-
         }
     }
 
     /**
-     * @param scc: an SCC for which the transitions inside need to be determined
+     * @param scc:
+     *            an SCC for which the transitions inside need to be determined
      * @return all transitions where start is in the SCC
      */
 
@@ -368,9 +373,10 @@ public abstract class Automaton<S extends IState<S>> {
     /**
      * This method has no side effects
      *
-     * @param scc: set of states
+     * @param scc:
+     *            set of states
      * @return true if the only transitions from scc go to scc again and false
-     * otherwise
+     *         otherwise
      */
     protected boolean isSink(Set<S> scc) {
         Set<S> nonSCCStates = new HashSet<>(states);
