@@ -1,6 +1,5 @@
 package rabinizer.ltl;
 
-import com.microsoft.z3.BoolExpr;
 import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 
 import java.util.Collections;
@@ -14,7 +13,6 @@ import java.util.stream.Collectors;
  */
 public abstract class Formula {
 
-    BoolExpr cachedLTL;
     private int cachedHashCode;
 
     @Override
