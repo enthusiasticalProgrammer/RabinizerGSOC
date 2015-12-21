@@ -59,8 +59,7 @@ public abstract class Automaton<S extends IState<S>> {
     public void generate(S initialState) {
         states.add(initialState);
 
-        // TODO: Move this to a statistics class
-        // Main.nonsilent(" Generating transitions for " + initialState);
+        // TODO: Collect statistics in separate class.
 
         Queue<S> workList = new ArrayDeque<>();
         workList.add(initialState);
@@ -68,9 +67,7 @@ public abstract class Automaton<S extends IState<S>> {
         while (!workList.isEmpty()) {
             S curr = workList.remove();
 
-            // Main.verboseln("\tCurrState: " + curr);
-            Set<ValuationSet> succValSets = generateSuccTransitions(curr);
-            // Main.verboseln("\t CurrTrans: " + succValSets);
+            Set<ValuationSet> succValSets = curr.partitionSuccessors();
 
             Map<S, ValuationSet> succMapping = new HashMap<>();
 
@@ -82,7 +79,6 @@ public abstract class Automaton<S extends IState<S>> {
                 }
 
                 S succ = curr.getSuccessor(succVals.pickAny());
-                // Main.verboseln("\t SuccState: " + succ);
 
                 if (succ != null) {
                     // Combine with existing transition
@@ -117,8 +113,6 @@ public abstract class Automaton<S extends IState<S>> {
                 sinks.add(curr);
             }
         }
-
-        // Main.nonsilent(" Number of states: " + states.size());
     }
 
     public void removeSinks() {
@@ -289,10 +283,6 @@ public abstract class Automaton<S extends IState<S>> {
 
     protected abstract S generateInitialState();
 
-    protected Set<ValuationSet> generateSuccTransitions(IState s) {
-        return s.partitionSuccessors();
-    }
-
     protected String accName() {
         return "";
     }
@@ -339,7 +329,6 @@ public abstract class Automaton<S extends IState<S>> {
                 transitions.row(state).clear();
                 edgeBetween.row(state).clear();
                 edgeBetween.column(state).clear();
-
             }
 
             Iterator<Cell<S, ValuationSet, S>> it = transitions.cellSet().iterator();
