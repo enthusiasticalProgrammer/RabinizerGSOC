@@ -91,8 +91,8 @@ public class DTGRARaw {
      *
      * @return true if automaton together witch acceptance condition is empty
      */
-    public boolean checkIfEmptyAndRemoveEmptySCCs(ValuationSetFactory<String> val) {
-        boolean result = EmptinessCheck.<Product.ProductState> checkEmptiness(automaton, accTGR, val);
+    public boolean checkIfEmptyAndRemoveEmptySCCs() {
+        boolean result = EmptinessCheck.checkEmptiness(automaton, accTGR);
         automaton.makeComplete();
         return result;
     }

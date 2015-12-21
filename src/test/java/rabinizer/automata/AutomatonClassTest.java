@@ -61,7 +61,7 @@ public class AutomatonClassTest {
         BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
-        dtgra.checkIfEmptyAndRemoveEmptySCCs(val);
+        dtgra.checkIfEmptyAndRemoveEmptySCCs();
         List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
         assertEquals(SCC.size(), 3);
 
@@ -75,7 +75,7 @@ public class AutomatonClassTest {
         BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
-        dtgra.checkIfEmptyAndRemoveEmptySCCs(val);
+        dtgra.checkIfEmptyAndRemoveEmptySCCs();
         List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
         assertEquals(SCC.size(), 7);
 
@@ -89,7 +89,7 @@ public class AutomatonClassTest {
         BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
-        dtgra.checkIfEmptyAndRemoveEmptySCCs(val);
+        dtgra.checkIfEmptyAndRemoveEmptySCCs();
         List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
         assertTrue(SCC.get(2).contains(dtgra.automaton.initialState));
     }
@@ -102,11 +102,11 @@ public class AutomatonClassTest {
         BDDValuationSetFactory val = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
-        dtgra.checkIfEmptyAndRemoveEmptySCCs(val);
+        dtgra.checkIfEmptyAndRemoveEmptySCCs();
         List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
 
         DTGRARaw dtgra2 = new DTGRARaw(formula, true, false, false, false, false, false, factory, val);
-        dtgra2.checkIfEmptyAndRemoveEmptySCCs(val);
+        dtgra2.checkIfEmptyAndRemoveEmptySCCs();
 
         assertTrue(SCC.get(6).stream()
                 .allMatch(s -> s.primaryState.clazz.equals(dtgra2.automaton.initialState.primaryState.clazz)));

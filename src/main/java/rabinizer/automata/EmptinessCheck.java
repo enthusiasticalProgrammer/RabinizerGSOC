@@ -17,12 +17,11 @@ public class EmptinessCheck<S extends IState<S>> {
     private final ValuationSetFactory valuationFactory;
 
     private EmptinessCheck(Automaton<S> automaton,
-                           Collection<? extends Tuple<TranSet<S>, Set<TranSet<S>>>> accTGR,
-                           ValuationSetFactory valuationFactory) {
+                           Collection<? extends Tuple<TranSet<S>, Set<TranSet<S>>>> accTGR) {
         this.automaton = automaton;
         this.sccs = this.automaton.SCCs();
         this.accTGR = accTGR;
-        this.valuationFactory = valuationFactory;
+        this.valuationFactory = automaton.valuationSetFactory;
     }
 
     /**
@@ -31,13 +30,11 @@ public class EmptinessCheck<S extends IState<S>> {
      *
      * @param automaton
      * @param accTGR
-     * @param valuationFactory
      * @return true if the automaton accepts no words
      */
     public static <S extends IState<S>> boolean checkEmptiness(Automaton<S> automaton,
-                                                               Collection<? extends Tuple<TranSet<S>, Set<TranSet<S>>>> accTGR,
-                                                               ValuationSetFactory<String> valuationFactory) {
-        return new EmptinessCheck(automaton, accTGR, valuationFactory).checkIfEmpty();
+                                                               Collection<? extends Tuple<TranSet<S>, Set<TranSet<S>>>> accTGR) {
+        return new EmptinessCheck(automaton, accTGR).checkIfEmpty();
 
     }
 

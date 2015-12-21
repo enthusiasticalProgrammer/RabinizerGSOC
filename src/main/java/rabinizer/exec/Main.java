@@ -323,7 +323,7 @@ public class Main {
         DTGRARaw dtgra = new DTGRARaw(formula, computeAcc, eager, sinks_on, opt_init, relSlavesOnly,
                 slowerIsabelleAccForUnfolded, factory, valuationSetFactory);
         if (emptyCheck) {
-            dtgra.checkIfEmptyAndRemoveEmptySCCs(valuationSetFactory);
+            dtgra.checkIfEmptyAndRemoveEmptySCCs();
         }
         switch (type) {
         case TGR:
