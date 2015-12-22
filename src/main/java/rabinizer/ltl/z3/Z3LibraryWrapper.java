@@ -88,9 +88,9 @@ public class Z3LibraryWrapper<F extends Formula> {
         Model m = s.getModel();
         m.getConstDecls();
         for (BoolExpr e : getPropositionsOutOfBoolExpr(expression)) {
-            if (m.getConstInterp(e) == TRUE) {
+            if (m.getConstInterp(e).isTrue()) {
                 result.add(mapping.inverse().get(e));
-            } else if (m.getConstInterp(e) == FALSE) {
+            } else if (m.getConstInterp(e).isFalse()) {
                 result.add(mapping.inverse().get(negate(e)));
             }
         }

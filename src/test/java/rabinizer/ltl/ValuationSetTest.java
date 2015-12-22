@@ -79,6 +79,11 @@ public abstract class ValuationSetTest {
     }
 
     @Test
+    public void testPickAny2() {
+        assertFalse(abcd.pickAny().isEmpty());
+    }
+
+    @Test
     public void testIterator() {
         for (Set<String> valuation : universe) {
             assertTrue(Sets.powerSet(alphabet).contains(valuation));
