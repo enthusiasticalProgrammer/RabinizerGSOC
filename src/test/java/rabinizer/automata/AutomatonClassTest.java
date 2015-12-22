@@ -7,6 +7,8 @@ import rabinizer.exec.Main;
 import rabinizer.ltl.*;
 import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 import rabinizer.ltl.bdd.BDDValuationSetFactory;
+import rabinizer.ltl.z3.Z3EquivalenceClassFactory;
+import rabinizer.ltl.z3.Z3ValuationSetFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -152,5 +154,41 @@ public class AutomatonClassTest {
         List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
 
         assertFalse(dtgra.automaton.isSink(SCC.get(5)));
+    }
+
+    @Test
+    public void checkIfStatesGetLostInTheDTGRATranslation() {
+        Formula f = Util.createFormula("true");
+
+        EquivalenceClassFactory factory = new Z3EquivalenceClassFactory(f.getPropositions());
+        ValuationSetFactory<String> val = new Z3ValuationSetFactory(f.getAtoms());
+        DTGRARaw dtgra = new DTGRARaw(f, true, false, false, false, false, false, factory, val);
+        assertEquals(dtgra.automaton.states.size(), 1);
+        DTGRA dtg = new DTGRA(dtgra);
+        assertEquals(dtg.states.size(), 1);
+
+        factory = new BDDEquivalenceClassFactory(f.getPropositions());
+        val = new BDDValuationSetFactory(f.getAtoms());
+        dtgra = new DTGRARaw(f, true, false, false, false, false, false, factory, val);
+        assertEquals(dtgra.automaton.states.size(), 1);
+        dtg = new DTGRA(dtgra);
+        assertEquals(dtg.states.size(), 1);
+    }
+
+    @Test
+    public void checkIfStatesGetLostInTheDTGRATranslation2() {
+        Formula f = Util.createFormula("F a & G b");
+        EquivalenceClassFactory factory = new Z3EquivalenceClassFactory(f.getPropositions());
+        ValuationSetFactory<String> val = new Z3ValuationSetFactory(f.getAtoms());
+        DTGRARaw dtgra = new DTGRARaw(f, true, false, false, false, false, false, factory, val);
+        DTGRA dtg = new DTGRA(dtgra);
+        assertFalse(dtg.states.isEmpty());
+
+        factory = new BDDEquivalenceClassFactory(f.getPropositions());
+        val = new BDDValuationSetFactory(f.getAtoms());
+        dtgra = new DTGRARaw(f, true, false, false, false, false, false, factory, val);
+        assertEquals(dtgra.automaton.states.size(), 1);
+        dtg = new DTGRA(dtgra);
+        assertFalse(dtg.states.isEmpty());
     }
 }
