@@ -298,7 +298,7 @@ public abstract class Automaton<S extends IState<S>> {
     protected String outTransToHOA(S s, Map<S, Integer> statesToNumbers) {
         String result = "";
         for (Map.Entry<ValuationSet, S> entry : transitions.row(s).entrySet()) {
-            result += "[" + entry.getKey().toFormula() + "] " + statesToNumbers.get(entry.getValue()) + "\n";
+            result += "\t[" +  entry.getKey().toFormula() + "] " + getId(statesToNumbers, entry.getValue()) + "\n";
         }
         return result;
     }
