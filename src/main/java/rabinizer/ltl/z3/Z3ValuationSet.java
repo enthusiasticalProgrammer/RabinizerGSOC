@@ -144,7 +144,7 @@ public class Z3ValuationSet extends AbstractSet<Set<String>> implements Valuatio
     public boolean equals(Object o) {
         if (o instanceof Z3ValuationSet) {
             BoolExpr otherZ3 = ((Z3ValuationSet) o).valuation;
-            return otherZ3.equals(valuation);
+            return factory.checkEquality(otherZ3,valuation);
         }
         return false;
     }
