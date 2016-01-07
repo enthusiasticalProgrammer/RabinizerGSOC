@@ -1,14 +1,11 @@
 package rabinizer.exec;
 
 import rabinizer.automata.*;
-import rabinizer.ltl.EquivalenceClassFactory;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.SimplifyAggressivelyVisitor;
+import rabinizer.ltl.*;
 import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 import rabinizer.ltl.bdd.BDDValuationSetFactory;
 import rabinizer.ltl.z3.Z3EquivalenceClassFactory;
 import rabinizer.ltl.z3.Z3ValuationSetFactory;
-import rabinizer.ltl.ValuationSetFactory;
 import rabinizer.parser.LTLParser;
 import rabinizer.parser.ParseException;
 
@@ -306,16 +303,9 @@ public class Main {
         nonsilent("Input formula in NNF: " + formula);
         nonsilent("Enumeration of valuations");
 
-        EquivalenceClassFactory factory;
-        ValuationSetFactory<String> valuationSetFactory;
-        if (z3) {
-            factory = new Z3EquivalenceClassFactory(formula.getPropositions());
-            valuationSetFactory = new Z3ValuationSetFactory(formula.getAtoms());
-
-        } else {
-            factory = new BDDEquivalenceClassFactory(formula.getPropositions());
-            valuationSetFactory = new BDDValuationSetFactory(formula.getAtoms());
-        }
+        FactoryRegistry.Backend backend = z3 ? FactoryRegistry.Backend.Z3 : FactoryRegistry.Backend.BDD;
+        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(backend, formula.getPropositions());
+        ValuationSetFactory<String> valuationSetFactory = FactoryRegistry.createValuationSetFactory(backend, formula.getAtoms());
 
         boolean slowerIsabelleAccForUnfolded = false;
 

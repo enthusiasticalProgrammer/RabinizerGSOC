@@ -159,9 +159,8 @@ public class AutomatonClassTest {
     @Test
     public void checkIfStatesGetLostInTheDTGRATranslation() {
         Formula f = Util.createFormula("true");
-
-        EquivalenceClassFactory factory = new Z3EquivalenceClassFactory(f.getPropositions());
-        ValuationSetFactory<String> val = new Z3ValuationSetFactory(f.getAtoms());
+        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(f.getPropositions());
+        ValuationSetFactory<String> val = FactoryRegistry.createValuationSetFactory(f.getAtoms());
         DTGRARaw dtgra = new DTGRARaw(f, true, false, false, false, false, false, factory, val);
         assertEquals(dtgra.automaton.states.size(), 1);
         DTGRA dtg = new DTGRA(dtgra);
@@ -178,8 +177,8 @@ public class AutomatonClassTest {
     @Test
     public void checkIfStatesGetLostInTheDTGRATranslation2() {
         Formula f = Util.createFormula("F a & G b");
-        EquivalenceClassFactory factory = new Z3EquivalenceClassFactory(f.getPropositions());
-        ValuationSetFactory<String> val = new Z3ValuationSetFactory(f.getAtoms());
+        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(f.getPropositions());
+        ValuationSetFactory<String> val = FactoryRegistry.createValuationSetFactory(f.getAtoms());
         DTGRARaw dtgra = new DTGRARaw(f, true, false, false, false, false, false, factory, val);
         DTGRA dtg = new DTGRA(dtgra);
         assertFalse(dtg.states.isEmpty());
