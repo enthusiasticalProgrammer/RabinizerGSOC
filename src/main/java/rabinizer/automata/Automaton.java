@@ -14,6 +14,7 @@ public abstract class Automaton<S extends IState<S>> {
 
     protected final Set<S> states;
     protected final Set<S> sinks;
+    protected final Set<S> loopingStates;
     protected final Table<S, ValuationSet, S> transitions;
     protected final Table<S, S, ValuationSet> edgeBetween;
     protected S initialState;
@@ -22,6 +23,7 @@ public abstract class Automaton<S extends IState<S>> {
     protected Automaton(ValuationSetFactory<String> valuationSetFactory) {
         states = new HashSet<>();
         sinks = new HashSet<>();
+        loopingStates = new HashSet<>();
 
         transitions = HashBasedTable.create();
         edgeBetween = HashBasedTable.create();
@@ -35,6 +37,7 @@ public abstract class Automaton<S extends IState<S>> {
         transitions = a.transitions;
         initialState = a.initialState;
         sinks = a.sinks;
+        loopingStates = a.loopingStates;
         edgeBetween = a.edgeBetween;
         this.valuationSetFactory = a.valuationSetFactory;
         trapState = a.trapState;
@@ -108,9 +111,16 @@ public abstract class Automaton<S extends IState<S>> {
                 }
             }
 
-            // Mark as a sink
-            if (edgeBetween.contains(curr, curr) && edgeBetween.get(curr, curr).isUniverse()) {
-                sinks.add(curr);
+            // Mark as a sink and looping state
+            ValuationSet valuationSet = edgeBetween.get(curr, curr);
+            if (valuationSet != null) {
+                if (!valuationSet.isEmpty()) {
+                    loopingStates.add(curr);
+                }
+
+                if (valuationSet.isUniverse()) {
+                    sinks.add(curr);
+                }
             }
         }
     }
@@ -256,6 +266,10 @@ public abstract class Automaton<S extends IState<S>> {
 
     public List<Set<S>> subSCCs(Set<S> SCC, Map<S, ValuationSet> forbiddenEdges) {
         return SCCAnalyser.subSCCs(this, SCC, forbiddenEdges);
+    }
+
+    public boolean isLooping(S state) {
+        return loopingStates.contains(state);
     }
 
     // TODO to abstract ProductAutomaton ?
