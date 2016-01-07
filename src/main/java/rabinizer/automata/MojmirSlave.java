@@ -8,8 +8,8 @@ import java.util.Set;
 public class MojmirSlave extends Automaton<MojmirSlave.State> {
 
     public final GOperator label;
-    private final boolean eager;
-    private final EquivalenceClass initialState;
+    final boolean eager;
+    final EquivalenceClass initialState;
 
     public MojmirSlave(GOperator formula, EquivalenceClassFactory equivalenceClassFactory,
                        ValuationSetFactory<String> valuationSetFactory, Collection<Optimisation> optimisations) {

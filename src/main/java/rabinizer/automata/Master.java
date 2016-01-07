@@ -7,8 +7,8 @@ import java.util.Set;
 
 public class Master extends Automaton<Master.State> {
 
-    private final boolean eager;
-    private final EquivalenceClass initialState;
+    final boolean eager;
+    final EquivalenceClass initialState;
 
     public Master(Formula formula, EquivalenceClassFactory equivalenceClassFactory,
                   ValuationSetFactory<String> valuationSetFactory, Collection<Optimisation> optimisations) {
