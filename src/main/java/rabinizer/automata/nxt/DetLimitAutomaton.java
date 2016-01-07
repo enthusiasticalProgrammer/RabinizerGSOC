@@ -23,15 +23,41 @@ public class DetLimitAutomaton {
     private final EquivalenceClassFactory equivalenceClassFactory;
     private final ValuationSetFactory<String> valuationSetFactory;
 
+    private void addAllCheckNegation(Set<Formula> set, Set<Formula> newElements) {
+        for (Formula element : newElements) {
+            if (!set.contains(element.not())) {
+                set.add(element);
+            }
+        }
+    }
+
+    private static Set<Set<GOperator>> computeSkeletonKeys(Formula formula) {
+        EquivalenceClassFactory factory = new BDDEquivalenceClassFactory(formula.getPropositions());
+        Formula skeleton = formula.accept(new SkeletonVisitor());
+        EquivalenceClass skeletonClazz = factory.createEquivalenceClass(skeleton);
+
+        Set<Set<GOperator>> keys = new HashSet<>();
+
+        for (Set<GOperator> key : Sets.powerSet(formula.gSubformulas())) {
+            EquivalenceClass keyClazz = factory.createEquivalenceClass(new Conjunction(key));
+
+            if (keyClazz.implies(skeletonClazz)) {
+                keys.add(key);
+            }
+        }
+
+        return keys;
+    }
+
     public DetLimitAutomaton(Formula formula, Collection<Optimisation> optimisations) {
         initialFormula = formula;
 
-        Set<Set<GOperator>> keys = Sets.powerSet(formula.gSubformulas());
+        Set<Set<GOperator>> keys = optimisations.contains(Optimisation.SKELETON) ? computeSkeletonKeys(formula) : Sets.powerSet(formula.gSubformulas());
         Set<Formula> props = new HashSet<>();
 
         for (Set<GOperator> gSet : keys) {
             Visitor<Formula> masterVisitor = new GSubstitutionVisitor(g -> gSet.contains(g) ? null : BooleanConstant.FALSE);
-            props.addAll(Simplifier.simplify(initialFormula.accept(masterVisitor)).getPropositions());
+            addAllCheckNegation(props, Simplifier.simplify(initialFormula.accept(masterVisitor)).getPropositions());
         }
 
         equivalenceClassFactory = new BDDEquivalenceClassFactory(props);
