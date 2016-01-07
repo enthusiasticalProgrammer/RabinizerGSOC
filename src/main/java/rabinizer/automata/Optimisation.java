@@ -1,5 +1,5 @@
 package rabinizer.automata;
 
 public enum Optimisation {
-    COVER, EAGER, ALL_SLAVES
+    COVER, EAGER, ALL_SLAVES, SKELETON
 }
