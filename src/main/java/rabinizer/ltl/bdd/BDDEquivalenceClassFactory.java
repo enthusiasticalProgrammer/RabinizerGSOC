@@ -4,10 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import rabinizer.collections.Tuple;
-import rabinizer.ltl.BooleanConstant;
-import rabinizer.ltl.EquivalenceClass;
-import rabinizer.ltl.EquivalenceClassFactory;
-import rabinizer.ltl.Formula;
+import rabinizer.ltl.*;
 
 import java.util.Set;
 
@@ -58,7 +55,8 @@ public class BDDEquivalenceClassFactory extends BDDLibraryWrapper<Formula> imple
 
     @Override
     public BDDEquivalenceClass createEquivalenceClass(Formula formula) {
-        return new BDDEquivalenceClass(formula, createBDD(formula), this);
+        Formula simplifiedFormula = Simplifier.simplify(formula, Simplifier.Strategy.PROPOSITIONAL);
+        return new BDDEquivalenceClass(simplifiedFormula, createBDD(simplifiedFormula), this);
     }
 
     EquivalenceClass temporalStep(BDDEquivalenceClass clazz, Set<String> valuation) {

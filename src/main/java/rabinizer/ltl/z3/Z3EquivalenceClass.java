@@ -14,7 +14,6 @@ public class Z3EquivalenceClass implements EquivalenceClass {
     final BoolExpr expression;
     private final Z3EquivalenceClassFactory factory;
     private Formula representative;
-    private Formula simplifiedRepresentative;
 
     Z3EquivalenceClass(Formula representative, BoolExpr expression, Z3EquivalenceClassFactory factory) {
         this.representative = representative;
@@ -25,18 +24,9 @@ public class Z3EquivalenceClass implements EquivalenceClass {
     @Override
     public Formula getRepresentative() {
         if (representative == null) {
-            representative = getSimplifiedRepresentative();
+            representative = factory.createRepresentative(((BoolExpr) expression.simplify()));
         }
         return representative;
-    }
-
-    @Override
-    public Formula getSimplifiedRepresentative() {
-        if (simplifiedRepresentative == null) {
-            simplifiedRepresentative = factory.createRepresentative(((BoolExpr) expression.simplify()));
-        }
-
-        return simplifiedRepresentative;
     }
 
     @Override

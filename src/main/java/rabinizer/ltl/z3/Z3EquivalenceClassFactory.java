@@ -4,10 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
-import rabinizer.ltl.BooleanConstant;
-import rabinizer.ltl.EquivalenceClass;
-import rabinizer.ltl.EquivalenceClassFactory;
-import rabinizer.ltl.Formula;
+import rabinizer.ltl.*;
 import com.microsoft.z3.BoolExpr;
 
 public class Z3EquivalenceClassFactory extends Z3LibraryWrapper<Formula> implements EquivalenceClassFactory {
@@ -16,22 +13,23 @@ public class Z3EquivalenceClassFactory extends Z3LibraryWrapper<Formula> impleme
 
     public Z3EquivalenceClassFactory(Set<Formula> domain) {
         super(domain);
-        alreadyUsed = new ArrayList<Z3EquivalenceClass>();
+        alreadyUsed = new ArrayList<>();
     }
 
     @Override
     public EquivalenceClass getTrue() {
-        return probe(new Z3EquivalenceClass(BooleanConstant.TRUE, createZ3(BooleanConstant.TRUE), this));
+        return createEquivalenceClass(BooleanConstant.TRUE);
     }
 
     @Override
     public EquivalenceClass getFalse() {
-        return probe(new Z3EquivalenceClass(BooleanConstant.FALSE, createZ3(BooleanConstant.FALSE), this));
+        return createEquivalenceClass(BooleanConstant.FALSE);
     }
 
     @Override
     public EquivalenceClass createEquivalenceClass(Formula formula) {
-        return probe(new Z3EquivalenceClass(formula, createZ3(formula), this));
+        Formula simplifiedFormula = Simplifier.simplify(formula, Simplifier.Strategy.PROPOSITIONAL);
+        return probe(new Z3EquivalenceClass(simplifiedFormula, createZ3(simplifiedFormula), this));
     }
 
     private Z3EquivalenceClass probe(Z3EquivalenceClass newClass) {

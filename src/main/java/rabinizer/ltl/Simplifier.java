@@ -10,24 +10,24 @@ import java.util.stream.Stream;
 
 public final class Simplifier {
 
-    private static final Visitor<Formula> PROPOSITIONAL_SIMPLIFIER = new Simplifier.PropositionalSimplifier();
-    private static final Visitor<Formula> MODAL_SIMPLIFIER = new Simplifier.ModalSimplifier();
+    private static final Visitor<Formula> PROPOSITIONAL_SIMPLIFIER = new PropositionalSimplifier();
+    private static final Visitor<Formula> MODAL_SIMPLIFIER = new ModalSimplifier();
 
     private Simplifier() {
     }
 
     public static Formula simplify(Formula formula) {
-        return simplify(formula, Simplifier.Strategy.MODAL);
+        return Simplifier.simplify(formula, Strategy.MODAL);
     }
 
-    public static Formula simplify(Formula formula, Simplifier.Strategy strategy) {
+    public static Formula simplify(Formula formula, Strategy strategy) {
         switch (strategy) {
             case PROPOSITIONAL:
-                return formula.accept(PROPOSITIONAL_SIMPLIFIER);
+                return formula.accept(Simplifier.PROPOSITIONAL_SIMPLIFIER);
 
             case MODAL:
             default:
-                return formula.accept(MODAL_SIMPLIFIER);
+                return formula.accept(Simplifier.MODAL_SIMPLIFIER);
         }
     }
 
@@ -52,7 +52,7 @@ public final class Simplifier {
                     continue;
                 }
 
-                if ((child instanceof PropositionalFormula) && shouldUnfold.test((PropositionalFormula) child)) {
+                if (child instanceof PropositionalFormula && shouldUnfold.test((PropositionalFormula) child)) {
                     flattSet.addAll(((PropositionalFormula) child).getChildren());
                 } else {
                     flattSet.add(child);
@@ -65,7 +65,7 @@ public final class Simplifier {
         @Override
         public Formula visit(Conjunction conjunction) {
             Stream<Formula> workStream = conjunction.getChildren().stream().map(e -> e.accept(this));
-            Set<Formula> set = flatten(workStream, e -> e instanceof Conjunction, BooleanConstant.FALSE,
+            Set<Formula> set = PropositionalSimplifier.flatten(workStream, e -> e instanceof Conjunction, BooleanConstant.FALSE,
                     BooleanConstant.TRUE);
 
             if (set.isEmpty()) {
@@ -86,7 +86,7 @@ public final class Simplifier {
         @Override
         public Formula visit(Disjunction disjunction) {
             Stream<Formula> workStream = disjunction.getChildren().stream().map(e -> e.accept(this));
-            Set<Formula> set = flatten(workStream, e -> e instanceof Disjunction, BooleanConstant.TRUE,
+            Set<Formula> set = PropositionalSimplifier.flatten(workStream, e -> e instanceof Disjunction, BooleanConstant.TRUE,
                     BooleanConstant.FALSE);
 
             if (set.isEmpty()) {
@@ -110,12 +110,12 @@ public final class Simplifier {
         }
     }
 
-    private static class ModalSimplifier extends Simplifier.PropositionalSimplifier {
+    private static class ModalSimplifier extends PropositionalSimplifier {
         @Override
         public Formula visit(FOperator fOperator) {
             Formula operand = fOperator.operand.accept(this);
 
-            if ((operand instanceof BooleanConstant) || (operand instanceof FOperator)) {
+            if (operand instanceof BooleanConstant || operand instanceof FOperator) {
                 return operand;
             }
 
@@ -126,7 +126,7 @@ public final class Simplifier {
         public Formula visit(GOperator gOperator) {
             Formula operand = gOperator.operand.accept(this);
 
-            if ((operand instanceof BooleanConstant) || (operand instanceof GOperator)) {
+            if (operand instanceof BooleanConstant || operand instanceof GOperator) {
                 return operand;
             }
 
@@ -144,6 +144,10 @@ public final class Simplifier {
 
             if (left.equals(BooleanConstant.TRUE)) {
                 return new FOperator(right);
+            }
+
+            if (left.equals(BooleanConstant.FALSE)) {
+                return right;
             }
 
             return new UOperator(left, right);

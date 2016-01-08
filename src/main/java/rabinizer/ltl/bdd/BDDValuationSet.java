@@ -118,6 +118,11 @@ public class BDDValuationSet extends AbstractSet<Set<String>> implements Valuati
         return new BDDValuationSet(valuations.id(), factory);
     }
 
+    @Override
+    public String toString() {
+        return Sets.newHashSet(this.iterator()).toString();
+    }
+
     private boolean update(BDD newValue) {
         if (this.valuations.equals(newValue)) {
             return false;
@@ -125,10 +130,5 @@ public class BDDValuationSet extends AbstractSet<Set<String>> implements Valuati
 
         this.valuations = newValue;
         return true;
-    }
-
-    @Override
-    public String toString() {
-        return Sets.newHashSet(this.iterator()).toString();
     }
 }

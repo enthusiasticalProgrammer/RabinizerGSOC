@@ -36,9 +36,8 @@ public abstract class Formula {
     /**
      * Unfold temporal operators. This is also called LTL Formula expansion.
      *
-     * @param unfoldG
-     *            If unfoldG is set to true the G-operator is also unfolded.
-     *            This is used in for the master transition system.
+     * @param unfoldG If unfoldG is set to true the G-operator is also unfolded.
+     *                This is used in for the master transition system.
      * @return The unfolded formula
      */
     public abstract Formula unfold(boolean unfoldG);
@@ -66,8 +65,8 @@ public abstract class Formula {
         result.addAll(
                 candidates.stream()
                         .filter(subFormula -> hasSubformula(subFormula)
-                                && !clazz.getSimplifiedRepresentative().ignoresG(subFormula))
-                .collect(Collectors.toList()));
+                                && !clazz.getRepresentative().ignoresG(subFormula))
+                        .collect(Collectors.toList()));
 
         return result;
     }

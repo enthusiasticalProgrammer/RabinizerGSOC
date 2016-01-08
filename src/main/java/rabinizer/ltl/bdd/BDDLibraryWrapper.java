@@ -56,7 +56,7 @@ class BDDLibraryWrapper<K extends Formula> {
         Formula pos = createRepresentative(bdd.high());
         Formula neg = createRepresentative(bdd.low());
 
-        return new Disjunction(new Conjunction(varpos, pos), new Conjunction(varneg, neg));
+        return Simplifier.simplify(new Disjunction(new Conjunction(varpos, pos), new Conjunction(varneg, neg)), Simplifier.Strategy.PROPOSITIONAL);
     }
 
     BDD createBDD(Formula formula) {

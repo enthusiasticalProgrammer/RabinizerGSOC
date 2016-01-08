@@ -1,10 +1,7 @@
 package rabinizer.ltl.bdd;
 
 import net.sf.javabdd.BDD;
-import rabinizer.ltl.Conjunction;
-import rabinizer.ltl.Disjunction;
-import rabinizer.ltl.EquivalenceClass;
-import rabinizer.ltl.Formula;
+import rabinizer.ltl.*;
 
 import java.util.Objects;
 import java.util.Set;
@@ -14,7 +11,6 @@ public class BDDEquivalenceClass implements EquivalenceClass {
     private final BDD bdd;
     private final BDDEquivalenceClassFactory factory;
     private Formula representative;
-    private Formula simplifiedRepresentative;
 
     BDDEquivalenceClass(Formula representative, BDD bdd, BDDEquivalenceClassFactory factory) {
         this.representative = representative;
@@ -25,19 +21,10 @@ public class BDDEquivalenceClass implements EquivalenceClass {
     @Override
     public Formula getRepresentative() {
         if (representative == null) {
-            representative = getSimplifiedRepresentative();
+            representative = factory.createRepresentative(bdd);
         }
 
         return representative;
-    }
-
-    @Override
-    public Formula getSimplifiedRepresentative() {
-        if (simplifiedRepresentative == null) {
-            simplifiedRepresentative = factory.createRepresentative(bdd);
-        }
-
-        return simplifiedRepresentative;
     }
 
     @Override

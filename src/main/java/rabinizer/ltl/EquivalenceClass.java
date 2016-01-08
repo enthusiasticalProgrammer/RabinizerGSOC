@@ -12,8 +12,6 @@ import java.util.Set;
 public interface EquivalenceClass {
     Formula getRepresentative();
 
-    Formula getSimplifiedRepresentative();
-
     boolean implies(EquivalenceClass equivalenceClass);
 
     /**
