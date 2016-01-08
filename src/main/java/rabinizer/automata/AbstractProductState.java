@@ -85,18 +85,27 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
     }
 
     public Set<ValuationSet> partitionSuccessors() {
-        List<Set<ValuationSet>> product = new ArrayList<>(secondaryStates.size() + 1);
-
-        product.add(primaryState.partitionSuccessors());
+        Set<ValuationSet> partition = primaryState.partitionSuccessors();
 
         for (S secondaryState : secondaryStates.values()) {
-            product.add(secondaryState.partitionSuccessors());
+            Set<ValuationSet> secondPartition = secondaryState.partitionSuccessors();
+            Set<ValuationSet> resultingPartition = new HashSet<>(partition.size());
+
+            for (ValuationSet set1 : partition) {
+                for (ValuationSet set2 : secondPartition) {
+                    ValuationSet set3 = set1.clone();
+                    set3.retainAll(set2);
+
+                    if (!set3.isEmpty()) {
+                        resultingPartition.add(set3);
+                    }
+                }
+            }
+
+            partition = resultingPartition;
         }
 
-        return Sets.cartesianProduct(product).stream()
-                .map(this::flatten)
-                .filter(set -> !set.isEmpty())
-                .collect(Collectors.toSet());
+        return partition;
     }
 
     protected abstract Set<K> relevantSecondary(P primaryState);
@@ -104,10 +113,4 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
     protected abstract T constructState(P primaryState, Map<K, S> secondaryStates);
 
     protected abstract ValuationSet createUniverseValuationSet();
-
-    private ValuationSet flatten(Iterable<ValuationSet> list) {
-        ValuationSet flattSet = createUniverseValuationSet();
-        list.forEach(flattSet::retainAll);
-        return flattSet;
-    }
 }
