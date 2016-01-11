@@ -14,8 +14,8 @@ public class Product extends Automaton<Product.ProductState> {
 
     protected final boolean allSlaves;
 
-        super(factory);
     public Product(Master primaryAutomaton, Map<GOperator, RabinSlave> slaves, ValuationSetFactory factory, Collection<Optimisation> optimisations) {
+        super(factory);
         this.primaryAutomaton = primaryAutomaton;
         this.secondaryAutomata = slaves;
         this.trapState = new ProductState(primaryAutomaton.trapState, Collections.emptyMap());

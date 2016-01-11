@@ -13,8 +13,8 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
 
     public MojmirSlave mojmir;
 
-        super(factory);
     public RabinSlave(MojmirSlave mojmir, ValuationSetFactory factory) {
+        super(factory);
         this.mojmir = mojmir;
 
         MojmirSlave.State f = mojmir.trapState;
