@@ -2,6 +2,7 @@ package rabinizer.ltl;
 
 import org.junit.Before;
 import org.junit.Test;
+import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -83,5 +84,22 @@ public abstract class EquivalenceClassTest {
     public void testEmptyDomain() {
         EquivalenceClassFactory factory = setUpFactory(Collections.emptySet());
         assertNotEquals(factory, null);
+    }
+
+    @Test
+    public void testUnfoldUnfold() {
+        for (Formula formula : FormulaStorage.formulae) {
+            EquivalenceClassFactory factory = setUpFactory(formula.getPropositions());
+            EquivalenceClass clazz = factory.createEquivalenceClass(formula).unfold(true);
+            assertEquals(clazz, clazz.unfold(true));
+        }
+    }
+
+    @Test
+    public void testGetSupport() throws Exception {
+        Formula f = Util.createFormula("(p2 | F p1) & (!p2 | F p1)");
+        EquivalenceClassFactory factory = setUpFactory(f.getPropositions());
+        EquivalenceClass clazz = factory.createEquivalenceClass(f);
+        assertEquals(Collections.singleton(Util.createFormula("F p1")), clazz.getSupport());
     }
 }

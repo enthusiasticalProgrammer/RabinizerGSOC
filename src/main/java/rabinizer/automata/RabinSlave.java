@@ -13,8 +13,8 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
 
     public MojmirSlave mojmir;
 
-    public RabinSlave(MojmirSlave mojmir, ValuationSetFactory<String> factory) {
         super(factory);
+    public RabinSlave(MojmirSlave mojmir, ValuationSetFactory factory) {
         this.mojmir = mojmir;
 
         MojmirSlave.State f = mojmir.trapState;
@@ -27,7 +27,7 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
         while (noIncomingTransitions(initialState) && !transitions.row(initialState).isEmpty()) {
             Main.verboseln("Optimizing initial states");
             State oldInit = initialState;
-            initialState = succ(initialState, Collections.emptySet());
+            initialState = getSuccessor(initialState, Collections.emptySet());
             transitions.row(oldInit).clear();
             states.remove(oldInit);
         }
@@ -71,6 +71,16 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
         }
 
         @Override
+        public Set<String> getSensitiveAlphabet() {
+            return valuationSetFactory.getAlphabet();
+        }
+
+        @Override
+        public ValuationSetFactory getFactory() {
+            return valuationSetFactory;
+        }
+
+        @Override
         public State getSuccessor(Set<String> valuation) {
             State succ = new State();
 
@@ -81,9 +91,8 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
                     succ.put(succFormula, get(currFormula));
                 }
             }
-            for (IState s : mojmir.sinks) {
-                succ.remove(s);
-            }
+
+            mojmir.states.stream().filter(mojmir::isSink).forEach(succ::remove);
 
             // TODO recompute tokens, eliminating gaps
             int[] tokens = new int[succ.keySet().size()];
@@ -107,11 +116,6 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
             }
 
             return succ;
-        }
-
-        @Override
-        public boolean isAccepting(Set<String> valuation) {
-            return false;
         }
     }
 }

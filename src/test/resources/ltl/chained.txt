@@ -1,0 +1,3 @@
+ F G a | F G b | F G c | F G d | F G h | G F k
+(G F a | F G b) & (G F b | F G c) & (G F c | F G d) & (G F d | F G h) & (G F h | F G k)
+(G F a | F G b) & (G F b | F G c) & (G F c | F G d) & (G F d | F G h) & (G F h | F G k) & (G F k | F G l) 

@@ -14,9 +14,9 @@ public class BuchiAutomaton {
     final Set<State> states;
     final Set<State> acceptingStates;
     final Table<State, Set<String>, Set<State>> transitions;
-    final ValuationSetFactory<String> valuationSetFactory;
+    final ValuationSetFactory valuationSetFactory;
 
-    BuchiAutomaton(ValuationSetFactory<String> valuationSetFactory) {
+    BuchiAutomaton(ValuationSetFactory valuationSetFactory) {
         this.valuationSetFactory = valuationSetFactory;
         transitions = HashBasedTable.create();
         states = new HashSet<>();

@@ -4,10 +4,7 @@ import java.util.Set;
 
 import com.microsoft.z3.BoolExpr;
 
-import rabinizer.ltl.Conjunction;
-import rabinizer.ltl.Disjunction;
-import rabinizer.ltl.EquivalenceClass;
-import rabinizer.ltl.Formula;
+import rabinizer.ltl.*;
 
 public class Z3EquivalenceClass implements EquivalenceClass {
 
@@ -72,5 +69,10 @@ public class Z3EquivalenceClass implements EquivalenceClass {
     @Override
     public boolean isFalse() {
         return factory.isContradiction(expression);
+    }
+
+    @Override
+    public Set<Formula> getSupport() {
+        return null;
     }
 }

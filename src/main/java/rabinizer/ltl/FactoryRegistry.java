@@ -31,11 +31,11 @@ public class FactoryRegistry {
         }
     }
 
-    public static ValuationSetFactory<String> createValuationSetFactory(Set<String> domain) {
+    public static ValuationSetFactory createValuationSetFactory(Set<String> domain) {
         return createValuationSetFactory(defaultBackend, domain);
     }
 
-    public static ValuationSetFactory<String> createValuationSetFactory(Backend backend, Set<String> domain) {
+    public static ValuationSetFactory createValuationSetFactory(Backend backend, Set<String> domain) {
         try {
             switch (backend) {
                 case Z3:

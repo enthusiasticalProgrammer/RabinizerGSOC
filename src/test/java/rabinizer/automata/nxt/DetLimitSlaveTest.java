@@ -18,7 +18,7 @@ import static org.junit.Assert.assertNotEquals;
 public class DetLimitSlaveTest {
 
     private Formula formula;
-    private ValuationSetFactory<String> valuationSetFactory;
+    private ValuationSetFactory valuationSetFactory;
     private EquivalenceClassFactory equivalenceClassFactory;
     private DetLimitSlave automaton;
     private DetLimitSlave automatonImp;

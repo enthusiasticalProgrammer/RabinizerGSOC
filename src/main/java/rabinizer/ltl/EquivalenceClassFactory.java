@@ -2,10 +2,13 @@ package rabinizer.ltl;
 
 public interface EquivalenceClassFactory {
 
-    EquivalenceClass getTrue();
+    default EquivalenceClass getTrue() {
+        return createEquivalenceClass(BooleanConstant.TRUE);
+    }
 
-    EquivalenceClass getFalse();
+    default EquivalenceClass getFalse() {
+        return createEquivalenceClass(BooleanConstant.FALSE);
+    }
 
     EquivalenceClass createEquivalenceClass(Formula formula);
-
 }

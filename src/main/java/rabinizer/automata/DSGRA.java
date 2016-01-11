@@ -2,6 +2,7 @@ package rabinizer.automata;
 
 import rabinizer.collections.Tuple;
 import rabinizer.ltl.ValuationSet;
+import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,14 +12,14 @@ import java.util.Set;
 /**
  * @author jkretinsky
  */
-public class DSGRA extends Automaton implements AccAutomatonInterface {
+public class DSGRA extends Automaton<DSGRA.ProductAccState> implements AccAutomatonInterface {
 
     DTGRARaw dtgra;
-    AccTGR<? extends IState<?>> accTGR;
+    AccTGR<ProductAccState> accTGR;
     AccSGR accSGR;
 
     public DSGRA(DTGRARaw dtgra) {
-        super(dtgra.valuationSetFactory);
+        super(dtgra.valuationSetFactory, true);
         this.dtgra = dtgra;
         trapState = new ProductAccState((Product.ProductState) dtgra.automaton.trapState, new HashMap<>());
         accTGR = new AccTGR(dtgra.accTGR);
@@ -93,29 +94,34 @@ public class DSGRA extends Automaton implements AccAutomatonInterface {
             Map<Integer, Set<Integer>> accSets = new HashMap<>();
             for (int i = 0; i < accTGR.size(); i++) {
                 accSets.put(i, new HashSet<>());
-                GRabinPairT<? extends IState<?>> grp = accTGR.get(i);
+                GRabinPairT<ProductAccState> grp = accTGR.get(i);
                 if (grp.left != null && grp.left.get(left) != null
                         && grp.left.get(left).contains(valuation)) {
                     accSets.get(i).add(-1);
                 }
                 for (int j = 0; j < grp.right.size(); j++) {
-                    if (((java.util.List<TranSet<? extends IState<?>>>) grp.right).get(j).get(left) != null
-                            && ((java.util.List<TranSet<? extends IState<?>>>) grp.right).get(j).get(left).contains(valuation)) {
+                    if ((grp.right.get(j).get(left) != null
+                            && (grp.right).get(j).get(left).contains(valuation))) {
                         accSets.get(i).add(j);
                     }
                 }
             }
-            return new ProductAccState((Product.ProductState) dtgra.automaton.succ(left, valuation), accSets);
-        }
-
-        @Override
-        public boolean isAccepting(Set<String> valuation) {
-            return false;
+            return new ProductAccState((Product.ProductState) dtgra.automaton.getSuccessor(left, valuation), accSets);
         }
 
         @Override
         public Set<ValuationSet> partitionSuccessors() {
             return valuationSetFactory.createAllValuationSets(); // TODO symbolic
+        }
+
+        @Override
+        public Set<String> getSensitiveAlphabet() {
+            return valuationSetFactory.getAlphabet();
+        }
+
+        @Override
+        public ValuationSetFactory getFactory() {
+            return valuationSetFactory;
         }
     }
 }

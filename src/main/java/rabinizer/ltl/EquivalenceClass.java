@@ -35,4 +35,6 @@ public interface EquivalenceClass {
     boolean isTrue();
 
     boolean isFalse();
+    
+    Set<Formula> getSupport();
 }

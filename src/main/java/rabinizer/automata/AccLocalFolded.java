@@ -9,7 +9,7 @@ import java.util.*;
  */
 public class AccLocalFolded extends AccLocal {
 
-    public AccLocalFolded(Product product, ValuationSetFactory<String> factory, EquivalenceClassFactory factory2) {
+    public AccLocalFolded(Product product, ValuationSetFactory factory, EquivalenceClassFactory factory2) {
         super(product, factory, factory2);
     }
 

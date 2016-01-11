@@ -305,7 +305,7 @@ public class Main {
 
         FactoryRegistry.Backend backend = z3 ? FactoryRegistry.Backend.Z3 : FactoryRegistry.Backend.BDD;
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(backend, formula.getPropositions());
-        ValuationSetFactory<String> valuationSetFactory = FactoryRegistry.createValuationSetFactory(backend, formula.getAtoms());
+        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(backend, formula.getAtoms());
 
         boolean slowerIsabelleAccForUnfolded = false;
 

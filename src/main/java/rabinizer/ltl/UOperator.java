@@ -11,8 +11,8 @@ import java.util.Set;
  */
 public final class UOperator extends Formula {
 
-    final Formula left;
-    final Formula right;
+    public final Formula left;
+    public final Formula right;
 
     public UOperator(Formula left, Formula right) {
         this.left = left;
@@ -51,11 +51,6 @@ public final class UOperator extends Formula {
             return false;
         UOperator uOperator = (UOperator) o;
         return Objects.equals(left, uOperator.left) && Objects.equals(right, uOperator.right);
-    }
-
-    @Override
-    protected int hashCodeOnce() {
-        return Objects.hash(left, right);
     }
 
     @Override
@@ -139,5 +134,10 @@ public final class UOperator extends Formula {
     @Override
     public boolean isSuspendable() {
         return right.isSuspendable();
+    }
+
+    @Override
+    protected int hashCodeOnce() {
+        return Objects.hash(left, right);
     }
 }

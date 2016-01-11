@@ -40,7 +40,7 @@ public class AutomatonClassTest {
         BDDEquivalenceClassFactory factory = new BDDEquivalenceClassFactory(f4.getPropositions());
         BDDValuationSetFactory val = new BDDValuationSetFactory(f4.getAtoms());
 
-        Master m = new Master(f4, factory, val, Collections.emptySet());
+        Master m = new Master(f4, factory, val, Collections.emptySet(), true);
         assertEquals(f4, m.generateInitialState().getClazz().getRepresentative());
     }
 
@@ -49,7 +49,7 @@ public class AutomatonClassTest {
         Formula formula = Util.createFormula("(p1) U (X((G(F(G(p2)))) & (F(X(X(G(p2)))))))");
 
         EquivalenceClassFactory equivalenceClassFactory = new BDDEquivalenceClassFactory(formula.getPropositions());
-        ValuationSetFactory<String> valuationSetFactory = new BDDValuationSetFactory(formula.getAtoms());
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, true, false, false, false, false, false, equivalenceClassFactory,
                 valuationSetFactory);
@@ -160,7 +160,7 @@ public class AutomatonClassTest {
     public void checkIfStatesGetLostInTheDTGRATranslation() {
         Formula f = Util.createFormula("true");
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(f.getPropositions());
-        ValuationSetFactory<String> val = FactoryRegistry.createValuationSetFactory(f.getAtoms());
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f.getAtoms());
         DTGRARaw dtgra = new DTGRARaw(f, true, false, false, false, false, false, factory, val);
         assertEquals(dtgra.automaton.states.size(), 1);
         DTGRA dtg = new DTGRA(dtgra);
@@ -178,7 +178,7 @@ public class AutomatonClassTest {
     public void checkIfStatesGetLostInTheDTGRATranslation2() {
         Formula f = Util.createFormula("F a & G b");
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(f.getPropositions());
-        ValuationSetFactory<String> val = FactoryRegistry.createValuationSetFactory(f.getAtoms());
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f.getAtoms());
         DTGRARaw dtgra = new DTGRARaw(f, true, false, false, false, false, false, factory, val);
         DTGRA dtg = new DTGRA(dtgra);
         assertFalse(dtg.states.isEmpty());

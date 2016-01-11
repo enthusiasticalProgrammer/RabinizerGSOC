@@ -7,40 +7,39 @@ import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class Automaton<S extends IState<S>> {
 
-    protected final ValuationSetFactory<String> valuationSetFactory;
+    protected final ValuationSetFactory valuationSetFactory;
+    protected final boolean mergingEnabled;
 
     protected final Set<S> states;
-    protected final Set<S> sinks;
-    protected final Set<S> loopingStates;
     protected final Table<S, ValuationSet, S> transitions;
     protected final Table<S, S, ValuationSet> edgeBetween;
     protected S initialState;
     protected S trapState;
 
-    protected Automaton(ValuationSetFactory<String> valuationSetFactory) {
-        states = new HashSet<>();
-        sinks = new HashSet<>();
-        loopingStates = new HashSet<>();
+    protected Automaton(ValuationSetFactory valuationSetFactory) {
+        this(valuationSetFactory, true);
+    }
 
+    protected Automaton(ValuationSetFactory valuationSetFactory, boolean mergingEnabled) {
+        this.valuationSetFactory = valuationSetFactory;
+        this.mergingEnabled = mergingEnabled;
+        states = new HashSet<>();
         transitions = HashBasedTable.create();
         edgeBetween = HashBasedTable.create();
-
-        this.valuationSetFactory = valuationSetFactory;
-        trapState = null;
     }
 
     protected Automaton(Automaton<S> a) {
         states = a.states;
         transitions = a.transitions;
         initialState = a.initialState;
-        sinks = a.sinks;
-        loopingStates = a.loopingStates;
         edgeBetween = a.edgeBetween;
-        this.valuationSetFactory = a.valuationSetFactory;
+        valuationSetFactory = a.valuationSetFactory;
         trapState = a.trapState;
+        mergingEnabled = a.mergingEnabled;
     }
 
     protected static <K> int getId(Map<K, Integer> map, K key) {
@@ -60,79 +59,71 @@ public abstract class Automaton<S extends IState<S>> {
     }
 
     public void generate(S initialState) {
-        states.add(initialState);
-
-        // TODO: Collect statistics in separate class.
+        // Return if already generated
+        if (!states.add(initialState)) {
+            return;
+        }
 
         Queue<S> workList = new ArrayDeque<>();
         workList.add(initialState);
 
         while (!workList.isEmpty()) {
-            S curr = workList.remove();
+            S current = workList.remove();
 
-            Set<ValuationSet> succValSets = curr.partitionSuccessors();
+            Map<ValuationSet, S> successors = current.getSuccessors();
+            Map<S, ValuationSet> reverseMap = new HashMap<>();
 
-            Map<S, ValuationSet> succMapping = new HashMap<>();
+            // Insert all successors and construct reverse map.
+            for (Map.Entry<ValuationSet, S> transition : successors.entrySet()) {
+                ValuationSet edge = transition.getKey();
+                S successor = transition.getValue();
 
-            // Construct all successor states
-            for (ValuationSet succVals : succValSets) {
-                // TODO: fix generateSuccTransitions
-                if (succVals.isEmpty()) {
-                    continue;
+                ValuationSet vs = reverseMap.remove(successor);
+
+                if (vs == null) {
+                    vs = edge.clone();
+                    transitions.put(current, edge, successor);
+                } else if (mergingEnabled) {
+                    transitions.remove(current, vs);
+                    vs.addAll(edge);
+                    transitions.put(current, vs, successor);
+                } else {
+                    transitions.put(current, edge, successor);
+                    vs.addAll(edge);
                 }
 
-                S succ = curr.getSuccessor(succVals.pickAny());
+                reverseMap.put(successor, vs);
 
-                if (succ != null) {
-                    // Combine with existing transition
-                    ValuationSet vs = succMapping.remove(succ);
-
-                    if (vs != null) {
-                        vs.addAll(succVals);
-                    } else {
-                        vs = succVals;
-                    }
-
-                    succMapping.put(succ, vs);
-                }
-            }
-
-            // Register all outgoing transitions
-            for (Map.Entry<S, ValuationSet> entry : succMapping.entrySet()) {
-                S succ = entry.getKey();
-                ValuationSet vs = entry.getValue();
-
-                transitions.put(curr, vs, succ);
-                edgeBetween.put(curr, succ, vs);
-
-                if (!states.contains(succ)) {
-                    states.add(succ);
-                    workList.add(succ);
+                if (states.add(successor)) {
+                    workList.add(successor);
                 }
             }
 
-            // Mark as a sink and looping state
-            ValuationSet valuationSet = edgeBetween.get(curr, curr);
-            if (valuationSet != null) {
-                if (!valuationSet.isEmpty()) {
-                    loopingStates.add(curr);
-                }
-
-                if (valuationSet.isUniverse()) {
-                    sinks.add(curr);
-                }
-            }
+            // Populate edge between
+            edgeBetween.row(current).putAll(reverseMap);
         }
     }
 
+    public boolean isSink(S state) {
+        ValuationSet valuationSet = edgeBetween.get(state, state);
+        return valuationSet != null && valuationSet.isUniverse();
+    }
+
+    public boolean isLooping(S state) {
+        ValuationSet valuationSet = edgeBetween.get(state, state);
+        return valuationSet != null && !valuationSet.isEmpty();
+    }
+
     public void removeSinks() {
+        List<S> sinks = states.stream().filter(this::isSink).collect(Collectors.toList());
+
         for (S s : sinks) {
             transitions.row(s).clear();
             edgeBetween.row(s).clear();
         }
     }
 
-    public S succ(S s, Set<String> v) {
+    public S getSuccessor(S s, Set<String> v) {
         for (ValuationSet vs : transitions.row(s).keySet()) {
             if (vs.contains(v)) {
                 return transitions.get(s, vs);
@@ -140,6 +131,11 @@ public abstract class Automaton<S extends IState<S>> {
         }
 
         return null;
+    }
+
+    public Map<ValuationSet, S> getSuccessors(S state) {
+        generate(state);
+        return Collections.unmodifiableMap(transitions.row(state));
     }
 
     public int size() {
@@ -224,9 +220,9 @@ public abstract class Automaton<S extends IState<S>> {
      */
     public void makeComplete() {
         boolean usedTrapState = false;
+
         if (initialState == null) {
             initialState = trapState;
-            sinks.add(trapState);
             usedTrapState = true;
         }
 
@@ -246,30 +242,59 @@ public abstract class Automaton<S extends IState<S>> {
             // final or effectively
             // final acc. to compiler
             if (!vs2.isEmpty()) {
-                sinks.add(trapState);
                 transitions.put(s, vs2, trapState);
                 edgeBetween.put(s, trapState, vs2);
                 usedTrapState = true;
             }
         }
+
         if (usedTrapState) {
             transitions.put(trapState, valuationSetFactory.createUniverseValuationSet(), trapState);
             edgeBetween.put(trapState, trapState, valuationSetFactory.createUniverseValuationSet());
             states.add(trapState);
         }
-
     }
 
     public List<Set<S>> SCCs() {
-        return SCCAnalyser.SCCs(this);
+        return SCCAnalyser.SCCs(this, this.initialState);
     }
 
     public List<Set<S>> subSCCs(Set<S> SCC, Map<S, ValuationSet> forbiddenEdges) {
         return SCCAnalyser.subSCCs(this, SCC, forbiddenEdges);
     }
 
-    public boolean isLooping(S state) {
-        return loopingStates.contains(state);
+    /**
+     * This method removes unused states and their in- and outgoing transitions.
+     * If the set dependsOn the initial state, it becomes an automaton with the
+     * only state false. Use this method only if you are really sure you want to
+     * remove the states! The method is designed for the assumptions, that only
+     * nonaccepting SCCs are deleted, and the idea is also that everything,
+     * which is deleted will be replaced with a trap state (in makeComplete).
+     *
+     * @param statess: Set of states that is to be removed
+     */
+    public void removeStates(Set<S> statess) {
+        if (statess.contains(initialState)) {
+            states.clear();
+            transitions.clear();
+            initialState = null;
+            edgeBetween.clear();
+        } else {
+            states.removeAll(statess);
+
+            for (S state : statess) {
+                transitions.row(state).clear();
+                edgeBetween.row(state).clear();
+                edgeBetween.column(state).clear();
+            }
+
+            Iterator<Cell<S, ValuationSet, S>> it = transitions.cellSet().iterator();
+            while (it.hasNext()) {
+                if (statess.contains(it.next().getValue())) {
+                    it.remove();
+                }
+            }
+        }
     }
 
     // TODO to abstract ProductAutomaton ?
@@ -282,7 +307,7 @@ public abstract class Automaton<S extends IState<S>> {
 
             for (ValuationSet vSet : vSets) {
                 for (ValuationSet vSetOld : partitioning) {
-                    ValuationSet vs = valuationSetFactory.createValuationSet(vSetOld);
+                    ValuationSet vs = vSetOld.clone();
                     vs.retainAll(vSet);
                     partitioningNew.add(vs);
                 }
@@ -312,51 +337,13 @@ public abstract class Automaton<S extends IState<S>> {
     protected String outTransToHOA(S s, Map<S, Integer> statesToNumbers) {
         String result = "";
         for (Map.Entry<ValuationSet, S> entry : transitions.row(s).entrySet()) {
-            result += "\t[" +  entry.getKey().toFormula() + "] " + getId(statesToNumbers, entry.getValue()) + "\n";
+            result += "\t[" + entry.getKey().toFormula() + "] " + getId(statesToNumbers, entry.getValue()) + "\n";
         }
         return result;
     }
 
     /**
-     * This method removes unused states and their in- and outgoing transitions.
-     * If the set contains the initial state, it becomes an automaton with the
-     * only state false. Use this method only if you are really sure you want to
-     * remove the states! The method is designed for the assumptions, that only
-     * nonaccepting SCCs are deleted, and the idea is also that everything,
-     * which is deleted will be replaced with a trap state (in makeComplete).
-     *
-     * @param statess:
-     *            Set of states that is to be removed
-     */
-    public void removeStates(Set<S> statess) {
-        if (statess.contains(initialState)) {
-            states.clear();
-            transitions.clear();
-            initialState = null;
-            sinks.clear();
-            edgeBetween.clear();
-        } else {
-            states.removeAll(statess);
-            sinks.removeAll(statess);
-
-            for (S state : statess) {
-                transitions.row(state).clear();
-                edgeBetween.row(state).clear();
-                edgeBetween.column(state).clear();
-            }
-
-            Iterator<Cell<S, ValuationSet, S>> it = transitions.cellSet().iterator();
-            while (it.hasNext()) {
-                if (statess.contains(it.next().getValue())) {
-                    it.remove();
-                }
-            }
-        }
-    }
-
-    /**
-     * @param scc:
-     *            an SCC for which the transitions inside need to be determined
+     * @param scc: an SCC for which the transitions inside need to be determined
      * @return all transitions where start is in the SCC
      */
 
@@ -376,10 +363,9 @@ public abstract class Automaton<S extends IState<S>> {
     /**
      * This method has no side effects
      *
-     * @param scc:
-     *            set of states
+     * @param scc: set of states
      * @return true if the only transitions from scc go to scc again and false
-     *         otherwise
+     * otherwise
      */
     protected boolean isSink(Set<S> scc) {
         Set<S> nonSCCStates = new HashSet<>(states);

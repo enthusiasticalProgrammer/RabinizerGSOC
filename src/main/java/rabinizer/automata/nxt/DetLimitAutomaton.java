@@ -14,36 +14,85 @@ import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 import rabinizer.ltl.bdd.BDDValuationSetFactory;
 
 import java.util.*;
-import java.util.function.Function;
 
 public class DetLimitAutomaton {
 
-    private final Formula initialFormula;
-    private final Map<Set<GOperator>, DetLimitAutomatonComponent> components;
-    private final EquivalenceClassFactory equivalenceClassFactory;
-    private final ValuationSetFactory<String> valuationSetFactory;
+    protected final Formula initialFormula;
+    protected final EquivalenceClassFactory equivalenceClassFactory;
+    protected final ValuationSetFactory valuationSetFactory;
+
+    protected final DetComponent detComponent;
+    protected final NonDetComponent nonDetComponent;
+
+    protected final int accSize;
+    protected final Set<Master.State> initialStates;
 
     public DetLimitAutomaton(Formula formula, Collection<Optimisation> optimisations) {
         initialFormula = formula;
 
-        Set<Set<GOperator>> keys = optimisations.contains(Optimisation.SKELETON) ? computeSkeletonKeys(formula) : Sets.powerSet(formula.gSubformulas());
+        Set<Formula> initialFormulas;
+
+        if (optimisations.contains(Optimisation.OR_BREAKUP) && formula instanceof Disjunction) {
+            Disjunction dis = (Disjunction) formula;
+            initialFormulas = dis.getChildren();
+        } else {
+            initialFormulas = Collections.singleton(formula);
+        }
+
         Set<Formula> props = new HashSet<>();
 
-        for (Set<GOperator> gSet : keys) {
+        for (Set<GOperator> gSet : Sets.powerSet(formula.gSubformulas())) {
             Visitor<Formula> masterVisitor = new GSubstitutionVisitor(g -> gSet.contains(g) ? null : BooleanConstant.FALSE);
-            addAllCheckNegation(props, Simplifier.simplify(initialFormula.accept(masterVisitor)).getPropositions());
+            Visitor<Formula> masterVisitor2 = new GSubstitutionVisitor(g -> gSet.contains(g) ? BooleanConstant.TRUE : BooleanConstant.FALSE);
+
+
+            addAllCheckNegation(props, Simplifier.simplify(formula.accept(masterVisitor)).getPropositions());
+            addAllCheckNegation(props, Simplifier.simplify(formula.accept(masterVisitor2)).getPropositions());
         }
+
+        Set<Formula> hotfix = new HashSet<>();
+
+        for (Formula prop : props) {
+            if (prop instanceof UOperator) {
+                UOperator op = (UOperator) prop;
+                hotfix.add(new FOperator(op.right));
+            }
+        }
+
+        addAllCheckNegation(props, hotfix);
 
         equivalenceClassFactory = new BDDEquivalenceClassFactory(props);
         valuationSetFactory = new BDDValuationSetFactory(initialFormula.getAtoms());
-        components = new HashMap<>();
 
-        for (Set<GOperator> key : keys) {
-            DetLimitAutomatonComponent component = new DetLimitAutomatonComponent(initialFormula, key, equivalenceClassFactory, valuationSetFactory, optimisations);
-            if (!component.nondetComponent.getInitialState().getClazz().isFalse()) {
-                components.put(key, component);
+        nonDetComponent = new NonDetComponent(equivalenceClassFactory, valuationSetFactory, optimisations);
+        detComponent = new DetComponent(nonDetComponent, equivalenceClassFactory, valuationSetFactory, optimisations);
+
+        initialStates = new HashSet<>();
+
+        int accSizeCounter = 1;
+
+        for (Formula initialFormula : initialFormulas) {
+            Set<Set<GOperator>> keys = optimisations.contains(Optimisation.SKELETON) ? computeSkeletonKeys(initialFormula) : Sets.powerSet(initialFormula.gSubformulas());
+
+
+
+            for (Set<GOperator> key : keys) {
+                // TODO: Fix substitition bug.
+
+                accSizeCounter = Math.max(accSizeCounter, key.size() + 1);
+
+                Visitor<Formula> masterVisitor = new GSubstitutionVisitor(g -> key.contains(g) ? null : BooleanConstant.FALSE);
+                EquivalenceClass initial = equivalenceClassFactory.createEquivalenceClass(Simplifier.simplify(initialFormula.accept(masterVisitor)));
+
+                if (!initial.isFalse()) {
+                    Master.State initialState = nonDetComponent.generateInitialState(initial);
+                    nonDetComponent.generate(initialState);
+                    initialStates.add(initialState);
+                }
             }
         }
+
+        accSize = accSizeCounter;
     }
 
     private static Set<Set<GOperator>> computeSkeletonKeys(Formula formula) {
@@ -64,15 +113,15 @@ public class DetLimitAutomaton {
         return keys;
     }
 
-    static private <T> List<T> toList(Collection<T> collection) {
+    private static <T> List<T> toList(Collection<T> collection) {
         return new ArrayList<>(collection);
     }
 
-    static private AtomAcceptance mkInf(int i) {
+    private static AtomAcceptance mkInf(int i) {
         return new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_INF, i, false);
     }
 
-    static private BooleanExpression<AtomAcceptance> mkInfAnd(int j) {
+    private static BooleanExpression<AtomAcceptance> mkInfAnd(int j) {
         BooleanExpression<AtomAcceptance> conjunction = new BooleanExpression<>(mkInf(0));
 
         for (int i = 1; i < j; i++) {
@@ -83,24 +132,17 @@ public class DetLimitAutomaton {
     }
 
     public int size() {
-        int size = 0;
-
-        for (DetLimitAutomatonComponent component : components.values()) {
-            size += component.size();
-        }
-
-        return size;
+        return detComponent.size() + nonDetComponent.size() - 1;
     }
 
     public void toHOA(final HOAConsumer consumer) throws HOAConsumerException {
         Map<Object, Integer> ids = new HashMap<>();
 
-        consumer.notifyHeaderStart("1");
+        consumer.notifyHeaderStart("v1");
         consumer.setTool("Rabinizer", "infty");
         consumer.setName("Automaton for " + initialFormula);
 
-        for (DetLimitAutomatonComponent c : components.values()) {
-            Master.State e = c.nondetComponent.getInitialState();
+        for (Master.State e : initialStates) {
             consumer.addStartStates(Collections.singletonList(Util.getId(ids, e)));
         }
 
@@ -116,9 +158,8 @@ public class DetLimitAutomaton {
 
         consumer.notifyBodyStart();
 
-        for (DetLimitAutomatonComponent component : components.values()) {
-            component.toHOA(consumer, ids, getAcceptingSetSize());
-        }
+        nonDetComponent.toHOA(consumer, ids);
+        detComponent.toHOA(consumer, ids, accSize);
 
         consumer.notifyEnd();
     }
@@ -132,137 +173,66 @@ public class DetLimitAutomaton {
     }
 
     private int getAcceptingSetSize() {
-        return initialFormula.gSubformulas().size() + 1;
-    }
-}
-
-class DetLimitAutomatonComponent {
-
-    final protected DetLimitMaster nondetComponent;
-    final protected DetLimitProduct detComponent;
-    final private Set<GOperator> gset;
-    final private ValuationSetFactory<String> factory;
-    final private boolean delayedJump;
-
-    protected DetLimitAutomatonComponent(Formula initialFormula, Set<GOperator> Gset, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory<String> valuationSetFactory, Collection<Optimisation> optimisations) {
-        Visitor<Formula> masterVisitor = new GSubstitutionVisitor(g -> Gset.contains(g) ? null : BooleanConstant.FALSE);
-        Visitor<Formula> slaveVisitor = new GSubstitutionVisitor(g -> BooleanConstant.get(Gset.contains(g)));
-
-        factory = valuationSetFactory;
-        gset = Gset;
-        Formula substInit = Simplifier.simplify(initialFormula.accept(masterVisitor));
-
-        nondetComponent = new DetLimitMaster(substInit, equivalenceClassFactory, valuationSetFactory, optimisations);
-        Function<GOperator, DetLimitSlave> constructor = g -> new DetLimitSlave(Simplifier.simplify(g.getOperand().accept(slaveVisitor)), equivalenceClassFactory, valuationSetFactory, optimisations);
-        detComponent = new DetLimitProduct(nondetComponent, Gset, constructor, equivalenceClassFactory, valuationSetFactory);
-
-        delayedJump = optimisations.contains(Optimisation.DELAYED_JUMP);
+        // TODO: fix...
+        return accSize;
     }
 
-    public int size() {
-        return nondetComponent.getStates().size() + detComponent.getStates().size();
-    }
+    class NonDetComponent extends DetLimitMaster {
+        final private boolean delayedJump;
 
-    protected void toHOA(HOAConsumer consumer, Map<Object, Integer> stateIDs, int maxAcc) throws HOAConsumerException {
-        nondetComponent.generate();
-        Set<Master.State> blockedStates = new HashSet<>();
-
-        if (delayedJump) {
-            for (Set<Master.State> SCC : SCCAnalyser.SCCs(nondetComponent)) {
-                if (SCC.size() == 1) {
-                    Master.State singleState = SCC.iterator().next();
-                    if (!nondetComponent.isLooping(singleState)) {
-                        blockedStates.add(singleState);
-                    }
-                }
-            }
+        NonDetComponent(EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
+            super(BooleanConstant.TRUE, equivalenceClassFactory, valuationSetFactory, optimisations, true);
+            generate();
+            delayedJump = optimisations.contains(Optimisation.DELAYED_JUMP);
         }
 
-        Converter converter = new Converter();
-        final int sizeSec = detComponent.numberOfSecondary();
-        Map<GOperator, Integer> infSetMapping = new HashMap<>();
-
-        for (Master.State masterState : nondetComponent.getStates()) {
-            consumer.addState(Util.getId(stateIDs, masterState), masterState.toString(), null, null);
-
-            for (Map.Entry<ValuationSet, Master.State> entry : nondetComponent.getTransitions().row(masterState).entrySet()) {
-                Master.State succ = entry.getValue();
-                BooleanExpression<AtomLabel> edgeLabel = Simplifier.simplify(entry.getKey().toFormula()).accept(converter);
-
-                consumer.addEdgeWithLabel(Util.getId(stateIDs, masterState), edgeLabel, Collections.singletonList(Util.getId(stateIDs, succ)), null);
-
-                if (!blockedStates.contains(masterState)) {
-                    DetLimitProduct.State init = detComponent.generateInitialState(succ);
-                    detComponent.generate(init);
-                    detComponent.removeTrapState();
-                    consumer.addEdgeWithLabel(Util.getId(stateIDs, masterState), edgeLabel, Collections.singletonList(Util.getId(stateIDs, init)), null);
-                }
-            }
+        public int size() {
+            return states.size();
         }
 
-        for (DetLimitProduct.State productState : detComponent.getStates()) {
-            consumer.addState(Util.getId(stateIDs, productState), productState.toString(), null, null);
+        protected void toHOA(HOAConsumer consumer, Map<Object, Integer> stateIDs) throws HOAConsumerException {
+            Set<Master.State> delayedStates = new HashSet<>();
 
-            for (Map.Entry<ValuationSet, DetLimitProduct.State> entry : detComponent.getTransitions().row(productState).entrySet()) {
-                DetLimitProduct.State succ = entry.getValue();
-
-                final boolean masterAccepts = productState.isAccepting(null);
-
-                for (Set<String> valuation : entry.getKey()) {
-                    BooleanExpression<AtomLabel> edgeLabel = Simplifier.simplify(factory.createValuationSet(valuation).toFormula()).accept(converter);
-
-                    List<Integer> accSet = new ArrayList<>();
-
-                    if (masterAccepts) {
-                        accSet.add(0);
-                    }
-
-                    for (Map.Entry<GOperator, DetLimitSlave.State> entry2 : productState.getSecondaryMap().entrySet()) {
-                        if (entry2.getValue().isAccepting(valuation)) {
-                            accSet.add(Util.getId(infSetMapping, entry2.getKey()) + 1);
+            if (delayedJump) {
+                for (Master.State init : initialStates) {
+                    for (Set<Master.State> SCC : SCCAnalyser.SCCs(this, init)) {
+                        if (SCC.size() == 1) {
+                            Master.State singleState = SCC.iterator().next();
+                            if (!isLooping(singleState)) {
+                                delayedStates.add(singleState);
+                            }
                         }
                     }
+                }
+            }
 
-                    for (int i = sizeSec + 1; i < maxAcc; i++) {
-                        accSet.add(i);
+            for (Master.State masterState : states) {
+                // Skip accepting sink
+                if (masterState.getClazz().isTrue()) {
+                    continue;
+                }
+
+                consumer.addState(Util.getId(stateIDs, masterState), masterState.toString(), null, null);
+
+                for (Map.Entry<ValuationSet, Master.State> entry : transitions.row(masterState).entrySet()) {
+                    BooleanExpression<AtomLabel> edgeLabel = Simplifier.simplify(entry.getKey().toFormula()).accept(Util.converter);
+                    Master.State successor = entry.getValue();
+
+                    if (successor.getClazz().isTrue()) {
+                        DetComponent.State acceptingSink = detComponent.jump(successor, Collections.emptySet());
+                        consumer.addEdgeWithLabel(Util.getId(stateIDs, masterState), edgeLabel, Collections.singletonList(Util.getId(stateIDs, acceptingSink)), null);
+                    } else  {
+                        consumer.addEdgeWithLabel(Util.getId(stateIDs, masterState), edgeLabel, Collections.singletonList(Util.getId(stateIDs, successor)), null);
+
+                        if (!delayedStates.contains(successor) && !successor.getClazz().getRepresentative().gSubformulas().isEmpty()) {
+                            DetComponent.State initialState = detComponent.jump(successor, successor.getClazz().getRepresentative().gSubformulas());
+                            consumer.addEdgeWithLabel(Util.getId(stateIDs, masterState), edgeLabel, Collections.singletonList(Util.getId(stateIDs, initialState)), null);
+                        }
                     }
-
-                    consumer.addEdgeWithLabel(Util.getId(stateIDs, productState), edgeLabel, Collections.singletonList(Util.getId(stateIDs, succ)), accSet);
                 }
             }
         }
     }
-
-    private class Converter implements Visitor<BooleanExpression<AtomLabel>> {
-        @Override
-        public BooleanExpression<AtomLabel> defaultAction(Formula f) {
-            throw new IllegalArgumentException("Cannot convert " + f + " to BooleanExpression.");
-        }
-
-        @Override
-        public BooleanExpression<AtomLabel> visit(BooleanConstant b) {
-            return new BooleanExpression<>(b.value);
-        }
-
-        @Override
-        public BooleanExpression<AtomLabel> visit(Conjunction c) {
-            return c.getChildren().stream().map(e -> e.accept(this)).reduce(new BooleanExpression<>(true), (e1, e2) -> e1.and(e2));
-        }
-
-        @Override
-        public BooleanExpression<AtomLabel> visit(Disjunction d) {
-            return d.getChildren().stream().map(e -> e.accept(this)).reduce(new BooleanExpression<>(false), (e1, e2) -> e1.or(e2));
-        }
-
-        @Override
-        public BooleanExpression<AtomLabel> visit(Literal l) {
-            BooleanExpression<AtomLabel> atom = new BooleanExpression<>(AtomLabel.createAlias(l.getAtom()));
-
-            if (l.getNegated()) {
-                atom = atom.not();
-            }
-
-            return atom;
-        }
-    }
 }
+
+

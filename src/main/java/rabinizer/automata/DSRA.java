@@ -16,7 +16,7 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
     AccTR<? extends IState<?>> accTR;
     Map<IState, Set<Integer>> stateAcceptance;
 
-    public DSRA(DTRA<Product.ProductState> dtra, ValuationSetFactory<String> factory) {
+    public DSRA(DTRA<Product.ProductState> dtra, ValuationSetFactory factory) {
         super(factory);
         this.dtra = dtra;
         trapState = new ProductDegenAccState(dtra.trapState, new HashSet<>());
@@ -99,7 +99,7 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
 
         @Override
         public ProductDegenAccState getSuccessor(Set<String> valuation) {
-            IState succ = dtra.succ(left, valuation);
+            IState succ = dtra.getSuccessor(left, valuation);
             Set<Integer> accSets = new HashSet<>(stateAcceptance.get(succ));
             for (int i = 0; i < accTR.size(); i++) {
                 RabinPair<? extends IState<?>> rp = (RabinPair) accTR.get(i);
@@ -125,14 +125,18 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
         }
 
         @Override
-        public boolean isAccepting(Set<String> valuation) {
-            return false;
-        }
-
-        @Override
         public Set<ValuationSet> partitionSuccessors() {
             return valuationSetFactory.createAllValuationSets(); // TODO symbolic
         }
 
+        @Override
+        public Set<String> getSensitiveAlphabet() {
+            return valuationSetFactory.getAlphabet();
+        }
+
+        @Override
+        public ValuationSetFactory getFactory() {
+            return valuationSetFactory;
+        }
     }
 }

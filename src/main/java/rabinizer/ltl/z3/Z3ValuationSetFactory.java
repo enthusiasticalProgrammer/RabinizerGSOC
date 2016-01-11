@@ -16,7 +16,7 @@ import rabinizer.ltl.Literal;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
-public class Z3ValuationSetFactory extends Z3LibraryWrapper<Literal> implements ValuationSetFactory<String> {
+public class Z3ValuationSetFactory extends Z3LibraryWrapper<Literal> implements ValuationSetFactory {
 
     Set<String> alphabet;
 
@@ -47,19 +47,15 @@ public class Z3ValuationSetFactory extends Z3LibraryWrapper<Literal> implements 
     }
 
     @Override
-    public Z3ValuationSet createValuationSet2(Set<Set<String>> set) {
+    public Z3ValuationSet createValuationSetSet(Set<Set<String>> set) {
         Z3ValuationSet vs = createEmptyValuationSet();
         vs.addAll(set);
         return vs;
     }
 
     @Override
-    public Z3ValuationSet createValuationSet(ValuationSet sets) {
-        if (sets instanceof Z3ValuationSet) {
-            return ((Z3ValuationSet) sets).clone();
-        }
-
-        return createValuationSet2(sets);
+    public ValuationSet createValuationSet(Set<String> valuation, Set<String> base) {
+        return null;
     }
 
     @Override

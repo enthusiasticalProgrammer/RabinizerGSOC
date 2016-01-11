@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class BDDValuationSetFactory extends BDDLibraryWrapper<Literal> implements ValuationSetFactory<String> {
+public class BDDValuationSetFactory extends BDDLibraryWrapper<Literal> implements ValuationSetFactory {
 
     private final Set<String> alphabet;
 
@@ -35,25 +35,21 @@ public class BDDValuationSetFactory extends BDDLibraryWrapper<Literal> implement
 
     @Override
     public BDDValuationSet createValuationSet(Set<String> valuation) {
-        Formula f = new Conjunction(alphabet.stream().map(s -> new Literal(s, !valuation.contains(s))));
+        return createValuationSet(valuation, alphabet);
+    }
+
+    @Override
+    public BDDValuationSet createValuationSet(Set<String> valuation, Set<String> base) {
+        Formula f = new Conjunction(base.stream().map(s -> new Literal(s, !valuation.contains(s))));
         BDD bdd = createBDD(f);
         return new BDDValuationSet(bdd, this);
     }
 
     @Override
-    public BDDValuationSet createValuationSet2(Set<Set<String>> set) {
+    public BDDValuationSet createValuationSetSet(Set<Set<String>> set) {
         BDDValuationSet vs = createEmptyValuationSet();
         vs.addAll(set);
         return vs;
-    }
-
-    @Override
-    public BDDValuationSet createValuationSet(ValuationSet set) {
-        if (set instanceof BDDValuationSet) {
-            return ((BDDValuationSet) set).clone();
-        }
-
-        return createValuationSet2(set);
     }
 
     @Override

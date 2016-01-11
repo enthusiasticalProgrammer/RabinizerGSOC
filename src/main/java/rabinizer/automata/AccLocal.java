@@ -14,7 +14,7 @@ import java.util.Set;
  * */
 public class AccLocal {
 
-    protected final ValuationSetFactory<String> valuationSetFactory;
+    protected final ValuationSetFactory valuationSetFactory;
     protected final EquivalenceClassFactory equivalenceClassFactory;
 
     protected final Product product;
@@ -27,7 +27,7 @@ public class AccLocal {
     Map<Set<GOperator>, Map<Map<Formula, Integer>, RabinPair>> accMasterOptions = new HashMap<>();
     // actually just coBuchi
 
-    public AccLocal(Product product, ValuationSetFactory<String> factory, EquivalenceClassFactory factory2) {
+    public AccLocal(Product product, ValuationSetFactory factory, EquivalenceClassFactory factory2) {
         this.product = product;
         // TODO: Drop this.formula
         this.formula = product.primaryAutomaton.getInitialState().getClazz().getRepresentative();

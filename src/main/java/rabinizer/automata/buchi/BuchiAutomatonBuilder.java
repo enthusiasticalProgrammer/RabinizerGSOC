@@ -17,7 +17,7 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
 
     private final Deque<BuchiAutomaton> automata = new ArrayDeque<>();
     private BuchiAutomaton automaton;
-    private ValuationSetFactory<String> valuationSetFactory;
+    private ValuationSetFactory valuationSetFactory;
     private Integer initialState;
     private String[] integerToLetter;
     private State[] integerToState;

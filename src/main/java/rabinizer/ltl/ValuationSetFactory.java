@@ -2,19 +2,18 @@ package rabinizer.ltl;
 
 import java.util.Set;
 
-public interface ValuationSetFactory<E> {
+public interface ValuationSetFactory {
+    Set<ValuationSet> createAllValuationSets();
 
-    public Set<E> getAlphabet();
+    ValuationSet createEmptyValuationSet();
 
-    public ValuationSet createEmptyValuationSet();
+    ValuationSet createUniverseValuationSet();
 
-    public ValuationSet createUniverseValuationSet();
+    ValuationSet createValuationSet(Set<String> valuation);
 
-    public ValuationSet createValuationSet(Set<E> valuation);
+    ValuationSet createValuationSet(Set<String> valuation, Set<String> smallerAlphabet);
 
-    public ValuationSet createValuationSet2(Set<Set<E>> valuation);
+    ValuationSet createValuationSetSet(Set<Set<String>> valuation);
 
-    public ValuationSet createValuationSet(ValuationSet sets);
-
-    public Set<ValuationSet> createAllValuationSets();
+    Set<String> getAlphabet();
 }

@@ -1,32 +1,49 @@
 package rabinizer.automata.nxt;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Sets;
 import rabinizer.automata.Automaton;
 import rabinizer.automata.IState;
 import rabinizer.automata.Optimisation;
 import rabinizer.ltl.*;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
 
-    private final EquivalenceClass initialFormula;
-    private final EquivalenceClass True;
-    private final boolean eager;
-    private final boolean cover;
+    protected final EquivalenceClass initialFormula;
+    protected final EquivalenceClass True;
+    protected final boolean eager;
+    protected final boolean cover;
 
-    public DetLimitSlave(Formula formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory<String> valuationSetFactory, Collection<Optimisation> optimisations) {
-        super(valuationSetFactory);
+    private final LoadingCache<State, ValuationSet> acceptanceCache;
+
+    public DetLimitSlave(Formula formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
+        super(valuationSetFactory, false);
         eager = optimisations.contains(Optimisation.EAGER);
         cover = optimisations.contains(Optimisation.COVER);
         initialFormula = eager ? equivalenceClassFactory.createEquivalenceClass(formula.unfold(true)) : equivalenceClassFactory.createEquivalenceClass(formula);
         True = equivalenceClassFactory.getTrue();
+
+        CacheLoader<State, ValuationSet> acceptanceLoader = new CacheLoader<State, ValuationSet>() {
+            @Override
+            public ValuationSet load(State arg) {
+                return arg.getAcceptance();
+            }
+        };
+
+        acceptanceCache = CacheBuilder.newBuilder().build(acceptanceLoader);
     }
 
     @Override
     protected State generateInitialState() {
         return new State(initialFormula, True);
+    }
+
+    public ValuationSet getAcceptance(State state) {
+        return acceptanceCache.getUnchecked(state);
     }
 
     public final class State implements IState<State> {
@@ -45,18 +62,18 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
             if (o == null || getClass() != o.getClass()) return false;
             State that = (State) o;
             return Objects.equals(current, that.current) &&
-                    Objects.equals(next, that.next);
+                    Objects.equals(next, that.next) &&
+                    Objects.equals(initialFormula, that.getInitialFormula());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(current, next);
+            return Objects.hash(current, next, initialFormula);
         }
 
         @Override
         public String toString() {
-            return "{" + Simplifier.simplify(current.getRepresentative(), Simplifier.Strategy.PROPOSITIONAL) + ", "
-                    + Simplifier.simplify(next.getRepresentative(), Simplifier.Strategy.PROPOSITIONAL) + "}";
+            return "{" + current.getRepresentative() + ", " + next.getRepresentative() + "}";
         }
 
         @Override
@@ -82,15 +99,47 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
             return new State(successor, nextSuccessor.and(initialFormula));
         }
 
-        @Override
-        public boolean isAccepting(Set<String> valuation) {
-            EquivalenceClass successor = step(current, valuation);
-            return successor.isTrue();
+        public ValuationSet getAcceptance() {
+            Set<String> sensitiveLetters = new HashSet<>();
+
+            for (Formula literal : current.unfold(true).getSupport()) {
+                if (literal instanceof Literal) {
+                    sensitiveLetters.add(((Literal) literal).getAtom());
+                }
+            }
+
+            ValuationSet acceptingLetters = valuationSetFactory.createEmptyValuationSet();
+
+            for (Set<String> valuation : Sets.powerSet(sensitiveLetters)) {
+                EquivalenceClass successor = step(current, valuation);
+                if (successor.isTrue()) {
+                    acceptingLetters.addAll(valuationSetFactory.createValuationSet(valuation, sensitiveLetters));
+                }
+            }
+
+            return acceptingLetters;
         }
 
         @Override
-        public Set<ValuationSet> partitionSuccessors() {
-            return valuationSetFactory.createAllValuationSets();
+        public Set<String> getSensitiveAlphabet() {
+            Set<String> sensitiveLetters = new HashSet<>();
+
+            for (Formula literal : Sets.union(current.unfold(true).getSupport(), next.unfold(true).getSupport())) {
+                if (literal instanceof Literal) {
+                    sensitiveLetters.add(((Literal) literal).getAtom());
+                }
+            }
+
+            return sensitiveLetters;
+        }
+
+        @Override
+        public ValuationSetFactory getFactory() {
+            return valuationSetFactory;
+        }
+
+        private EquivalenceClass getInitialFormula() {
+            return initialFormula;
         }
 
         private State removeCover(EquivalenceClass currentSuccessor, EquivalenceClass nextCandidate) {

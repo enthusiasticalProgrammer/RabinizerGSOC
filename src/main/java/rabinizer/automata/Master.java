@@ -3,32 +3,39 @@ package rabinizer.automata;
 import rabinizer.ltl.*;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 public class Master extends Automaton<Master.State> {
 
     final boolean eager;
     final EquivalenceClass initialState;
+    protected final EquivalenceClass TRUE;
 
     public Master(Formula formula, EquivalenceClassFactory equivalenceClassFactory,
-                  ValuationSetFactory<String> valuationSetFactory, Collection<Optimisation> optimisations) {
-        super(valuationSetFactory);
+                  ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
+        super(valuationSetFactory, mergingEnabled);
         initialState = equivalenceClassFactory.createEquivalenceClass(formula);
         eager = optimisations.contains(Optimisation.EAGER);
+        TRUE = equivalenceClassFactory.getTrue();
     }
 
     @Override
     protected State generateInitialState() {
+        return generateInitialState(initialState);
+    }
+
+    public State generateInitialState(EquivalenceClass clazz) {
         if (eager) {
-            return new State(initialState.unfold(true));
+            return new State(clazz.unfold(true));
         } else {
-            return new State(initialState);
+            return new State(clazz);
         }
     }
 
     public class State extends AbstractFormulaState implements IState<State> {
 
-        State(EquivalenceClass clazz) {
+        public State(EquivalenceClass clazz) {
             super(clazz);
         }
 
@@ -50,17 +57,17 @@ public class Master extends Automaton<Master.State> {
         }
 
         @Override
-        public boolean isAccepting(Set<String> valuation) {
-            return false;
-        }
-
-        @Override
         public Set<ValuationSet> partitionSuccessors() {
             if (eager) {
                 return generatePartitioning(clazz.getRepresentative());
             } else {
                 return generatePartitioning(clazz.unfold(true).getRepresentative());
             }
+        }
+
+        @Override
+        public Set<String> getSensitiveAlphabet() {
+            return getSensitive(true);
         }
 
         @Override
@@ -71,6 +78,11 @@ public class Master extends Automaton<Master.State> {
         @Override
         protected ValuationSet createUniverseValuationSet() {
             return valuationSetFactory.createUniverseValuationSet();
+        }
+
+        @Override
+        public ValuationSetFactory getFactory() {
+            return valuationSetFactory;
         }
     }
 }

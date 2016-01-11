@@ -8,7 +8,7 @@ import java.util.Set;
 public class BDDValuationSetTest extends ValuationSetTest {
 
     @Override
-    public ValuationSetFactory<String> setUpFactory(Set<String> domain) {
+    public ValuationSetFactory setUpFactory(Set<String> domain) {
         return new BDDValuationSetFactory(domain);
     }
 }

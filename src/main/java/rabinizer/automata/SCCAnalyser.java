@@ -26,7 +26,6 @@ public class SCCAnalyser<S extends IState<S>> {
         this.a = a;
         this.allowedStates = s;
         this.forbiddenEdges = forbiddenEdges;
-
     }
 
     /**
@@ -45,10 +44,10 @@ public class SCCAnalyser<S extends IState<S>> {
      * vertices, ordered such that for each transition a->b in the
      * condensation graph, a is in the list before b
      */
-    public static <S extends IState<S>> List<Set<S>> SCCs(Automaton<S> a) {
+    public static <S extends IState<S>> List<Set<S>> SCCs(Automaton<S> a, S initialState) {
         SCCAnalyser<S> s = new SCCAnalyser<>(a);
-        return s.SCCs();
-
+        s.stack.push(initialState);
+        return s.SCCsRecursively();
     }
 
     /**

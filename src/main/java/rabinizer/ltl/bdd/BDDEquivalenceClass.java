@@ -3,6 +3,7 @@ package rabinizer.ltl.bdd;
 import net.sf.javabdd.BDD;
 import rabinizer.ltl.*;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -60,7 +61,7 @@ public class BDDEquivalenceClass implements EquivalenceClass {
     @Override
     public EquivalenceClass and(EquivalenceClass eq) {
         if (eq instanceof BDDEquivalenceClass) {
-            return new BDDEquivalenceClass(new Conjunction(getRepresentative(), eq.getRepresentative()), bdd.and(((BDDEquivalenceClass) eq).bdd), factory);
+            return new BDDEquivalenceClass(Simplifier.simplify(new Conjunction(getRepresentative(), eq.getRepresentative()), Simplifier.Strategy.PROPOSITIONAL), bdd.and(((BDDEquivalenceClass) eq).bdd), factory);
         }
 
         return factory.createEquivalenceClass(new Conjunction(getRepresentative(), eq.getRepresentative()));
@@ -69,7 +70,7 @@ public class BDDEquivalenceClass implements EquivalenceClass {
     @Override
     public EquivalenceClass or(EquivalenceClass eq) {
         if (eq instanceof BDDEquivalenceClass) {
-            return new BDDEquivalenceClass(new Disjunction(getRepresentative(), eq.getRepresentative()), bdd.or(((BDDEquivalenceClass) eq).bdd), factory);
+            return new BDDEquivalenceClass(Simplifier.simplify(new Disjunction(getRepresentative(), eq.getRepresentative()), Simplifier.Strategy.PROPOSITIONAL), bdd.or(((BDDEquivalenceClass) eq).bdd), factory);
         }
 
         return factory.createEquivalenceClass(new Disjunction(getRepresentative(), eq.getRepresentative()));
@@ -83,6 +84,34 @@ public class BDDEquivalenceClass implements EquivalenceClass {
     @Override
     public boolean isFalse() {
         return bdd.isZero();
+    }
+
+    @Override
+    public Set<Formula> getSupport() {
+        if (bdd.isZero() || bdd.isOne()) {
+            return Collections.emptySet();
+        }
+
+        try {
+            Formula support = factory.createRepresentative(bdd.support());
+
+            if (support instanceof BooleanConstant) {
+                return Collections.emptySet();
+            }
+
+            if (support instanceof Conjunction) {
+                return ((Conjunction) support).getChildren();
+            }
+
+            if (support instanceof Disjunction) {
+                throw new IllegalStateException();
+            }
+
+            return Collections.singleton(support);
+        } catch (NullPointerException e) {
+            // TODO: Traverse bdd or fix bdd library
+            return getRepresentative().getPropositions();
+        }
     }
 
     @Override

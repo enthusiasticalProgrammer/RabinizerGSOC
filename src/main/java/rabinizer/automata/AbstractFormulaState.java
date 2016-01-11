@@ -17,7 +17,7 @@ public abstract class AbstractFormulaState {
 
     @Override
     public String toString() {
-        return Simplifier.simplify(clazz.getRepresentative(), Simplifier.Strategy.PROPOSITIONAL).toString();
+        return clazz.getRepresentative().toString();
     }
 
     @Override
@@ -42,6 +42,18 @@ public abstract class AbstractFormulaState {
     protected abstract Object getOuter();
 
     protected abstract ValuationSet createUniverseValuationSet();
+
+    protected Set<String> getSensitive(boolean unfoldG) {
+        Set<String> letters = new HashSet<>();
+
+        for (Formula literal : clazz.unfold(unfoldG).getSupport()) {
+            if (literal instanceof Literal) {
+                letters.add(((Literal) literal).getAtom());
+            }
+        }
+
+        return letters;
+    }
 
     protected Set<ValuationSet> generatePartitioning(Formula f) {
         Set<ValuationSet> result = new HashSet<>();

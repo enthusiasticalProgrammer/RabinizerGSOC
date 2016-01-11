@@ -55,14 +55,14 @@ public class EmptinessCheck<S extends IState<S>> {
                     for (Tuple<TranSet<S>, Set<TranSet<S>>> pair : accTGR) {
                         for (TranSet<S> inf : pair.right) {
                             if (inf.get(entry.getRowKey()) != null) {
-                                ValuationSet valu = valuationFactory.createValuationSet(inf.get(entry.getRowKey()));
+                                ValuationSet valu = inf.get(entry.getRowKey()).clone();
                                 valu.retainAll(entry.getColumnKey());
                                 inf.put(entry.getRowKey(), valu);
                             }
                         }
                         TranSet<S> fin = pair.left;
                         if (fin.get(entry.getRowKey()) != null) {
-                            ValuationSet valu = valuationFactory.createValuationSet(fin.get(entry.getRowKey()));
+                            ValuationSet valu = fin.get(entry.getRowKey()).clone();
                             valu.retainAll(entry.getColumnKey());
                             fin.put(entry.getRowKey(), valu);
                         }

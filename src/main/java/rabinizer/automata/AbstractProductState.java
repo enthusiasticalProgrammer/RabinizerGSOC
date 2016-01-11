@@ -1,12 +1,11 @@
 package rabinizer.automata;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
+import rabinizer.automata.nxt.Util;
 import rabinizer.ltl.ValuationSet;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public abstract class AbstractProductState<P extends IState<P>, K, S extends IState<S>, T> {
 
@@ -67,7 +66,13 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
 
         ImmutableMap.Builder<K, S> builder = ImmutableMap.builder();
 
-        for (K key : relevantSecondary(primarySuccessor)) {
+        Set<K> keys = relevantSecondary(primarySuccessor);
+
+        if (keys == null) {
+            keys = secondaryStates.keySet();
+        }
+
+        for (K key : keys) {
             S secondary = secondaryStates.get(key);
 
             if (secondary != null) {
@@ -84,31 +89,85 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
         return constructState(primarySuccessor, builder.build());
     }
 
-    public Set<ValuationSet> partitionSuccessors() {
-        Set<ValuationSet> partition = primaryState.partitionSuccessors();
+    protected abstract Automaton<P> getPrimaryAutomaton();
+    protected abstract Map<K, ? extends Automaton<S>> getSecondaryAutomata();
 
-        for (S secondaryState : secondaryStates.values()) {
-            Set<ValuationSet> secondPartition = secondaryState.partitionSuccessors();
-            Set<ValuationSet> resultingPartition = new HashSet<>(partition.size());
+    public Map<ValuationSet, T> getSuccessors() {
+        ImmutableMap.Builder<ValuationSet, T> builder = ImmutableMap.builder();
 
-            for (ValuationSet set1 : partition) {
-                for (ValuationSet set2 : secondPartition) {
-                    ValuationSet set3 = set1.clone();
-                    set3.retainAll(set2);
+        Map<ValuationSet, P> primarySuccessors = getPrimaryAutomaton().getSuccessors(primaryState);
+        Map<ValuationSet, Map<K, S>> secondarySuccessors = secondaryJointMove();
 
-                    if (!set3.isEmpty()) {
-                        resultingPartition.add(set3);
+        for (Map.Entry<ValuationSet, P> entry1 : primarySuccessors.entrySet()) {
+            for (Map.Entry<ValuationSet, Map<K, S>> entry2 : secondarySuccessors.entrySet()) {
+                ValuationSet set = entry1.getKey().clone();
+                set.retainAll(entry2.getKey());
+
+                if (!set.isEmpty()) {
+                    Set<K> keys = relevantSecondary(entry1.getValue());
+                    Map<K, S> secondaryStates = entry2.getValue();
+
+                    if (keys != null) {
+                        Map<K, S> secondaryStates2 = new HashMap<>(secondaryStates.size());
+
+                        for (K key : keys) {
+                            secondaryStates2.put(key, secondaryStates.get(key));
+                        }
+                    }
+
+                    builder.put(set, constructState(entry1.getValue(), secondaryStates));
+                }
+            }
+        }
+
+        return builder.build();
+    }
+
+    private Map<ValuationSet, Map<K, S>> secondaryJointMove() {
+        Map<K, ? extends Automaton<S>> secondary = getSecondaryAutomata();
+        Map<ValuationSet, Map<K, S>> current = new HashMap<>();
+        current.put(createUniverseValuationSet(), Collections.emptyMap());
+
+        for (Map.Entry<K, S> entry : secondaryStates.entrySet()) {
+            K key = entry.getKey();
+            S state = entry.getValue();
+
+            Map<ValuationSet, S> successors = secondary.get(key).getSuccessors(state);
+            Map<ValuationSet, Map<K, S>> next = new HashMap<>();
+
+            for (Map.Entry<ValuationSet, Map<K, S>> entry1 : current.entrySet()) {
+                for (Map.Entry<ValuationSet, S> entry2 : successors.entrySet()) {
+                    ValuationSet set = entry1.getKey().clone();
+                    set.retainAll(entry2.getKey());
+
+                    if (!set.isEmpty()) {
+                        Map<K, S> states = new HashMap<>(entry1.getValue());
+                        states.put(key, entry2.getValue());
+
+                        next.put(set, states);
                     }
                 }
             }
 
-            partition = resultingPartition;
+            current = next;
         }
 
-        return partition;
+        return current;
     }
 
-    protected abstract Set<K> relevantSecondary(P primaryState);
+    public Set<String> getSensitiveAlphabet() {
+        Set<String> sensitiveLetters = new HashSet<>(primaryState.getSensitiveAlphabet());
+
+        for (S secondaryState : secondaryStates.values()) {
+            sensitiveLetters.addAll(secondaryState.getSensitiveAlphabet());
+        }
+
+        return sensitiveLetters;
+    }
+
+    protected Set<K> relevantSecondary(P primaryState) {
+        return null;
+    }
 
     protected abstract T constructState(P primaryState, Map<K, S> secondaryStates);
 

@@ -14,7 +14,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
 
     AccTGR<? extends IState<?>> acc;
 
-    public DTGRA(Master master, Map<GOperator, RabinSlave> slaves, ValuationSetFactory<String> factory, Collection<Optimisation> optimisations) {
+    public DTGRA(Master master, Map<GOperator, RabinSlave> slaves, ValuationSetFactory factory, Collection<Optimisation> optimisations) {
         super(master, slaves, factory, optimisations);
     }
 
@@ -99,7 +99,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
         Set<ValuationSet> edges = generatePartitioning(productVs);
         for (ValuationSet vsSep : edges) {
             Set<String> v = vsSep.pickAny();
-            result += "[" + Simplifier.simplify(vsSep.toFormula(), Simplifier.Strategy.PROPOSITIONAL) + "] " + getId(statesToNumbers, succ(s, v)) + " {" + acc.accSets(s, v)
+            result += "[" + Simplifier.simplify(vsSep.toFormula(), Simplifier.Strategy.PROPOSITIONAL) + "] " + getId(statesToNumbers, getSuccessor(s, v)) + " {" + acc.accSets(s, v)
                     + "}\n";
         }
         return result;

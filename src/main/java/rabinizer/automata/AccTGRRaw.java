@@ -16,31 +16,31 @@ import java.util.Set;
 public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
 
     private static final long serialVersionUID = 245172601429256815L;
-    protected final ValuationSetFactory<String> valuationSetFactory;
+    protected final ValuationSetFactory valuationSetFactory;
     protected final EquivalenceClassFactory equivalenceClassFactory;
     private final TranSet allTrans;
 
-    public AccTGRRaw(ValuationSetFactory<String> factory, EquivalenceClassFactory factory2) {
+    public AccTGRRaw(ValuationSetFactory factory, EquivalenceClassFactory factory2) {
         allTrans = null;
         this.valuationSetFactory = factory;
         this.equivalenceClassFactory = factory2;
     }
 
-    public AccTGRRaw(TranSet allTrans, ValuationSetFactory<String> factory,
+    public AccTGRRaw(TranSet allTrans, ValuationSetFactory factory,
                      EquivalenceClassFactory factory2) {
         this.allTrans = allTrans;
         this.valuationSetFactory = factory;
         this.equivalenceClassFactory = factory2;
     }
 
-    public AccTGRRaw(AccTGRRaw accTGR, ValuationSetFactory<String> factory, EquivalenceClassFactory factory2) {
+    public AccTGRRaw(AccTGRRaw accTGR, ValuationSetFactory factory, EquivalenceClassFactory factory2) {
         super(accTGR);
         allTrans = accTGR.allTrans;
         this.valuationSetFactory = factory;
         this.equivalenceClassFactory = factory2;
     }
 
-    public AccTGRRaw(AccLocal accLocal, ValuationSetFactory<String> factory, EquivalenceClassFactory factory2) {
+    public AccTGRRaw(AccLocal accLocal, ValuationSetFactory factory, EquivalenceClassFactory factory2) {
         super();
         allTrans = accLocal.allTrans;
         this.valuationSetFactory = factory;

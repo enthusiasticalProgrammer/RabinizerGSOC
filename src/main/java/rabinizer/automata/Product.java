@@ -14,8 +14,8 @@ public class Product extends Automaton<Product.ProductState> {
 
     protected final boolean allSlaves;
 
-    public Product(Master primaryAutomaton, Map<GOperator, RabinSlave> slaves, ValuationSetFactory<String> factory, Collection<Optimisation> optimisations) {
         super(factory);
+    public Product(Master primaryAutomaton, Map<GOperator, RabinSlave> slaves, ValuationSetFactory factory, Collection<Optimisation> optimisations) {
         this.primaryAutomaton = primaryAutomaton;
         this.secondaryAutomata = slaves;
         this.trapState = new ProductState(primaryAutomaton.trapState, Collections.emptyMap());
@@ -48,13 +48,18 @@ public class Product extends Automaton<Product.ProductState> {
             super(primaryState, secondaryStates);
         }
 
-        public ProductState(Master.State primaryState, Collection<GOperator> keys, Function<GOperator, RabinSlave.State> constructor) {
-            super(primaryState, keys, constructor);
+        @Override
+        protected Automaton<Master.State> getPrimaryAutomaton() {
+            return primaryAutomaton;
         }
 
         @Override
-        public boolean isAccepting(Set<String> valuation) {
-            return false;
+        protected Map<GOperator, RabinSlave> getSecondaryAutomata() {
+            return secondaryAutomata;
+        }
+
+        public ProductState(Master.State primaryState, Collection<GOperator> keys, Function<GOperator, RabinSlave.State> constructor) {
+            super(primaryState, keys, constructor);
         }
 
         @Override
@@ -62,7 +67,9 @@ public class Product extends Automaton<Product.ProductState> {
             if (allSlaves) {
                 return secondaryStates.keySet();
             } else {
-                return primaryState.getClazz().getRepresentative().relevantGFormulas(secondaryAutomata.keySet());
+                Set<GOperator> keys = new HashSet<>();
+                primaryState.getClazz().getSupport().forEach(f -> keys.addAll(f.gSubformulas()));
+                return keys;
             }
         }
 
@@ -74,6 +81,11 @@ public class Product extends Automaton<Product.ProductState> {
         @Override
         protected ValuationSet createUniverseValuationSet() {
             return valuationSetFactory.createUniverseValuationSet();
+        }
+
+        @Override
+        public ValuationSetFactory getFactory() {
+            return valuationSetFactory;
         }
     }
 }

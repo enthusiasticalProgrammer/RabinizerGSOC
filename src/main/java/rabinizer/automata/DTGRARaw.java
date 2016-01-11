@@ -14,14 +14,14 @@ import java.util.*;
 public class DTGRARaw {
 
     final EquivalenceClassFactory equivalenceClassFactory;
-    final ValuationSetFactory<String> valuationSetFactory;
+    final ValuationSetFactory valuationSetFactory;
     public Product automaton;
     public AccTGRRaw accTGR;
     AccLocal accLocal;
 
     public DTGRARaw(Formula phi, boolean computeAcc, boolean unfoldedOn, boolean sinksOn,
             boolean optimizeInitialStatesOn, boolean relevantSlavesOnlyOn, boolean slowerIsabelleAccForUnfolded,
-            EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory<String> valuationSetFactory) {
+            EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory) {
         this.valuationSetFactory = valuationSetFactory;
         this.equivalenceClassFactory = equivalenceClassFactory;
 
@@ -30,9 +30,9 @@ public class DTGRARaw {
         Main.nonsilent("Generating primaryAutomaton");
         Master master;
         if (unfoldedOn) { // unfold upon arrival to state
-            master = new Master(phi, equivalenceClassFactory, valuationSetFactory, EnumSet.of(Optimisation.EAGER));
+            master = new Master(phi, equivalenceClassFactory, valuationSetFactory, EnumSet.of(Optimisation.EAGER), true);
         } else {
-            master = new Master(phi, equivalenceClassFactory, valuationSetFactory, Collections.emptySet());
+            master = new Master(phi, equivalenceClassFactory, valuationSetFactory, Collections.emptySet(), true);
         }
         master.generate();
         Main.verboseln("========================================");

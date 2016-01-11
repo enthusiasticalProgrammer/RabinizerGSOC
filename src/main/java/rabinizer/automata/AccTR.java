@@ -18,7 +18,7 @@ public class AccTR<T extends IState<T>> extends ArrayList<RabinPair<T>> {
      */
     private static final long serialVersionUID = -5442515295977731129L;
 
-    public AccTR(AccTGR<T> accTGR, DTRA<T> dtra, ValuationSetFactory<String> valuationSetFactory) {
+    public AccTR(AccTGR<T> accTGR, DTRA<T> dtra, ValuationSetFactory valuationSetFactory) {
         super();
         for (int i = 0; i < accTGR.size(); i++) {
             GRabinPairT<T> grp = accTGR.get(i);

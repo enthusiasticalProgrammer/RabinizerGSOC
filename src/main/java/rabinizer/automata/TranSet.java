@@ -11,9 +11,9 @@ import java.util.HashMap;
 public class TranSet<S extends IState<S>> extends HashMap<S, ValuationSet> {
 
     private static final long serialVersionUID = 1013653255527479470L;
-    private final ValuationSetFactory<String> factory;
+    private final ValuationSetFactory factory;
 
-    public TranSet(ValuationSetFactory<String> factory) {
+    public TranSet(ValuationSetFactory factory) {
         this.factory = factory;
     }
 
@@ -21,7 +21,7 @@ public class TranSet<S extends IState<S>> extends HashMap<S, ValuationSet> {
         if (!this.containsKey(s)) {
             this.put(s, vs);
         } else {
-            ValuationSet old = factory.createValuationSet(this.get(s));
+            ValuationSet old = this.get(s).clone();
             old.addAll(vs);
             this.put(s, old);
         }
@@ -58,7 +58,7 @@ public class TranSet<S extends IState<S>> extends HashMap<S, ValuationSet> {
     void removeAll(TranSet<S> ts) {
         for (S s : ts.keySet()) {
             if (this.containsKey(s)) {
-                ValuationSet old = factory.createValuationSet(this.get(s));
+                ValuationSet old = get(s).clone();
                 old.remove(ts.get(s));
                 this.put(s, old);
                 if (this.get(s).isEmpty()) {

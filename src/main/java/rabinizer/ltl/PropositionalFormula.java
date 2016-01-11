@@ -163,7 +163,7 @@ public abstract class PropositionalFormula extends Formula {
     protected abstract char getOperator();
 
     private <E> Set<E> collect(Function<Formula, Collection<E>> f) {
-        Set<E> set = new HashSet<>();
+        Set<E> set = new HashSet<>(children.size());
         children.forEach(c -> set.addAll(f.apply(c)));
         return set;
     }

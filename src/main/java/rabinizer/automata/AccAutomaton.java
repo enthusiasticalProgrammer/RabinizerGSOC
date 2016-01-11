@@ -9,7 +9,7 @@ import java.util.Map;
  */
 public abstract class AccAutomaton<S extends IState<S>> extends Automaton<S> {
 
-    protected AccAutomaton(ValuationSetFactory<String> valuationSetFactory) {
+    protected AccAutomaton(ValuationSetFactory valuationSetFactory) {
         super(valuationSetFactory);
     }
 

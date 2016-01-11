@@ -19,12 +19,12 @@ public class RabinPair<S extends IState<S>> extends Tuple<TranSet<S>, TranSet<S>
     }
 
     public RabinPair(RabinSlave slave, Set<IState> finalStates, int rank, Product product,
-                     ValuationSetFactory<String> valuationSetFactory) {
+                     ValuationSetFactory valuationSetFactory) {
         this(RabinPair.fromSlave(slave, finalStates, rank, product, valuationSetFactory));
     }
 
     private static RabinPair fromSlave(RabinSlave slave, Set<IState> finalStates, int rank,
-                                       Product product, ValuationSetFactory<String> valuationSetFactory) {
+                                       Product product, ValuationSetFactory valuationSetFactory) {
 
         // Set fail
         // Mojmir
@@ -32,7 +32,7 @@ public class RabinPair<S extends IState<S>> extends Tuple<TranSet<S>, TranSet<S>
         for (MojmirSlave.State fs : slave.mojmir.states) {
             // if (!slave.mojmir.sinks.contains(fs)) {
             for (Map.Entry<ValuationSet, MojmirSlave.State> vsfs : slave.mojmir.transitions.row(fs).entrySet()) {
-                if (slave.mojmir.sinks.contains(vsfs.getValue()) && !finalStates.contains(vsfs.getValue())) {
+                if (slave.mojmir.isSink(vsfs.getValue()) && !finalStates.contains(vsfs.getValue())) {
                     failM.add(fs, vsfs.getKey());
                 }
             }
@@ -98,7 +98,7 @@ public class RabinPair<S extends IState<S>> extends Tuple<TranSet<S>, TranSet<S>
                             if (!finalStates.contains(succ) && ((vs1 = slave.mojmir.edgeBetween.get(stateIntegerEntry.getKey(), succ)) != null)
                                     && ((vs2 = slave.mojmir.edgeBetween.get(fs2, succ)) != null)) {
                                 if (!stateIntegerEntry.getKey().equals(fs2)) {
-                                    ValuationSet vs1copy = valuationSetFactory.createValuationSet(vs1);
+                                    ValuationSet vs1copy = vs1.clone();
                                     vs1copy.retainAll(vs2);
                                     buyR.add(rs, vs1copy);
                                 } else if (succ.equals(slave.mojmir.getInitialState())) {

@@ -17,10 +17,10 @@ import java.util.Set;
 public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegenState> implements AccAutomatonInterface {
 
     DTGRARaw dtgra;
-    AccTGR<? extends IState<?>> accTGR;
+    AccTGR<T> accTGR;
     AccTR<T> accTR;
 
-    public DTRA(DTGRARaw dtgra, ValuationSetFactory<String> factory) {
+    public DTRA(DTGRARaw dtgra, ValuationSetFactory factory) {
         super(factory);
         this.dtgra = dtgra;
         trapState = new ProductDegenState((T) dtgra.automaton.trapState, new HashMap<>());
@@ -98,7 +98,7 @@ public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegen
         Set<ValuationSet> edges = generatePartitioning(productVs);
         for (ValuationSet vsSep : edges) {
             Set<String> v = vsSep.pickAny();
-            result += "[" + vsSep.toFormula() + "] " + statesToNumbers.get(succ(s, v)) + " {" + accTR.accSets(s, v)
+            result += "[" + vsSep.toFormula() + "] " + statesToNumbers.get(getSuccessor(s, v)) + " {" + accTR.accSets(s, v)
                     + "}\n";
         }
         return result;
@@ -119,30 +119,35 @@ public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegen
         public ProductDegenState getSuccessor(Set<String> valuation) {
             Map<Integer, Integer> awaitedIndices = new HashMap<>();
             for (int i = 0; i < accTGR.size(); i++) {
-                GRabinPairT<? extends IState<?>> grp = accTGR.get(i);
+                GRabinPairT<T> grp = accTGR.get(i);
                 int awaited = right.get(i);
                 // System.out.print("$$$"+v+awaited);
                 if (awaited == grp.right.size()) {
                     awaited = 0;
                 }
-                while (awaited < grp.right.size() && ((java.util.List<TranSet<? extends IState<?>>>) grp.right).get(awaited).containsKey(left)
-                        && ((java.util.List<TranSet<? extends IState<?>>>) grp.right).get(awaited).get(left).contains(valuation)) {
+                while (awaited < grp.right.size() && grp.right.get(awaited).containsKey(left)
+                        && grp.right.get(awaited).get(left).contains(valuation)) {
                     awaited++;
                 } // System.out.println(awaited);
                 awaitedIndices.put(i, awaited);
             }
 
-            return new ProductDegenState((T) dtgra.automaton.succ((Product.ProductState) left, valuation), awaitedIndices);
-        }
-
-        @Override
-        public boolean isAccepting(Set<String> valuation) {
-            return false;
+            return new ProductDegenState((T) dtgra.automaton.getSuccessor((Product.ProductState) left, valuation), awaitedIndices);
         }
 
         @Override
         public Set<ValuationSet> partitionSuccessors() {
             return valuationSetFactory.createAllValuationSets(); // TODO symbolic
+        }
+
+        @Override
+        public Set<String> getSensitiveAlphabet() {
+            return valuationSetFactory.getAlphabet();
+        }
+
+        @Override
+        public ValuationSetFactory getFactory() {
+            return valuationSetFactory;
         }
     }
 }

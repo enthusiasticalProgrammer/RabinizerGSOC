@@ -16,14 +16,14 @@ public abstract class ValuationSetTest {
 
     private Set<String> alphabet;
 
-    private ValuationSetFactory<String> factory;
+    private ValuationSetFactory factory;
 
     private ValuationSet universe;
     private ValuationSet empty;
     private ValuationSet abcd;
     private ValuationSet containsA;
 
-    public abstract ValuationSetFactory<String> setUpFactory(Set<String> domain);
+    public abstract ValuationSetFactory setUpFactory(Set<String> domain);
 
     @Before
     public void setUp() throws Exception {
@@ -35,7 +35,7 @@ public abstract class ValuationSetTest {
         abcd = factory.createValuationSet(ImmutableSet.of("a", "b", "c", "d"));
 
         Set<Set<String>> setContainsA = Sets.powerSet(alphabet).stream().filter(set -> set.contains("a")).collect(Collectors.toSet());
-        containsA = factory.createValuationSet2(setContainsA);
+        containsA = factory.createValuationSetSet(setContainsA);
     }
 
     @Test

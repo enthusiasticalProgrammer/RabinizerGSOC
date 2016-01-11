@@ -109,6 +109,17 @@ public class BDDValuationSet extends AbstractSet<Set<String>> implements Valuati
     }
 
     @Override
+    public boolean removeAll(Collection<?> c) {
+        if (c instanceof BDDValuationSet) {
+            BDD otherValuations = ((BDDValuationSet) c).valuations;
+            BDD newValuations = valuations.and(otherValuations.not());
+            return update(newValuations);
+        }
+
+        return super.removeAll(c);
+    }
+
+    @Override
     public ValuationSet complement() {
         return new BDDValuationSet(valuations.not(), factory);
     }
@@ -120,7 +131,7 @@ public class BDDValuationSet extends AbstractSet<Set<String>> implements Valuati
 
     @Override
     public String toString() {
-        return Sets.newHashSet(this.iterator()).toString();
+        return Sets.newHashSet(iterator()).toString();
     }
 
     private boolean update(BDD newValue) {

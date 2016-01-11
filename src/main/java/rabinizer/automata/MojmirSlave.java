@@ -12,7 +12,7 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
     final EquivalenceClass initialState;
 
     public MojmirSlave(GOperator formula, EquivalenceClassFactory equivalenceClassFactory,
-                       ValuationSetFactory<String> valuationSetFactory, Collection<Optimisation> optimisations) {
+                       ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
         super(valuationSetFactory);
         initialState = equivalenceClassFactory.createEquivalenceClass(formula.getOperand());
         eager = optimisations.contains(Optimisation.EAGER);
@@ -43,17 +43,22 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
         }
 
         @Override
-        public boolean isAccepting(Set<String> valuation) {
-            return false;
-        }
-
-        @Override
         public Set<ValuationSet> partitionSuccessors() {
             if (eager) {
                 return generatePartitioning(clazz.getRepresentative());
             } else {
                 return generatePartitioning(clazz.unfold(false).getRepresentative());
             }
+        }
+
+        @Override
+        public Set<String> getSensitiveAlphabet() {
+            return getSensitive(false);
+        }
+
+        @Override
+        public ValuationSetFactory getFactory() {
+            return valuationSetFactory;
         }
 
         @Override
