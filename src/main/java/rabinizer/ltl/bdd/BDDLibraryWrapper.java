@@ -6,11 +6,12 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import rabinizer.ltl.*;
 
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-class BDDLibraryWrapper<K extends Formula> {
+public abstract class BDDLibraryWrapper<K extends Formula> {
     protected final BDDFactory factory;
     protected final BiMap<K, BDD> mapping;
 
@@ -21,6 +22,16 @@ class BDDLibraryWrapper<K extends Formula> {
 
         factory = BDDFactory.init("java", 64 * size, 1000);
         factory.setVarNum(size);
+
+        // Silence library
+        try {
+            Method m = BDDLibraryWrapper.class.getDeclaredMethod("callback", new Class[]{int.class, Object.class});
+            factory.registerGCCallback(this, m);
+            factory.registerReorderCallback(this, m);
+            factory.registerResizeCallback(this, m);
+        } catch (SecurityException | NoSuchMethodException e) {
+            System.err.println("Failed to silence BDD library: " + e);
+        }
 
         ImmutableBiMap.Builder<K, BDD> builder = new ImmutableBiMap.Builder<>();
 
@@ -37,6 +48,10 @@ class BDDLibraryWrapper<K extends Formula> {
 
         mapping = builder.build();
         visitor = new BDDVisitor();
+    }
+
+    public void callback(int x, Object stats) {
+
     }
 
     Formula createRepresentative(BDD bdd) {
