@@ -38,6 +38,8 @@ public abstract class ModalOperator extends Formula {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
+        if (hashCode() != o.hashCode())
+            return false;
         ModalOperator that = (ModalOperator) o;
         return Objects.equals(operand, that.operand);
     }

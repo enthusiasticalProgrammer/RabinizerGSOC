@@ -106,6 +106,8 @@ public abstract class PropositionalFormula extends Formula {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
+        if (hashCode() != o.hashCode())
+            return false;
         PropositionalFormula that = (PropositionalFormula) o;
         return Objects.equals(children, that.children);
     }

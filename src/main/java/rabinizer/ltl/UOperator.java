@@ -44,6 +44,8 @@ public final class UOperator extends Formula {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
+        if (hashCode() != o.hashCode())
+            return false;
         UOperator uOperator = (UOperator) o;
         return Objects.equals(left, uOperator.left) && Objects.equals(right, uOperator.right);
     }
