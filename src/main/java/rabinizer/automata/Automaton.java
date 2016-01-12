@@ -71,7 +71,7 @@ public abstract class Automaton<S extends IState<S>> {
             S current = workList.remove();
 
             Map<ValuationSet, S> successors = current.getSuccessors();
-            Map<S, ValuationSet> reverseMap = new HashMap<>();
+            Map<S, ValuationSet> reverseMap = edgeBetween.row(current);
 
             // Insert all successors and construct reverse map.
             for (Map.Entry<ValuationSet, S> transition : successors.entrySet()) {
@@ -98,9 +98,6 @@ public abstract class Automaton<S extends IState<S>> {
                     workList.add(successor);
                 }
             }
-
-            // Populate edge between
-            edgeBetween.row(current).putAll(reverseMap);
         }
     }
 
