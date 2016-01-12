@@ -1,10 +1,17 @@
 package rabinizer.automata;
 
+import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import jhoafparser.consumer.HOAConsumer;
+import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.collections.Tuple;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
-
-import java.util.*;
 
 /**
  * @author jkretinsky
@@ -52,28 +59,6 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
         return new ProductDegenAccState(dtra.initialState, stateAcceptance.get(dtra.initialState));
     }
 
-    @Override
-    protected String accName() {
-        return "acc-name: Rabin " + accSR.size() + "\n";
-    }
-
-    @Override
-    protected String accTypeNumerical() {
-        if (accSR.isEmpty()) {
-            return "0 f";
-        }
-        String result = accSR.size() * 2 + " ";
-        for (int i = 0; i < accSR.size(); i++) {
-            result += i == 0 ? "" : " | ";
-            result += "Fin(" + 2 * i + ")&Inf(" + (2 * i + 1) + ")";
-        }
-        return result;
-    }
-
-    protected String stateAcc(ProductDegenAccState s) {
-        return accSR.accSets(s);
-    }
-
     public class ProductDegenAccState extends Tuple<IState, Set<Integer>> implements IState<ProductDegenAccState> {
 
         public ProductDegenAccState(IState pds, Set<Integer> accSets) {
@@ -102,7 +87,7 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
             IState succ = dtra.getSuccessor(left, valuation);
             Set<Integer> accSets = new HashSet<>(stateAcceptance.get(succ));
             for (int i = 0; i < accTR.size(); i++) {
-                RabinPair<? extends IState<?>> rp = (RabinPair) accTR.get(i);
+                RabinPair<? extends IState<?>> rp = accTR.get(i);
                 if (rp.left != null && rp.left.get(left) != null
                         && rp.left.get(left).contains(valuation) && !stateAcceptance.get(left).contains(2 * i)) {
                     // acceptance
@@ -138,5 +123,10 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
         public ValuationSetFactory getFactory() {
             return valuationSetFactory;
         }
+    }
+
+    @Override
+    public void toHOANew(HOAConsumer hoa) throws HOAConsumerException {
+        throw new UnsupportedOperationException();
     }
 }

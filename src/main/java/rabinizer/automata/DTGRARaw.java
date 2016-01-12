@@ -1,9 +1,21 @@
 package rabinizer.automata;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+
+import rabinizer.automata.Product.ProductState;
 import rabinizer.exec.Main;
 import rabinizer.ltl.EquivalenceClassFactory;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.GOperator;
+import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.*;
@@ -93,8 +105,32 @@ public class DTGRARaw {
      */
     public boolean checkIfEmptyAndRemoveEmptySCCs() {
         boolean result = EmptinessCheck.checkEmptiness(automaton, accTGR);
-        automaton.makeComplete();
+        this.completeAutomaton();
         return result;
+    }
+
+    public void completeAutomaton() {
+        Table<ProductState, ValuationSet, ProductState> trans = HashBasedTable.create();
+        trans.putAll(automaton.transitions);
+        automaton.makeComplete();
+        Table<ProductState, ValuationSet, ProductState> transAfter = HashBasedTable.create();
+        transAfter.putAll(automaton.transitions);
+        for (Table.Cell<ProductState, ValuationSet, ProductState> entry : trans.cellSet()) {
+            transAfter.remove(entry.getRowKey(), entry.getColumnKey());
+        }
+
+        for (Table.Cell<ProductState, ValuationSet, ProductState> entry : trans.cellSet()) {
+
+            for (GRabinPairRaw rabPair : (HashSet<GRabinPairRaw<ProductState>>) accTGR) {
+                Map<ProductState, ValuationSet> finTrans = (Map<ProductState, ValuationSet>) rabPair.left;
+                if (finTrans.get(entry.getRowKey()) != null) {
+                    ValuationSet newVal = finTrans.get(entry.getRowKey());
+                    newVal.addAll(entry.getColumnKey());
+                    finTrans.put(entry.getRowKey(), newVal);
+                }
+            }
+        }
+
     }
 
 }

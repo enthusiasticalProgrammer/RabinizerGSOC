@@ -1,13 +1,24 @@
 package rabinizer.automata;
 
-import rabinizer.collections.Tuple;
-import rabinizer.ltl.ValuationSet;
+import java.io.OutputStream;
+import java.util.ArrayList;
 import rabinizer.ltl.ValuationSetFactory;
-
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.google.common.collect.Table;
+
+import jhoafparser.consumer.HOAConsumer;
+import jhoafparser.consumer.HOAConsumerException;
+import jhoafparser.consumer.HOAConsumerPrint;
+import rabinizer.automata.DSGRA.ProductAccState;
+import rabinizer.automata.output.HOAConsumerExtended;
+import rabinizer.collections.Tuple;
+import rabinizer.ltl.ValuationSet;
 
 /**
  * @author jkretinsky
@@ -21,7 +32,7 @@ public class DSGRA extends Automaton<DSGRA.ProductAccState> implements AccAutoma
     public DSGRA(DTGRARaw dtgra) {
         super(dtgra.valuationSetFactory, true);
         this.dtgra = dtgra;
-        trapState = new ProductAccState((Product.ProductState) dtgra.automaton.trapState, new HashMap<>());
+        trapState = new ProductAccState(dtgra.automaton.trapState, new HashMap<>());
         accTGR = new AccTGR(dtgra.accTGR);
         generate();
         accSGR = new AccSGR(accTGR, this);
@@ -43,39 +54,7 @@ public class DSGRA extends Automaton<DSGRA.ProductAccState> implements AccAutoma
         for (int i = 0; i < accTGR.size(); i++) {
             accSets.put(i, new HashSet<>());
         }
-        return new ProductAccState((Product.ProductState) dtgra.automaton.initialState, accSets);
-    }
-
-    @Override
-    protected String accName() {
-        String result = "acc-name: generalized-Rabin " + accSGR.size();
-        for (GRabinPair<Set<ProductAccState>> anAccSGR : accSGR) {
-            result += " " + (anAccSGR.right.size());
-        }
-        return result + "\n";
-    }
-
-    @Override
-    protected String accTypeNumerical() {
-        if (accSGR.isEmpty()) {
-            return "0 f";
-        }
-        String result = "";
-        int sum = 0;
-        for (int i = 0; i < accSGR.size(); i++) {
-            result += i == 0 ? "" : " | ";
-            result += "Fin(" + sum + ")";
-            sum++;
-            for (Set<ProductAccState> set : accSGR.get(i).right) {
-                result += "&Inf(" + sum + ")";
-                sum++;
-            }
-        }
-        return sum + " " + result;
-    }
-
-    protected String stateAcc(ProductAccState s) {
-        return "\n{" + accSGR.accSets(s) + "}";
+        return new ProductAccState(dtgra.automaton.initialState, accSets);
     }
 
     public class ProductAccState extends Tuple<Product.ProductState, Map<Integer, Set<Integer>>> implements IState<ProductAccState> {
@@ -123,5 +102,30 @@ public class DSGRA extends Automaton<DSGRA.ProductAccState> implements AccAutoma
         public ValuationSetFactory getFactory() {
             return valuationSetFactory;
         }
+    }
+
+    @Override
+    public void toHOANew(HOAConsumer ho) throws HOAConsumerException {
+        HOAConsumerExtended hoa = new HOAConsumerExtended(ho, true);
+        hoa.setHeader(new ArrayList<>(valuationSetFactory.getAlphabet()));
+        hoa.setInitialState(this.initialState);
+        hoa.setAcceptanceCondition((List<GRabinPair<?>>) (List<?>) accSGR);
+
+        for (ProductAccState s : states) {
+            List<Integer> accSets = new ArrayList<Integer>();
+            accSets.addAll(accSGR.stream().filter(pair -> pair.left != null && pair.left.contains(s))
+                    .map(p -> hoa.getNumber(p.left)).collect(Collectors.toList()));
+            for (GRabinPair<Set<ProductAccState>> pair : accSGR) {
+                accSets.addAll(pair.right.stream().filter(inf -> inf.contains(s))
+                        .map(inf -> hoa.getNumber(inf)).collect(Collectors.toList()));
+            }
+            hoa.addState(s, accSets);
+        }
+
+        for (Table.Cell<ProductAccState, ValuationSet, ProductAccState> trans : transitions.cellSet()) {
+            hoa.addEdge(trans.getRowKey(), trans.getColumnKey().toFormula(), trans.getValue());
+        }
+        hoa.done();
+
     }
 }

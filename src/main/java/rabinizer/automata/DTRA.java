@@ -1,20 +1,32 @@
 package rabinizer.automata;
 
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+
+import jhoafparser.consumer.HOAConsumer;
+import jhoafparser.consumer.HOAConsumerException;
+import jhoafparser.consumer.HOAConsumerPrint;
+import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.Tuple;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * TODO: decouple DTRA from DTGRARaw
  *
  * @author jkretinsky
  */
-public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegenState> implements AccAutomatonInterface {
+public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegenState>
+implements AccAutomatonInterface {
 
     DTGRARaw dtgra;
     AccTGR<T> accTGR;
@@ -51,57 +63,93 @@ public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegen
     }
 
     @Override
-    protected String accName() {
-        return "acc-name: Rabin " + accTR.size() + "\n";
-    }
+    public void toHOANew(HOAConsumer ho) throws HOAConsumerException {
+        HOAConsumerExtended hoa = new HOAConsumerExtended(ho, false);
+        hoa.setHeader(new ArrayList<>(valuationSetFactory.getAlphabet()));
+        hoa.setInitialState(this.initialState);
+        hoa.setAcceptanceCondition((List<GRabinPair<?>>) (List<?>) accTR);
 
-    @Override
-    protected String accTypeNumerical() {
-        if (accTR.isEmpty()) {
-            return "0 f";
-        }
-        String result = accTR.size() * 2 + " ";
-        for (int i = 0; i < accTR.size(); i++) {
-            result += i == 0 ? "" : " | ";
-            result += "Fin(" + 2 * i + ")&Inf(" + (2 * i + 1) + ")";
-        }
-        return result;
-    }
+        List<GRabinPairT<ProductDegenState>> acc = new ArrayList<>();
 
-    @Override
-    protected String stateAcc(ProductDegenState productDegenState) {
-        return null;
-    }
+        accTR.stream().forEach(p -> acc.add(new GRabinPairT<ProductDegenState>((TranSet<ProductDegenState>) p.left,
+                Arrays.asList((TranSet<ProductDegenState>) p.right))));
 
-    @Override
-    protected String outTransToHOA(ProductDegenState s, Map<ProductDegenState, Integer> statesToNumbers) {
-        String result = "";
-        Set<Set<ValuationSet>> productVs = new HashSet<>();
-        productVs.add(transitions.row(s).keySet());
-        Set<ValuationSet> vSets;
-        for (RabinPair<? extends IState<?>> rp : accTR) {
-            vSets = new HashSet<>();
-            if (rp.left.containsKey(s)) {
-                vSets.add(rp.left.get(s));
-                vSets.add(rp.left.get(s).complement());
+        // split transitions according to accepting Sets:
+        for (GRabinPairT<ProductDegenState> pair : acc) {
+            Table<ProductDegenState, ValuationSet, ProductDegenState> toAdd = HashBasedTable.create();
+            Table<ProductDegenState, ValuationSet, ProductDegenState> toRemove = HashBasedTable.create();
+            if (pair.left != null) {
+                for (Table.Cell<ProductDegenState, ValuationSet, ProductDegenState> currTrans : transitions
+                        .cellSet()) {
+                    if (pair.left.keySet().contains(currTrans.getRowKey())) {
+                        ValuationSet valu = pair.left.get(currTrans.getRowKey()).clone();
+                        valu.retainAll(currTrans.getColumnKey());
+                        if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
+                            toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
+                            toAdd.put(currTrans.getRowKey(), valu, currTrans.getValue());
+                            ValuationSet valu2 = this.valuationSetFactory.createUniverseValuationSet();
+                            valu2.retainAll(currTrans.getColumnKey());
+                            valu2.retainAll(valu.complement());
+                            toAdd.put(currTrans.getRowKey(), valu2, currTrans.getValue());
+                        }
+                    }
+                }
+                toRemove.cellSet().stream().forEach(cell -> transitions.remove(cell.getRowKey(), cell.getColumnKey()));
+                transitions.putAll(toAdd);
+                toRemove.clear();
+                toAdd.clear();
             }
-            productVs.add(vSets);
-            vSets = new HashSet<>();
-            if (rp.right.containsKey(s)) {
-                vSets.add(rp.right.get(s));
-                vSets.add(rp.right.get(s).complement());
+            if (pair.right != null) {
+                for (TranSet<ProductDegenState> currAccSet : pair.right) {
+                    for (Table.Cell<ProductDegenState, ValuationSet, ProductDegenState> currTrans : transitions
+                            .cellSet()) {
+                        if (currAccSet.keySet().contains(currTrans.getRowKey())) {
+                            ValuationSet valu = currAccSet.get(currTrans.getRowKey()).clone();
+                            valu.retainAll(currTrans.getColumnKey());
+                            if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
+                                toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
+                                toAdd.put(currTrans.getRowKey(), valu, currTrans.getValue());
+                                ValuationSet valu2 = this.valuationSetFactory.createUniverseValuationSet();
+                                valu2.retainAll(currTrans.getColumnKey());
+                                valu2.retainAll(valu.complement());
+                                toAdd.put(currTrans.getRowKey(), valu2, currTrans.getValue());
+                            }
+                        }
+                    }
+                }
+                toRemove.cellSet().stream().forEach(cell -> transitions.remove(cell.getRowKey(), cell.getColumnKey()));
+                transitions.putAll(toAdd);
+                toRemove.clear();
+                toAdd.clear();
             }
-            productVs.add(vSets);
         }
-        vSets = new HashSet<>();
-        productVs.remove(vSets);
-        Set<ValuationSet> edges = generatePartitioning(productVs);
-        for (ValuationSet vsSep : edges) {
-            Set<String> v = vsSep.pickAny();
-            result += "[" + vsSep.toFormula() + "] " + statesToNumbers.get(getSuccessor(s, v)) + " {" + accTR.accSets(s, v)
-                    + "}\n";
+
+        for (ProductDegenState s : states) {
+            hoa.addState(s);
+            for (Table.Cell<ProductDegenState, ValuationSet, ProductDegenState> trans : transitions.cellSet()) {
+                if (trans.getRowKey().equals(s)) {
+                    List<Integer> accSets = new ArrayList<>();
+                    acc.stream()
+                    .filter(pair -> pair.left != null && pair.left.get(s) != null
+                    && pair.left.get(s).containsAll(trans.getColumnKey()))
+                    .map(p -> hoa.getNumber(p.left)).forEach(x -> accSets.add(new Integer(x)));
+
+                    List<GRabinPairT<?>> notAccepted = acc.stream()
+                            .filter(pair -> pair.left == null || pair.left.get(s) == null
+                            || !pair.left.get(s).containsAll(trans.getColumnKey()))
+                            .collect(Collectors.toList());
+                    for (GRabinPairT<ProductDegenState> pair : acc) {
+                        accSets.addAll(pair.right.stream()
+                                .filter(inf -> inf != null && inf.get(s) != null
+                                        && inf.get(s).containsAll(trans.getColumnKey()))
+                                .map(inf -> hoa.getNumber(inf)).collect(Collectors.toList()));
+                    }
+                    hoa.addEdge(trans.getRowKey(), trans.getColumnKey().toFormula(), trans.getValue(), accSets);
+                }
+            }
         }
-        return result;
+        hoa.done();
+
     }
 
     public class ProductDegenState extends Tuple<T, Map<Integer, Integer>> implements IState<ProductDegenState> {
