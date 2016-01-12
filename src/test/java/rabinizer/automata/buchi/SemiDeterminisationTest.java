@@ -1,5 +1,7 @@
 package rabinizer.automata.buchi;
 
+import jhoafparser.consumer.HOAConsumerNull;
+import jhoafparser.consumer.HOAConsumerPrint;
 import jhoafparser.parser.HOAFParser;
 import jhoafparser.parser.generated.ParseException;
 import org.junit.Test;
@@ -35,6 +37,7 @@ public class SemiDeterminisationTest {
 
         SemiDeterminization det = new SemiDeterminization(buchi);
         BuchiAutomaton semi = det.apply();
+        semi.toHOA(new HOAConsumerNull());
 
         assertEquals(8, semi.states.size());
         assertEquals(1, semi.acceptingStates.size());
