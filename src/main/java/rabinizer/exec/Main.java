@@ -82,6 +82,7 @@ public class Main {
                 + "   -z3                         : use z3 as backend\n"
                 + "   -bdd                        : use bdd as backend (default)\n"
                 + "   -emptiness-check            : perform an emptiness check and remove non-accepting sinks, per default off\n"
+                + "   -complete                   : return always a complete automaton, per default off (except for emptiness-check)"
                 + "   -in=formula                 : formula is input as an argument (default)\n"
                 + "   -in=file                    : batch processing of one or more formula per line in the file passed as an argument\n"
                 + "   -out=file                   : print automaton to file(s) (default)\n"
@@ -115,6 +116,7 @@ public class Main {
         boolean optInit = true;
         boolean z3 = false;
         boolean emptyCheck = false;
+        boolean complete = false;
 
         for (String arg : args) {
             if (arg.equals("-h") || arg.equals("--h") || arg.equals("-help") || arg.equals("--help")) {
@@ -181,6 +183,9 @@ public class Main {
                 z3 = true;
             } else if (arg.equals("-emptiness-check") || arg.equals("--emptiness-check")) {
                 emptyCheck = true;
+                complete=true;
+            }else if(arg.equals("-complete")||arg.equals("--complete")){
+                complete=true;
             } else if (arg.substring(0, 1).equals("-")) {
                 System.out.println("\n\nERROR: unknown option " + arg);
                 printUsage();
@@ -256,7 +261,7 @@ public class Main {
 
             AccAutomatonInterface automaton = computeAutomaton(input, type,
                     format != Format.SIZE || type != AutomatonType.TGR, eager, simplifyFormula, sinksOn, relSlavesOnly,
-                    optInit, z3, emptyCheck);
+                    optInit, z3, emptyCheck, complete);
 
             nonsilent("Time for construction: " + stopwatch() + " s");
             nonsilent("Outputting DGRA");
@@ -305,7 +310,7 @@ public class Main {
 
     public static AccAutomatonInterface computeAutomaton(String input, AutomatonType type, boolean computeAcc,
             boolean eager, boolean simplify, boolean sinks_on, boolean relSlavesOnly, boolean opt_init, boolean z3,
-            boolean emptyCheck) {
+            boolean emptyCheck, boolean complete) {
         LTLParser parser = new LTLParser(new StringReader(input));
 
         Formula formula = null;
@@ -335,15 +340,12 @@ public class Main {
 
         // DGRA dgra = new DTGRA(phi); for optimized
         DTGRARaw dtgra = new DTGRARaw(formula, computeAcc, eager, sinks_on, opt_init, relSlavesOnly,
-                slowerIsabelleAccForUnfolded, factory, valuationSetFactory);
-        if (emptyCheck) {
-            dtgra.checkIfEmptyAndRemoveEmptySCCs();
-        }
+                slowerIsabelleAccForUnfolded, factory, valuationSetFactory, complete, emptyCheck);
         switch (type) {
         case TGR:
             return new DTGRA(dtgra);
-        // case SGR:
-        // return new DSGRA(dtgra);
+            // case SGR:
+            // return new DSGRA(dtgra);
         case TR:
             return new DTRA(dtgra, valuationSetFactory);
         case SR:

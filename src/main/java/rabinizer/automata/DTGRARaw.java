@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
 import rabinizer.automata.Product.ProductState;
@@ -18,8 +17,6 @@ import rabinizer.ltl.GOperator;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
-import java.util.*;
-
 /**
  * @author jkretinsky
  */
@@ -28,12 +25,13 @@ public class DTGRARaw {
     final EquivalenceClassFactory equivalenceClassFactory;
     final ValuationSetFactory valuationSetFactory;
     public Product automaton;
-    public AccTGRRaw accTGR;
+    public AccTGRRaw<ProductState> accTGR;
     AccLocal accLocal;
 
     public DTGRARaw(Formula phi, boolean computeAcc, boolean unfoldedOn, boolean sinksOn,
             boolean optimizeInitialStatesOn, boolean relevantSlavesOnlyOn, boolean slowerIsabelleAccForUnfolded,
-            EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory) {
+            EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory,
+            boolean complete, boolean emptinessCheck) {
         this.valuationSetFactory = valuationSetFactory;
         this.equivalenceClassFactory = equivalenceClassFactory;
 
@@ -41,10 +39,13 @@ public class DTGRARaw {
         Main.verboseln("========================================");
         Main.nonsilent("Generating primaryAutomaton");
         Master master;
+        boolean mergingEnabled = true;
         if (unfoldedOn) { // unfold upon arrival to state
-            master = new Master(phi, equivalenceClassFactory, valuationSetFactory, EnumSet.of(Optimisation.EAGER), true);
+            master = new Master(phi, equivalenceClassFactory, valuationSetFactory, EnumSet.of(Optimisation.EAGER),
+                    mergingEnabled);
         } else {
-            master = new Master(phi, equivalenceClassFactory, valuationSetFactory, Collections.emptySet(), true);
+            master = new Master(phi, equivalenceClassFactory, valuationSetFactory, Collections.emptySet(),
+                    mergingEnabled);
         }
         master.generate();
         Main.verboseln("========================================");
@@ -90,7 +91,12 @@ public class DTGRARaw {
             }
             Main.verboseln("========================================");
             Main.nonsilent("Generating global acceptance condition");
-            accTGR = new AccTGRRaw(accLocal, valuationSetFactory, equivalenceClassFactory);
+            accTGR = new AccTGRRaw<>(accLocal, valuationSetFactory, equivalenceClassFactory);
+            if (emptinessCheck) {
+                checkIfEmptyAndRemoveEmptySCCs();
+            } else if (complete) {
+                completeAutomaton();
+            }
             Main.nonsilent("Generating optimized acceptance condition");
             accTGR.removeRedundancy();
             Main.verboseln("========================================");
@@ -110,23 +116,21 @@ public class DTGRARaw {
     }
 
     public void completeAutomaton() {
-        Table<ProductState, ValuationSet, ProductState> trans = HashBasedTable.create();
-        trans.putAll(automaton.transitions);
         automaton.makeComplete();
-        Table<ProductState, ValuationSet, ProductState> transAfter = HashBasedTable.create();
-        transAfter.putAll(automaton.transitions);
-        for (Table.Cell<ProductState, ValuationSet, ProductState> entry : trans.cellSet()) {
-            transAfter.remove(entry.getRowKey(), entry.getColumnKey());
-        }
 
-        for (Table.Cell<ProductState, ValuationSet, ProductState> entry : trans.cellSet()) {
-
-            for (GRabinPairRaw rabPair : (HashSet<GRabinPairRaw<ProductState>>) accTGR) {
-                Map<ProductState, ValuationSet> finTrans = (Map<ProductState, ValuationSet>) rabPair.left;
-                if (finTrans.get(entry.getRowKey()) != null) {
-                    ValuationSet newVal = finTrans.get(entry.getRowKey());
-                    newVal.addAll(entry.getColumnKey());
-                    finTrans.put(entry.getRowKey(), newVal);
+        if (automaton.states.contains(automaton.trapState)) {
+            for (Table.Cell<ProductState, ValuationSet, ProductState> entry : automaton.transitions.cellSet()) {
+                if (entry.getRowKey().equals(automaton.trapState)) {
+                    for (GRabinPairRaw<ProductState> rabPair : (HashSet<GRabinPairRaw<ProductState>>) accTGR) {
+                        Map<ProductState, ValuationSet> finTrans = rabPair.left;
+                        if (finTrans.get(entry.getRowKey()) != null) {
+                            ValuationSet newVal = finTrans.get(entry.getRowKey());
+                            newVal.addAll(entry.getColumnKey());
+                            finTrans.put(entry.getRowKey(), newVal);
+                        } else {
+                            finTrans.put(entry.getRowKey(), entry.getColumnKey());
+                        }
+                    }
                 }
             }
         }

@@ -1,11 +1,17 @@
 package rabinizer.automata;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.google.common.collect.Table.Cell;
+
 import rabinizer.collections.Tuple;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
-
-import java.util.*;
 
 /**
  * @author Christopher Ziegler
@@ -34,7 +40,7 @@ public class EmptinessCheck<S extends IState<S>> {
      */
     public static <S extends IState<S>> boolean checkEmptiness(Automaton<S> automaton,
                                                                Collection<? extends Tuple<TranSet<S>, Set<TranSet<S>>>> accTGR) {
-        return new EmptinessCheck(automaton, accTGR).checkIfEmpty();
+        return new EmptinessCheck<S>(automaton, accTGR).checkIfEmpty();
 
     }
 
