@@ -21,11 +21,6 @@ public abstract class ModalOperator extends Formula {
     }
 
     @Override
-    public boolean hasSubformula(Formula f) {
-        return this.equals(f) || operand.hasSubformula(f);
-    }
-
-    @Override
     // to be overrridden by GOperator
     public Set<GOperator> gSubformulas() {
         return operand.gSubformulas();
@@ -45,11 +40,6 @@ public abstract class ModalOperator extends Formula {
             return false;
         ModalOperator that = (ModalOperator) o;
         return Objects.equals(operand, that.operand);
-    }
-
-    @Override
-    protected int hashCodeOnce() {
-        return Objects.hash(operand);
     }
 
     @Override
@@ -86,6 +76,11 @@ public abstract class ModalOperator extends Formula {
     @Override
     public Optional<Literal> getAnUnguardedLiteral() {
         return Optional.empty();
+    }
+
+    @Override
+    protected int hashCodeOnce() {
+        return Objects.hash(operand);
     }
 
     protected abstract char getOperator();

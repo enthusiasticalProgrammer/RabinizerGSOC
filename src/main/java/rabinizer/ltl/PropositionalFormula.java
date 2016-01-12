@@ -60,15 +60,6 @@ public abstract class PropositionalFormula extends Formula {
     }
 
     @Override
-    public boolean ignoresG(Formula f) {
-        if (hasSubformula(f)) {
-            return children.stream().allMatch(c -> c.ignoresG(f));
-        } else {
-            return true;
-        }
-    }
-
-    @Override
     public Set<Formula> getPropositions() {
         Set<Formula> propositions = new HashSet<>();
 
@@ -86,11 +77,6 @@ public abstract class PropositionalFormula extends Formula {
     @Override
     public Set<GOperator> gSubformulas() {
         return collect(Formula::gSubformulas);
-    }
-
-    @Override
-    public boolean hasSubformula(Formula f) {
-        return this.equals(f) || anyMatch(c -> c.hasSubformula(f));
     }
 
     @Override

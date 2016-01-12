@@ -16,11 +16,6 @@ public abstract class FormulaNullary extends Formula {
     }
 
     @Override
-    public boolean hasSubformula(Formula f) {
-        return this.equals(f);
-    }
-
-    @Override
     public FormulaNullary evaluate(Set<GOperator> Gs) {
         return this;
     }

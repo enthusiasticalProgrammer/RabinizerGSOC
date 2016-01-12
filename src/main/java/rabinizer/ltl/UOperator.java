@@ -25,11 +25,6 @@ public final class UOperator extends Formula {
     }
 
     @Override
-    public boolean hasSubformula(Formula f) {
-        return this.equals(f) || left.hasSubformula(f) || right.hasSubformula(f);
-    }
-
-    @Override
     public Set<GOperator> gSubformulas() {
         Set<GOperator> r = left.gSubformulas();
         r.addAll(right.gSubformulas());

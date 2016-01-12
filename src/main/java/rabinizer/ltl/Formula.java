@@ -27,8 +27,6 @@ public abstract class Formula {
     @Override
     public abstract boolean equals(Object o);
 
-    public abstract boolean hasSubformula(Formula f);
-
     public abstract Set<GOperator> gSubformulas();
 
     public abstract Set<GOperator> topmostGs();
@@ -58,11 +56,6 @@ public abstract class Formula {
     public abstract Formula evaluate(Set<GOperator> Gs);
 
     public abstract Optional<Literal> getAnUnguardedLiteral();
-
-    // to be overridden by Boolean
-    public boolean ignoresG(Formula f) {
-        return !hasSubformula(f);
-    }
 
     /**
      * For the propositional view on LTL modal operators (F, G, U, X) and
