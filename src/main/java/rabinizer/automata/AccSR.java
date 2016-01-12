@@ -7,6 +7,7 @@ import java.util.Set;
 /**
  * @author jkretinsky
  */
+
 public class AccSR extends ArrayList<Set<DSRA.ProductDegenAccState>> {
 
     private static final long serialVersionUID = 1L;

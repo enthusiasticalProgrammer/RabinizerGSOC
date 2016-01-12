@@ -56,14 +56,14 @@ public class EmptinessCheck<S extends IState<S>> {
                         for (TranSet<S> inf : pair.right) {
                             if (inf.get(entry.getRowKey()) != null) {
                                 ValuationSet valu = inf.get(entry.getRowKey()).clone();
-                                valu.retainAll(entry.getColumnKey());
+                                valu.retainAll(entry.getColumnKey().complement());
                                 inf.put(entry.getRowKey(), valu);
                             }
                         }
                         TranSet<S> fin = pair.left;
                         if (fin.get(entry.getRowKey()) != null) {
                             ValuationSet valu = fin.get(entry.getRowKey()).clone();
-                            valu.retainAll(entry.getColumnKey());
+                            valu.retainAll(entry.getColumnKey().complement());
                             fin.put(entry.getRowKey(), valu);
                         }
                     }
@@ -88,7 +88,6 @@ public class EmptinessCheck<S extends IState<S>> {
                             pair.left.remove(s);
                         }
                     }
-                } else {
                     sccEmpty = false;
                 }
             }
@@ -165,7 +164,7 @@ public class EmptinessCheck<S extends IState<S>> {
             }
         }
         if (intersect.isEmpty()) {
-            return false;
+            return true;
         } else {
             List<Set<S>> subSCC = automaton.subSCCs(scc, intersect);
             return subSCC.stream()

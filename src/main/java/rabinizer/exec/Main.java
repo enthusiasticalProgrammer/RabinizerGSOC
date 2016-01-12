@@ -1,15 +1,31 @@
 package rabinizer.exec;
 
-import rabinizer.automata.*;
+import java.io.BufferedReader;
 import rabinizer.ltl.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringReader;
+
+import jhoafparser.consumer.HOAConsumer;
+import jhoafparser.consumer.HOAConsumerException;
+import jhoafparser.consumer.HOAConsumerPrint;
+import rabinizer.automata.AccAutomatonInterface;
+import rabinizer.automata.DSRA;
+import rabinizer.automata.DTGRA;
+import rabinizer.automata.DTGRARaw;
+import rabinizer.automata.DTRA;
+import rabinizer.ltl.ValuationSetFactory;
 import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 import rabinizer.ltl.bdd.BDDValuationSetFactory;
 import rabinizer.ltl.z3.Z3EquivalenceClassFactory;
 import rabinizer.ltl.z3.Z3ValuationSetFactory;
 import rabinizer.parser.LTLParser;
 import rabinizer.parser.ParseException;
-
-import java.io.*;
 
 /**
  * @author jkretinsky
@@ -201,8 +217,8 @@ public class Main {
         }
         BufferedReader bReader = new BufferedReader(reader);
 
-        PrintWriter writer;
-        FileWriter fw = null;
+        OutputStream writer;
+        FileOutputStream fw = null;
         if (outFile) {
             String file;
             if (!inFormula) {
@@ -223,29 +239,35 @@ public class Main {
                 break;
             }
             try {
-                fw = new FileWriter(new File(file));
+                fw = new FileOutputStream(new File(file));
             } catch (IOException e) {
                 errorMessageAndExit("IO exception when creating file " + file + e.getMessage());
             }
-            writer = new PrintWriter(fw);
+            writer = fw;
         } else { // standard output
-            writer = new PrintWriter(System.out);
+            writer = System.out;
         }
 
         String input, output;
+        HOAConsumer hoa = new HOAConsumerPrint(writer);
         while ((input = bReader.readLine()) != null) { // TODO possible
             // IOException
             stopwatch();
 
             AccAutomatonInterface automaton = computeAutomaton(input, type,
                     format != Format.SIZE || type != AutomatonType.TGR, eager, simplifyFormula, sinksOn, relSlavesOnly,
-                    optInit, z3, emptyCheck);
+                    optInit, z3, emptyCheck,complete);
 
             nonsilent("Time for construction: " + stopwatch() + " s");
             nonsilent("Outputting DGRA");
             switch (format) {
             case HOA:
-                output = automaton.toHOA();
+                try {
+                    automaton.toHOANew(hoa);
+                } catch (HOAConsumerException e) {
+                    e.printStackTrace();
+                }
+                output = "";
                 break;
             case DOT:
                 output = automaton.toDotty();
@@ -262,7 +284,9 @@ public class Main {
             default:
                 output = null;
             }
-            writer.println(output);
+            if (format != Format.HOA) {
+                writer.write(output.getBytes());
+            }
             writer.flush();
         }
         if (fw != null) {

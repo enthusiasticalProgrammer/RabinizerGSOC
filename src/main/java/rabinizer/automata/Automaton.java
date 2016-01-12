@@ -1,14 +1,29 @@
 package rabinizer.automata;
 
+import java.io.OutputStream;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.google.common.collect.Table.Cell;
+
+import jhoafparser.consumer.HOAConsumerException;
+import jhoafparser.consumer.HOAConsumerPrint;
+import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
-import java.util.*;
 import java.util.stream.Collectors;
-
 public abstract class Automaton<S extends IState<S>> {
 
     protected final ValuationSetFactory valuationSetFactory;
@@ -158,37 +173,29 @@ public abstract class Automaton<S extends IState<S>> {
         return r + "}";
     }
 
-    public String toHOA() {
-        Map<S, Integer> statesToNumbers = new HashMap<>();
+    /**
+     * This method is only there for debugging.
+     *
+     */
+    public void toHOA(OutputStream o) throws HOAConsumerException {
+        HOAConsumerExtended hoa = new HOAConsumerExtended(new HOAConsumerPrint(o), false);
+        hoa.setHeader(new ArrayList<>(valuationSetFactory.getAlphabet()));
+        hoa.setInitialState(this.initialState);
+        hoa.setAcceptanceCondition(Collections.emptyList());
 
-        statesToNumbers.put(initialState, 0);
 
-        String dot = "";
-        dot += "HOA: v1\n";
-        dot += "tool: \"Rabinizer\" \"3.1\"\n";
-        dot += "name: \"Automaton for " + initialState + "\"\n";
-        dot += "properties: deterministic\n";
-        dot += "properties: complete\n";
-        dot += "States: " + states.size() + "\n";
-        dot += "Start: " + statesToNumbers.get(initialState) + "\n";
-        dot += accName();
-        dot += "Acceptance: " + accTypeNumerical() + "\n"; // TODO: handle
-        dot += "AP: " + valuationSetFactory.getAlphabet().size();
 
-        // trivial sets
-        for (String letter : valuationSetFactory.getAlphabet()) {
-            dot += " \"" + letter + "\"";
+        for (S s : states) {
+            hoa.addState(s);
+            for (Table.Cell<S, ValuationSet, S> trans : transitions.cellSet()) {
+                if (trans.getRowKey().equals(s)) {
+                    List<Integer> accSets = null;
+
+                    hoa.addEdge(trans.getRowKey(), trans.getColumnKey().toFormula(), trans.getValue(), null);
+                }
+            }
         }
-        dot += "\n";
-        dot += "--BODY--\n";
-
-        for (S s : this.states) {
-            getId(statesToNumbers, s);
-            dot += "State: " + statesToNumbers.get(s) + " \"" + s + "\" " + stateAcc(s) + "\n";
-            dot += outTransToHOA(s, statesToNumbers);
-        }
-
-        return dot + "--END--\n";
+        hoa.done();
     }
 
     public String acc() {
@@ -213,9 +220,12 @@ public abstract class Automaton<S extends IState<S>> {
 
     /**
      * if the automaton is not complete anymore (e.g. because of optimization),
-     * this method makes it complete by adding a trap state.
+     * this method makes it complete by adding a trap state. If you use it after
+     * the generation of the Acceptance-condition, either update the
+     * Acceptance-condition or make sure, every generalized RabinPair is not a
+     * Tautology (like Fin(emptySet)&Inf(allTransitions))
      */
-    public void makeComplete() {
+    void makeComplete() {
         boolean usedTrapState = false;
 
         if (initialState == null) {
@@ -319,25 +329,6 @@ public abstract class Automaton<S extends IState<S>> {
 
     protected abstract S generateInitialState();
 
-    protected String accName() {
-        return "";
-    }
-
-    protected String accTypeNumerical() {
-        return "";
-    }
-
-    protected String stateAcc(S s) {
-        return "";
-    }
-
-    protected String outTransToHOA(S s, Map<S, Integer> statesToNumbers) {
-        String result = "";
-        for (Map.Entry<ValuationSet, S> entry : transitions.row(s).entrySet()) {
-            result += "\t[" + entry.getKey().toFormula() + "] " + getId(statesToNumbers, entry.getValue()) + "\n";
-        }
-        return result;
-    }
 
     /**
      * @param scc: an SCC for which the transitions inside need to be determined

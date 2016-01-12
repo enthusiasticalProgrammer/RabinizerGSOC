@@ -1,11 +1,14 @@
 package rabinizer.automata;
 
+import jhoafparser.consumer.HOAConsumer;
+import jhoafparser.consumer.HOAConsumerException;
+
 /**
  * @author jkretinsky
  */
 public interface AccAutomatonInterface {
 
-    String toHOA();
+    void toHOANew(HOAConsumer hoa) throws HOAConsumerException;
 
     String toDotty();
 

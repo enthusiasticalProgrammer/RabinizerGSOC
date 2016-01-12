@@ -61,7 +61,7 @@ public class Z3LibraryWrapper<F extends Formula> {
             return BooleanConstant.FALSE;
         } else if (expression.isAnd()) {
             Expr[] exp = expression.getArgs();
-            return new Disjunction(Arrays.asList(exp).stream().map(s -> createRepresentative((BoolExpr) s)));
+            return new Conjunction(Arrays.asList(exp).stream().map(s -> createRepresentative((BoolExpr) s)));
         } else if (expression.isOr()) {
             Expr[] exp = expression.getArgs();
             return new Disjunction(Arrays.asList(exp).stream().map(s -> createRepresentative((BoolExpr) s)));
