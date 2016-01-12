@@ -4,7 +4,6 @@ import java.io.OutputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -23,7 +22,6 @@ import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
-import java.util.stream.Collectors;
 public abstract class Automaton<S extends IState<S>> {
 
     protected final ValuationSetFactory valuationSetFactory;
@@ -55,18 +53,6 @@ public abstract class Automaton<S extends IState<S>> {
         valuationSetFactory = a.valuationSetFactory;
         trapState = a.trapState;
         mergingEnabled = a.mergingEnabled;
-    }
-
-    protected static <K> int getId(Map<K, Integer> map, K key) {
-        Integer r = map.get(key);
-
-        if (r == null) {
-            int id = map.size();
-            map.put(key, id);
-            return id;
-        }
-
-        return r;
     }
 
     public void generate() {
@@ -183,8 +169,6 @@ public abstract class Automaton<S extends IState<S>> {
         hoa.setInitialState(this.initialState);
         hoa.setAcceptanceCondition(Collections.emptyList());
 
-
-
         for (S s : states) {
             hoa.addState(s);
             for (Table.Cell<S, ValuationSet, S> trans : transitions.cellSet()) {
@@ -195,6 +179,7 @@ public abstract class Automaton<S extends IState<S>> {
                 }
             }
         }
+
         hoa.done();
     }
 
