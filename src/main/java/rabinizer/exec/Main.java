@@ -256,7 +256,7 @@ public class Main {
 
             AccAutomatonInterface automaton = computeAutomaton(input, type,
                     format != Format.SIZE || type != AutomatonType.TGR, eager, simplifyFormula, sinksOn, relSlavesOnly,
-                    optInit, z3, emptyCheck,complete);
+                    optInit, z3, emptyCheck);
 
             nonsilent("Time for construction: " + stopwatch() + " s");
             nonsilent("Outputting DGRA");

@@ -26,7 +26,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
 
     AccTGR<ProductState> acc;
 
-    public DTGRA(Master master, Map<GOperator, RabinSlave> slaves, ValuationSetFactory<String> factory,
+    public DTGRA(Master master, Map<GOperator, RabinSlave> slaves, ValuationSetFactory factory,
             Collection<Optimisation> optimisations) {
         super(master, slaves, factory, optimisations);
     }
