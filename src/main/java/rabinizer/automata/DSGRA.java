@@ -85,7 +85,7 @@ public class DSGRA extends Automaton<DSGRA.ProductAccState> implements AccAutoma
                     }
                 }
             }
-            return new ProductAccState((Product.ProductState) dtgra.automaton.getSuccessor(left, valuation), accSets);
+            return new ProductAccState(dtgra.automaton.getSuccessor(left, valuation), accSets);
         }
 
         @Override
@@ -109,7 +109,7 @@ public class DSGRA extends Automaton<DSGRA.ProductAccState> implements AccAutoma
         HOAConsumerExtended hoa = new HOAConsumerExtended(ho, true);
         hoa.setHeader(new ArrayList<>(valuationSetFactory.getAlphabet()));
         hoa.setInitialState(this.initialState);
-        hoa.setAcceptanceCondition((List<GRabinPair<?>>) (List<?>) accSGR);
+        hoa.setAcceptanceCondition((List<?>) accSGR);
 
         for (ProductAccState s : states) {
             List<Integer> accSets = new ArrayList<Integer>();
