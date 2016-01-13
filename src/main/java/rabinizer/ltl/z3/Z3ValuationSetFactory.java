@@ -1,20 +1,13 @@
 package rabinizer.ltl.z3;
 
-import java.util.HashSet;
-
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.microsoft.z3.BoolExpr;
+import rabinizer.ltl.*;
 
-import rabinizer.ltl.BooleanConstant;
-import rabinizer.ltl.Conjunction;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.Literal;
-import rabinizer.ltl.ValuationSet;
-import rabinizer.ltl.ValuationSetFactory;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Z3ValuationSetFactory extends Z3LibraryWrapper<Literal> implements ValuationSetFactory {
 

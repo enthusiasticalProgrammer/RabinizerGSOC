@@ -1,11 +1,10 @@
 package rabinizer.ltl.z3;
 
+import rabinizer.ltl.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
-
-import rabinizer.ltl.*;
-import com.microsoft.z3.BoolExpr;
 
 public class Z3EquivalenceClassFactory extends Z3LibraryWrapper<Formula> implements EquivalenceClassFactory {
 

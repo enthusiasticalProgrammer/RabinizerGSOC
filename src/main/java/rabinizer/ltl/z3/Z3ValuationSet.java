@@ -1,22 +1,12 @@
 package rabinizer.ltl.z3;
 
-import java.util.AbstractSet;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.Sets;
-import com.google.common.math.IntMath;
 import com.microsoft.z3.BoolExpr;
-
 import rabinizer.ltl.Formula;
-import rabinizer.ltl.FormulaFactory;
 import rabinizer.ltl.Literal;
 import rabinizer.ltl.ValuationSet;
+
+import java.util.*;
 
 public class Z3ValuationSet extends AbstractSet<Set<String>> implements ValuationSet {
     private final Z3ValuationSetFactory factory;

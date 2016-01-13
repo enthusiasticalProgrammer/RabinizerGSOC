@@ -1,10 +1,12 @@
 package rabinizer.ltl.z3;
 
-import java.util.Set;
-
 import com.microsoft.z3.BoolExpr;
+import rabinizer.ltl.Conjunction;
+import rabinizer.ltl.Disjunction;
+import rabinizer.ltl.EquivalenceClass;
+import rabinizer.ltl.Formula;
 
-import rabinizer.ltl.*;
+import java.util.Set;
 
 public class Z3EquivalenceClass implements EquivalenceClass {
 

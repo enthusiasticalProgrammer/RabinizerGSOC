@@ -1,26 +1,11 @@
 package rabinizer.ltl.z3;
 
-import java.util.HashSet;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-import com.microsoft.z3.Expr;
-import com.microsoft.z3.Model;
-import com.microsoft.z3.Solver;
-import com.microsoft.z3.Status;
+import com.microsoft.z3.*;
+import rabinizer.ltl.*;
 
-import rabinizer.ltl.BooleanConstant;
-import rabinizer.ltl.Conjunction;
-import rabinizer.ltl.Disjunction;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.Visitor;
+import java.util.*;
 
 public class Z3LibraryWrapper<F extends Formula> {
     private final Z3Visitor visitor;
