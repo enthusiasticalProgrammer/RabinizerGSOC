@@ -29,6 +29,8 @@ public class DetLimitAutomaton {
     protected final ValuationSetFactory valuationSetFactory;
 
     public DetLimitAutomaton(Formula formula, Collection<Optimisation> optimisations) {
+        formula = Simplifier.simplify(formula, Simplifier.Strategy.MODAL_PULLUP_X);
+
         initialFormula = formula;
 
         Set<Formula> propositions = new HashSet<>();
