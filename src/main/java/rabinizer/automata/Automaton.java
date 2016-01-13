@@ -164,7 +164,7 @@ public abstract class Automaton<S extends IState<S>> {
      *
      */
     public void toHOA(OutputStream o) throws HOAConsumerException {
-        HOAConsumerExtended hoa = new HOAConsumerExtended(new HOAConsumerPrint(o), false);
+        HOAConsumerExtended<S> hoa = new HOAConsumerExtended<S>(new HOAConsumerPrint(o), false);
         hoa.setHeader(new ArrayList<>(valuationSetFactory.getAlphabet()));
         hoa.setInitialState(this.initialState);
         hoa.setAcceptanceCondition(Collections.emptyList());
@@ -173,8 +173,6 @@ public abstract class Automaton<S extends IState<S>> {
             hoa.addState(s);
             for (Table.Cell<S, ValuationSet, S> trans : transitions.cellSet()) {
                 if (trans.getRowKey().equals(s)) {
-                    List<Integer> accSets = null;
-
                     hoa.addEdge(trans.getRowKey(), trans.getColumnKey().toFormula(), trans.getValue(), null);
                 }
             }
