@@ -36,7 +36,7 @@ public class HOAConsumerExtended<T> {
 
     private static AccType getAccCondition(List<GRabinPair<?>> acc) {
         if (acc.isEmpty())
-            return AccType.FALSE;
+            return AccType.NONE;
         else if (acc.size() == 1) {
             if (acc.get(0).left == null) {
                 return AccType.COBUCHI;
@@ -94,7 +94,7 @@ public class HOAConsumerExtended<T> {
     public void setAcceptanceCondition(List<GRabinPair<?>> acc) throws HOAConsumerException {
         AccType accT = getAccCondition(acc);
 
-        if (accT.equals(AccType.FALSE)) {
+        if (accT.equals(AccType.NONE)) {
             this.accType = AutomatonType.FALSE;
         }
 
@@ -206,27 +206,35 @@ public class HOAConsumerExtended<T> {
         // condition
     }
 
-    private enum AccType {
-        FALSE, BUCHI, COBUCHI, GENBUCHI, RABIN, GENRABIN;
+    public enum AccType {
+        NONE, ALL, BUCHI, COBUCHI, GENBUCHI, RABIN, GENRABIN;
 
         @Override
         public String toString() {
             switch (this) {
-                case FALSE:
-                    return "false";
+                case NONE:
+                    return "none";
+
+                case ALL:
+                    return "all";
+
                 case BUCHI:
                     return "Buchi";
+
                 case COBUCHI:
                     return "co-Buchi";
+
                 case GENBUCHI:
                     return "generalized-Buchi";
+
                 case RABIN:
                     return "Rabin";
+
                 case GENRABIN:
                     return "generalized-Rabin";
+
                 default:
                     throw new AssertionError();
-
             }
         }
     }

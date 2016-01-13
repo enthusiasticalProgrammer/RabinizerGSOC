@@ -6,6 +6,7 @@ import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.buchi.BuchiAutomaton.State;
+import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.ltl.Literal;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
@@ -22,6 +23,7 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
     private String[] integerToLetter;
     private State[] integerToState;
     private int implicitEdgeCounter;
+    private HOAConsumerExtended.AccType accType;
 
     @Override
     public boolean parserResolvesAliases() {
@@ -72,8 +74,21 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
 
     @Override
     public void provideAcceptanceName(String s, List<Object> list) throws HOAConsumerException {
-        if (!"Buchi".equals(s)) {
-            throw new HOAConsumerException("Unsupported Acceptance Name: " + s);
+        switch (s) {
+            case "all":
+                accType = HOAConsumerExtended.AccType.ALL;
+                break;
+
+            case "none":
+                accType = HOAConsumerExtended.AccType.NONE;
+                break;
+
+            case "Buchi":
+                accType = HOAConsumerExtended.AccType.BUCHI;
+                break;
+
+            default:
+                throw new HOAConsumerException("Unsupported Acceptance Name: " + s);
         }
     }
 
@@ -108,7 +123,8 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
     @Override
     public void addState(int i, String s, BooleanExpression<AtomLabel> booleanExpression, List<Integer> list) throws HOAConsumerException {
         State state = addState(s, i);
-        if (list != null) {
+
+        if (accType.equals(HOAConsumerExtended.AccType.BUCHI) && list != null) {
             if (list.size() > 1) {
                 throw new HOAConsumerException("Unsupported acceptance");
             }
@@ -116,6 +132,8 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
             if (list.contains(0)) {
                 automaton.setAccepting(state);
             }
+        } else if (accType.equals(HOAConsumerExtended.AccType.ALL)) {
+            automaton.setAccepting(state);
         }
     }
 
