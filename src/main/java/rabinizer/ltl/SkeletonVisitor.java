@@ -1,49 +1,66 @@
 package rabinizer.ltl;
 
-public class SkeletonVisitor implements Visitor<Formula> {
+import java.util.*;
+
+public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
 
     @Override
-    public Formula defaultAction(Formula formula) {
-        throw new UnsupportedOperationException();
+    public Set<Set<GOperator>> defaultAction(Formula formula) {
+        return Collections.singleton(new HashSet<>());
     }
 
     @Override
-    public Formula visit(BooleanConstant booleanConstant) {
-        return booleanConstant;
+    public Set<Set<GOperator>> visit(Conjunction conjunction) {
+        Set<Set<GOperator>> skeleton = Collections.singleton(new HashSet<>());
+
+        for (Formula child : conjunction.children) {
+            Set<Set<GOperator>> skeletonNext = new HashSet<>();
+
+            for (Set<GOperator> skeletonChild : child.accept(this)) {
+                for (Set<GOperator> skeletonElement : skeleton) {
+                    Set<GOperator> union = new HashSet<>(skeletonChild);
+                    union.addAll(skeletonElement);
+                    skeletonNext.add(union);
+                }
+            }
+
+            skeleton = skeletonNext;
+        }
+
+        return skeleton;
     }
 
     @Override
-    public Formula visit(Conjunction conjunction) {
-        return new Conjunction(conjunction.getChildren().stream().map(c -> c.accept(this)));
+    public Set<Set<GOperator>> visit(Disjunction disjunction) {
+        Set<Set<GOperator>> skeleton = new HashSet<>();
+        disjunction.children.forEach(e -> skeleton.addAll(e.accept(this)));
+        return skeleton;
     }
 
     @Override
-    public Formula visit(Disjunction disjunction) {
-        return new Disjunction(disjunction.getChildren().stream().map(c -> c.accept(this)));
-    }
-
-    @Override
-    public Formula visit(FOperator fOperator) {
+    public Set<Set<GOperator>> visit(FOperator fOperator) {
         return fOperator.operand.accept(this);
     }
 
     @Override
-    public Formula visit(GOperator gOperator) {
-        return new Conjunction(gOperator, gOperator.operand.accept(this));
+    public Set<Set<GOperator>> visit(GOperator gOperator) {
+        Set<Set<GOperator>> skeleton = new HashSet<>();
+
+        for (Set<GOperator> element : gOperator.operand.accept(this)) {
+            element.add(gOperator);
+            skeleton.add(element);
+        }
+
+        return skeleton;
     }
 
     @Override
-    public Formula visit(Literal literal) {
-        return BooleanConstant.TRUE;
+    public Set<Set<GOperator>> visit(UOperator uOperator) {
+        return new Disjunction(uOperator.right, new Conjunction(uOperator.right, uOperator.left)).accept(this);
     }
 
     @Override
-    public Formula visit(UOperator uOperator) {
-        return uOperator.right.accept(this);
-    }
-
-    @Override
-    public Formula visit(XOperator xOperator) {
+    public Set<Set<GOperator>> visit(XOperator xOperator) {
         return xOperator.operand.accept(this);
     }
 }

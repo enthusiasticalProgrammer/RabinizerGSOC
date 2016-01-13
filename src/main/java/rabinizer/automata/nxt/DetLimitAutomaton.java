@@ -63,7 +63,7 @@ public class DetLimitAutomaton {
         int accSizeCounter = 1;
 
         for (Formula initialFormula : initialFormulas) {
-            Set<Set<GOperator>> keys = optimisations.contains(Optimisation.SKELETON) ? computeSkeletonKeys(initialFormula) : Sets.powerSet(initialFormula.gSubformulas());
+            Set<Set<GOperator>> keys = optimisations.contains(Optimisation.SKELETON) ? initialFormula.accept(new SkeletonVisitor()) : Sets.powerSet(initialFormula.gSubformulas());
 
             for (Set<GOperator> key : keys) {
                 Visitor<Formula> visitor = new GSubstitutionVisitor(g -> key.contains(g) ? null : BooleanConstant.FALSE);
@@ -79,23 +79,6 @@ public class DetLimitAutomaton {
         }
 
         acceptanceConditionSize = accSizeCounter;
-    }
-
-    private Set<Set<GOperator>> computeSkeletonKeys(Formula formula) {
-        Formula skeleton = formula.accept(new SkeletonVisitor());
-        EquivalenceClass skeletonClazz = equivalenceClassFactory.createEquivalenceClass(skeleton);
-
-        Set<Set<GOperator>> keys = new HashSet<>();
-
-        for (Set<GOperator> key : Sets.powerSet(formula.gSubformulas())) {
-            EquivalenceClass keyClazz = equivalenceClassFactory.createEquivalenceClass(new Conjunction(key));
-
-            if (keyClazz.implies(skeletonClazz)) {
-                keys.add(key);
-            }
-        }
-
-        return keys;
     }
 
     private static <T> List<T> toList(Collection<T> collection) {
