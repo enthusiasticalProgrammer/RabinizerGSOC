@@ -1,5 +1,6 @@
 package rabinizer.automata.buchi;
 
+import com.google.common.collect.Sets;
 import jhoafparser.ast.AtomAcceptance;
 import jhoafparser.ast.AtomLabel;
 import jhoafparser.ast.BooleanExpression;
@@ -115,16 +116,32 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
     @Override
     public void notifyBodyStart() throws HOAConsumerException {
         automaton = new BuchiAutomaton(valuationSetFactory);
-        ensureSpaceInMap(initialState);
+
+        if (accType.equals(HOAConsumerExtended.AccType.ALL) || accType.equals(HOAConsumerExtended.AccType.NONE)) {
+            for (Set<String> valuation : Sets.powerSet(valuationSetFactory.getAlphabet())) {
+                automaton.addTransition(automaton.getInitialState(), valuation, automaton.getInitialState());
+            }
+        }
+
         automaton.getInitialState().label = Integer.toString(initialState);
-        integerToState[initialState] = automaton.getInitialState();
+
+        if (accType.equals(HOAConsumerExtended.AccType.ALL)) {
+            automaton.setAccepting(automaton.getInitialState());
+        } else if (accType.equals(HOAConsumerExtended.AccType.BUCHI)) {
+            ensureSpaceInMap(initialState);
+            integerToState[initialState] = automaton.getInitialState();
+        }
     }
 
     @Override
     public void addState(int i, String s, BooleanExpression<AtomLabel> booleanExpression, List<Integer> list) throws HOAConsumerException {
+        if (accType.equals(HOAConsumerExtended.AccType.ALL) || accType.equals(HOAConsumerExtended.AccType.NONE)) {
+            return;
+        }
+
         State state = addState(s, i);
 
-        if (accType.equals(HOAConsumerExtended.AccType.BUCHI) && list != null) {
+        if (list != null) {
             if (list.size() > 1) {
                 throw new HOAConsumerException("Unsupported acceptance");
             }
@@ -132,19 +149,25 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
             if (list.contains(0)) {
                 automaton.setAccepting(state);
             }
-        } else if (accType.equals(HOAConsumerExtended.AccType.ALL)) {
-            automaton.setAccepting(state);
         }
     }
 
     @Override
     public void addEdgeImplicit(int i, List<Integer> list, List<Integer> list1) throws HOAConsumerException {
+        if (accType.equals(HOAConsumerExtended.AccType.ALL) || accType.equals(HOAConsumerExtended.AccType.NONE)) {
+            return;
+        }
+
         addEdgeWithLabel(i, BooleanExpression.fromImplicit(implicitEdgeCounter, valuationSetFactory.getAlphabet().size()), list, list1);
         implicitEdgeCounter++;
     }
 
     @Override
     public void addEdgeWithLabel(int i, BooleanExpression<AtomLabel> booleanExpression, List<Integer> list, List<Integer> list1) throws HOAConsumerException {
+        if (accType.equals(HOAConsumerExtended.AccType.ALL) || accType.equals(HOAConsumerExtended.AccType.NONE)) {
+            return;
+        }
+
         State source = integerToState[i];
 
         if (source == null) {
