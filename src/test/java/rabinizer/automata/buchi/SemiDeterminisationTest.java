@@ -39,7 +39,7 @@ public class SemiDeterminisationTest {
         BuchiAutomaton semi = det.apply();
         semi.toHOA(new HOAConsumerNull());
 
-        assertEquals(8, semi.states.size());
+        assertEquals(7, semi.states.size());
         assertEquals(1, semi.acceptingStates.size());
         assertTrue(semi.acceptingStates.stream().noneMatch(buchi.acceptingStates::contains));
     }

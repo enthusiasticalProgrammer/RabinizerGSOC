@@ -28,8 +28,11 @@ public class SemiDeterminization {
         for (BuchiAutomaton.State f : automaton.acceptingStates) {
             for (Set<String> valuation : automaton.valuationSetFactory.createUniverseValuationSet()) {
                 BuchiAutomaton.State succ = getSuccessor(new Tuple<>(Collections.singleton(f), Collections.singleton(f)), valuation);
-                semi.addTransition(f, valuation, succ);
-                workList.add(succ);
+
+                if (succ != null) {
+                    semi.addTransition(f, valuation, succ);
+                    workList.add(succ);
+                }
             }
 
             while (!workList.isEmpty()) {
@@ -40,8 +43,11 @@ public class SemiDeterminization {
 
                     for (Set<String> valuation : automaton.valuationSetFactory.createUniverseValuationSet()) {
                         BuchiAutomaton.State successor = getSuccessor(tuple, valuation);
-                        semi.addTransition(state, valuation, successor);
-                        workList.add(successor);
+
+                        if (successor != null) {
+                            semi.addTransition(state, valuation, successor);
+                            workList.add(successor);
+                        }
                     }
 
                     done.add(state);
@@ -77,6 +83,11 @@ public class SemiDeterminization {
 
         if (!tuple.left.equals(tuple.right)) {
             tuple.left.forEach(s -> leftSuccessor.addAll(automaton.getTransitions(s, valuation)));
+        }
+
+        // Don't construct the trap state.
+        if (leftSuccessor.isEmpty() && rightSuccessor.isEmpty()) {
+            return null;
         }
 
         Tuple<Set<BuchiAutomaton.State>, Set<BuchiAutomaton.State>> prod = new Tuple<>(ImmutableSet.copyOf(leftSuccessor), ImmutableSet.copyOf(rightSuccessor));
