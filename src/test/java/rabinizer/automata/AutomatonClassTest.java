@@ -14,12 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import rabinizer.exec.Main;
-import rabinizer.ltl.EquivalenceClassFactory;
-import rabinizer.ltl.FactoryRegistry;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.FormulaFactory;
-import rabinizer.ltl.Util;
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.ltl.*;
 
 public class AutomatonClassTest {
     private boolean silent;
@@ -37,10 +32,10 @@ public class AutomatonClassTest {
 
     @Test
     public void testMasterFoldedNew() {
-        Formula f1 = FormulaFactory.mkLit("p1", false);
-        Formula f2 = FormulaFactory.mkLit("p1", false);
-        Formula f3 = FormulaFactory.mkOr(f1, f2);
-        Formula f4 = FormulaFactory.mkG(f3);
+        Formula f1 = new Literal("p1", false);
+        Formula f2 = new Literal("p1", false);
+        Formula f3 = Simplifier.simplify(new Disjunction(f1, f2), Simplifier.Strategy.PROPOSITIONAL);
+        Formula f4 = new GOperator(f3);
 
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(f4.getPropositions());
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f4.getAtoms());

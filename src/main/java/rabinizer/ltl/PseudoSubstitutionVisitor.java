@@ -41,7 +41,7 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
                 }
             }
             if (!set.equals(co.children)) {
-                return FormulaFactory.mkAnd((Formula[]) set.toArray());
+                return Simplifier.simplify(new Conjunction(set), Simplifier.Strategy.PROPOSITIONAL);
             }
             return co;
         }
@@ -62,7 +62,7 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
                 }
             }
             if (!set.equals(d.children)) {
-                return FormulaFactory.mkOr(set);
+                return Simplifier.simplify(new Disjunction(set), Simplifier.Strategy.PROPOSITIONAL);
             }
             return d;
         }
@@ -88,7 +88,7 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
             return BooleanConstant.get(c);
         } else {
             if (!c) {
-                return FormulaFactory.mkG(g.operand.accept(this, b, c));
+                return new GOperator(g.operand.accept(this, b, c));
             }
         }
         return g;

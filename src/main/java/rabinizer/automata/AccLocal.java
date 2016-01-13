@@ -58,24 +58,24 @@ public class AccLocal {
                                    EquivalenceClass consequent) {
         Formula antecedent = BooleanConstant.get(true);
         for (GOperator f : gSet) {
-            antecedent = FormulaFactory.mkAnd(antecedent, f); // TODO compute
+            antecedent = Simplifier.simplify(new Conjunction(antecedent, f), Simplifier.Strategy.PROPOSITIONAL); // TODO compute
             // these lines
             // once for all
             // states
-            antecedent = FormulaFactory.mkAnd(antecedent, f.operand.evaluate(gSet));
+            antecedent = Simplifier.simplify(new Conjunction(antecedent, f.operand.evaluate(gSet)), Simplifier.Strategy.PROPOSITIONAL);
 
             Formula slaveAntecedent = BooleanConstant.get(true);
 
             if (ps.getSecondaryMap().containsKey(f)) {
                 for (MojmirSlave.State s : (ps.getSecondaryState(f)).keySet()) {
                     if ((ps.getSecondaryState(f)).get(s) >= ranking.get(f)) {
-                        slaveAntecedent = FormulaFactory.mkAnd(slaveAntecedent, s.getClazz().getRepresentative());
+                        slaveAntecedent = Simplifier.simplify(new Conjunction(slaveAntecedent, s.getClazz().getRepresentative()), Simplifier.Strategy.PROPOSITIONAL);
                     }
                 }
             }
 
             slaveAntecedent = slaveAntecedent.temporalStep(v).evaluate(gSet);
-            antecedent = FormulaFactory.mkAnd(antecedent, slaveAntecedent);
+            antecedent = Simplifier.simplify(new Conjunction(antecedent, slaveAntecedent), Simplifier.Strategy.PROPOSITIONAL);
         }
 
         EquivalenceClass antClazz = equivalenceClassFactory.createEquivalenceClass(antecedent);

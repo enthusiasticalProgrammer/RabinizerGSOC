@@ -101,8 +101,7 @@ public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
         } else if (fo instanceof Literal) {
             return g.operand.accept(this, fo);
         } else if (fo instanceof UOperator) {
-            return g.accept(this, ((UOperator) fo).right) || g.accept(this, FormulaFactory
-                    .mkAnd(FormulaFactory.mkG(((UOperator) fo).left), FormulaFactory.mkF(((UOperator) fo).right)));
+            return g.accept(this, ((UOperator) fo).right) || g.accept(this, Simplifier.simplify(new Conjunction(new GOperator(((UOperator) fo).left), new FOperator(((UOperator) fo).right)), Simplifier.Strategy.PROPOSITIONAL));
         } else if (fo instanceof XOperator) {
             return g.accept(this, ((ModalOperator) fo).operand) || g.operand.accept(this, fo);
         }
@@ -141,7 +140,7 @@ public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
             if (((Disjunction) fo).children.stream().anyMatch(ch -> u.accept(this, ch)))
                 return true;
         }
-        return FormulaFactory.mkOr(u.left, u.right).accept(SimplifyAggressivelyVisitor.getVisitor()).accept(this, fo);
+        return Simplifier.simplify(new Disjunction(u.left, u.right), Simplifier.Strategy.PROPOSITIONAL).accept(SimplifyAggressivelyVisitor.getVisitor()).accept(this, fo);
     }
 
     @Override

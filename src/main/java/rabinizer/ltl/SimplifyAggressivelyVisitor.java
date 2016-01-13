@@ -75,7 +75,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
         toRemove.clear();
         toAdd.clear();
 
-        return FormulaFactory.mkAnd(set);
+        return Simplifier.simplify(new Conjunction(set), Simplifier.Strategy.PROPOSITIONAL);
     }
 
     @Override
@@ -127,7 +127,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
         toRemove.clear();
         toAdd.clear();
 
-        return FormulaFactory.mkOr((Formula[]) set.toArray());
+        return Simplifier.simplify(new Disjunction(set), Simplifier.Strategy.PROPOSITIONAL);
     }
 
     @Override
@@ -136,17 +136,17 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
         if (child instanceof BooleanConstant) {
             return child;
         } else if (child instanceof UOperator) {
-            return FormulaFactory.mkF(((UOperator) child).right).accept(this);
+            return new FOperator(((UOperator) child).right).accept(this);
         } else if (child instanceof FOperator) {
             return child;
         } else if (child instanceof XOperator) {
-            return FormulaFactory.mkX(FormulaFactory.mkF(((ModalOperator) child).operand)).accept(this);
+            return new XOperator(new FOperator(((ModalOperator) child).operand)).accept(this);
         } else if (child instanceof Disjunction) {
-            ArrayList<Formula> newChildren = ((PropositionalFormula) child).children.stream().map(FormulaFactory::mkF)
+            ArrayList<Formula> newChildren = ((PropositionalFormula) child).children.stream().map(FOperator::new)
                     .collect(Collectors.toCollection(ArrayList::new));
-            return FormulaFactory.mkOr(newChildren).accept(this);
+            return Simplifier.simplify(new Disjunction(newChildren), Simplifier.Strategy.PROPOSITIONAL).accept(this);
         } else {
-            return FormulaFactory.mkF(child);
+            return new FOperator(child);
         }
     }
 
@@ -156,9 +156,9 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
         if (child instanceof BooleanConstant || child instanceof GOperator) {
             return child;
         } else if (child instanceof XOperator) {
-            return FormulaFactory.mkX(FormulaFactory.mkG(((ModalOperator) child).operand)).accept(this);
+            return new XOperator(new GOperator(((ModalOperator) child).operand)).accept(this);
         }
-        return FormulaFactory.mkG(child);
+        return new GOperator(child);
     }
 
     @Override
@@ -173,23 +173,23 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
                 return r;
             } else if (l instanceof BooleanConstant) {
                 if (((BooleanConstant) l).value) {
-                    return FormulaFactory.mkF(r).accept(this);
+                    return new FOperator(r).accept(this);
                 } else {
                     return r;
                 }
             } else if (r instanceof FOperator) {
                 return r;
             } else if (l instanceof FOperator) {
-                return FormulaFactory.mkOr(r, FormulaFactory.mkF(FormulaFactory.mkAnd(FormulaFactory.mkX(r), l)))
+                return Simplifier.simplify(new Disjunction(r, new FOperator(Simplifier.simplify(new Conjunction(new XOperator(r), l), Simplifier.Strategy.PROPOSITIONAL))), Simplifier.Strategy.PROPOSITIONAL)
                         .accept(this);
             } else if (l.accept(imp, r)) {
                 return r;
             } else if (l instanceof GOperator) {
-                return FormulaFactory.mkOr(FormulaFactory.mkAnd(l, FormulaFactory.mkF(r)), r).accept(this);
+                return Simplifier.simplify(new Disjunction(Simplifier.simplify(new Conjunction(l, new FOperator(r)), Simplifier.Strategy.PROPOSITIONAL), r), Simplifier.Strategy.PROPOSITIONAL).accept(this);
             } else if (l instanceof XOperator && r instanceof XOperator) {
-                return FormulaFactory.mkX(FormulaFactory.mkU(((ModalOperator) l).operand, ((ModalOperator) r).operand));
+                return new XOperator(new UOperator(((ModalOperator) l).operand, ((ModalOperator) r).operand));
             }
-            return FormulaFactory.mkU(l, r);
+            return new UOperator(l, r);
         }
     }
 
@@ -203,8 +203,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
         } else if (child instanceof BooleanConstant) {
             return child;
         } else {
-            return FormulaFactory.mkX(child);
+            return new XOperator(child);
         }
     }
-
 }
