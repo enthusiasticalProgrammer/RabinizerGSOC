@@ -16,7 +16,8 @@ repositories {
 }
 
 dependencies {
-    compile 'com.google.guava:guava:18.0'
+    compile 'com.google.guava:guava:19.0'
+    compile 'org.jetbrains:annotations:15.0'
     compile files('lib/javabdd_repackaged-1.0b2.jar')
     compile files('lib/jhoafparser-1.1.1.jar')
     compile files('lib/z3/bin/com.microsoft.z3.jar')
