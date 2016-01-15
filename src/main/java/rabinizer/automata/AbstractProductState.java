@@ -3,6 +3,7 @@ package rabinizer.automata;
 import com.google.common.collect.*;
 import rabinizer.automata.nxt.Util;
 import rabinizer.ltl.ValuationSet;
+import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.*;
 import java.util.function.Function;
@@ -126,7 +127,7 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
     private Map<ValuationSet, Map<K, S>> secondaryJointMove() {
         Map<K, ? extends Automaton<S>> secondary = getSecondaryAutomata();
         Map<ValuationSet, Map<K, S>> current = new HashMap<>();
-        current.put(createUniverseValuationSet(), Collections.emptyMap());
+        current.put(getFactory().createUniverseValuationSet(), Collections.emptyMap());
 
         for (Map.Entry<K, S> entry : secondaryStates.entrySet()) {
             K key = entry.getKey();
@@ -171,5 +172,5 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
 
     protected abstract T constructState(P primaryState, Map<K, S> secondaryStates);
 
-    protected abstract ValuationSet createUniverseValuationSet();
+    protected abstract ValuationSetFactory getFactory();
 }

@@ -79,11 +79,6 @@ public class Product extends Automaton<Product.ProductState> {
         }
 
         @Override
-        protected ValuationSet createUniverseValuationSet() {
-            return valuationSetFactory.createUniverseValuationSet();
-        }
-
-        @Override
         public ValuationSetFactory getFactory() {
             return valuationSetFactory;
         }
