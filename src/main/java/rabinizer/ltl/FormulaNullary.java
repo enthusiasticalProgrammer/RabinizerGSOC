@@ -27,7 +27,7 @@ public abstract class FormulaNullary extends Formula {
 
     @Override
     public Set<GOperator> topmostGs() {
-        return Collections.emptySet();
+        return Sets.newHashSet();
     }
 
 }

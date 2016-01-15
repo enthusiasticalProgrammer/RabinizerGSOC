@@ -66,10 +66,6 @@ public abstract class ModalOperator extends Formula {
         return this;
     }
 
-    public Formula getOperand() {
-        return operand;
-    }
-
     @Override
     public Formula evaluate(Set<GOperator> Gs) {
         return this;

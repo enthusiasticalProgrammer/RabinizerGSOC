@@ -14,7 +14,7 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
     public MojmirSlave(GOperator formula, EquivalenceClassFactory equivalenceClassFactory,
                        ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
         super(valuationSetFactory);
-        initialState = equivalenceClassFactory.createEquivalenceClass(formula.getOperand());
+        initialState = equivalenceClassFactory.createEquivalenceClass(formula.operand);
         eager = optimisations.contains(Optimisation.EAGER);
         label = formula;
     }

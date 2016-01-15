@@ -150,13 +150,13 @@ public class Z3LibraryWrapper<F extends Formula> {
 
         @Override
         public BoolExpr visit(Conjunction c) {
-            if (c.getChildren().contains(BooleanConstant.FALSE)) {
+            if (c.children.contains(BooleanConstant.FALSE)) {
                 return FALSE;
             }
 
-            BoolExpr[] b = new BoolExpr[c.getChildren().size()];
+            BoolExpr[] b = new BoolExpr[c.children.size()];
             int index = 0;
-            for (Formula elem : c.getChildren()) {
+            for (Formula elem : c.children) {
                 b[index++] = elem.accept(this);
             }
             return ctx.mkAnd(b);
@@ -164,14 +164,14 @@ public class Z3LibraryWrapper<F extends Formula> {
 
         @Override
         public BoolExpr visit(Disjunction d) {
-            if (d.getChildren().contains(BooleanConstant.TRUE)) {
+            if (d.children.contains(BooleanConstant.TRUE)) {
                 return TRUE;
             }
 
-            BoolExpr[] b = new BoolExpr[d.getChildren().size()];
+            BoolExpr[] b = new BoolExpr[d.children.size()];
 
             int index = 0;
-            for (Formula elem : d.getChildren()) {
+            for (Formula elem : d.children) {
                 b[index++] = elem.accept(this);
             }
             return ctx.mkOr(b);

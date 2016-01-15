@@ -73,7 +73,7 @@ public final class Simplifier {
                 }
 
                 if (child instanceof PropositionalFormula && shouldUnfold.test((PropositionalFormula) child)) {
-                    flattSet.addAll(((PropositionalFormula) child).getChildren());
+                    flattSet.addAll(((PropositionalFormula) child).children);
                 } else {
                     flattSet.add(child);
                 }
@@ -84,7 +84,7 @@ public final class Simplifier {
 
         @Override
         public Formula visit(Conjunction conjunction) {
-            Stream<Formula> workStream = conjunction.getChildren().stream().map(e -> e.accept(this));
+            Stream<Formula> workStream = conjunction.children.stream().map(e -> e.accept(this));
             Set<Formula> set = PropositionalSimplifier.flatten(workStream, e -> e instanceof Conjunction, BooleanConstant.FALSE,
                     BooleanConstant.TRUE);
 
@@ -105,7 +105,7 @@ public final class Simplifier {
 
         @Override
         public Formula visit(Disjunction disjunction) {
-            Stream<Formula> workStream = disjunction.getChildren().stream().map(e -> e.accept(this));
+            Stream<Formula> workStream = disjunction.children.stream().map(e -> e.accept(this));
             Set<Formula> set = PropositionalSimplifier.flatten(workStream, e -> e instanceof Disjunction, BooleanConstant.TRUE,
                     BooleanConstant.FALSE);
 

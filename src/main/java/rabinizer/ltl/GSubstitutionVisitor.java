@@ -17,12 +17,12 @@ public class GSubstitutionVisitor implements Visitor<Formula> {
 
     @Override
     public Formula visit(Conjunction c) {
-        return new Conjunction(c.getChildren().stream().map(e -> e.accept(this)));
+        return new Conjunction(c.children.stream().map(e -> e.accept(this)));
     }
 
     @Override
     public Formula visit(Disjunction d) {
-        return new Disjunction(d.getChildren().stream().map(e -> e.accept(this)));
+        return new Disjunction(d.children.stream().map(e -> e.accept(this)));
     }
 
     @Override

@@ -100,7 +100,7 @@ public class BDDEquivalenceClass implements EquivalenceClass {
             }
 
             if (support instanceof Conjunction) {
-                return ((Conjunction) support).getChildren();
+                return ((Conjunction) support).children;
             }
 
             if (support instanceof Disjunction) {

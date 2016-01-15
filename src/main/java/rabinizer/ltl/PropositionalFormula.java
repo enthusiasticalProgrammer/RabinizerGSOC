@@ -12,7 +12,7 @@ import java.util.stream.Stream;
  */
 public abstract class PropositionalFormula extends Formula {
 
-    protected final Set<Formula> children;
+    public final Set<Formula> children;
 
     protected PropositionalFormula(Collection<? extends Formula> children) {
         this.children = ImmutableSet.copyOf(children);
@@ -112,10 +112,6 @@ public abstract class PropositionalFormula extends Formula {
         return Objects.equals(children, that.children);
     }
 
-    public Set<Formula> getChildren() {
-        return children;
-    }
-
     @Override
     public Set<String> getAtoms() {
         return collect(Formula::getAtoms);
@@ -154,10 +150,6 @@ public abstract class PropositionalFormula extends Formula {
         Set<E> set = new HashSet<>(children.size());
         children.forEach(c -> set.addAll(f.apply(c)));
         return set;
-    }
-
-    private boolean anyMatch(Predicate<Formula> p) {
-        return children.stream().anyMatch(p);
     }
 
     private boolean allMatch(Predicate<Formula> p) {
