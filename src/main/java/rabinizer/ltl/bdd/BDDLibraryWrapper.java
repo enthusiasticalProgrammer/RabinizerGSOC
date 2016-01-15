@@ -1,7 +1,7 @@
 package rabinizer.ltl.bdd;
 
 import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.HashBiMap;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import rabinizer.ltl.*;
@@ -33,21 +33,20 @@ public abstract class BDDLibraryWrapper<K extends Formula> {
             System.err.println("Failed to silence BDD library: " + e);
         }
 
-        ImmutableBiMap.Builder<K, BDD> builder = new ImmutableBiMap.Builder<>();
+        mapping = HashBiMap.create(domain.size());
+        visitor = new BDDVisitor();
 
         int var = 0;
+
         for (K proposition : domain) {
             BDD pos = factory.ithVar(var);
             BDD neg = factory.nithVar(var);
 
-            builder.put(proposition, pos);
-            builder.put((K) proposition.not(), neg);
+            mapping.put(proposition, pos);
+            mapping.put((K) proposition.not(), neg);
 
             var++;
         }
-
-        mapping = builder.build();
-        visitor = new BDDVisitor();
     }
 
     public void callback(int x, Object stats) {
@@ -129,11 +128,16 @@ public abstract class BDDLibraryWrapper<K extends Formula> {
         }
 
         @Override
-        public BDD defaultAction(Formula f) {
-            BDD value = mapping.get(f);
+        public BDD defaultAction(Formula formula) {
+            BDD value = mapping.get(formula);
 
             if (value == null) {
-                throw new IllegalArgumentException("The BDDLibrary was not initialised with proposition: " + f);
+                int var = factory.extVarNum(1);
+
+                mapping.put((K) formula, factory.ithVar(var));
+                mapping.put((K) formula.not(), factory.nithVar(var));
+
+                return factory.ithVar(var);
             }
 
             return value.id();
