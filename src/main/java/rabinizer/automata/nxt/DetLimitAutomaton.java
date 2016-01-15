@@ -77,7 +77,10 @@ public class DetLimitAutomaton {
                 }
 
                 if (isImpatientState(semiClazz)) {
-                    DetComponent.State initialState = detComponent.jump(semiClazz, key);
+                    Visitor<Formula> fullVisitor = new GSubstitutionVisitor(g -> BooleanConstant.get(key.contains(g)));
+                    EquivalenceClass fullClazz = equivalenceClassFactory.createEquivalenceClass(Simplifier.simplify(initialFormula.accept(fullVisitor), Simplifier.Strategy.MODAL_EXT));
+
+                    DetComponent.State initialState = detComponent.jump(fullClazz, key);
                     detComponent.generate(initialState);
                     initialStates.add(initialState);
                 } else {
@@ -284,7 +287,6 @@ public class DetLimitAutomaton {
                 for (Map.Entry<ValuationSet, State> entry : transitions.row(productState).entrySet()) {
                     State successor = entry.getValue();
                     ValuationSet valuationSet = entry.getKey();
-                    BooleanExpression<AtomLabel> edgeLabel = valuationSet.toFormula().accept(FormulaConverter.converter);
 
                     List<Integer> accSet = null;
 
