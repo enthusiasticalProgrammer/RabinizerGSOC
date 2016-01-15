@@ -2,7 +2,6 @@ package rabinizer.ltl;
 
 import org.junit.Before;
 import org.junit.Test;
-import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;

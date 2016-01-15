@@ -1,10 +1,10 @@
 package rabinizer.ltl.z3;
 
-import java.util.Set;
-
 import rabinizer.ltl.EquivalenceClassFactory;
 import rabinizer.ltl.EquivalenceClassTest;
 import rabinizer.ltl.Formula;
+
+import java.util.Set;
 
 public class Z3EquivalenceClassTest extends EquivalenceClassTest {
 

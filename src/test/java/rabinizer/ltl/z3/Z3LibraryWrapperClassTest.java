@@ -1,12 +1,12 @@
 package rabinizer.ltl.z3;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
-
 import com.microsoft.z3.BoolExpr;
-
+import org.junit.Test;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.Util;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 
 public class Z3LibraryWrapperClassTest {
 

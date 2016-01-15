@@ -1,7 +1,6 @@
 package rabinizer.automata.buchi;
 
 import jhoafparser.consumer.HOAConsumerNull;
-import jhoafparser.consumer.HOAConsumerPrint;
 import jhoafparser.parser.HOAFParser;
 import jhoafparser.parser.generated.ParseException;
 import org.junit.Test;
