@@ -8,8 +8,6 @@ public class Tuple<L, R> {
     public final R right;
 
     public Tuple(L l, R r) {
-        Objects.nonNull(l);
-        Objects.nonNull(r);
         left = l;
         right = r;
     }
