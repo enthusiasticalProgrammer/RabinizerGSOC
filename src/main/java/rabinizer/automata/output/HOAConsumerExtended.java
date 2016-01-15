@@ -7,8 +7,10 @@ import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.GRabinPair;
-import rabinizer.ltl.*;
-import rabinizer.ltl.Visitor;
+import rabinizer.ltl.Conjunction;
+import rabinizer.ltl.Formula;
+import rabinizer.ltl.Literal;
+import rabinizer.ltl.Simplifier;
 
 import java.util.*;
 
@@ -17,30 +19,32 @@ public class HOAConsumerExtended<T> {
     public static final BooleanExpression TRUE = new BooleanExpression<>(BooleanExpression.Type.EXP_TRUE, null, null);
     public static final BooleanExpression FALSE = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
     private final HOAConsumer hoa;
+
     private final Map<T, Integer> stateNumbers;
     private final Map<Object, Integer> acceptanceNumbers;
+
     private AutomatonType accType;
-    private boolean body = false;
+    private boolean body;
     private List<String> alphabet;
 
-    public HOAConsumerExtended(HOAConsumer hoa, boolean stateBased) {
+    public HOAConsumerExtended(HOAConsumer hoa, AutomatonType type) {
         this.hoa = hoa;
         stateNumbers = new HashMap<>();
         acceptanceNumbers = new HashMap<>();
-        if (stateBased) {
-            accType = AutomatonType.STATE;
-        } else {
-            accType = AutomatonType.TRANSITION;
-        }
+        accType = type;
     }
 
     private static AccType getAccCondition(List<GRabinPair<?>> acc) {
-        if (acc.isEmpty())
+        if (acc.isEmpty()) {
             return AccType.NONE;
-        else if (acc.size() == 1) {
+        }
+
+        if (acc.size() == 1) {
             if (acc.get(0).left == null) {
                 return AccType.COBUCHI;
-            } else if (acc.get(0).right == null) {
+            }
+
+            if (acc.get(0).right == null) {
                 return AccType.BUCHI;
             }
         }
@@ -48,11 +52,12 @@ public class HOAConsumerExtended<T> {
         if (acc.stream().allMatch(pair -> pair.left == null)) {
             return AccType.GENBUCHI;
         }
+
         if (acc.stream().allMatch(pair -> pair.right == null || pair.right.size() <= 1)) {
             return AccType.RABIN;
         }
-        return AccType.GENRABIN;
 
+        return AccType.GENRABIN;
     }
 
     /**
@@ -60,10 +65,10 @@ public class HOAConsumerExtended<T> {
      *
      * @throws HOAConsumerException
      */
-    public void setHeader(Collection<String> APs) throws HOAConsumerException {
+    public void setHeader(Formula formula, Collection<String> APs) throws HOAConsumerException {
         hoa.notifyHeaderStart("v1");
         hoa.setTool("Rabinizer", "infty");
-        hoa.setName("Automaton for " + "some formula");
+        hoa.setName("Automaton for " + formula);
 
         alphabet = ImmutableList.copyOf(APs);
         hoa.setAPs(alphabet);
@@ -93,11 +98,6 @@ public class HOAConsumerExtended<T> {
      */
     public void setAcceptanceCondition(List<GRabinPair<?>> acc) throws HOAConsumerException {
         AccType accT = getAccCondition(acc);
-
-        if (accT.equals(AccType.NONE)) {
-            this.accType = AutomatonType.FALSE;
-        }
-
         hoa.provideAcceptanceName(accT.toString(), Collections.emptyList());
         setAccCond(acc);
     }
@@ -107,8 +107,23 @@ public class HOAConsumerExtended<T> {
         hoa.setAcceptanceCondition(1, new BooleanExpression<>(mkInf(0)));
     }
 
+    public void setGenBuchiAcceptance(int i) throws HOAConsumerException {
+        hoa.provideAcceptanceName(AccType.GENBUCHI.toString(), Collections.singletonList(i));
+        hoa.setAcceptanceCondition(i, mkInfAnd(i));
+    }
+
+    private static BooleanExpression<AtomAcceptance> mkInfAnd(int j) {
+        BooleanExpression<AtomAcceptance> conjunction = new BooleanExpression<>(mkInf(0));
+
+        for (int i = 1; i < j; i++) {
+            conjunction = conjunction.and(new BooleanExpression<>(mkInf(i)));
+        }
+
+        return conjunction;
+    }
+
     public void addEdge(T begin, Formula label, T end, List<Integer> accSets) throws HOAConsumerException {
-        hoa.addEdgeWithLabel(stateNumbers.get(begin), Simplifier.simplify(label).accept(new Converter()), Collections.singletonList(getStateId(end)), accSets);
+        hoa.addEdgeWithLabel(stateNumbers.get(begin), Simplifier.simplify(label).accept(new FormulaConverter()), Collections.singletonList(getStateId(end)), accSets);
     }
 
     public void addEdge(T begin, Formula label, T end) throws HOAConsumerException {
@@ -131,18 +146,19 @@ public class HOAConsumerExtended<T> {
         addState(s, null);
     }
 
+    T currentState;
+
     public void addState(T s, List<Integer> accSets) throws HOAConsumerException {
         if (!body) {
             hoa.notifyBodyStart();
             body = true;
         }
 
+        currentState = s;
+
         hoa.addState(getStateId(s), s.toString(), null, accSets);
     }
 
-    /**
-     * Designed for acceptance sets as inputs
-     */
     public Integer getNumber(Object o) {
         if (acceptanceNumbers.containsKey(o)) {
             return acceptanceNumbers.get(o);
@@ -153,6 +169,11 @@ public class HOAConsumerExtended<T> {
 
     public void done() throws HOAConsumerException {
         hoa.notifyEnd();
+    }
+
+    public void stateDone() throws HOAConsumerException {
+        hoa.notifyEndOfState(getStateId(currentState));
+        currentState = null;
     }
 
     private void setAccCond(List<GRabinPair<?>> acc) throws HOAConsumerException {
@@ -193,17 +214,16 @@ public class HOAConsumerExtended<T> {
         return stateNumbers.get(state);
     }
 
-    private AtomAcceptance mkInf(int i) {
+    private static AtomAcceptance mkInf(int i) {
         return new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_INF, i, false);
     }
 
-    private AtomAcceptance mkFin(int i) {
+    private static AtomAcceptance mkFin(int i) {
         return new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_FIN, i, false);
     }
 
-    private enum AutomatonType {
-        STATE, TRANSITION, FALSE; // False means it is an empty acceptance
-        // condition
+    public enum AutomatonType {
+        STATE, TRANSITION;
     }
 
     public enum AccType {
@@ -238,40 +258,4 @@ public class HOAConsumerExtended<T> {
             }
         }
     }
-
-    private class Converter implements Visitor<BooleanExpression<AtomLabel>> {
-        @Override
-        public BooleanExpression<AtomLabel> defaultAction(Formula f) {
-            throw new IllegalArgumentException("Cannot convert " + f + " to BooleanExpression.");
-        }
-
-        @Override
-        public BooleanExpression<AtomLabel> visit(BooleanConstant b) {
-            return new BooleanExpression<>(b.value);
-        }
-
-        @Override
-        public BooleanExpression<AtomLabel> visit(Conjunction c) {
-            return c.getChildren().stream().map(e -> e.accept(this)).reduce(new BooleanExpression<>(true),
-                    (e1, e2) -> e1.and(e2));
-        }
-
-        @Override
-        public BooleanExpression<AtomLabel> visit(Disjunction d) {
-            return d.getChildren().stream().map(e -> e.accept(this)).reduce(new BooleanExpression<>(false),
-                    (e1, e2) -> e1.or(e2));
-        }
-
-        @Override
-        public BooleanExpression<AtomLabel> visit(Literal l) {
-            BooleanExpression<AtomLabel> atom = new BooleanExpression<>(AtomLabel.createAlias(l.getAtom()));
-
-            if (l.getNegated()) {
-                atom = atom.not();
-            }
-
-            return atom;
-        }
-    }
-
 }

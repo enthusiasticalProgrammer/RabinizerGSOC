@@ -1,14 +1,18 @@
 package rabinizer.automata.nxt;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
-import jhoafparser.ast.AtomAcceptance;
 import jhoafparser.ast.AtomLabel;
 import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import rabinizer.automata.*;
+import rabinizer.automata.output.FormulaConverter;
+import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.ltl.*;
 import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 import rabinizer.ltl.bdd.BDDValuationSetFactory;
@@ -17,183 +21,217 @@ import java.util.*;
 
 public class DetLimitAutomaton {
 
-    protected final Formula initialFormula;
-    protected final Set<Master.State> initialStates;
+    protected static final JumpVisitor JUMP_VISITOR = new JumpVisitor();
 
+    protected final Formula initialFormula;
+    protected final Set<IState<?>> initialStates;
     protected final DetComponent detComponent;
     protected final NonDetComponent nonDetComponent;
-
     protected final int acceptanceConditionSize;
-
     protected final EquivalenceClassFactory equivalenceClassFactory;
     protected final ValuationSetFactory valuationSetFactory;
 
+    public DetLimitAutomaton(Formula formula) {
+        this(formula, EnumSet.allOf(Optimisation.class));
+    }
+
     public DetLimitAutomaton(Formula formula, Collection<Optimisation> optimisations) {
-        formula = Simplifier.simplify(formula, Simplifier.Strategy.MODAL_PULLUP_X);
+        formula = Simplifier.simplify(formula, Simplifier.Strategy.MODAL_EXT);
 
         initialFormula = formula;
 
-        Set<Formula> propositions = new HashSet<>();
-
-        for (Set<GOperator> gSet : Sets.powerSet(formula.gSubformulas())) {
-            Visitor<Formula> visitor = new GSubstitutionVisitor(g -> gSet.contains(g) ? null : BooleanConstant.FALSE);
-            Visitor<Formula> visitor2 = new GSubstitutionVisitor(g -> gSet.contains(g) ? BooleanConstant.TRUE : BooleanConstant.FALSE);
-
-            collectPropositions(propositions, Simplifier.simplify(formula.accept(visitor)).getPropositions());
-            collectPropositions(propositions, Simplifier.simplify(formula.accept(visitor2)).getPropositions());
-        }
-
-        equivalenceClassFactory = new BDDEquivalenceClassFactory(propositions);
+        equivalenceClassFactory = new BDDEquivalenceClassFactory(initialFormula.getPropositions());
         valuationSetFactory = new BDDValuationSetFactory(initialFormula.getAtoms());
 
         nonDetComponent = new NonDetComponent(equivalenceClassFactory, valuationSetFactory, optimisations);
-        detComponent = new DetComponent(nonDetComponent, valuationSetFactory, optimisations);
+        detComponent = new DetComponent(new DetLimitMaster(BooleanConstant.TRUE, equivalenceClassFactory, valuationSetFactory, optimisations, false), valuationSetFactory, optimisations);
 
         Set<Formula> initialFormulas;
 
         if (optimisations.contains(Optimisation.OR_BREAKUP) && formula instanceof Disjunction) {
             Disjunction dis = (Disjunction) formula;
-            initialFormulas = dis.getChildren();
+            initialFormulas = dis.children;
         } else {
             initialFormulas = Collections.singleton(formula);
         }
 
         initialStates = new HashSet<>();
 
+        boolean isUniversal = false;
         int accSizeCounter = 1;
 
         for (Formula initialFormula : initialFormulas) {
             Set<Set<GOperator>> keys = optimisations.contains(Optimisation.SKELETON) ? initialFormula.accept(new SkeletonVisitor()) : Sets.powerSet(initialFormula.gSubformulas());
 
             for (Set<GOperator> key : keys) {
-                Visitor<Formula> visitor = new GSubstitutionVisitor(g -> key.contains(g) ? null : BooleanConstant.FALSE);
-                EquivalenceClass initial = equivalenceClassFactory.createEquivalenceClass(Simplifier.simplify(initialFormula.accept(visitor)));
+                Visitor<Formula> semiVisitor = new GSubstitutionVisitor(g -> key.contains(g) ? null : BooleanConstant.FALSE);
+                EquivalenceClass semiClazz = equivalenceClassFactory.createEquivalenceClass(Simplifier.simplify(initialFormula.accept(semiVisitor), Simplifier.Strategy.MODAL_EXT));
 
-                if (!initial.isFalse()) {
-                    Master.State initialState = nonDetComponent.generateInitialState(initial);
+                if (semiClazz.isTrue()) {
+                    isUniversal = true;
+                    break;
+                }
+
+                if (semiClazz.isFalse()) {
+                    continue;
+                }
+
+                if (isImpatientState(semiClazz)) {
+                    DetComponent.State initialState = detComponent.jump(semiClazz, key);
+                    detComponent.generate(initialState);
+                    initialStates.add(initialState);
+                } else {
+                    Master.State initialState = nonDetComponent.generateInitialState(semiClazz);
                     nonDetComponent.generate(initialState);
                     initialStates.add(initialState);
-                    accSizeCounter = Math.max(accSizeCounter, key.size() + 1);
                 }
+
+                accSizeCounter = Math.max(accSizeCounter, key.size());
+            }
+
+            if (isUniversal) {
+                initialStates.clear();
+                break;
+            }
+        }
+
+        if (initialStates.isEmpty()) {
+            accSizeCounter = 1;
+
+            if (isUniversal) {
+                initialStates.add(detComponent.jump(equivalenceClassFactory.getTrue(), Collections.emptySet()));
+            } else {
+                initialStates.add(detComponent.jump(equivalenceClassFactory.getFalse(), Collections.emptySet()));
             }
         }
 
         acceptanceConditionSize = accSizeCounter;
     }
 
-    private static <T> List<T> toList(Collection<T> collection) {
-        return new ArrayList<>(collection);
-    }
-
-    private static AtomAcceptance mkInf(int i) {
-        return new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_INF, i, false);
-    }
-
-    private static BooleanExpression<AtomAcceptance> mkInfAnd(int j) {
-        BooleanExpression<AtomAcceptance> conjunction = new BooleanExpression<>(mkInf(0));
-
-        for (int i = 1; i < j; i++) {
-            conjunction = conjunction.and(new BooleanExpression<>(mkInf(i)));
+    private boolean isImpatientState(EquivalenceClass clazz) {
+        if (clazz.isTrue()) {
+            return true;
         }
 
-        return conjunction;
+        Formula representative = clazz.getRepresentative();
+        return representative.accept(JUMP_VISITOR);
+    }
+
+    private static boolean isPatientState(EquivalenceClass clazz) {
+        Formula representative = clazz.getRepresentative();
+        return !representative.topmostGs().equals(representative.gSubformulas());
     }
 
     public int size() {
-        return detComponent.size() + nonDetComponent.size() - 1;
+        return detComponent.size() + nonDetComponent.size();
     }
 
-    public void toHOA(final HOAConsumer consumer) throws HOAConsumerException {
-        Map<Object, Integer> ids = new HashMap<>();
+    public void toHOA(HOAConsumer c) throws HOAConsumerException {
+        HOAConsumerExtended<IState<?>> consumer = new HOAConsumerExtended<>(c, HOAConsumerExtended.AutomatonType.TRANSITION);
 
-        consumer.notifyHeaderStart("v1");
-        consumer.setTool("Rabinizer", "infty");
-        consumer.setName("Automaton for " + initialFormula);
+        consumer.setHeader(initialFormula, valuationSetFactory.getAlphabet());
+        consumer.setGenBuchiAcceptance(acceptanceConditionSize);
 
-        for (Master.State e : initialStates) {
-            consumer.addStartStates(Collections.singletonList(Util.getId(ids, e)));
+        for (IState<?> e : initialStates) {
+            consumer.setInitialState(e);
         }
 
-        consumer.provideAcceptanceName("generalized-Buchi", Collections.singletonList(acceptanceConditionSize));
-        consumer.setAcceptanceCondition(acceptanceConditionSize, mkInfAnd(acceptanceConditionSize));
-
-        List<String> alphabetList = toList(valuationSetFactory.getAlphabet());
-
-        consumer.setAPs(alphabetList);
-        for (String letter : alphabetList) {
-            consumer.addAlias(letter, new BooleanExpression<>(AtomLabel.createAPIndex(alphabetList.indexOf(letter))));
-        }
-
-        consumer.notifyBodyStart();
-
-        nonDetComponent.toHOA(consumer, ids);
-        detComponent.toHOA(consumer, ids);
-
-        consumer.notifyEnd();
+        nonDetComponent.toHOA(consumer);
+        detComponent.toHOA(consumer);
+        consumer.done();
     }
 
-    private static void collectPropositions(Set<Formula> set, Set<Formula> newElements) {
-        for (Formula element : newElements) {
-            if (!set.contains(element.not())) {
-                set.add(element);
+    static class JumpVisitor implements Visitor<Boolean> {
+
+        @Override
+        public Boolean defaultAction(Formula formula) {
+            return formula.gSubformulas().isEmpty();
+        }
+
+        @Override
+        public Boolean visit(Conjunction conjunction) {
+            return conjunction.children.stream().allMatch(e -> e.accept(this));
+        }
+
+        @Override
+        public Boolean visit(Disjunction disjunction) {
+            return disjunction.children.stream().allMatch(e -> e.accept(this));
+        }
+
+        @Override
+        public Boolean visit(GOperator gOperator) {
+            if (gOperator.gSubformulas().isEmpty()) {
+                return true;
             }
 
-            if (element instanceof UOperator) {
-                collectPropositions(set, Collections.singleton(new FOperator(((UOperator) element).right)));
-            }
+            return gOperator.operand.accept(this);
         }
     }
 
     class NonDetComponent extends DetLimitMaster {
-        final private boolean delayedJump;
-
         NonDetComponent(EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
             super(BooleanConstant.TRUE, equivalenceClassFactory, valuationSetFactory, optimisations, true);
             generate();
-            delayedJump = optimisations.contains(Optimisation.DELAYED_JUMP);
         }
 
-        protected void toHOA(HOAConsumer consumer, Map<Object, Integer> stateIDs) throws HOAConsumerException {
-            Set<Master.State> delayedStates = new HashSet<>();
+        @Override
+        public int size() {
+            return Math.max(states.size() - 1, 0);
+        }
 
-            if (delayedJump) {
-                for (Master.State init : initialStates) {
-                    for (Set<Master.State> SCC : SCCAnalyser.SCCs(this, init)) {
-                        if (SCC.size() == 1) {
-                            Master.State singleState = SCC.iterator().next();
-                            if (!isLooping(singleState)) {
-                                delayedStates.add(singleState);
+        void toHOA(HOAConsumerExtended<IState<?>> consumer) throws HOAConsumerException {
+            for (Master.State state : states) {
+                // Skip accepting sink
+                if (state.getClazz().isTrue()) {
+                    continue;
+                }
+
+                // Jump is required.
+                final boolean impatient = isImpatientState(state.getClazz());
+                // Jump can be delayed.
+                final boolean patient = isPatientState(state.getClazz());
+
+                consumer.addState(state);
+
+                for (Set<String> valuation : Sets.powerSet(valuationSetFactory.getAlphabet())) {
+                    Master.State successor = getSuccessor(state, valuation);
+                    EquivalenceClass successorClazz;
+
+                    if (successor != null) {
+                        successorClazz = successor.getClazz();
+                    } else if (impatient) {
+                        successorClazz = step(state.getClazz(), valuation);
+                    } else {
+                        continue;
+                    }
+
+                    if (successorClazz.isTrue()) {
+                        DetComponent.State acceptingSink = detComponent.jump(successorClazz, Collections.emptySet());
+                        consumer.addEdge(state, valuation, acceptingSink);
+                    } else {
+                        // We can stay in the non-deterministic component.
+                        if (!impatient) {
+                            consumer.addEdge(state, valuation, successor);
+                        }
+
+                        // Waiting may be hurtful. Let's add a jump to the deterministic component.
+                        if (!patient) {
+                            DetComponent.State successor2 = detComponent.jump(successorClazz, state.getClazz().getRepresentative().gSubformulas(), valuation);
+
+                            if (successor2 != null) {
+                                consumer.addEdge(state, valuation, successor2);
                             }
                         }
                     }
                 }
+
+                consumer.stateDone();
             }
+        }
 
-            for (Master.State masterState : states) {
-                // Skip accepting sink
-                if (masterState.getClazz().isTrue()) {
-                    continue;
-                }
-
-                consumer.addState(Util.getId(stateIDs, masterState), masterState.toString(), null, null);
-
-                for (Map.Entry<ValuationSet, Master.State> entry : transitions.row(masterState).entrySet()) {
-                    BooleanExpression<AtomLabel> edgeLabel = Simplifier.simplify(entry.getKey().toFormula()).accept(Util.converter);
-                    Master.State successor = entry.getValue();
-
-                    if (successor.getClazz().isTrue()) {
-                        DetComponent.State acceptingSink = detComponent.jump(successor, Collections.emptySet());
-                        consumer.addEdgeWithLabel(Util.getId(stateIDs, masterState), edgeLabel, Collections.singletonList(Util.getId(stateIDs, acceptingSink)), null);
-                    } else  {
-                        consumer.addEdgeWithLabel(Util.getId(stateIDs, masterState), edgeLabel, Collections.singletonList(Util.getId(stateIDs, successor)), null);
-
-                        if (!delayedStates.contains(successor) && !successor.getClazz().getRepresentative().gSubformulas().isEmpty()) {
-                            DetComponent.State initialState = detComponent.jump(successor, successor.getClazz().getRepresentative().gSubformulas());
-                            consumer.addEdgeWithLabel(Util.getId(stateIDs, masterState), edgeLabel, Collections.singletonList(Util.getId(stateIDs, initialState)), null);
-                        }
-                    }
-                }
-            }
+        @Override
+        protected boolean suppressEdge(EquivalenceClass current, Set<String> valuation, EquivalenceClass successor) {
+            return successor.isFalse() || isImpatientState(current);
         }
     }
 
@@ -201,20 +239,14 @@ public class DetLimitAutomaton {
 
         protected final DetLimitMaster primaryAutomaton;
         protected final Map<Set<GOperator>, Map<GOperator, DetLimitSlave>> secondaryAutomata;
-        protected final Map<Set<GOperator>, EquivalenceClass> GConjunctions;
         protected final Collection<Optimisation> optimisations;
         protected final Table<Set<GOperator>, GOperator, Integer> acceptanceIndexMapping;
         protected final Table<DetLimitSlave.State, ValuationSet, Optional<Integer>> acceptanceCache;
 
         public DetComponent(DetLimitMaster primaryAutomaton, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
             super(valuationSetFactory, false);
-
             this.primaryAutomaton = primaryAutomaton;
-
-            GConjunctions = new HashMap<>();
             secondaryAutomata = new HashMap<>();
-
-            GConjunctions.put(Collections.emptySet(), equivalenceClassFactory.getTrue());
             secondaryAutomata.put(Collections.emptySet(), Collections.emptyMap());
             this.optimisations = optimisations;
             acceptanceIndexMapping = HashBasedTable.create();
@@ -226,42 +258,33 @@ public class DetLimitAutomaton {
             throw new UnsupportedOperationException();
         }
 
-        protected State jump(Master.State master, Set<GOperator> keys) {
-            Map<GOperator, DetLimitSlave> secondaryAutomataMap = secondaryAutomata.get(keys);
+        protected State jump(EquivalenceClass master, Set<GOperator> keys) {
+            return jump(master, keys, null);
+        }
 
-            if (secondaryAutomataMap == null) {
-                secondaryAutomataMap = new HashMap<>(keys.size());
+        protected @Nullable State jump(@NotNull EquivalenceClass master, @NotNull Set<GOperator> keys, @Nullable Set<String> valuation) {
+            Master.State primaryState = getPrimaryState(master, keys, valuation);
+            Map<GOperator, DetLimitSlave.State> secondaryStateMap = getSecondaryStateMap(keys, valuation);
 
-                Visitor<Formula> slaveVisitor = new GSubstitutionVisitor(g -> keys.contains(g) ? BooleanConstant.TRUE : abort());
-
-                int i = 1;
-
-                for (GOperator key : keys) {
-                    DetLimitSlave slave = new DetLimitSlave(Simplifier.simplify(key.getOperand().accept(slaveVisitor)), equivalenceClassFactory, valuationSetFactory, optimisations);
-                    secondaryAutomataMap.put(key, slave);
-                    acceptanceIndexMapping.put(keys, key, i);
-                    i++;
-                }
-
-                GConjunctions.put(keys, equivalenceClassFactory.createEquivalenceClass(new Conjunction(keys)));
-                secondaryAutomata.put(keys, secondaryAutomataMap);
+            if (primaryState == null || secondaryStateMap == null) {
+                return null;
             }
 
-            State state = new State(primaryAutomaton.createState(master.getClazz()), secondaryAutomataMap, null);
+            State state = new State(primaryState, secondaryStateMap);
             generate(state);
             return state;
         }
 
-        protected void toHOA(HOAConsumer consumer, Map<Object, Integer> stateIDs) throws HOAConsumerException {
+        protected void toHOA(HOAConsumerExtended<IState<?>> consumer) throws HOAConsumerException {
             for (State productState : states) {
-                consumer.addState(Util.getId(stateIDs, productState), productState.toString(), null, null);
+                consumer.addState(productState);
 
                 Map<ValuationSet, List<Integer>> accSetMap = productState.getAcceptance();
 
                 for (Map.Entry<ValuationSet, State> entry : transitions.row(productState).entrySet()) {
                     State successor = entry.getValue();
                     ValuationSet valuationSet = entry.getKey();
-                    BooleanExpression<AtomLabel> edgeLabel = valuationSet.toFormula().accept(Util.converter);
+                    BooleanExpression<AtomLabel> edgeLabel = valuationSet.toFormula().accept(FormulaConverter.converter);
 
                     List<Integer> accSet = null;
 
@@ -276,37 +299,92 @@ public class DetLimitAutomaton {
                         throw new IllegalStateException();
                     }
 
-                    for (int i = productState.getSecondaryMap().size() + 1; i < acceptanceConditionSize; i++) {
-                       accSet.add(i);
-                    }
-
-                    consumer.addEdgeWithLabel(Util.getId(stateIDs, productState), edgeLabel, Collections.singletonList(Util.getId(stateIDs, successor)), accSet);
-
+                    consumer.addEdge(productState, valuationSet.toFormula(), successor, accSet);
                 }
+
+                consumer.stateDone();
             }
         }
 
-        private BooleanConstant abort() {
-            throw new IllegalArgumentException();
+        private @NotNull Map<GOperator, DetLimitSlave> getSecondaryAutomatonMap(Set<GOperator> keys) {
+            Map<GOperator, DetLimitSlave> secondaryAutomatonMap = secondaryAutomata.get(keys);
+
+            if (secondaryAutomatonMap == null) {
+                secondaryAutomatonMap = new HashMap<>(keys.size());
+                Visitor<Formula> visitor = new GSubstitutionVisitor(g -> BooleanConstant.get(keys.contains(g)));
+
+                int i = 0;
+
+                for (GOperator key : keys) {
+                    Formula initialFormula = Simplifier.simplify(key.operand.accept(visitor), Simplifier.Strategy.MODAL_EXT);
+                    DetLimitSlave slave = new DetLimitSlave(initialFormula, equivalenceClassFactory, valuationSetFactory, optimisations);
+                    secondaryAutomatonMap.put(key, slave);
+                    acceptanceIndexMapping.put(keys, key, i);
+                    i++;
+                }
+
+                secondaryAutomata.put(keys, secondaryAutomatonMap);
+            }
+
+            return secondaryAutomatonMap;
+        }
+
+        private @Nullable Map<GOperator, DetLimitSlave.State> getSecondaryStateMap(Set<GOperator> keys, Set<String> valuation) {
+            Map<GOperator, DetLimitSlave> secondaryAutomatonMap = getSecondaryAutomatonMap(keys);
+            Map<GOperator, DetLimitSlave.State> secondaryStateMap = new HashMap<>(keys.size());
+
+            for (Map.Entry<GOperator, DetLimitSlave> entry : secondaryAutomatonMap.entrySet()) {
+                DetLimitSlave slave = entry.getValue();
+                DetLimitSlave.State state = slave.getInitialState();
+
+                if (valuation != null) {
+                    state = slave.getSuccessor(state, valuation);
+                }
+
+                if (state == null) {
+                    return null;
+                }
+
+                secondaryStateMap.put(entry.getKey(), state);
+            }
+
+            return secondaryStateMap;
+        }
+
+        private @Nullable Master.State getPrimaryState(@NotNull EquivalenceClass master, @NotNull Set<GOperator> keys, @Nullable Set<String> valuation) {
+            Visitor<Formula> visitor = new GSubstitutionVisitor(g -> BooleanConstant.get(keys.contains(g)));
+
+            if (valuation != null) {
+                Formula formula = Simplifier.simplify(master.getRepresentative().accept(visitor), Simplifier.Strategy.MODAL_EXT);
+                Conjunction facts = new Conjunction(keys.stream().map(key -> Simplifier.simplify(key.operand.accept(visitor), Simplifier.Strategy.MODAL_EXT)));
+                Visitor<Formula> evaluateVisitor = new EvaluateVisitor(equivalenceClassFactory, facts);
+                formula = Simplifier.simplify(formula.accept(evaluateVisitor), Simplifier.Strategy.MODAL_EXT);
+
+                Master.State preState = primaryAutomaton.generateInitialState(equivalenceClassFactory.createEquivalenceClass(formula));
+                return primaryAutomaton.getSuccessor(preState, valuation);
+            }
+
+            Formula formula = Simplifier.simplify(master.getRepresentative().accept(visitor), Simplifier.Strategy.MODAL_EXT);
+            EquivalenceClass clazz = equivalenceClassFactory.createEquivalenceClass(formula);
+            return primaryAutomaton.generateInitialState(clazz);
         }
 
         public class State extends AbstractProductState<Master.State, GOperator, DetLimitSlave.State, State> implements IState<State> {
 
-            public State(Master.State primaryState, Map<GOperator, DetLimitSlave.State> secondaryStates) {
+            public State(@NotNull Master.State primaryState, @NotNull Map<GOperator, DetLimitSlave.State> secondaryStates) {
                 super(primaryState, secondaryStates);
             }
 
-            public State(Master.State primaryState, Map<GOperator, DetLimitSlave> secondaryAutomata, Void fix) {
-                super(primaryState, secondaryAutomata.keySet(), key -> secondaryAutomata.get(key).getInitialState());
-            }
-
             public Map<ValuationSet, List<Integer>> getAcceptance() {
-                EquivalenceClass slaveConjunction = secondaryStates.values().stream().map(s -> s.next.and(s.current)).reduce(equivalenceClassFactory.getTrue(), EquivalenceClass::and);
-                EquivalenceClass antecedent = GConjunctions.get(secondaryStates.keySet()).and(slaveConjunction);
-                boolean primaryAccepts = antecedent.implies(primaryState.getClazz());
+                ValuationSet universe = valuationSetFactory.createUniverseValuationSet();
+
+                // Don't generate acceptance condition, if we didn't reached true.
+                if (!primaryState.getClazz().isTrue()) {
+                    return Collections.singletonMap(universe, Collections.emptyList());
+                }
 
                 Map<ValuationSet, List<Integer>> current = new HashMap<>();
-                current.put(createUniverseValuationSet(), primaryAccepts ? Collections.singletonList(0) : Collections.emptyList());
+                current.put(universe, Lists.newArrayList());
 
                 Map<GOperator, DetLimitSlave> secondaryAuto = secondaryAutomata.get(secondaryStates.keySet());
                 Map<GOperator, Integer> accMap = acceptanceIndexMapping.row(secondaryStates.keySet());
@@ -339,18 +417,18 @@ public class DetLimitAutomaton {
                     current = next;
                 }
 
+                for (List<Integer> value : current.values()) {
+                    for (int i = getSecondaryMap().size(); i < acceptanceConditionSize; i++) {
+                        value.add(i);
+                    }
+                }
+
                 return current;
             }
 
             @Override
-            public State getSuccessor(Set<String> valuation) {
-                State successor = super.getSuccessor(valuation);
-
-                if (successor != null && successor.primaryState.getClazz().isTrue()) {
-                    return new State(successor.primaryState, Collections.emptyMap());
-                }
-
-                return successor;
+            public ValuationSetFactory getFactory() {
+                return valuationSetFactory;
             }
 
             @Override
@@ -366,16 +444,6 @@ public class DetLimitAutomaton {
             @Override
             protected State constructState(Master.State primaryState, Map<GOperator, DetLimitSlave.State> secondaryStates) {
                 return new State(primaryState, secondaryStates);
-            }
-
-            @Override
-            protected ValuationSet createUniverseValuationSet() {
-                return valuationSetFactory.createUniverseValuationSet();
-            }
-
-            @Override
-            public ValuationSetFactory getFactory() {
-                return valuationSetFactory;
             }
         }
     }

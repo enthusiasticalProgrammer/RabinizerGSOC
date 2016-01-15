@@ -92,9 +92,9 @@ public class BuchiAutomaton {
     }
 
     public void toHOA(HOAConsumer c) throws HOAConsumerException {
-        HOAConsumerExtended<State> consumer = new HOAConsumerExtended<>(c, true);
+        HOAConsumerExtended<State> consumer = new HOAConsumerExtended<>(c, HOAConsumerExtended.AutomatonType.STATE);
 
-        consumer.setHeader(valuationSetFactory.getAlphabet());
+        consumer.setHeader(null, valuationSetFactory.getAlphabet());
         consumer.setInitialState(initialState);
         consumer.setBuchiAcceptance();
 

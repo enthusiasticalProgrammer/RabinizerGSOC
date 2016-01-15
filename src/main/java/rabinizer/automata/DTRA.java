@@ -1,12 +1,7 @@
 package rabinizer.automata;
 
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.HashBasedTable;
@@ -25,12 +20,11 @@ import rabinizer.ltl.ValuationSetFactory;
  *
  * @author jkretinsky
  */
-public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegenState>
-implements AccAutomatonInterface {
+public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegenState> implements AccAutomatonInterface {
 
     DTGRARaw dtgra;
-    AccTGR<T> accTGR;
-    AccTR<T> accTR;
+    AccTGR<DTRA<T>.ProductDegenState> accTGR;
+    AccTR<DTRA<T>.ProductDegenState> accTR;
 
     public DTRA(DTGRARaw dtgra, ValuationSetFactory factory) {
         super(factory);
@@ -64,15 +58,14 @@ implements AccAutomatonInterface {
 
     @Override
     public void toHOANew(HOAConsumer ho) throws HOAConsumerException {
-        HOAConsumerExtended hoa = new HOAConsumerExtended(ho, false);
-        hoa.setHeader(new ArrayList<>(valuationSetFactory.getAlphabet()));
+        HOAConsumerExtended<DTRA<T>.ProductDegenState> hoa = new HOAConsumerExtended(ho, HOAConsumerExtended.AutomatonType.TRANSITION);
+        hoa.setHeader(null, valuationSetFactory.getAlphabet());
         hoa.setInitialState(this.initialState);
         hoa.setAcceptanceCondition((List<GRabinPair<?>>) (List<?>) accTR);
 
         List<GRabinPairT<ProductDegenState>> acc = new ArrayList<>();
 
-        accTR.stream().forEach(p -> acc.add(new GRabinPairT<ProductDegenState>((TranSet<ProductDegenState>) p.left,
-                Arrays.asList((TranSet<ProductDegenState>) p.right))));
+        accTR.stream().forEach(p -> acc.add(new GRabinPairT<ProductDegenState>(p.left, Collections.singletonList(p.right))));
 
         // split transitions according to accepting Sets:
         for (GRabinPairT<ProductDegenState> pair : acc) {
@@ -167,7 +160,7 @@ implements AccAutomatonInterface {
         public ProductDegenState getSuccessor(Set<String> valuation) {
             Map<Integer, Integer> awaitedIndices = new HashMap<>();
             for (int i = 0; i < accTGR.size(); i++) {
-                GRabinPairT<T> grp = accTGR.get(i);
+                GRabinPairT<ProductDegenState> grp = accTGR.get(i);
                 int awaited = right.get(i);
                 // System.out.print("$$$"+v+awaited);
                 if (awaited == grp.right.size()) {

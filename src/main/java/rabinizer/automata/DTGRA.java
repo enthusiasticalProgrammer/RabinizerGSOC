@@ -55,10 +55,10 @@ public class DTGRA extends Product implements AccAutomatonInterface {
 
     @Override
     public void toHOANew(HOAConsumer ho) throws HOAConsumerException {
-        HOAConsumerExtended hoa = new HOAConsumerExtended(ho, false);
-        hoa.setHeader(new ArrayList<>(valuationSetFactory.getAlphabet()));
+        HOAConsumerExtended hoa = new HOAConsumerExtended(ho, HOAConsumerExtended.AutomatonType.TRANSITION);
+        hoa.setHeader(null, valuationSetFactory.getAlphabet());
         hoa.setInitialState(this.initialState);
-        hoa.setAcceptanceCondition((List<GRabinPair<?>>) (List<?>) acc);
+        hoa.setAcceptanceCondition(acc);
 
         //split transitions according to accepting Sets:
         for(GRabinPairT<Product.ProductState> pair: acc){

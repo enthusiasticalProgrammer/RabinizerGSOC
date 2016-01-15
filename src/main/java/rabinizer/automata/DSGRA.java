@@ -106,8 +106,8 @@ public class DSGRA extends Automaton<DSGRA.ProductAccState> implements AccAutoma
 
     @Override
     public void toHOANew(HOAConsumer ho) throws HOAConsumerException {
-        HOAConsumerExtended hoa = new HOAConsumerExtended(ho, true);
-        hoa.setHeader(new ArrayList<>(valuationSetFactory.getAlphabet()));
+        HOAConsumerExtended hoa = new HOAConsumerExtended(ho, HOAConsumerExtended.AutomatonType.STATE);
+        hoa.setHeader(null, valuationSetFactory.getAlphabet());
         hoa.setInitialState(this.initialState);
         hoa.setAcceptanceCondition((List<?>) accSGR);
 

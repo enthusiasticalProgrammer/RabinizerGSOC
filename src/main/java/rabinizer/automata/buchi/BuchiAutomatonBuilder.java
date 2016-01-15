@@ -68,9 +68,15 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
 
     @Override
     public void setAcceptanceCondition(int i, BooleanExpression<AtomAcceptance> booleanExpression) throws HOAConsumerException {
-        if (i != 1) {
-            throw new HOAConsumerException("Unsupported Acceptance Conditions: " + i + ' ' + booleanExpression);
+        if ((i == 0) && (accType.equals(HOAConsumerExtended.AccType.NONE) || accType.equals(HOAConsumerExtended.AccType.ALL))) {
+            return;
         }
+
+        if ((i == 1) && (accType.equals(HOAConsumerExtended.AccType.BUCHI))) {
+            return;
+        }
+
+        throw new HOAConsumerException("Unsupported Acceptance Conditions: " + i + ' ' + booleanExpression);
     }
 
     @Override
@@ -115,6 +121,10 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
 
     @Override
     public void notifyBodyStart() throws HOAConsumerException {
+        if (valuationSetFactory == null) {
+            valuationSetFactory = new BDDValuationSetFactory(Collections.emptySet());
+        }
+
         automaton = new BuchiAutomaton(valuationSetFactory);
 
         if (accType.equals(HOAConsumerExtended.AccType.ALL) || accType.equals(HOAConsumerExtended.AccType.NONE)) {

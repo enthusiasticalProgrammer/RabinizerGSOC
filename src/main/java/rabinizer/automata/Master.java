@@ -33,6 +33,18 @@ public class Master extends Automaton<Master.State> {
         }
     }
 
+    protected EquivalenceClass step(EquivalenceClass clazz, Set<String> valuation) {
+        if (eager) {
+            return clazz.temporalStep(valuation).unfold(true);
+        } else {
+            return clazz.unfold(true).temporalStep(valuation);
+        }
+    }
+
+    protected boolean suppressEdge(EquivalenceClass current, Set<String> valuation, EquivalenceClass successor) {
+        return successor.isFalse();
+    }
+
     public class State extends AbstractFormulaState implements IState<State> {
 
         public State(EquivalenceClass clazz) {
@@ -41,15 +53,9 @@ public class Master extends Automaton<Master.State> {
 
         @Override
         public State getSuccessor(Set<String> valuation) {
-            EquivalenceClass successor;
+            EquivalenceClass successor = step(clazz, valuation);
 
-            if (eager) {
-                successor = clazz.temporalStep(valuation).unfold(true);
-            } else {
-                successor = clazz.unfold(true).temporalStep(valuation);
-            }
-
-            if (successor.isFalse()) {
+            if (suppressEdge(clazz, valuation, successor)) {
                 return null;
             }
 

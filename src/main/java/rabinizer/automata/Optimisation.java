@@ -5,7 +5,7 @@ public enum Optimisation {
     EAGER,
 
     /* DetLimit */
-    COVER, SKELETON, DELAYED_JUMP, OR_BREAKUP,
+    COVER, SKELETON, OR_BREAKUP,
 
     /* Rabinizer */
     ALL_SLAVES

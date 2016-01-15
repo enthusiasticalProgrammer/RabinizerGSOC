@@ -1,26 +1,22 @@
 package rabinizer.automata;
 
 import java.io.OutputStream;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import com.google.common.collect.Table.Cell;
 
+import com.google.common.collect.Table.Cell;
 import jhoafparser.consumer.HOAConsumerException;
 import jhoafparser.consumer.HOAConsumerPrint;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.ltl.Visitor;
 
 public abstract class Automaton<S extends IState<S>> {
 
@@ -30,7 +26,7 @@ public abstract class Automaton<S extends IState<S>> {
     protected final Set<S> states;
     protected final Table<S, ValuationSet, S> transitions;
     protected final Table<S, S, ValuationSet> edgeBetween;
-    protected S initialState;
+    protected @Nullable S initialState;
     protected S trapState;
 
     protected Automaton(ValuationSetFactory valuationSetFactory) {
@@ -45,7 +41,7 @@ public abstract class Automaton<S extends IState<S>> {
         edgeBetween = HashBasedTable.create();
     }
 
-    protected Automaton(Automaton<S> a) {
+    protected Automaton(@NotNull Automaton<S> a) {
         states = a.states;
         transitions = a.transitions;
         initialState = a.initialState;
@@ -61,7 +57,7 @@ public abstract class Automaton<S extends IState<S>> {
 
     public void generate(S initialState) {
         // Return if already generated
-        if (!states.add(initialState)) {
+        if (states.contains(initialState)) {
             return;
         }
 
@@ -70,12 +66,23 @@ public abstract class Automaton<S extends IState<S>> {
 
         while (!workList.isEmpty()) {
             S current = workList.remove();
+            Collection<S> next = generateSingleState(current);
 
-            Map<ValuationSet, S> successors = current.getSuccessors();
-            Map<S, ValuationSet> reverseMap = edgeBetween.row(current);
+            for (S successor : next) {
+                if (!states.contains(successor)) {
+                    workList.add(successor);
+                }
+            }
+        }
+    }
+
+    private @NotNull Collection<S> generateSingleState(@NotNull S state) {
+        if (states.add(state)) {
+            Map<ValuationSet, S> successors = state.getSuccessors();
+            Map<S, ValuationSet> reverseMap = edgeBetween.row(state);
 
             // Insert all successors and construct reverse map.
-            for (Map.Entry<ValuationSet, S> transition : successors.entrySet()) {
+            for (Entry<ValuationSet, S> transition : successors.entrySet()) {
                 ValuationSet edge = transition.getKey();
                 S successor = transition.getValue();
 
@@ -83,23 +90,21 @@ public abstract class Automaton<S extends IState<S>> {
 
                 if (vs == null) {
                     vs = edge.clone();
-                    transitions.put(current, edge, successor);
+                    transitions.put(state, edge, successor);
                 } else if (mergingEnabled) {
-                    transitions.remove(current, vs);
+                    transitions.remove(state, vs);
                     vs.addAll(edge);
-                    transitions.put(current, vs, successor);
+                    transitions.put(state, vs, successor);
                 } else {
-                    transitions.put(current, edge, successor);
+                    transitions.put(state, edge, successor);
                     vs.addAll(edge);
                 }
 
                 reverseMap.put(successor, vs);
-
-                if (states.add(successor)) {
-                    workList.add(successor);
-                }
             }
         }
+
+        return transitions.row(state).values();
     }
 
     public boolean isSink(S state) {
@@ -121,18 +126,18 @@ public abstract class Automaton<S extends IState<S>> {
         }
     }
 
-    public S getSuccessor(S s, Set<String> v) {
-        for (ValuationSet vs : transitions.row(s).keySet()) {
-            if (vs.contains(v)) {
-                return transitions.get(s, vs);
+    public @Nullable S getSuccessor(@NotNull S s, @NotNull Set<String> v) {
+        for (Entry<ValuationSet, S> entry : getSuccessors(s).entrySet()) {
+            if (entry.getKey().contains(v)) {
+                return entry.getValue();
             }
         }
 
         return null;
     }
 
-    public Map<ValuationSet, S> getSuccessors(S state) {
-        generate(state);
+    public @NotNull Map<ValuationSet, S> getSuccessors(@NotNull S state) {
+        generateSingleState(state);
         return Collections.unmodifiableMap(transitions.row(state));
     }
 
@@ -140,18 +145,18 @@ public abstract class Automaton<S extends IState<S>> {
         return states.size();
     }
 
-    public String toDotty() {
+    public @NotNull String toDotty() {
         String r = "digraph \"Automaton for " + initialState + "\" \n{\n";
 
         for (IState s : states) {
-            if (s == initialState) {
+            if (s.equals(initialState)) {
                 r += "node [shape=oval, label=\"" + s + "\"]\"" + s + "\";\n";
             } else {
                 r += "node [shape=rectangle, label=\"" + s + "\"]\"" + s + "\";\n";
             }
         }
 
-        for (Table.Cell<S, ValuationSet, S> cell : transitions.cellSet()) {
+        for (Cell<S, ValuationSet, S> cell : transitions.cellSet()) {
             r += "\"" + cell.getRowKey() + "\" -> \"" + cell.getColumnKey() + "\" [label=\"" + cell.getValue()
                     + "\"];\n";
         }
@@ -159,33 +164,11 @@ public abstract class Automaton<S extends IState<S>> {
         return r + "}";
     }
 
-    /**
-     * This method is only there for debugging.
-     *
-     */
-    public void toHOA(OutputStream o) throws HOAConsumerException {
-        HOAConsumerExtended<S> hoa = new HOAConsumerExtended<S>(new HOAConsumerPrint(o), false);
-        hoa.setHeader(new ArrayList<>(valuationSetFactory.getAlphabet()));
-        hoa.setInitialState(this.initialState);
-        hoa.setAcceptanceCondition(Collections.emptyList());
-
-        for (S s : states) {
-            hoa.addState(s);
-            for (Table.Cell<S, ValuationSet, S> trans : transitions.cellSet()) {
-                if (trans.getRowKey().equals(s)) {
-                    hoa.addEdge(trans.getRowKey(), trans.getColumnKey().toFormula(), trans.getValue(), null);
-                }
-            }
-        }
-
-        hoa.done();
-    }
-
     public String acc() {
         return "";
     }
 
-    public Set<S> getStates() {
+    public @NotNull Set<S> getStates() {
         return Collections.unmodifiableSet(states);
     }
 
@@ -193,7 +176,7 @@ public abstract class Automaton<S extends IState<S>> {
         return transitions;
     }
 
-    public S getInitialState() {
+    public @Nullable S getInitialState() {
         if (initialState == null) {
             initialState = generateInitialState();
         }
@@ -220,7 +203,7 @@ public abstract class Automaton<S extends IState<S>> {
 
         for (S s : states) {
             ValuationSet vs = valuationSetFactory.createEmptyValuationSet();
-            Set<Map.Entry<ValuationSet, S>> transOfS;
+            Set<Entry<ValuationSet, S>> transOfS;
             if (trans.get(s) != null) {
                 transOfS = trans.get(s).entrySet();
             } else {
@@ -246,7 +229,7 @@ public abstract class Automaton<S extends IState<S>> {
     }
 
     public List<Set<S>> SCCs() {
-        return SCCAnalyser.SCCs(this, this.initialState);
+        return SCCAnalyser.SCCs(this, initialState);
     }
 
     public List<Set<S>> subSCCs(Set<S> SCC, Map<S, ValuationSet> forbiddenEdges) {
@@ -263,7 +246,7 @@ public abstract class Automaton<S extends IState<S>> {
      *
      * @param statess: Set of states that is to be removed
      */
-    public void removeStates(Set<S> statess) {
+    public void removeStates(@NotNull Set<S> statess) {
         if (statess.contains(initialState)) {
             states.clear();
             transitions.clear();
@@ -278,7 +261,7 @@ public abstract class Automaton<S extends IState<S>> {
                 edgeBetween.column(state).clear();
             }
 
-            Iterator<Cell<S, ValuationSet, S>> it = transitions.cellSet().iterator();
+            Iterator<Table.Cell<S, ValuationSet, S>> it = transitions.cellSet().iterator();
             while (it.hasNext()) {
                 if (statess.contains(it.next().getValue())) {
                     it.remove();
@@ -288,7 +271,7 @@ public abstract class Automaton<S extends IState<S>> {
     }
 
     // TODO to abstract ProductAutomaton ?
-    protected Set<ValuationSet> generatePartitioning(Set<Set<ValuationSet>> product) {
+    protected @NotNull Set<ValuationSet> generatePartitioning(@NotNull Set<Set<ValuationSet>> product) {
         Set<ValuationSet> partitioning = new HashSet<>();
         partitioning.add(valuationSetFactory.createUniverseValuationSet());
 
@@ -318,7 +301,7 @@ public abstract class Automaton<S extends IState<S>> {
      * @return all transitions where start is in the SCC
      */
 
-    protected Set<Table.Cell<S, ValuationSet, S>> getTransitionsInSCC(Set<S> scc) {
+    protected @NotNull Set<Table.Cell<S, ValuationSet, S>> getTransitionsInSCC(@NotNull Set<S> scc) {
         Set<Table.Cell<S, ValuationSet, S>> result = new HashSet<>();
         for (Table.Cell<S, ValuationSet, S> entry : transitions.cellSet()) {
 
@@ -338,7 +321,7 @@ public abstract class Automaton<S extends IState<S>> {
      * @return true if the only transitions from scc go to scc again and false
      * otherwise
      */
-    protected boolean isSink(Set<S> scc) {
+    protected boolean isSink(@NotNull Set<S> scc) {
         Set<S> nonSCCStates = new HashSet<>(states);
         nonSCCStates.removeAll(scc);
         return scc.stream().filter(s -> transitions.row(s) != null)

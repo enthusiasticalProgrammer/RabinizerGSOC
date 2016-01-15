@@ -12,7 +12,8 @@ public final class Simplifier {
 
     private static final Visitor<Formula> PROPOSITIONAL_SIMPLIFIER = new PropositionalSimplifier();
     private static final Visitor<Formula> MODAL_SIMPLIFIER = new ModalSimplifier();
-    private static final Visitor<XFormula> PULLUP_X_SIMPLIFIER = new PullupXSimplifier();
+    private static final Visitor<XFormula> PULLUP_X = new PullupXVisitor();
+    private static final Visitor<Formula> PUSHDOWN_FG = new PushDownFGVisitor();
 
     private Simplifier() {
     }
@@ -23,36 +24,37 @@ public final class Simplifier {
 
     public static Formula simplify(Formula formula, Strategy strategy) {
         switch (strategy) {
-            case PROPOSITIONAL:
-                return formula.accept(Simplifier.PROPOSITIONAL_SIMPLIFIER);
-
             case PULLUP_X:
-                return formula.accept(PULLUP_X_SIMPLIFIER).toFormula();
+                return formula.accept(PULLUP_X).toFormula();
 
-            case MODAL_PULLUP_X:
+            case MODAL_EXT:
                 Formula step0 = formula;
 
                 for (int i = 0; i < ITERATIONS; i++) {
-                    Formula step1 = step0.accept(MODAL_SIMPLIFIER);
-                    Formula step2 = step1.accept(PULLUP_X_SIMPLIFIER).toFormula();
+                    Formula step1 = step0.accept(PUSHDOWN_FG);
+                    Formula step2 = step1.accept(PULLUP_X).toFormula();
+                    Formula step3 = step2.accept(MODAL_SIMPLIFIER);
 
-                    if (step0.equals(step2)) {
+                    if (step0.equals(step3)) {
                         return step0;
                     }
 
-                    step0 = step2;
+                    step0 = step3;
                 }
 
                 return step0;
 
             case MODAL:
-            default:
                 return formula.accept(Simplifier.MODAL_SIMPLIFIER);
+
+            case PROPOSITIONAL:
+            default:
+                return formula.accept(Simplifier.PROPOSITIONAL_SIMPLIFIER);
         }
     }
 
     public enum Strategy {
-        PROPOSITIONAL, MODAL, PULLUP_X, MODAL_PULLUP_X
+        PROPOSITIONAL, MODAL, PULLUP_X, MODAL_EXT
     }
 
     static class PropositionalSimplifier implements Visitor<Formula> {
@@ -217,7 +219,7 @@ public final class Simplifier {
         }
     }
 
-    static class PullupXSimplifier implements Visitor<XFormula> {
+    static class PullupXVisitor implements Visitor<XFormula> {
         @Override
         public XFormula defaultAction(Formula formula) {
             return new XFormula(0, formula);
@@ -265,6 +267,67 @@ public final class Simplifier {
             XFormula r = xOperator.operand.accept(this);
             r.depth++;
             return r;
+        }
+    }
+
+    static class PushDownFGVisitor implements Visitor<Formula> {
+
+        @Override
+        public Formula defaultAction(Formula formula) {
+            return formula;
+        }
+
+        @Override
+        public Formula visit(Conjunction conjunction) {
+            return new Conjunction(conjunction.children.stream().map(e -> e.accept(this)));
+        }
+
+        @Override
+        public Formula visit(Disjunction disjunction) {
+            return new Disjunction(disjunction.children.stream().map(e -> e.accept(this)));
+        }
+
+        @Override
+        public Formula visit(FOperator fOperator) {
+            if (fOperator.operand instanceof Disjunction) {
+                Disjunction disjunction = (Disjunction) fOperator.operand;
+                return new Disjunction(disjunction.children.stream().map(e -> new FOperator(e).accept(this)));
+            }
+
+            if (fOperator.operand instanceof UOperator) {
+                UOperator uOperator = (UOperator) fOperator.operand;
+                return new FOperator(uOperator.right).accept(this);
+            }
+
+            if (fOperator.operand instanceof FOperator) {
+                return fOperator.operand.accept(this);
+            }
+
+            return new FOperator(fOperator.operand.accept(this));
+        }
+
+        @Override
+        public Formula visit(GOperator gOperator) {
+            if (gOperator.operand instanceof Conjunction) {
+                Conjunction conjunction = (Conjunction) gOperator.operand;
+                return new Conjunction(conjunction.children.stream().map(e -> new GOperator(e).accept(this)));
+            }
+
+            if (gOperator.operand instanceof GOperator) {
+                return gOperator.operand.accept(this);
+            }
+
+            return new GOperator(gOperator.operand.accept(this));
+        }
+
+        @Override
+        public Formula visit(UOperator uOperator) {
+            return new UOperator(uOperator.left.accept(this), uOperator.right.accept(this));
+        }
+
+        @Override
+        public Formula visit(XOperator xOperator) {
+            return new XOperator(xOperator.operand.accept(this));
         }
     }
 }
