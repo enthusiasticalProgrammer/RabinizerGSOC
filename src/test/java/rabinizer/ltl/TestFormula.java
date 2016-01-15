@@ -350,4 +350,11 @@ public class TestFormula {
         assertEquals(f3.accept(PseudoSubstitutionVisitor.getVisitor(), f1, true), f3);
     }
 
+    @Test
+    public void testIsSuspendable() {
+        for (Formula formula : FormulaStorage.formulae) {
+            assertTrue(!formula.isSuspendable() || formula.isPureUniversal());
+            assertTrue(!formula.isSuspendable() || formula.isPureEventual());
+        }
+    }
 }

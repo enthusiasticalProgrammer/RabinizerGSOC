@@ -31,12 +31,21 @@ public class FormulaStorage {
         for (File file : dir.listFiles()) {
             ImmutableList.Builder<Formula> listBuilder = ImmutableList.builder();
 
+            if (file.isHidden()) {
+                continue;
+            }
+
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 String line = reader.readLine();
 
                 while (line != null) {
-                    Formula formula = Util.createFormula(line);
-                    listBuilder.add(formula);
+                    line.trim();
+
+                    if (!line.isEmpty()) {
+                        Formula formula = Util.createFormula(line);
+                        listBuilder.add(formula);
+                    }
+                    
                     line = reader.readLine();
                 }
             } catch (Exception e) {
