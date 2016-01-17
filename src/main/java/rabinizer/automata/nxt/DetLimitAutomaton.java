@@ -219,7 +219,7 @@ public class DetLimitAutomaton {
 
                         // Waiting may be hurtful. Let's add a jump to the deterministic component.
                         if (!patient) {
-                            DetComponent.State successor2 = detComponent.jump(successorClazz, state.getClazz().getRepresentative().gSubformulas(), valuation);
+                            DetComponent.State successor2 = detComponent.jump(state.getClazz(), state.getClazz().getRepresentative().gSubformulas(), valuation);
 
                             if (successor2 != null) {
                                 consumer.addEdge(state, valuation, successor2);
