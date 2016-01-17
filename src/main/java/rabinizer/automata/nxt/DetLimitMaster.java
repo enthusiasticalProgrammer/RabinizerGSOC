@@ -6,7 +6,7 @@ import rabinizer.ltl.*;
 
 import java.util.Collection;
 
-public class DetLimitMaster extends Master {
+class DetLimitMaster extends Master {
     public DetLimitMaster(Formula formula, EquivalenceClassFactory equivalenceClassFactory,
                           ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
         super(formula, equivalenceClassFactory, valuationSetFactory, optimisations, mergingEnabled);

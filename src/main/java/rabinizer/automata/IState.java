@@ -1,6 +1,8 @@
 package rabinizer.automata;
 
 import com.google.common.collect.Sets;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
@@ -13,9 +15,9 @@ public interface IState<S> {
      * @param valuation
      * @return null is returned if the transition would move to a non-accepting BSCC.
      */
-    S getSuccessor(Set<String> valuation);
+    @Nullable S getSuccessor(@NotNull Set<String> valuation);
 
-    default Map<ValuationSet, S> getSuccessors() {
+    default @NotNull Map<ValuationSet, S> getSuccessors() {
         Map<ValuationSet,S> successors = new HashMap<>();
 
         for (ValuationSet valuationSet : partitionSuccessors()) {
@@ -29,13 +31,13 @@ public interface IState<S> {
         return successors;
     }
 
-    default Set<ValuationSet> partitionSuccessors() {
+    default @NotNull Set<ValuationSet> partitionSuccessors() {
         Set<String> sensitiveAlphabet = getSensitiveAlphabet();
         ValuationSetFactory factory = getFactory();
         return Sets.powerSet(sensitiveAlphabet).stream().map(subset -> factory.createValuationSet(subset, sensitiveAlphabet)).collect(Collectors.toSet());
     }
 
-    Set<String> getSensitiveAlphabet();
+    @NotNull Set<String> getSensitiveAlphabet();
 
-    ValuationSetFactory getFactory();
+    @NotNull ValuationSetFactory getFactory();
 }

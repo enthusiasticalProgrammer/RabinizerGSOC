@@ -10,6 +10,7 @@ import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import jhoafparser.consumer.HOAConsumerPrint;
+import org.jetbrains.annotations.NotNull;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.Tuple;
 import rabinizer.ltl.ValuationSet;
@@ -46,7 +47,7 @@ public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegen
     }
 
     @Override
-    protected ProductDegenState generateInitialState() {
+    protected @NotNull ProductDegenState generateInitialState() {
         Map<Integer, Integer> awaitedIndices = new HashMap<>();
 
         for (int i = 0; i < accTGR.size(); i++) {
@@ -65,7 +66,7 @@ public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegen
 
         List<GRabinPairT<ProductDegenState>> acc = new ArrayList<>();
 
-        accTR.stream().forEach(p -> acc.add(new GRabinPairT<ProductDegenState>(p.left, Collections.singletonList(p.right))));
+        accTR.stream().forEach(p -> acc.add(new GRabinPairT<>(p.left, Collections.singletonList(p.right))));
 
         // split transitions according to accepting Sets:
         for (GRabinPairT<ProductDegenState> pair : acc) {
@@ -125,7 +126,7 @@ public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegen
                     acc.stream()
                     .filter(pair -> pair.left != null && pair.left.get(s) != null
                     && pair.left.get(s).containsAll(trans.getColumnKey()))
-                    .map(p -> hoa.getNumber(p.left)).forEach(x -> accSets.add(new Integer(x)));
+                    .map(p -> hoa.getNumber(p.left)).forEach(accSets::add);
 
                     List<GRabinPairT<?>> notAccepted = acc.stream()
                             .filter(pair -> pair.left == null || pair.left.get(s) == null
@@ -135,7 +136,7 @@ public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegen
                         accSets.addAll(pair.right.stream()
                                 .filter(inf -> inf != null && inf.get(s) != null
                                         && inf.get(s).containsAll(trans.getColumnKey()))
-                                .map(inf -> hoa.getNumber(inf)).collect(Collectors.toList()));
+                                .map(hoa::getNumber).collect(Collectors.toList()));
                     }
                     hoa.addEdge(trans.getRowKey(), trans.getColumnKey().toFormula(), trans.getValue(), accSets);
                 }
@@ -157,7 +158,7 @@ public class DTRA<T extends IState<T>> extends AccAutomaton<DTRA<T>.ProductDegen
         }
 
         @Override
-        public ProductDegenState getSuccessor(Set<String> valuation) {
+        public ProductDegenState getSuccessor(@NotNull Set<String> valuation) {
             Map<Integer, Integer> awaitedIndices = new HashMap<>();
             for (int i = 0; i < accTGR.size(); i++) {
                 GRabinPairT<ProductDegenState> grp = accTGR.get(i);

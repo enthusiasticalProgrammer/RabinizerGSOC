@@ -1,6 +1,7 @@
 package rabinizer.automata;
 
 import com.google.common.collect.*;
+import org.jetbrains.annotations.NotNull;
 import rabinizer.automata.nxt.Util;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
@@ -172,5 +173,5 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
 
     protected abstract T constructState(P primaryState, Map<K, S> secondaryStates);
 
-    protected abstract ValuationSetFactory getFactory();
+    protected abstract @NotNull ValuationSetFactory getFactory();
 }

@@ -2,6 +2,7 @@ package rabinizer.ltl.z3;
 
 import com.google.common.collect.Sets;
 import com.microsoft.z3.BoolExpr;
+import org.jetbrains.annotations.NotNull;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.Literal;
 import rabinizer.ltl.ValuationSet;
@@ -24,7 +25,7 @@ public class Z3ValuationSet extends AbstractSet<Set<String>> implements Valuatio
     }
 
     @Override
-    public boolean addAll(Collection<? extends Set<String>> c) {
+    public boolean addAll(@NotNull Collection<? extends Set<String>> c) {
         if (c instanceof Z3ValuationSet) {
             return update(factory.or(((Z3ValuationSet) c).valuation, this.valuation));
         }
@@ -51,8 +52,8 @@ public class Z3ValuationSet extends AbstractSet<Set<String>> implements Valuatio
     }
 
     @Override
-    public boolean containsAll(Collection<?> c) {
-        return c.stream().allMatch(s -> this.contains(s));
+    public boolean containsAll(@NotNull Collection<?> c) {
+        return c.stream().allMatch(this::contains);
     }
 
     @Override
@@ -75,12 +76,12 @@ public class Z3ValuationSet extends AbstractSet<Set<String>> implements Valuatio
     }
 
     @Override
-    public boolean removeAll(Collection<?> c) {
-        return c.stream().anyMatch(s -> remove(s));
+    public boolean removeAll(@NotNull Collection<?> c) {
+        return c.stream().anyMatch(this::remove);
     }
 
     @Override
-    public boolean retainAll(Collection<?> c) {
+    public boolean retainAll(@NotNull Collection<?> c) {
 
         if (c instanceof Z3ValuationSet) {
             BoolExpr otherValuations = ((Z3ValuationSet) c).valuation;

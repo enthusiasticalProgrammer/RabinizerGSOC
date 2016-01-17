@@ -3,6 +3,7 @@ package rabinizer.ltl.z3;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.microsoft.z3.*;
+import org.jetbrains.annotations.NotNull;
 import rabinizer.ltl.*;
 
 import java.util.*;
@@ -144,12 +145,12 @@ public class Z3LibraryWrapper<F extends Formula> {
     private class Z3Visitor implements Visitor<BoolExpr> {
 
         @Override
-        public BoolExpr visit(BooleanConstant b) {
+        public BoolExpr visit(@NotNull BooleanConstant b) {
             return b.value ? TRUE : FALSE;
         }
 
         @Override
-        public BoolExpr visit(Conjunction c) {
+        public BoolExpr visit(@NotNull Conjunction c) {
             if (c.children.contains(BooleanConstant.FALSE)) {
                 return FALSE;
             }
@@ -163,7 +164,7 @@ public class Z3LibraryWrapper<F extends Formula> {
         }
 
         @Override
-        public BoolExpr visit(Disjunction d) {
+        public BoolExpr visit(@NotNull Disjunction d) {
             if (d.children.contains(BooleanConstant.TRUE)) {
                 return TRUE;
             }
@@ -178,7 +179,7 @@ public class Z3LibraryWrapper<F extends Formula> {
         }
 
         @Override
-        public BoolExpr defaultAction(Formula f) {
+        public BoolExpr defaultAction(@NotNull Formula f) {
             return mapping.get(f);
         }
     }

@@ -1,5 +1,6 @@
 package rabinizer.automata;
 
+import org.jetbrains.annotations.NotNull;
 import rabinizer.exec.Main;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
@@ -23,7 +24,7 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
         trapState = trap;
     }
 
-    public RabinSlave optimizeInitialState() { // TODO better: reach BSCC
+    public void optimizeInitialState() { // TODO better: reach BSCC
         while (noIncomingTransitions(initialState) && !transitions.row(initialState).isEmpty()) {
             Main.verboseln("Optimizing initial states");
             State oldInit = initialState;
@@ -31,11 +32,10 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
             transitions.row(oldInit).clear();
             states.remove(oldInit);
         }
-        return this;
     }
 
     @Override
-    protected State generateInitialState() {
+    protected @NotNull State generateInitialState() {
         State init = new State();
         init.put(mojmir.getInitialState(), 1);
         return init;
@@ -47,10 +47,6 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
 
     public class State extends HashMap<MojmirSlave.State, Integer> implements IState<State> {
         private static final long serialVersionUID = 1L;
-
-        public State() {
-            super();
-        }
 
         @Override
         public String toString() {
@@ -81,13 +77,13 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
         }
 
         @Override
-        public State getSuccessor(Set<String> valuation) {
+        public State getSuccessor(@NotNull Set<String> valuation) {
             State succ = new State();
 
             // move tokens, keeping the lowest only
             for (MojmirSlave.State currFormula : keySet()) {
                 MojmirSlave.State succFormula = currFormula.getSuccessor(valuation);
-                if ((succ.get(succFormula) == null) || (succ.get(succFormula) > get(currFormula))) {
+                if (succ.get(succFormula) == null || succ.get(succFormula) > get(currFormula)) {
                     succ.put(succFormula, get(currFormula));
                 }
             }
@@ -97,15 +93,15 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
             // TODO recompute tokens, eliminating gaps
             int[] tokens = new int[succ.keySet().size()];
             int i = 0;
-            for (IState f : succ.keySet()) {
-                tokens[i] = succ.get(f);
+            for (Entry<MojmirSlave.State, Integer> stateIntegerEntry : succ.entrySet()) {
+                tokens[i] = stateIntegerEntry.getValue();
                 i++;
             }
             Arrays.sort(tokens);
-            for (MojmirSlave.State f : succ.keySet()) {
+            for (Entry<MojmirSlave.State, Integer> stateIntegerEntry : succ.entrySet()) {
                 for (int j = 0; j < tokens.length; j++) {
-                    if (succ.get(f).equals(tokens[j])) {
-                        succ.put(f, j + 1);
+                    if (stateIntegerEntry.getValue().equals(tokens[j])) {
+                        succ.put(stateIntegerEntry.getKey(), j + 1);
                     }
                 }
             }

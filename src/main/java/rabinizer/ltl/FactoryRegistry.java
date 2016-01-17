@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class FactoryRegistry {
 
-    public final static Backend defaultBackend = Backend.BDD;
+    public static final Backend defaultBackend = Backend.BDD;
 
     public static EquivalenceClassFactory createEquivalenceClassFactory(Set<Formula> domain) {
         return createEquivalenceClassFactory(defaultBackend, domain);

@@ -4,6 +4,7 @@ import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author jkretinsky
@@ -17,7 +18,7 @@ public class TranSet<S extends IState<S>> extends HashMap<S, ValuationSet> {
         this.factory = factory;
     }
 
-    public TranSet<S> add(S s, ValuationSet vs) {
+    public void add(S s, ValuationSet vs) {
         if (!this.containsKey(s)) {
             this.put(s, vs);
         } else {
@@ -25,14 +26,12 @@ public class TranSet<S extends IState<S>> extends HashMap<S, ValuationSet> {
             old.addAll(vs);
             this.put(s, old);
         }
-        return this;
     }
 
-    public TranSet<S> addAll(TranSet<S> ts) {
-        for (S s : ts.keySet()) {
-            this.add(s, ts.get(s));
+    public void addAll(TranSet<S> ts) {
+        for (Entry<S, ValuationSet> sValuationSetEntry : ts.entrySet()) {
+            this.add(sValuationSetEntry.getKey(), sValuationSetEntry.getValue());
         }
-        return this;
     }
 
     @Override
@@ -56,13 +55,13 @@ public class TranSet<S extends IState<S>> extends HashMap<S, ValuationSet> {
     }
 
     void removeAll(TranSet<S> ts) {
-        for (S s : ts.keySet()) {
-            if (this.containsKey(s)) {
-                ValuationSet old = get(s).clone();
-                old.remove(ts.get(s));
-                this.put(s, old);
-                if (this.get(s).isEmpty()) {
-                    this.remove(s);
+        for (Entry<S, ValuationSet> sValuationSetEntry : ts.entrySet()) {
+            if (this.containsKey(sValuationSetEntry.getKey())) {
+                ValuationSet old = get(sValuationSetEntry.getKey()).clone();
+                old.remove(sValuationSetEntry.getValue());
+                this.put(sValuationSetEntry.getKey(), old);
+                if (this.get(sValuationSetEntry.getKey()).isEmpty()) {
+                    this.remove(sValuationSetEntry.getKey());
                 }
             }
         }

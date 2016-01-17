@@ -1,5 +1,7 @@
 package rabinizer.ltl;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.BaseStream;
@@ -85,7 +87,7 @@ public final class Simplifier {
         }
 
         @Override
-        public Formula visit(Conjunction conjunction) {
+        public Formula visit(@NotNull Conjunction conjunction) {
             Stream<Formula> workStream = conjunction.children.stream().map(e -> e.accept(this));
             Set<Formula> set = PropositionalSimplifier.flatten(workStream, e -> e instanceof Conjunction, BooleanConstant.FALSE,
                     BooleanConstant.TRUE);
@@ -106,7 +108,7 @@ public final class Simplifier {
         }
 
         @Override
-        public Formula visit(Disjunction disjunction) {
+        public Formula visit(@NotNull Disjunction disjunction) {
             Stream<Formula> workStream = disjunction.children.stream().map(e -> e.accept(this));
             Set<Formula> set = PropositionalSimplifier.flatten(workStream, e -> e instanceof Disjunction, BooleanConstant.TRUE,
                     BooleanConstant.FALSE);
@@ -127,14 +129,14 @@ public final class Simplifier {
         }
 
         @Override
-        public Formula defaultAction(Formula formula) {
+        public Formula defaultAction(@NotNull Formula formula) {
             return formula;
         }
     }
 
     static class ModalSimplifier extends PropositionalSimplifier {
         @Override
-        public Formula visit(FOperator fOperator) {
+        public Formula visit(@NotNull FOperator fOperator) {
             Formula operand = fOperator.operand.accept(this);
 
             if (operand instanceof UOperator) {
@@ -149,7 +151,7 @@ public final class Simplifier {
         }
 
         @Override
-        public Formula visit(GOperator gOperator) {
+        public Formula visit(@NotNull GOperator gOperator) {
             Formula operand = gOperator.operand.accept(this);
 
             if (operand.isPureUniversal() || operand.isSuspendable()) {
@@ -160,7 +162,7 @@ public final class Simplifier {
         }
 
         @Override
-        public Formula visit(UOperator uOperator) {
+        public Formula visit(@NotNull UOperator uOperator) {
             Formula left = uOperator.left.accept(this);
             Formula right = uOperator.right.accept(this);
 
@@ -184,7 +186,7 @@ public final class Simplifier {
         }
 
         @Override
-        public Formula visit(XOperator xOperator) {
+        public Formula visit(@NotNull XOperator xOperator) {
             Formula operand = xOperator.operand.accept(this);
 
             if (operand.isSuspendable()) {
@@ -221,40 +223,40 @@ public final class Simplifier {
 
     static class PullupXVisitor implements Visitor<XFormula> {
         @Override
-        public XFormula defaultAction(Formula formula) {
+        public XFormula defaultAction(@NotNull Formula formula) {
             return new XFormula(0, formula);
         }
 
         @Override
-        public XFormula visit(Conjunction conjunction) {
+        public XFormula visit(@NotNull Conjunction conjunction) {
             Collection<XFormula> children = conjunction.children.stream().map(c -> c.accept(this)).collect(Collectors.toList());
             int depth = children.stream().mapToInt(c -> c.depth).min().orElse(0);
             return new XFormula(depth, new Conjunction(children.stream().map(c -> c.toFormula(depth))));
         }
 
         @Override
-        public XFormula visit(Disjunction disjunction) {
+        public XFormula visit(@NotNull Disjunction disjunction) {
             Collection<XFormula> children = disjunction.children.stream().map(c -> c.accept(this)).collect(Collectors.toList());
             int depth = children.stream().mapToInt(c -> c.depth).min().orElse(0);
             return new XFormula(depth, new Disjunction(children.stream().map(c -> c.toFormula(depth))));
         }
 
         @Override
-        public XFormula visit(FOperator fOperator) {
+        public XFormula visit(@NotNull FOperator fOperator) {
             XFormula r = fOperator.operand.accept(this);
             r.formula = new FOperator(r.formula);
             return r;
         }
 
         @Override
-        public XFormula visit(GOperator gOperator) {
+        public XFormula visit(@NotNull GOperator gOperator) {
             XFormula r = gOperator.operand.accept(this);
             r.formula = new GOperator(r.formula);
             return r;
         }
 
         @Override
-        public XFormula visit(UOperator uOperator) {
+        public XFormula visit(@NotNull UOperator uOperator) {
             XFormula r = uOperator.right.accept(this);
             XFormula l = uOperator.left.accept(this);
             l.formula = new UOperator(l.toFormula(r.depth), r.toFormula(l.depth));
@@ -263,7 +265,7 @@ public final class Simplifier {
         }
 
         @Override
-        public XFormula visit(XOperator xOperator) {
+        public XFormula visit(@NotNull XOperator xOperator) {
             XFormula r = xOperator.operand.accept(this);
             r.depth++;
             return r;
@@ -273,22 +275,22 @@ public final class Simplifier {
     static class PushDownFGVisitor implements Visitor<Formula> {
 
         @Override
-        public Formula defaultAction(Formula formula) {
+        public Formula defaultAction(@NotNull Formula formula) {
             return formula;
         }
 
         @Override
-        public Formula visit(Conjunction conjunction) {
+        public Formula visit(@NotNull Conjunction conjunction) {
             return new Conjunction(conjunction.children.stream().map(e -> e.accept(this)));
         }
 
         @Override
-        public Formula visit(Disjunction disjunction) {
+        public Formula visit(@NotNull Disjunction disjunction) {
             return new Disjunction(disjunction.children.stream().map(e -> e.accept(this)));
         }
 
         @Override
-        public Formula visit(FOperator fOperator) {
+        public Formula visit(@NotNull FOperator fOperator) {
             if (fOperator.operand instanceof Disjunction) {
                 Disjunction disjunction = (Disjunction) fOperator.operand;
                 return new Disjunction(disjunction.children.stream().map(e -> new FOperator(e).accept(this)));
@@ -307,7 +309,7 @@ public final class Simplifier {
         }
 
         @Override
-        public Formula visit(GOperator gOperator) {
+        public Formula visit(@NotNull GOperator gOperator) {
             if (gOperator.operand instanceof Conjunction) {
                 Conjunction conjunction = (Conjunction) gOperator.operand;
                 return new Conjunction(conjunction.children.stream().map(e -> new GOperator(e).accept(this)));
@@ -321,12 +323,12 @@ public final class Simplifier {
         }
 
         @Override
-        public Formula visit(UOperator uOperator) {
+        public Formula visit(@NotNull UOperator uOperator) {
             return new UOperator(uOperator.left.accept(this), uOperator.right.accept(this));
         }
 
         @Override
-        public Formula visit(XOperator xOperator) {
+        public Formula visit(@NotNull XOperator xOperator) {
             return new XOperator(xOperator.operand.accept(this));
         }
     }

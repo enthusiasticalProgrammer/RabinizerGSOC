@@ -1,5 +1,7 @@
 package rabinizer.ltl;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,12 +19,12 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula defaultAction(Formula f) {
+    public Formula defaultAction(@NotNull Formula f) {
         return f;
     }
 
     @Override
-    public Formula visit(Conjunction c) {
+    public Formula visit(@NotNull Conjunction c) {
 
         Set<Formula> set = c.getAllChildrenOfConjunction();
         Set<Formula> toRemove = new HashSet<>();
@@ -56,7 +58,6 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
                     ImplicationVisitor imp = ImplicationVisitor.getVisitor();
                     if (form.accept(imp, form2)) {
                         toRemove.add(form2);
-                        continue;
                     } else {
 
                         Formula f = form.accept(PseudoSubstitutionVisitor.getVisitor(), form2, true);
@@ -79,7 +80,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula visit(Disjunction d) {
+    public Formula visit(@NotNull Disjunction d) {
         Set<Formula> set = d.getAllChildrenOfDisjunction();
         Set<Formula> toRemove = new HashSet<>();
         Set<Formula> toAdd = new HashSet<>();
@@ -110,7 +111,6 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
                     ImplicationVisitor imp = ImplicationVisitor.getVisitor();
                     if (form.accept(imp, form2)) {
                         toRemove.add(form2);
-                        continue;
                     } else {
                         Formula f = form.accept(PseudoSubstitutionVisitor.getVisitor(), form2, false);
                         if (f != form) {
@@ -131,7 +131,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula visit(FOperator f) {
+    public Formula visit(@NotNull FOperator f) {
         Formula child = f.operand.accept(this);
         if (child instanceof BooleanConstant) {
             return child;
@@ -151,7 +151,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula visit(GOperator g) {
+    public Formula visit(@NotNull GOperator g) {
         Formula child = g.operand.accept(this);
         if (child instanceof BooleanConstant || child instanceof GOperator) {
             return child;
@@ -162,7 +162,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula visit(UOperator u) {
+    public Formula visit(@NotNull UOperator u) {
         if (u.right.isSuspendable() || u.right.isPureEventual()) {
             return u.right.accept(this);
         } else {
@@ -194,7 +194,7 @@ public class SimplifyAggressivelyVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula visit(XOperator x) {
+    public Formula visit(@NotNull XOperator x) {
         Formula child = x.operand.accept(this);
         if (child.isSuspendable()) {
             return child;

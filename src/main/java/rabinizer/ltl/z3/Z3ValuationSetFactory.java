@@ -57,7 +57,7 @@ public class Z3ValuationSetFactory extends Z3LibraryWrapper<Literal> implements 
     }
 
     private BoolExpr createBoolExpr(Formula f) {
-        return super.createZ3(f);
+        return createZ3(f);
     }
 
     Set<String> pickAny(BoolExpr bool) {

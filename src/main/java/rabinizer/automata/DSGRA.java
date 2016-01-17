@@ -2,6 +2,8 @@ package rabinizer.automata;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
+
+import org.jetbrains.annotations.NotNull;
 import rabinizer.ltl.ValuationSetFactory;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,7 +51,7 @@ public class DSGRA extends Automaton<DSGRA.ProductAccState> implements AccAutoma
     }
 
     @Override
-    protected ProductAccState generateInitialState() {
+    protected @NotNull ProductAccState generateInitialState() {
         Map<Integer, Set<Integer>> accSets = new HashMap<>();
         for (int i = 0; i < accTGR.size(); i++) {
             accSets.put(i, new HashSet<>());
@@ -69,7 +71,7 @@ public class DSGRA extends Automaton<DSGRA.ProductAccState> implements AccAutoma
         }
 
         @Override
-        public ProductAccState getSuccessor(Set<String> valuation) {
+        public ProductAccState getSuccessor(@NotNull Set<String> valuation) {
             Map<Integer, Set<Integer>> accSets = new HashMap<>();
             for (int i = 0; i < accTGR.size(); i++) {
                 accSets.put(i, new HashSet<>());
@@ -79,8 +81,8 @@ public class DSGRA extends Automaton<DSGRA.ProductAccState> implements AccAutoma
                     accSets.get(i).add(-1);
                 }
                 for (int j = 0; j < grp.right.size(); j++) {
-                    if ((grp.right.get(j).get(left) != null
-                            && (grp.right).get(j).get(left).contains(valuation))) {
+                    if (grp.right.get(j).get(left) != null
+                            && grp.right.get(j).get(left).contains(valuation)) {
                         accSets.get(i).add(j);
                     }
                 }
@@ -109,15 +111,14 @@ public class DSGRA extends Automaton<DSGRA.ProductAccState> implements AccAutoma
         HOAConsumerExtended hoa = new HOAConsumerExtended(ho, HOAConsumerExtended.AutomatonType.STATE);
         hoa.setHeader(null, valuationSetFactory.getAlphabet());
         hoa.setInitialState(this.initialState);
-        hoa.setAcceptanceCondition((List<?>) accSGR);
+        hoa.setAcceptanceCondition(accSGR);
 
         for (ProductAccState s : states) {
-            List<Integer> accSets = new ArrayList<Integer>();
-            accSets.addAll(accSGR.stream().filter(pair -> pair.left != null && pair.left.contains(s))
+            List<Integer> accSets = new ArrayList<>(accSGR.stream().filter(pair -> pair.left != null && pair.left.contains(s))
                     .map(p -> hoa.getNumber(p.left)).collect(Collectors.toList()));
             for (GRabinPair<Set<ProductAccState>> pair : accSGR) {
                 accSets.addAll(pair.right.stream().filter(inf -> inf.contains(s))
-                        .map(inf -> hoa.getNumber(inf)).collect(Collectors.toList()));
+                        .map(hoa::getNumber).collect(Collectors.toList()));
             }
             hoa.addState(s, accSets);
         }

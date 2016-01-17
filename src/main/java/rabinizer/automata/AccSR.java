@@ -13,7 +13,6 @@ public class AccSR extends ArrayList<Set<DSRA.ProductDegenAccState>> {
     private static final long serialVersionUID = 1L;
 
     AccSR(AccTR accTR, DSRA dsra) {
-        super();
         for (int i = 0; i < 2 * accTR.size(); i++) {
             this.add(new HashSet<>());
         }

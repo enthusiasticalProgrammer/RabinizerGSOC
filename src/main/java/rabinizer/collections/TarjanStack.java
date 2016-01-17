@@ -1,5 +1,7 @@
 package rabinizer.collections;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
@@ -22,7 +24,7 @@ public abstract class TarjanStack<E> implements Deque<E> {
     Deque<E> stack;
 
     public TarjanStack() {
-        stack = new ArrayDeque<E>();
+        stack = new ArrayDeque<>();
     }
 
     @Override
@@ -208,7 +210,7 @@ public abstract class TarjanStack<E> implements Deque<E> {
     }
 
     @Override
-    public <T> T[] toArray(T[] a) {
+    public <T> T[] toArray(@NotNull T[] a) {
         return stack.toArray(a);
     }
 

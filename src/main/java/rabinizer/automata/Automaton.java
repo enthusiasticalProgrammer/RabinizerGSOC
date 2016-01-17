@@ -176,7 +176,7 @@ public abstract class Automaton<S extends IState<S>> {
         return transitions;
     }
 
-    public @Nullable S getInitialState() {
+    public @NotNull S getInitialState() {
         if (initialState == null) {
             initialState = generateInitialState();
         }
@@ -293,7 +293,7 @@ public abstract class Automaton<S extends IState<S>> {
         return partitioning;
     }
 
-    protected abstract S generateInitialState();
+    protected abstract @NotNull S generateInitialState();
 
 
     /**

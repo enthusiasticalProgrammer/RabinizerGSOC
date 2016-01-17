@@ -39,7 +39,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
         this.edgeBetween.putAll(raw.automaton.edgeBetween);
         if (raw.accTGR != null) { // for computing the state space only (with no
             // acc. condition)
-            this.acc = new AccTGR<ProductState>(raw.accTGR);
+            this.acc = new AccTGR<>(raw.accTGR);
         }
     }
 
@@ -119,7 +119,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
                     acc.stream()
                     .filter(pair -> pair.left != null && pair.left.get(s) != null
                     && pair.left.get(s).containsAll(trans.getColumnKey()))
-                    .map(p -> hoa.getNumber(p.left)).forEach(x -> accSets.add(new Integer(x)));
+                    .map(p -> hoa.getNumber(p.left)).forEach(accSets::add);
 
                     List<GRabinPairT<?>> notAccepted = acc.stream().filter(pair -> pair.left == null
                             || pair.left.get(s) == null
@@ -129,7 +129,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
                         accSets.addAll(pair.right.stream()
                                 .filter(inf -> inf != null && inf.get(s) != null
                                         && inf.get(s).containsAll(trans.getColumnKey()))
-                                .map(inf -> hoa.getNumber(inf)).collect(Collectors.toList()));
+                                .map(hoa::getNumber).collect(Collectors.toList()));
                     }
                     hoa.addEdge(trans.getRowKey(), trans.getColumnKey().toFormula(), trans.getValue(), accSets);
                 }

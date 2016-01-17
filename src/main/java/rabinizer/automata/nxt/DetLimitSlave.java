@@ -4,12 +4,16 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Sets;
+import org.jetbrains.annotations.NotNull;
 import rabinizer.automata.Automaton;
 import rabinizer.automata.IState;
 import rabinizer.automata.Optimisation;
 import rabinizer.ltl.*;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
 
@@ -38,7 +42,7 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
     }
 
     @Override
-    protected State generateInitialState() {
+    protected @NotNull State generateInitialState() {
         return new State(initialFormula, True);
     }
 
@@ -73,11 +77,11 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
 
         @Override
         public String toString() {
-            return "{" + current.getRepresentative() + ", " + next.getRepresentative() + "}";
+            return "{" + current.getRepresentative() + ", " + next.getRepresentative() + '}';
         }
 
         @Override
-        public State getSuccessor(Set<String> valuation) {
+        public State getSuccessor(@NotNull Set<String> valuation) {
             EquivalenceClass successor = step(current, valuation);
 
             // Successor is done and we can switch components.

@@ -1,5 +1,6 @@
 package rabinizer.automata;
 
+import org.jetbrains.annotations.NotNull;
 import rabinizer.ltl.*;
 
 import java.util.Collection;
@@ -20,7 +21,7 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
     }
 
     @Override
-    protected State generateInitialState() {
+    protected @NotNull State generateInitialState() {
         if (eager) {
             return new State(initialState.unfold(false));
         } else {
@@ -34,7 +35,7 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
         }
 
         @Override
-        public State getSuccessor(Set<String> valuation) {
+        public State getSuccessor(@NotNull Set<String> valuation) {
             if (eager) {
                 return new State(clazz.temporalStep(valuation).unfold(false));
             } else {

@@ -1,5 +1,7 @@
 package rabinizer.automata;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import rabinizer.ltl.*;
 
 import java.util.Collection;
@@ -21,7 +23,7 @@ public class Master extends Automaton<Master.State> {
     }
 
     @Override
-    protected State generateInitialState() {
+    protected @NotNull State generateInitialState() {
         return generateInitialState(initialState);
     }
 
@@ -52,7 +54,7 @@ public class Master extends Automaton<Master.State> {
         }
 
         @Override
-        public State getSuccessor(Set<String> valuation) {
+        public @Nullable State getSuccessor(@NotNull Set<String> valuation) {
             EquivalenceClass successor = step(clazz, valuation);
 
             if (suppressEdge(clazz, valuation, successor)) {

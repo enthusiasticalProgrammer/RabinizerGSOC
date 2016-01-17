@@ -31,8 +31,7 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
         if (co.equals(b)) {
             return BooleanConstant.get(c);
         } else {
-            Set<Formula> set = new HashSet<>();
-            set.addAll(co.children);
+            Set<Formula> set = new HashSet<>(co.children);
             for (Formula form : set) {
                 Formula f = form.accept(this, b, c);
                 if (!f.equals(form)) {
@@ -52,8 +51,7 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
         if (d.equals(b)) {
             return BooleanConstant.get(c);
         } else {
-            Set<Formula> set = new HashSet<>();
-            set.addAll(d.children);
+            Set<Formula> set = new HashSet<>(d.children);
             for (Formula form : set) {
                 Formula f = form.accept(this, b, c);
                 if (!f.equals(form)) {

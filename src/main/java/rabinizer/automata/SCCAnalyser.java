@@ -93,10 +93,10 @@ public class SCCAnalyser<S extends IState<S>> {
         Map<ValuationSet, S> trans = a.transitions.row(v);
         List<Set<S>> result = new ArrayList<>();
 
-        for (ValuationSet vs : trans.keySet()) {
+        for (Map.Entry<ValuationSet, S> entry : trans.entrySet()) {
 
-            S w = trans.get(vs);
-            if (allowedStates.contains(w) && !number.containsKey(w) && forbiddenEdges.get(v) != vs) {
+            S w = entry.getValue();
+            if (allowedStates.contains(w) && !number.containsKey(w) && !Objects.equals(forbiddenEdges.get(v), entry.getKey())) {
                 stack.push(w);
                 result.addAll(SCCsRecursively());
                 lowlink.put(v, Math.min(lowlink.get(v), lowlink.get(w)));

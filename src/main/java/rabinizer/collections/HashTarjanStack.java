@@ -1,5 +1,7 @@
 package rabinizer.collections;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashSet;
@@ -10,7 +12,6 @@ public class HashTarjanStack<E> extends TarjanStack<E> {
     Set<E> elementsInTheStack;
 
     public HashTarjanStack() {
-        super();
         elementsInTheStack = new HashSet<>();
     }
 
@@ -49,7 +50,7 @@ public class HashTarjanStack<E> extends TarjanStack<E> {
     }
 
     @Override
-    public boolean addAll(Collection<? extends E> c) {
+    public boolean addAll(@NotNull Collection<? extends E> c) {
 
         // stream with anyMatch not possible due to side effects
         boolean result = false;
@@ -63,12 +64,12 @@ public class HashTarjanStack<E> extends TarjanStack<E> {
     }
 
     @Override
-    public boolean containsAll(Collection<?> c) {
+    public boolean containsAll(@NotNull Collection<?> c) {
         return c.stream().allMatch(x -> elementsInTheStack.contains(x));
     }
 
     @Override
-    public boolean removeAll(Collection<?> c) {
+    public boolean removeAll(@NotNull Collection<?> c) {
         boolean result = false;
         for (Object o : c) {
             result = result || remove(o);
@@ -77,7 +78,7 @@ public class HashTarjanStack<E> extends TarjanStack<E> {
     }
 
     @Override
-    public boolean retainAll(Collection<?> c) {
+    public boolean retainAll(@NotNull Collection<?> c) {
         stack.retainAll(c);
         return elementsInTheStack.retainAll(c);
     }

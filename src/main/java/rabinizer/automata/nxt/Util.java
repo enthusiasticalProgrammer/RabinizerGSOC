@@ -24,7 +24,7 @@ public final class Util {
 
         if (checkUniverse) {
             ValuationSet vs = list.get(0).clone();
-            list.forEach(e -> vs.addAll(e));
+            list.forEach(vs::addAll);
             if (!vs.isUniverse()) {
                 throw new IllegalArgumentException(vs.toString());
             }

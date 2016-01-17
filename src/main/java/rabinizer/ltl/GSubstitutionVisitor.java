@@ -1,5 +1,7 @@
 package rabinizer.ltl;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.function.Function;
 
 public class GSubstitutionVisitor implements Visitor<Formula> {
@@ -11,27 +13,27 @@ public class GSubstitutionVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula defaultAction(Formula f) {
+    public Formula defaultAction(@NotNull Formula f) {
         return f;
     }
 
     @Override
-    public Formula visit(Conjunction c) {
+    public Formula visit(@NotNull Conjunction c) {
         return new Conjunction(c.children.stream().map(e -> e.accept(this)));
     }
 
     @Override
-    public Formula visit(Disjunction d) {
+    public Formula visit(@NotNull Disjunction d) {
         return new Disjunction(d.children.stream().map(e -> e.accept(this)));
     }
 
     @Override
-    public Formula visit(FOperator f) {
+    public Formula visit(@NotNull FOperator f) {
         return new FOperator(f.operand.accept(this));
     }
 
     @Override
-    public Formula visit(GOperator g) {
+    public Formula visit(@NotNull GOperator g) {
         BooleanConstant substitutedFormula = subst.apply(g);
 
         if (substitutedFormula != null) {
@@ -42,12 +44,12 @@ public class GSubstitutionVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula visit(UOperator u) {
+    public Formula visit(@NotNull UOperator u) {
         return new UOperator(u.left.accept(this), u.right.accept(this));
     }
 
     @Override
-    public Formula visit(XOperator x) {
+    public Formula visit(@NotNull XOperator x) {
         return new XOperator(x.operand.accept(this));
     }
 }

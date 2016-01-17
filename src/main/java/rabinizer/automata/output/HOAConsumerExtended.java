@@ -82,10 +82,10 @@ public class HOAConsumerExtended<T> {
      */
     public void setInitialState(T initialState) throws HOAConsumerException {
         if (stateNumbers.containsKey(initialState)) {
-            hoa.addStartStates(Arrays.asList(stateNumbers.get(initialState)));
+            hoa.addStartStates(Collections.singletonList(stateNumbers.get(initialState)));
         } else {
             stateNumbers.put(initialState, stateNumbers.keySet().size());
-            hoa.addStartStates(Arrays.asList(stateNumbers.get(initialState)));
+            hoa.addStartStates(Collections.singletonList(stateNumbers.get(initialState)));
         }
     }
 
@@ -127,7 +127,7 @@ public class HOAConsumerExtended<T> {
     }
 
     public void addEdge(T begin, Formula label, T end) throws HOAConsumerException {
-        if (accType.equals(AutomatonType.TRANSITION)) {
+        if (accType == AutomatonType.TRANSITION) {
             throw new UnsupportedOperationException("For transition-acceptance-based automata, please use the other addEdge method, where you also put accSets");
         }
 
@@ -139,7 +139,7 @@ public class HOAConsumerExtended<T> {
     }
 
     public void addState(T s) throws HOAConsumerException {
-        if (accType.equals(AutomatonType.STATE)) {
+        if (accType == AutomatonType.STATE) {
             throw new UnsupportedOperationException("For state-acceptance-based automata, please use the other addState method, where you also put accSets");
         }
 
@@ -199,7 +199,7 @@ public class HOAConsumerExtended<T> {
                 }
             }
 
-            both = new BooleanExpression<AtomAcceptance>(BooleanExpression.Type.EXP_AND, left, right);
+            both = new BooleanExpression<>(BooleanExpression.Type.EXP_AND, left, right);
             all = new BooleanExpression<>(BooleanExpression.Type.EXP_OR, all, both);
         }
 
@@ -223,7 +223,7 @@ public class HOAConsumerExtended<T> {
     }
 
     public enum AutomatonType {
-        STATE, TRANSITION;
+        STATE, TRANSITION
     }
 
     public enum AccType {

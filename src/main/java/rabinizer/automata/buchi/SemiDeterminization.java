@@ -57,7 +57,7 @@ public class SemiDeterminization {
 
         // Compute Accepting States
         for (Map.Entry<Tuple<Set<BuchiAutomaton.State>, Set<BuchiAutomaton.State>>, BuchiAutomaton.State> entry : productStateMapping.entrySet()) {
-            if (entry.getKey().left.stream().anyMatch(element -> automaton.acceptingStates.contains(element))
+            if (entry.getKey().left.stream().anyMatch(automaton.acceptingStates::contains)
                     && entry.getKey().left.equals(entry.getKey().right)) {
                 semi.setAccepting(entry.getValue());
             }

@@ -41,7 +41,6 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
     }
 
     public AccTGRRaw(AccLocal accLocal, ValuationSetFactory factory, EquivalenceClassFactory factory2) {
-        super();
         allTrans = accLocal.allTrans;
         this.valuationSetFactory = factory;
         this.equivalenceClassFactory = factory2;
@@ -66,7 +65,7 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
         }
     }
 
-    public AccTGRRaw removeRedundancy() { // (TranSet<ProductState> allTrans) {
+    public void removeRedundancy() { // (TranSet<ProductState> allTrans) {
         AccTGRRaw removalPairs;
         AccTGRRaw temp;
         Set<TranSet> copy;
@@ -105,7 +104,9 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
             copy = new HashSet<>(pair.right);
             for (TranSet<S> i : pair.right) {
                 TranSet<S> iUf = new TranSet<>(valuationSetFactory);
-                if (iUf.addAll(i).addAll(pair.left).equals(allTrans)) {
+                iUf.addAll(i);
+                iUf.addAll(pair.left);
+                if (iUf.equals(allTrans)) {
                     copy.remove(i);
                     break;
                 }
@@ -181,7 +182,6 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
         this.removeAll(removalPairs);
         // Main.verboseln(this.toString());
         printProgress(phase);
-        return this;
     }
 
     public void printProgress(int phase) {

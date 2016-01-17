@@ -23,7 +23,7 @@ public class Z3EquivalenceClass implements EquivalenceClass {
     @Override
     public Formula getRepresentative() {
         if (representative == null) {
-            representative = factory.createRepresentative(((BoolExpr) expression.simplify()));
+            representative = factory.createRepresentative((BoolExpr) expression.simplify());
         }
         return representative;
     }

@@ -9,6 +9,7 @@ import java.util.Set;
 
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
+import org.jetbrains.annotations.NotNull;
 import rabinizer.collections.Tuple;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
@@ -55,7 +56,7 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
     }
 
     @Override
-    protected ProductDegenAccState generateInitialState() {
+    protected @NotNull ProductDegenAccState generateInitialState() {
         return new ProductDegenAccState(dtra.initialState, stateAcceptance.get(dtra.initialState));
     }
 
@@ -83,7 +84,7 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
         }
 
         @Override
-        public ProductDegenAccState getSuccessor(Set<String> valuation) {
+        public ProductDegenAccState getSuccessor(@NotNull Set<String> valuation) {
             IState succ = dtra.getSuccessor(left, valuation);
             Set<Integer> accSets = new HashSet<>(stateAcceptance.get(succ));
             for (int i = 0; i < accTR.size(); i++) {

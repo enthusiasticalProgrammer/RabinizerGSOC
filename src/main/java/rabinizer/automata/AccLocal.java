@@ -67,8 +67,8 @@ public class AccLocal {
             Formula slaveAntecedent = BooleanConstant.get(true);
 
             if (ps.getSecondaryMap().containsKey(f)) {
-                for (MojmirSlave.State s : (ps.getSecondaryState(f)).keySet()) {
-                    if ((ps.getSecondaryState(f)).get(s) >= ranking.get(f)) {
+                for (MojmirSlave.State s : ps.getSecondaryState(f).keySet()) {
+                    if (ps.getSecondaryState(f).get(s) >= ranking.get(f)) {
                         slaveAntecedent = Simplifier.simplify(new Conjunction(slaveAntecedent, s.getClazz().getRepresentative()), Simplifier.Strategy.PROPOSITIONAL);
                     }
                 }
@@ -84,13 +84,13 @@ public class AccLocal {
 
     protected Map<Set<GOperator>, Map<Integer, RabinPair>> computeAccSlavesOptions(Formula f) {
         Map<Set<GOperator>, Map<Integer, RabinPair>> result = new HashMap<>();
-        RabinSlave rSlave = (RabinSlave) product.secondaryAutomata.get(f);
+        RabinSlave rSlave = product.secondaryAutomata.get(f);
         Set<Set<GOperator>> gSets = Sets.powerSet(topmostGs.get(f));
         for (Set<GOperator> gSet : gSets) {
             Set<IState> finalStates = new HashSet<>();
 
             for (MojmirSlave.State fs : rSlave.mojmir.states) {
-                if (equivalenceClassFactory.createEquivalenceClass(new Conjunction(gSet)).implies((fs).getClazz())) {
+                if (equivalenceClassFactory.createEquivalenceClass(new Conjunction(gSet)).implies(fs.getClazz())) {
                     finalStates.add(fs);
                 }
             }

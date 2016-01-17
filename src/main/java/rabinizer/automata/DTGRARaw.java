@@ -84,7 +84,7 @@ public class DTGRARaw {
         if (computeAcc) {
             Main.verboseln("========================================");
             Main.nonsilent("Generating local acceptance conditions");
-            if (unfoldedOn & slowerIsabelleAccForUnfolded) {
+            if (unfoldedOn && slowerIsabelleAccForUnfolded) {
                 accLocal = new AccLocal(automaton, valuationSetFactory, equivalenceClassFactory);
             } else {
                 accLocal = new AccLocalFolded(automaton, valuationSetFactory, equivalenceClassFactory);
@@ -121,7 +121,7 @@ public class DTGRARaw {
         if (automaton.states.contains(automaton.trapState)) {
             for (Table.Cell<ProductState, ValuationSet, ProductState> entry : automaton.transitions.cellSet()) {
                 if (entry.getRowKey().equals(automaton.trapState)) {
-                    for (GRabinPairRaw<ProductState> rabPair : (HashSet<GRabinPairRaw<ProductState>>) accTGR) {
+                    for (GRabinPairRaw<ProductState> rabPair : accTGR) {
                         Map<ProductState, ValuationSet> finTrans = rabPair.left;
                         if (finTrans.get(entry.getRowKey()) != null) {
                             ValuationSet newVal = finTrans.get(entry.getRowKey());

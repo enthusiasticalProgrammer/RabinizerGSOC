@@ -1,5 +1,6 @@
 package rabinizer.automata;
 
+import org.jetbrains.annotations.NotNull;
 import rabinizer.ltl.GOperator;
 import rabinizer.ltl.ValuationSet;
 import rabinizer.ltl.ValuationSetFactory;
@@ -38,7 +39,7 @@ public class Product extends Automaton<Product.ProductState> {
         return generatePartitioning(product);
     }
 
-    protected Product.ProductState generateInitialState() {
+    protected @NotNull Product.ProductState generateInitialState() {
         return new ProductState(primaryAutomaton.getInitialState(), secondaryAutomata.keySet(), k -> secondaryAutomata.get(k).getInitialState());
     }
 

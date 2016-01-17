@@ -2,6 +2,7 @@ package rabinizer.ltl.bdd;
 
 import com.google.common.collect.Sets;
 import net.sf.javabdd.BDD;
+import org.jetbrains.annotations.NotNull;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.Literal;
 import rabinizer.ltl.ValuationSet;
@@ -66,7 +67,7 @@ public class BDDValuationSet extends AbstractSet<Set<String>> implements Valuati
     }
 
     @Override
-    public Iterator<Set<String>> iterator() {
+    public @NotNull Iterator<Set<String>> iterator() {
         return Sets.powerSet(factory.getAlphabet()).stream().filter(this::contains).iterator();
     }
 
@@ -87,7 +88,7 @@ public class BDDValuationSet extends AbstractSet<Set<String>> implements Valuati
     }
 
     @Override
-    public boolean addAll(Collection<? extends Set<String>> c) {
+    public boolean addAll(@NotNull Collection<? extends Set<String>> c) {
         if (c instanceof BDDValuationSet) {
             BDD otherValuations = ((BDDValuationSet) c).valuations;
             BDD newValuations = valuations.or(otherValuations);
@@ -98,7 +99,7 @@ public class BDDValuationSet extends AbstractSet<Set<String>> implements Valuati
     }
 
     @Override
-    public boolean retainAll(Collection<?> c) {
+    public boolean retainAll(@NotNull Collection<?> c) {
         if (c instanceof BDDValuationSet) {
             BDD otherValuations = ((BDDValuationSet) c).valuations;
             BDD newValuations = valuations.and(otherValuations);
@@ -109,7 +110,7 @@ public class BDDValuationSet extends AbstractSet<Set<String>> implements Valuati
     }
 
     @Override
-    public boolean removeAll(Collection<?> c) {
+    public boolean removeAll(@NotNull Collection<?> c) {
         if (c instanceof BDDValuationSet) {
             BDD otherValuations = ((BDDValuationSet) c).valuations;
             BDD newValuations = valuations.and(otherValuations.not());

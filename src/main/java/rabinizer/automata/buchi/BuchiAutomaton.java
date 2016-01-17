@@ -41,7 +41,7 @@ public class BuchiAutomaton {
         Table<R, C, Set<V>> t2 = HashBasedTable.create();
 
         for (Table.Cell<R, C, Set<V>> cell : t.cellSet()) {
-            t2.put(cell.getRowKey(), cell.getColumnKey(), new HashSet<V>(cell.getValue()));
+            t2.put(cell.getRowKey(), cell.getColumnKey(), new HashSet<>(cell.getValue()));
         }
 
         return t2;

@@ -8,7 +8,6 @@ public class AccTGR<S extends IState<S>> extends ArrayList<GRabinPairT<S>> {
     private static final long serialVersionUID = 2472964991141498843L;
 
     public AccTGR(AccTGRRaw<Product.ProductState> accTGR) {
-        super();
         for (GRabinPairRaw<Product.ProductState> grp : accTGR) {
             add(grp.order());
         }

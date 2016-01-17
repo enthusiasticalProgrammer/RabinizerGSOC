@@ -4,14 +4,11 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
-import jhoafparser.ast.AtomLabel;
-import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rabinizer.automata.*;
-import rabinizer.automata.output.FormulaConverter;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.ltl.*;
 import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
@@ -21,15 +18,15 @@ import java.util.*;
 
 public class DetLimitAutomaton {
 
-    protected static final JumpVisitor JUMP_VISITOR = new JumpVisitor();
+    private static final JumpVisitor JUMP_VISITOR = new JumpVisitor();
 
-    protected final Formula initialFormula;
-    protected final Set<IState<?>> initialStates;
-    protected final DetComponent detComponent;
-    protected final NonDetComponent nonDetComponent;
-    protected final int acceptanceConditionSize;
-    protected final EquivalenceClassFactory equivalenceClassFactory;
-    protected final ValuationSetFactory valuationSetFactory;
+    private final Formula initialFormula;
+    private final Set<IState<?>> initialStates;
+    private final DetComponent detComponent;
+    private final NonDetComponent nonDetComponent;
+    private final int acceptanceConditionSize;
+    private final EquivalenceClassFactory equivalenceClassFactory;
+    private final ValuationSetFactory valuationSetFactory;
 
     public DetLimitAutomaton(Formula formula) {
         this(formula, EnumSet.allOf(Optimisation.class));
@@ -111,7 +108,7 @@ public class DetLimitAutomaton {
         acceptanceConditionSize = accSizeCounter;
     }
 
-    private boolean isImpatientState(EquivalenceClass clazz) {
+    private static boolean isImpatientState(EquivalenceClass clazz) {
         if (clazz.isTrue()) {
             return true;
         }
@@ -144,25 +141,25 @@ public class DetLimitAutomaton {
         consumer.done();
     }
 
-    static class JumpVisitor implements Visitor<Boolean> {
+    private static class JumpVisitor implements Visitor<Boolean> {
 
         @Override
-        public Boolean defaultAction(Formula formula) {
+        public Boolean defaultAction(@NotNull Formula formula) {
             return formula.gSubformulas().isEmpty();
         }
 
         @Override
-        public Boolean visit(Conjunction conjunction) {
+        public Boolean visit(@NotNull Conjunction conjunction) {
             return conjunction.children.stream().allMatch(e -> e.accept(this));
         }
 
         @Override
-        public Boolean visit(Disjunction disjunction) {
+        public Boolean visit(@NotNull Disjunction disjunction) {
             return disjunction.children.stream().allMatch(e -> e.accept(this));
         }
 
         @Override
-        public Boolean visit(GOperator gOperator) {
+        public Boolean visit(@NotNull GOperator gOperator) {
             if (gOperator.gSubformulas().isEmpty()) {
                 return true;
             }
@@ -240,32 +237,30 @@ public class DetLimitAutomaton {
 
     class DetComponent extends Automaton<DetComponent.State> {
 
-        protected final DetLimitMaster primaryAutomaton;
-        protected final Map<Set<GOperator>, Map<GOperator, DetLimitSlave>> secondaryAutomata;
-        protected final Collection<Optimisation> optimisations;
-        protected final Table<Set<GOperator>, GOperator, Integer> acceptanceIndexMapping;
-        protected final Table<DetLimitSlave.State, ValuationSet, Optional<Integer>> acceptanceCache;
+        final DetLimitMaster primaryAutomaton;
+        final Map<Set<GOperator>, Map<GOperator, DetLimitSlave>> secondaryAutomata;
+        final Collection<Optimisation> optimisations;
+        final Table<Set<GOperator>, GOperator, Integer> acceptanceIndexMapping;
 
-        public DetComponent(DetLimitMaster primaryAutomaton, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
+        DetComponent(DetLimitMaster primaryAutomaton, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
             super(valuationSetFactory, false);
             this.primaryAutomaton = primaryAutomaton;
             secondaryAutomata = new HashMap<>();
             secondaryAutomata.put(Collections.emptySet(), Collections.emptyMap());
             this.optimisations = optimisations;
             acceptanceIndexMapping = HashBasedTable.create();
-            acceptanceCache = HashBasedTable.create();
         }
 
         @Override
-        protected State generateInitialState() {
+        protected @NotNull State generateInitialState() {
             throw new UnsupportedOperationException();
         }
 
-        protected State jump(EquivalenceClass master, Set<GOperator> keys) {
+        State jump(EquivalenceClass master, Set<GOperator> keys) {
             return jump(master, keys, null);
         }
 
-        protected @Nullable State jump(@NotNull EquivalenceClass master, @NotNull Set<GOperator> keys, @Nullable Set<String> valuation) {
+        @Nullable State jump(@NotNull EquivalenceClass master, @NotNull Set<GOperator> keys, @Nullable Set<String> valuation) {
             Master.State primaryState = getPrimaryState(master, keys, valuation);
             Map<GOperator, DetLimitSlave.State> secondaryStateMap = getSecondaryStateMap(keys, valuation);
 
@@ -278,7 +273,7 @@ public class DetLimitAutomaton {
             return state;
         }
 
-        protected void toHOA(HOAConsumerExtended<IState<?>> consumer) throws HOAConsumerException {
+        void toHOA(HOAConsumerExtended<IState<?>> consumer) throws HOAConsumerException {
             for (State productState : states) {
                 consumer.addState(productState);
 
@@ -292,8 +287,8 @@ public class DetLimitAutomaton {
 
                     for (Map.Entry<ValuationSet, List<Integer>> foo : accSetMap.entrySet()) {
                         if (foo.getKey().containsAll(valuationSet)) {
-                            accSet = new ArrayList<>();
-                            accSet.addAll(foo.getValue());
+                            accSet = new ArrayList<>(foo.getValue());
+                            break;
                         }
                     }
 
@@ -429,7 +424,7 @@ public class DetLimitAutomaton {
             }
 
             @Override
-            public ValuationSetFactory getFactory() {
+            public @NotNull ValuationSetFactory getFactory() {
                 return valuationSetFactory;
             }
 

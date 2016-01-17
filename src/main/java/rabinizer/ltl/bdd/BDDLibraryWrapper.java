@@ -4,6 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.jetbrains.annotations.NotNull;
 import rabinizer.ltl.*;
 
 import java.lang.reflect.Method;
@@ -18,14 +19,14 @@ public abstract class BDDLibraryWrapper<K extends Formula> {
     private final BDDVisitor visitor;
 
     protected BDDLibraryWrapper(Set<K> domain) {
-        final int size = domain.size() > 0 ? domain.size() : 1;
+        final int size = !domain.isEmpty() ? domain.size() : 1;
 
         factory = BDDFactory.init("java", 64 * size, 1000);
         factory.setVarNum(size);
 
         // Silence library
         try {
-            Method m = BDDLibraryWrapper.class.getDeclaredMethod("callback", new Class[]{int.class, Object.class});
+            Method m = BDDLibraryWrapper.class.getDeclaredMethod("callback", int.class, Object.class);
             factory.registerGCCallback(this, m);
             factory.registerReorderCallback(this, m);
             factory.registerResizeCallback(this, m);
@@ -105,12 +106,12 @@ public abstract class BDDLibraryWrapper<K extends Formula> {
 
     private class BDDVisitor implements Visitor<BDD> {
         @Override
-        public BDD visit(BooleanConstant b) {
+        public BDD visit(@NotNull BooleanConstant b) {
             return b.value ? factory.one() : factory.zero();
         }
 
         @Override
-        public BDD visit(Conjunction c) {
+        public BDD visit(@NotNull Conjunction c) {
             if (c.children.contains(BooleanConstant.FALSE)) {
                 return factory.zero();
             }
@@ -119,7 +120,7 @@ public abstract class BDDLibraryWrapper<K extends Formula> {
         }
 
         @Override
-        public BDD visit(Disjunction d) {
+        public BDD visit(@NotNull Disjunction d) {
             if (d.children.contains(BooleanConstant.TRUE)) {
                 return factory.one();
             }
@@ -128,7 +129,7 @@ public abstract class BDDLibraryWrapper<K extends Formula> {
         }
 
         @Override
-        public BDD defaultAction(Formula formula) {
+        public BDD defaultAction(@NotNull Formula formula) {
             BDD value = mapping.get(formula);
 
             if (value == null) {

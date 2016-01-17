@@ -68,11 +68,11 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
 
     @Override
     public void setAcceptanceCondition(int i, BooleanExpression<AtomAcceptance> booleanExpression) throws HOAConsumerException {
-        if ((i == 0) && (accType.equals(HOAConsumerExtended.AccType.NONE) || accType.equals(HOAConsumerExtended.AccType.ALL))) {
+        if (i == 0 && (accType == HOAConsumerExtended.AccType.NONE || accType == HOAConsumerExtended.AccType.ALL)) {
             return;
         }
 
-        if ((i == 1) && (accType.equals(HOAConsumerExtended.AccType.BUCHI))) {
+        if (i == 1 && accType == HOAConsumerExtended.AccType.BUCHI) {
             return;
         }
 
@@ -127,17 +127,18 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
 
         automaton = new BuchiAutomaton(valuationSetFactory);
 
-        if (accType.equals(HOAConsumerExtended.AccType.ALL) || accType.equals(HOAConsumerExtended.AccType.NONE)) {
+        if (accType == HOAConsumerExtended.AccType.ALL || accType == HOAConsumerExtended.AccType.NONE) {
             for (Set<String> valuation : Sets.powerSet(valuationSetFactory.getAlphabet())) {
                 automaton.addTransition(automaton.getInitialState(), valuation, automaton.getInitialState());
             }
         }
 
+        // Fixme: NPE
         automaton.getInitialState().label = Integer.toString(initialState);
 
-        if (accType.equals(HOAConsumerExtended.AccType.ALL)) {
+        if (accType == HOAConsumerExtended.AccType.ALL) {
             automaton.setAccepting(automaton.getInitialState());
-        } else if (accType.equals(HOAConsumerExtended.AccType.BUCHI)) {
+        } else if (accType == HOAConsumerExtended.AccType.BUCHI) {
             ensureSpaceInMap(initialState);
             integerToState[initialState] = automaton.getInitialState();
         }
@@ -145,7 +146,7 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
 
     @Override
     public void addState(int i, String s, BooleanExpression<AtomLabel> booleanExpression, List<Integer> list) throws HOAConsumerException {
-        if (accType.equals(HOAConsumerExtended.AccType.ALL) || accType.equals(HOAConsumerExtended.AccType.NONE)) {
+        if (accType == HOAConsumerExtended.AccType.ALL || accType == HOAConsumerExtended.AccType.NONE) {
             return;
         }
 
@@ -164,7 +165,7 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
 
     @Override
     public void addEdgeImplicit(int i, List<Integer> list, List<Integer> list1) throws HOAConsumerException {
-        if (accType.equals(HOAConsumerExtended.AccType.ALL) || accType.equals(HOAConsumerExtended.AccType.NONE)) {
+        if (accType == HOAConsumerExtended.AccType.ALL || accType == HOAConsumerExtended.AccType.NONE) {
             return;
         }
 
@@ -174,7 +175,7 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
 
     @Override
     public void addEdgeWithLabel(int i, BooleanExpression<AtomLabel> booleanExpression, List<Integer> list, List<Integer> list1) throws HOAConsumerException {
-        if (accType.equals(HOAConsumerExtended.AccType.ALL) || accType.equals(HOAConsumerExtended.AccType.NONE)) {
+        if (accType == HOAConsumerExtended.AccType.ALL || accType == HOAConsumerExtended.AccType.NONE) {
             return;
         }
 

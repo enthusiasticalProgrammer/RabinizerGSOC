@@ -1,5 +1,7 @@
 package rabinizer.ltl;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Set;
 
 public class EvaluateVisitor implements Visitor<Formula> {
@@ -17,7 +19,7 @@ public class EvaluateVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula defaultAction(Formula f) {
+    public Formula defaultAction(@NotNull Formula f) {
         if (environment.implies(factory.createEquivalenceClass(f))) {
             return BooleanConstant.TRUE;
         }
@@ -26,12 +28,12 @@ public class EvaluateVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula visit(Conjunction c) {
+    public Formula visit(@NotNull Conjunction c) {
         return new Conjunction(c.children.stream().map(e -> e.accept(this)));
     }
 
     @Override
-    public Formula visit(Disjunction d) {
+    public Formula visit(@NotNull Disjunction d) {
         Formula defaultAction = defaultAction(d);
 
         if (defaultAction instanceof BooleanConstant) {
