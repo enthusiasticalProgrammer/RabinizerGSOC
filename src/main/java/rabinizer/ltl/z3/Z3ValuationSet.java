@@ -34,12 +34,6 @@ public class Z3ValuationSet extends AbstractSet<Set<String>> implements Valuatio
     }
 
     @Override
-    public void clear() {
-        super.clear();
-
-    }
-
-    @Override
     public boolean contains(Object o) {
         if (!(o instanceof Set)) {
             return false;

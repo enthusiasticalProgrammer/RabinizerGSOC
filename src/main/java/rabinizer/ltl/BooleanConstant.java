@@ -97,6 +97,6 @@ public final class BooleanConstant extends FormulaNullary {
 
     @Override
     protected int hashCodeOnce() {
-        return Objects.hash(value);
+        return Boolean.hashCode(value);
     }
 }

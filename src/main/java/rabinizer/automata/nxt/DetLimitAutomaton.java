@@ -41,7 +41,7 @@ public class DetLimitAutomaton {
         valuationSetFactory = new BDDValuationSetFactory(initialFormula.getAtoms());
 
         nonDetComponent = new NonDetComponent(equivalenceClassFactory, valuationSetFactory, optimisations);
-        detComponent = new DetComponent(new DetLimitMaster(BooleanConstant.TRUE, equivalenceClassFactory, valuationSetFactory, optimisations, false), valuationSetFactory, optimisations);
+        detComponent = new DetComponent(new DetLimitMaster(equivalenceClassFactory, valuationSetFactory, optimisations, false), valuationSetFactory, optimisations);
 
         Set<Formula> initialFormulas;
 
@@ -170,7 +170,7 @@ public class DetLimitAutomaton {
 
     class NonDetComponent extends DetLimitMaster {
         NonDetComponent(EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
-            super(BooleanConstant.TRUE, equivalenceClassFactory, valuationSetFactory, optimisations, true);
+            super(equivalenceClassFactory, valuationSetFactory, optimisations, true);
             generate();
         }
 
