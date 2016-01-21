@@ -95,13 +95,18 @@ public class SCCAnalyser<S extends IState<S>> {
 
         for (Map.Entry<ValuationSet, S> entry : trans.entrySet()) {
 
-            S w = entry.getValue();
-            if (allowedStates.contains(w) && !number.containsKey(w) && !Objects.equals(forbiddenEdges.get(v), entry.getKey())) {
-                stack.push(w);
-                result.addAll(SCCsRecursively());
-                lowlink.put(v, Math.min(lowlink.get(v), lowlink.get(w)));
-            } else if (allowedStates.contains(w) && number.get(w) < number.get(v) && stack.contains(w)) {
-                lowlink.put(v, Math.min(lowlink.get(v), number.get(w)));
+            if (!Objects.equals(forbiddenEdges.get(v), entry.getKey())) {// edge
+                // not
+                // forbidden
+
+                S w = entry.getValue();
+                if (allowedStates.contains(w) && !number.containsKey(w)) {
+                    stack.push(w);
+                    result.addAll(SCCsRecursively());
+                    lowlink.put(v, Math.min(lowlink.get(v), lowlink.get(w)));
+                } else if (allowedStates.contains(w) && number.get(w) < number.get(v) && stack.contains(w)) {
+                    lowlink.put(v, Math.min(lowlink.get(v), number.get(w)));
+                }
             }
 
         }
