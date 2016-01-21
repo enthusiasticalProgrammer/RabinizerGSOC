@@ -83,7 +83,8 @@ public class EmptinessCheck<S extends IState<S>> {
                     // sets in current scc can be
                     // deleted and all components of finite sets of current scc
                     // if any infinite condition is present
-
+                    sccEmpty = false;
+                } else {
                     for (TranSet<S> inf : pair.right) {
                         for (S s : scc) {
                             inf.remove(s);
@@ -94,7 +95,6 @@ public class EmptinessCheck<S extends IState<S>> {
                             pair.left.remove(s);
                         }
                     }
-                    sccEmpty = false;
                 }
             }
 
