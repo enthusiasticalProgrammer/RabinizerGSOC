@@ -1,8 +1,8 @@
 package rabinizer.ltl;
 
 /**
- * visitY(a,b) returns true if a=>b, and if we don't know it or a doesn't imply
- * b then false. it is highly recommended to have the subformulae aggressively
+ * visit(a,b) returns true if a=>b, and if we don't know it or a doesn't imply b
+ * then false. it is highly recommended to have the subformulae aggressively
  * simplified before the Visitor is applied.
  */
 public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
@@ -140,7 +140,7 @@ public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
             if (((Disjunction) fo).children.stream().anyMatch(ch -> u.accept(this, ch)))
                 return true;
         }
-        return Simplifier.simplify(new Disjunction(u.left, u.right), Simplifier.Strategy.PROPOSITIONAL).accept(SimplifyAggressivelyVisitor.getVisitor()).accept(this, fo);
+        return Simplifier.simplify(new Disjunction(u.left, u.right), Simplifier.Strategy.AGGRESSIVELY).accept(this, fo);
     }
 
     @Override

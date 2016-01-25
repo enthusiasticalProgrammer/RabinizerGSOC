@@ -2,6 +2,8 @@ package rabinizer.exec;
 
 import java.io.BufferedReader;
 import rabinizer.ltl.*;
+import rabinizer.ltl.Simplifier.Strategy;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -10,6 +12,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.HashSet;
+import java.util.Set;
 
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
@@ -19,6 +23,7 @@ import rabinizer.automata.DSRA;
 import rabinizer.automata.DTGRA;
 import rabinizer.automata.DTGRARaw;
 import rabinizer.automata.DTRA;
+import rabinizer.automata.Optimisation;
 import rabinizer.ltl.ValuationSetFactory;
 import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
 import rabinizer.ltl.bdd.BDDValuationSetFactory;
@@ -66,7 +71,7 @@ public class Main {
                 // states\n"
                 + "   -format=hoa                 : HOA (Hanoi omega-automata) format \n"
                 + "   -format=dot                 : dotty format (default)\n"
-                + "   -format=size  : print only size of automaton\n"
+                + "   -format=size                : print only size of automaton\n"
                 + "   -how=isabelle               : stick to mechanically proven construction\n"
                 + "   -how=optimize               : use optimizations (default) \n"
                 + "   -eager                      : use eager optimizations, default if optimize\n"
@@ -75,6 +80,7 @@ public class Main {
                 + "   -not-simplify-formula       : do not simplify the formula \n"
                 + "   -relevant-slaves-only       : computes only relevant slaves, default if optimize \n"
                 + "   -all-slaves                 : computes all slaves, default if isabelle \n"
+                + "   -slave-suspension           : suspends the slaves, whenever possible \n"
                 + "   -sinks-on                   : uses the sink-optimization for Mojmir slaves, default if optimize\n"
                 + "   -sinks-off                  : does not use the sink-optimization, default if isabelle \n"
                 + "   -optimize-initial-state     : remove transient pair in Rabin Slave, default if optimize\n"
@@ -110,13 +116,14 @@ public class Main {
         boolean outFile = true;
         String argument = null;
         boolean simplifyFormula = false; // NULL Pointer
-        boolean eager = true;
-        boolean relSlavesOnly = true;
-        boolean sinksOn = true;
-        boolean optInit = true;
         boolean z3 = false;
-        boolean emptyCheck = false;
-        boolean complete = false;
+
+
+        Set<Optimisation> opts = new HashSet<>();
+        opts.add(Optimisation.OPTIMISE_INITIAL_STATE);
+        opts.add(Optimisation.EAGER);
+        opts.add(Optimisation.SINKS);
+        opts.add(Optimisation.ONLY_RELEVANT_SLAVES);
 
         for (String arg : args) {
             if (arg.equals("-h") || arg.equals("--h") || arg.equals("-help") || arg.equals("--help")) {
@@ -145,12 +152,12 @@ public class Main {
             } else if (arg.equals("-format=sizeacc") || arg.equals("--format=sizeacc")) {
                 format = Format.SIZEACC;
             } else if (arg.equals("-how=isabelle") || arg.equals("--how=isabelle")) {
-                eager = false;
-                sinksOn = false;
-                relSlavesOnly = false;
-                optInit = false;
+                opts.remove(Optimisation.EAGER);
+                opts.remove(Optimisation.SINKS);
+                opts.remove(Optimisation.ONLY_RELEVANT_SLAVES);
+                opts.remove(Optimisation.OPTIMISE_INITIAL_STATE);
             } else if (arg.equals("-how=optimize") || arg.equals("--how=optimize")) {
-                eager = true;
+                opts.add(Optimisation.EAGER);
             } else if (arg.equals("-in=formula") || arg.equals("--in=formula")) {
                 inFormula = true;
             } else if (arg.equals("-in=file") || arg.equals("--in=file")) {
@@ -164,28 +171,30 @@ public class Main {
             } else if (arg.equals("-not-simplify-formula") || arg.equals("--not-simplify-formula")) {
                 simplifyFormula = false;
             } else if (arg.equals("-eager") || arg.equals("--eager")) {
-                eager = true;
+                opts.add(Optimisation.EAGER);
             } else if (arg.equals("-not-eager") || arg.equals("--not-eager")) {
-                eager = false;
+                opts.remove(Optimisation.EAGER);
             } else if (arg.equals("-relevant-slaves-only") || arg.equals("--relevant-slaves-only")) {
-                relSlavesOnly = true;
+                opts.add(Optimisation.ONLY_RELEVANT_SLAVES);
             } else if (arg.equals("-all-slaves") || arg.equals("--all-slaves")) {
-                relSlavesOnly = false;
+                opts.remove(Optimisation.ONLY_RELEVANT_SLAVES);
             } else if (arg.equals("-sinks-on") || arg.equals("--sinks-on")) {
-                sinksOn = true;
+                opts.add(Optimisation.SINKS);
             } else if (arg.equals("-sinks-off") || arg.equals("--sinks-off")) {
-                sinksOn = false;
+                opts.remove(Optimisation.SINKS);
             } else if (arg.equals("-optimize-initial-state") || arg.equals("--optimize-initial-state")) {
-                optInit = true;
+                opts.add(Optimisation.OPTIMISE_INITIAL_STATE);
             } else if (arg.equals("-not-optimize-initial-state") || arg.equals("--not-optimize-initial-state")) {
-                optInit = false;
+                opts.remove(Optimisation.OPTIMISE_INITIAL_STATE);
             } else if (arg.equals("-z3") || arg.equals("--z3")) {
                 z3 = true;
             } else if (arg.equals("-emptiness-check") || arg.equals("--emptiness-check")) {
-                emptyCheck = true;
-                complete=true;
+                opts.add(Optimisation.EMPTINESS_CHECK);
+                opts.add(Optimisation.COMPLETE);
             }else if(arg.equals("-complete")||arg.equals("--complete")){
-                complete=true;
+                opts.add(Optimisation.COMPLETE);
+            } else if (arg.equals("-slave-suspension") || arg.equals("--slave-suspension")) {
+                opts.add(Optimisation.SLAVE_SUSPENSION);
             } else if (arg.substring(0, 1).equals("-")) {
                 System.out.println("\n\nERROR: unknown option " + arg);
                 printUsage();
@@ -198,6 +207,18 @@ public class Main {
         if (argument == null) {
             errorMessageAndExit("No input given.");
         }
+
+        if (opts.contains(Optimisation.EAGER) && opts.contains(Optimisation.SLAVE_SUSPENSION)) {
+            System.err.println("Please do not use eager together with slave suspension, since eagerness will negate the slave suspensions effect.");
+            System.err.println("Warning (in this context): eager unfolding is deactivated.");
+            opts.remove(Optimisation.EAGER);
+        }
+
+
+        if (format != Format.SIZE || type != AutomatonType.TGR)
+            opts.add(Optimisation.COMPUTE_ACC_CONDITION);
+
+        opts.add(Optimisation.NOT_ISABELLE_ACC);
 
         nonsilent("\n******************************************************************************\n"
                 + "* Rabinizer 3.1.0 by Jan Kretinsky                                           *\n"
@@ -259,9 +280,7 @@ public class Main {
             // IOException
             stopwatch();
 
-            AccAutomatonInterface automaton = computeAutomaton(input, type,
-                    format != Format.SIZE || type != AutomatonType.TGR, eager, simplifyFormula, sinksOn, relSlavesOnly,
-                    optInit, z3, emptyCheck, complete);
+            AccAutomatonInterface automaton = computeAutomaton(input, type, simplifyFormula, z3, opts);
 
             nonsilent("Time for construction: " + stopwatch() + " s");
             nonsilent("Outputting DGRA");
@@ -308,9 +327,8 @@ public class Main {
         writer.close();
     }
 
-    public static AccAutomatonInterface computeAutomaton(String input, AutomatonType type, boolean computeAcc,
-            boolean eager, boolean simplify, boolean sinks_on, boolean relSlavesOnly, boolean opt_init, boolean z3,
-            boolean emptyCheck, boolean complete) {
+    public static AccAutomatonInterface computeAutomaton(String input, AutomatonType type, boolean simplify, boolean z3,
+            Set<Optimisation> opts) {
         LTLParser parser = new LTLParser(new StringReader(input));
 
         Formula formula = null;
@@ -322,8 +340,8 @@ public class Main {
         }
 
         if (simplify) {
-            nonsilent("Formula unsimplified: " + formula);
-            formula = formula.accept(SimplifyAggressivelyVisitor.getVisitor());
+            nonsilent("Formula unsimplified: " + input);
+            Simplifier.simplify(formula, Strategy.AGGRESSIVELY);
             nonsilent("Formula simplified:" + formula);
         } else {
             nonsilent("Input formula: " + formula);
@@ -336,11 +354,8 @@ public class Main {
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(backend, formula.getPropositions());
         ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(backend, formula.getAtoms());
 
-        boolean slowerIsabelleAccForUnfolded = false;
-
         // DGRA dgra = new DTGRA(phi); for optimized
-        DTGRARaw dtgra = new DTGRARaw(formula, computeAcc, eager, sinks_on, opt_init, relSlavesOnly,
-                slowerIsabelleAccForUnfolded, factory, valuationSetFactory, complete, emptyCheck);
+        DTGRARaw dtgra = new DTGRARaw(formula, factory, valuationSetFactory, opts);
         switch (type) {
         case TGR:
             return new DTGRA(dtgra);

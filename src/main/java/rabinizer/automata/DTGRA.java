@@ -4,8 +4,11 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.HashBasedTable;
@@ -24,7 +27,7 @@ import rabinizer.ltl.ValuationSetFactory;
  */
 public class DTGRA extends Product implements AccAutomatonInterface {
 
-    AccTGR<ProductState> acc;
+    private AccTGR<ProductState> acc;
 
     public DTGRA(Master master, Map<GOperator, RabinSlave> slaves, ValuationSetFactory factory,
             Collection<Optimisation> optimisations) {

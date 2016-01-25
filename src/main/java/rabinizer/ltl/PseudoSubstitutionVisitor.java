@@ -32,15 +32,19 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
             return BooleanConstant.get(c);
         } else {
             Set<Formula> set = new HashSet<>(co.children);
+            Set<Formula> toAdd = new HashSet<>();
+            Set<Formula> toRemove = new HashSet<>();
             for (Formula form : set) {
                 Formula f = form.accept(this, b, c);
                 if (!f.equals(form)) {
-                    set.remove(form);
-                    set.add(f);
+                    toAdd.add(f);
+                    toRemove.add(form);
                 }
             }
+            set.removeAll(toRemove);
+            set.addAll(toAdd);
             if (!set.equals(co.children)) {
-                return Simplifier.simplify(new Conjunction(set), Simplifier.Strategy.PROPOSITIONAL);
+                return Simplifier.simplify(new Conjunction(set), Simplifier.Strategy.AGGRESSIVELY);
             }
             return co;
         }
@@ -52,15 +56,20 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
             return BooleanConstant.get(c);
         } else {
             Set<Formula> set = new HashSet<>(d.children);
+            Set<Formula> toAdd = new HashSet<>();
+            Set<Formula> toRemove = new HashSet<>();
             for (Formula form : set) {
                 Formula f = form.accept(this, b, c);
                 if (!f.equals(form)) {
-                    set.remove(form);
-                    set.add(f);
+                    toAdd.add(f);
+                    toRemove.add(form);
                 }
             }
+            set.removeAll(toRemove);
+            set.addAll(toAdd);
+
             if (!set.equals(d.children)) {
-                return Simplifier.simplify(new Disjunction(set), Simplifier.Strategy.PROPOSITIONAL);
+                return Simplifier.simplify(new Disjunction(set), Simplifier.Strategy.AGGRESSIVELY);
             }
             return d;
         }
@@ -86,7 +95,9 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
             return BooleanConstant.get(c);
         } else {
             if (!c) {
-                return new GOperator(g.operand.accept(this, b, c));
+                if (g.operand.equals(b)) {
+                    return BooleanConstant.get(c);
+                }
             }
         }
         return g;
@@ -103,7 +114,7 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
 
     @Override
     public Formula visit(UOperator u, Formula b, Boolean c) {
-        if (u.equals(b) || u.right.equals(b)) {
+        if (u.equals(b) || (u.right.equals(b) && c)) {
             return BooleanConstant.get(c);
         }
         return u;
@@ -113,6 +124,8 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
     public Formula visit(XOperator x, Formula b, Boolean c) {
         if (x.equals(b)) {
             return BooleanConstant.get(c);
+        } else if (b instanceof XOperator) {
+            return new XOperator(x.operand.accept(this, ((XOperator) b).operand, c));
         }
         return x;
     }
