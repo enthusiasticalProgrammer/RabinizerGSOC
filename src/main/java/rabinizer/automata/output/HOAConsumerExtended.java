@@ -98,6 +98,7 @@ public class HOAConsumerExtended<T> {
      */
     public void setAcceptanceCondition(List<GRabinPair<?>> acc) throws HOAConsumerException {
         AccType accT = getAccCondition(acc);
+
         hoa.provideAcceptanceName(accT.toString(), Collections.emptyList());
         setAccCond(acc);
     }
@@ -123,26 +124,24 @@ public class HOAConsumerExtended<T> {
     }
 
     public void addEdge(T begin, Formula label, T end, List<Integer> accSets) throws HOAConsumerException {
+        if (accType == AutomatonType.STATE) {
+            throw new UnsupportedOperationException("For state-acceptance-based automata, please use the other addEdge method, where you also put accSets");
+        }
         hoa.addEdgeWithLabel(stateNumbers.get(begin), Simplifier.simplify(label).accept(new FormulaConverter()), Collections.singletonList(getStateId(end)), accSets);
     }
 
     public void addEdge(T begin, Formula label, T end) throws HOAConsumerException {
-        if (accType == AutomatonType.TRANSITION) {
-            throw new UnsupportedOperationException("For transition-acceptance-based automata, please use the other addEdge method, where you also put accSets");
-        }
-
         addEdge(begin, label, end, null);
     }
 
     public void addEdge(T begin, Set<String> label, T end) throws HOAConsumerException {
+        if (accType == AutomatonType.TRANSITION) {
+            throw new UnsupportedOperationException("For transition-acceptance-based automata, please use the other addState method, where you also put accSets");
+        }
         addEdge(begin, new Conjunction(alphabet.stream().map(l -> new Literal(l, !label.contains(l)))), end, null);
     }
 
     public void addState(T s) throws HOAConsumerException {
-        if (accType == AutomatonType.STATE) {
-            throw new UnsupportedOperationException("For state-acceptance-based automata, please use the other addState method, where you also put accSets");
-        }
-
         addState(s, null);
     }
 
@@ -160,11 +159,10 @@ public class HOAConsumerExtended<T> {
     }
 
     public Integer getNumber(Object o) {
-        if (acceptanceNumbers.containsKey(o)) {
-            return acceptanceNumbers.get(o);
-        } else {
-            throw new IllegalArgumentException("acceptance-set is not yet stored");
+        if (!acceptanceNumbers.containsKey(o)) {
+            acceptanceNumbers.put(o, acceptanceNumbers.size());
         }
+        return acceptanceNumbers.get(o);
     }
 
     public void done() throws HOAConsumerException {
@@ -179,31 +177,30 @@ public class HOAConsumerExtended<T> {
     private void setAccCond(List<GRabinPair<?>> acc) throws HOAConsumerException {
         BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
 
-        int currentVal = 0;
         for (GRabinPair<?> rabin : acc) {
             BooleanExpression<AtomAcceptance> left = TRUE;
             BooleanExpression<AtomAcceptance> right = TRUE;
             BooleanExpression<AtomAcceptance> both;
 
             if (rabin.left != null) {
-                left = new BooleanExpression<>(mkFin(currentVal));
-                acceptanceNumbers.put(rabin.left, currentVal++);
+                left = new BooleanExpression<>(mkFin(getNumber(rabin.left)));
             }
 
 
             if (rabin.right != null) {
                 for (Object inf : rabin.right) {
-                    right = new BooleanExpression<>(BooleanExpression.Type.EXP_AND, right,
-                            new BooleanExpression<>(mkInf(currentVal)));
-                    acceptanceNumbers.put(inf, currentVal++);
+                    right = new BooleanExpression<>(BooleanExpression.Type.EXP_AND, right, new BooleanExpression<>(mkInf(getNumber(inf))));
                 }
             }
 
             both = new BooleanExpression<>(BooleanExpression.Type.EXP_AND, left, right);
             all = new BooleanExpression<>(BooleanExpression.Type.EXP_OR, all, both);
         }
+        if (all.isFALSE()) {
+            all = TRUE;
+        }
 
-        hoa.setAcceptanceCondition(currentVal, new RemoveConstants().visit(all));
+        hoa.setAcceptanceCondition(acceptanceNumbers.size(), new RemoveConstants().visit(all));
     }
 
     private int getStateId(T state) {
