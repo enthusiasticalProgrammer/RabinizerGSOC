@@ -51,24 +51,4 @@ public final class Conjunction extends PropositionalFormula {
     protected PropositionalFormula create(Stream<? extends Formula> formulaStream) {
         return new Conjunction(formulaStream);
     }
-
-    /**
-     * helps the SimplifyBooleanVisitor
-     *
-     * @return every non-conjunction child of this Conjunction, and the children
-     *         of the Conjunction-children
-     */
-    protected Set<Formula> getAllChildrenOfConjunction() {
-        Set<Formula> al = new HashSet<>(children.size());
-
-        for (Formula child : children) {
-            if (child instanceof Conjunction) {
-                al.addAll(((Conjunction) child).getAllChildrenOfConjunction());
-            } else {
-                al.add(child);
-            }
-        }
-
-        return al;
-    }
 }

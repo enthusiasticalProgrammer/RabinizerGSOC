@@ -14,8 +14,11 @@ public final class Simplifier {
 
     private static final Visitor<Formula> PROPOSITIONAL_SIMPLIFIER = new PropositionalSimplifier();
     private static final Visitor<Formula> MODAL_SIMPLIFIER = new ModalSimplifier();
+
     private static final Visitor<XFormula> PULLUP_X = new PullupXVisitor();
     private static final Visitor<Formula> PUSHDOWN_FG = new PushDownFGVisitor();
+
+    private static final Visitor<Formula> AGGRESSIVE_SIMPLIFIER = new AggressiveSimplifier();
 
     private Simplifier() {
     }
@@ -26,6 +29,10 @@ public final class Simplifier {
 
     public static Formula simplify(Formula formula, Strategy strategy) {
         switch (strategy) {
+
+            case PROPOSITIONAL:
+                return formula.accept(Simplifier.PROPOSITIONAL_SIMPLIFIER);
+
             case PULLUP_X:
                 return formula.accept(PULLUP_X).toFormula();
 
@@ -49,14 +56,19 @@ public final class Simplifier {
             case MODAL:
                 return formula.accept(Simplifier.MODAL_SIMPLIFIER);
 
-            case PROPOSITIONAL:
+            case AGGRESSIVELY:
+                return formula.accept(Simplifier.AGGRESSIVE_SIMPLIFIER);
+
             default:
-                return formula.accept(Simplifier.PROPOSITIONAL_SIMPLIFIER);
+                throw new AssertionError();
+
         }
     }
 
     public enum Strategy {
-        PROPOSITIONAL, MODAL, PULLUP_X, MODAL_EXT
+
+        PROPOSITIONAL, MODAL, PULLUP_X, MODAL_PULLUP_X, MODAL_EXT, AGGRESSIVELY
+
     }
 
     static class PropositionalSimplifier implements Visitor<Formula> {
@@ -163,26 +175,26 @@ public final class Simplifier {
 
         @Override
         public Formula visit(@NotNull UOperator uOperator) {
-            Formula left = uOperator.left.accept(this);
-            Formula right = uOperator.right.accept(this);
+            Formula l = uOperator.left.accept(this);
+            Formula r = uOperator.right.accept(this);
 
-            if (right.isPureEventual() || right.isSuspendable()) {
-                return right;
+            if (r.isSuspendable() || r.isPureEventual()) {
+                return r;
             }
 
-            if (left.equals(BooleanConstant.TRUE)) {
-                return new FOperator(right);
+            if (l.isSuspendable() || l.isPureUniversal()) {
+                Formula f = new Conjunction(l, new FOperator(r));
+                f = new Disjunction(f, r);
+                return f;
             }
 
-            if (left.equals(BooleanConstant.FALSE)) {
-                return right;
+            if (l.isPureEventual()) {
+                Formula f = new FOperator(new Conjunction(l, new XOperator(r)));
+                f = new Disjunction(f, r);
+                return f;
             }
 
-            if (left.isPureUniversal()) {
-                return new Disjunction(right, new Conjunction(left, new FOperator(right)));
-            }
-
-            return new UOperator(left, right);
+            return new UOperator(l, r);
         }
 
         @Override
@@ -330,6 +342,209 @@ public final class Simplifier {
         @Override
         public Formula visit(@NotNull XOperator xOperator) {
             return new XOperator(xOperator.operand.accept(this));
+        }
+    }
+
+    public static class AggressiveSimplifier extends ModalSimplifier implements Visitor<Formula> {
+        @Override
+        public Formula defaultAction(@NotNull Formula f) {
+            return f; // for boolean constants and literals
+        }
+
+        @Override
+        public Formula visit(@NotNull Conjunction c) {
+            Formula con = super.visit(c);
+            if (!(con instanceof Conjunction)) {
+                return con;
+            }
+            c = (Conjunction) con;
+            Set<Formula> set = new HashSet<>(c.children);
+
+            // remove ltl that are implied by other Formulas
+            // or do a PseudoSubstitution by a fix-point-iteration
+            for (; innerConjunctionLoop(set);)
+                ;
+
+            return super.visit(new Conjunction(set));
+        }
+
+        /**
+         * this method helps simplifyAgressively by performing one change of the
+         * children set, and returning true, if something has changed
+         */
+        private boolean innerConjunctionLoop(Set<Formula> set) {
+
+            Set<Formula> toAdd = new HashSet<>();
+
+
+            Iterator<Formula> formula = set.iterator();
+            while (formula.hasNext()) {
+                Formula form = formula.next();
+                Iterator<Formula> formula2 = set.iterator();
+                while (formula2.hasNext()) {
+                    Formula form2 = formula2.next();
+                    if (!form.equals(form2)) {
+                        ImplicationVisitor imp = ImplicationVisitor.getVisitor();
+                        if (form.accept(imp, form2)) {
+                            formula2.remove();
+                            continue;
+                        }
+
+                        if (form.accept(imp, form2.not())) {
+                            toAdd.add(BooleanConstant.FALSE);
+                            break;
+                        }
+
+                        Formula f = form.accept(PseudoSubstitutionVisitor.getVisitor(), form2, true);
+                        if (!f.equals(form)) {
+                            formula.remove();
+                            f = f.accept(this);
+                            toAdd.add(f);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            set.addAll(toAdd);
+            return toAdd.isEmpty();
+        }
+
+        @Override
+        public Formula visit(@NotNull Disjunction d) {
+            Formula dis = super.visit(d);
+            if (!(dis instanceof Disjunction)) {
+                return dis;
+            }
+            d = ((Disjunction) dis);
+            Set<Formula> set = new HashSet<>(d.children);
+
+            // remove ltl that imply other Formulas
+            // or do a PseudoSubstitution by a fix-point-iteration
+            for (; innerDisjunctionLoop(set);)
+                ;
+
+            return super.visit(new Disjunction(set));
+        }
+
+        /**
+         * this method helps simplifyAgressively by performing one change of the
+         * children set, and returning true, if something has changed
+         */
+        private boolean innerDisjunctionLoop(Set<Formula> set) {
+
+            Set<Formula> toAdd = new HashSet<>();
+
+            Iterator<Formula> formula = set.iterator();
+
+            while (formula.hasNext()) {
+                Formula form = formula.next();
+                Iterator<Formula> formula2 = set.iterator();
+                while (formula2.hasNext()) {
+                    Formula form2 = formula2.next();
+                    if (!form.equals(form2)) {
+                        ImplicationVisitor imp = ImplicationVisitor.getVisitor();
+                        if (form.accept(imp, form2)) {
+                            formula.remove();
+                            break;
+                        }
+
+                        if (form.not().accept(imp, form2)) {
+                            toAdd.add(BooleanConstant.TRUE);
+                            break;
+                        }
+
+                        Formula f = form.accept(PseudoSubstitutionVisitor.getVisitor(), form2, false);
+                        if (!f.equals(form)) {
+                            formula.remove();
+                            f = f.accept(this);
+                            toAdd.add(f);
+                            break;
+                        }
+
+                    }
+                }
+            }
+
+            set.addAll(toAdd);
+            return toAdd.isEmpty();
+        }
+
+        @Override
+        public Formula visit(@NotNull FOperator f) {
+            Formula newF = super.visit(f);
+            if (newF instanceof FOperator) {
+                Formula child = ((FOperator) newF).operand;
+                if (child instanceof XOperator) {
+                    return new XOperator(new FOperator(((ModalOperator) child).operand)).accept(this);
+                }
+
+                if (child instanceof Disjunction) {
+                    return (new Disjunction(((PropositionalFormula) child).children.stream().map(FOperator::new))).accept(this);
+                }
+            }
+            return newF;
+        }
+
+        @Override
+        public Formula visit(@NotNull GOperator g) {
+            Formula newG = super.visit(g);
+            if (newG instanceof GOperator) {
+                Formula child = ((GOperator) newG).operand;
+                if (child.isPureUniversal() || child.isSuspendable()) {
+                    return child;
+                }
+
+                if (child instanceof XOperator) {
+                    return new XOperator(new GOperator(((ModalOperator) child).operand)).accept(this);
+                }
+
+                if (child instanceof Conjunction) {
+                    return (new Conjunction(((PropositionalFormula) child).children.stream().map(GOperator::new))).accept(this);
+                }
+
+                if (child instanceof UOperator) {
+                    Formula l = new GOperator(new Disjunction(((UOperator) child).left, ((UOperator) child).right));
+                    Formula r = new GOperator(new FOperator(((UOperator) child).right));
+                    return new Conjunction(l, r).accept(this);
+                }
+            }
+            return newG;
+        }
+
+        @Override
+        public Formula visit(@NotNull UOperator u) {
+
+            Formula newU = super.visit(u);
+            if (newU instanceof UOperator) {
+                Formula l = ((UOperator) newU).left;
+                Formula r = ((UOperator) newU).right;
+                ImplicationVisitor imp = ImplicationVisitor.getVisitor();
+                if (l.accept(imp, r) || r instanceof BooleanConstant) {
+                    return r;
+                }
+
+                if (l instanceof BooleanConstant) {
+                    if (((BooleanConstant) l).value) {
+                        return new FOperator(r).accept(this);
+                    } else {
+                        return r;
+                    }
+                }
+
+                if (l instanceof XOperator && r instanceof XOperator) {
+                    return new XOperator(new UOperator(((ModalOperator) l).operand, ((ModalOperator) r).operand)).accept(this);
+                }
+
+                if (l instanceof Conjunction) {
+                    return new Conjunction(((Conjunction) l).children.stream().map(left -> new UOperator(left, r)).collect(Collectors.toSet())).accept(this);
+                }
+
+                if (r instanceof Disjunction) {
+                    return new Disjunction(((Disjunction) r).children.stream().map(right -> new UOperator(l, right)).collect(Collectors.toSet())).accept(this);
+                }
+            }
+            return newU;
         }
     }
 }

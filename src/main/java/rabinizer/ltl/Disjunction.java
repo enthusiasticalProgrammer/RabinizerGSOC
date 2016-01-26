@@ -51,19 +51,4 @@ public final class Disjunction extends PropositionalFormula {
     protected PropositionalFormula create(Stream<? extends Formula> formulaStream) {
         return new Disjunction(formulaStream);
     }
-
-    // helps the SimplifyBooleanVisitor
-    protected Set<Formula> getAllChildrenOfDisjunction() {
-        Set<Formula> al = new HashSet<>();
-
-        for (Formula child : children) {
-            if (child instanceof Disjunction) {
-                al.addAll(((Disjunction) child).getAllChildrenOfDisjunction());
-            } else {
-                al.add(child);
-            }
-        }
-
-        return al;
-    }
 }

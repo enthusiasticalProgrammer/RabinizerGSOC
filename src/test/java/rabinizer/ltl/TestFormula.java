@@ -2,6 +2,8 @@ package rabinizer.ltl;
 
 import org.junit.Test;
 
+import rabinizer.ltl.Simplifier.Strategy;
+
 import java.util.Collections;
 
 import static org.junit.Assert.*;
@@ -300,8 +302,7 @@ public class TestFormula {
         Formula f2 = new GOperator(new FOperator(f1));
         Formula f3 = new XOperator(f1);
         Formula f4 = new GOperator(new FOperator(f3));
-        SimplifyAggressivelyVisitor v = SimplifyAggressivelyVisitor.getVisitor();
-        assertEquals(f4.accept(v), f2);
+        assertEquals(Simplifier.simplify(f4, Strategy.AGGRESSIVELY), f2);
     }
 
     @Test
@@ -311,8 +312,7 @@ public class TestFormula {
         Formula f3 = new XOperator(f1);
         Formula f4 = new GOperator(new FOperator(f3));
         Formula f5 = Simplifier.simplify(new Conjunction(f4, f2), Simplifier.Strategy.PROPOSITIONAL);
-        SimplifyAggressivelyVisitor v = SimplifyAggressivelyVisitor.getVisitor();
-        assertEquals(f5.accept(v), f2);
+        assertEquals(Simplifier.simplify(f5, Strategy.AGGRESSIVELY), f2);
     }
 
     @Test
@@ -321,8 +321,7 @@ public class TestFormula {
         Formula f2 = new FOperator(BooleanConstant.get(true));
         Formula f3 = Simplifier.simplify(new Conjunction(f1, f2), Simplifier.Strategy.PROPOSITIONAL);
 
-        SimplifyAggressivelyVisitor v = SimplifyAggressivelyVisitor.getVisitor();
-        assertEquals(f3.accept(v), f1);
+        assertEquals(Simplifier.simplify(f3, Strategy.AGGRESSIVELY), f1);
     }
 
     @Test
@@ -330,8 +329,7 @@ public class TestFormula {
         Formula f1 = new Literal("p0", false);
         Formula f2 = new UOperator(f1, f1);
 
-        SimplifyAggressivelyVisitor v = SimplifyAggressivelyVisitor.getVisitor();
-        assertEquals(f2.accept(v), f1);
+        assertEquals(Simplifier.simplify(f2, Strategy.AGGRESSIVELY), f1);
     }
 
     @Test

@@ -148,7 +148,7 @@ public abstract class Automaton<S extends IState<S>> {
     public @NotNull String toDotty() {
         String r = "digraph \"Automaton for " + initialState + "\" \n{\n";
 
-        for (IState s : states) {
+        for (IState<S> s : states) {
             if (s.equals(initialState)) {
                 r += "node [shape=oval, label=\"" + s + "\"]\"" + s + "\";\n";
             } else {
