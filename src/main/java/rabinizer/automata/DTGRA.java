@@ -1,6 +1,5 @@
 package rabinizer.automata;
 
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,7 +12,6 @@ import com.google.common.collect.Table;
 
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import jhoafparser.consumer.HOAConsumerPrint;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.ltl.GOperator;
 import rabinizer.ltl.ValuationSet;
@@ -121,10 +119,6 @@ public class DTGRA extends Product implements AccAutomatonInterface {
                     && pair.left.get(s).containsAll(trans.getColumnKey()))
                     .map(p -> hoa.getNumber(p.left)).forEach(accSets::add);
 
-                    List<GRabinPairT<?>> notAccepted = acc.stream().filter(pair -> pair.left == null
-                            || pair.left.get(s) == null
-                            || !pair.left.get(s).containsAll(trans.getColumnKey()))
-                            .collect(Collectors.toList());
                     for (GRabinPairT<ProductState> pair : acc) {
                         accSets.addAll(pair.right.stream()
                                 .filter(inf -> inf != null && inf.get(s) != null
