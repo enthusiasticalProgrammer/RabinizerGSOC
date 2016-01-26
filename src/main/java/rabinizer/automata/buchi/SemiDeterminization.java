@@ -21,6 +21,10 @@ public class SemiDeterminization {
     }
 
     public BuchiAutomaton apply() {
+        if (automaton.isLimitDeterministic()) {
+            return automaton;
+        }
+
         Set<BuchiAutomaton.State> done = new HashSet<>();
         Deque<BuchiAutomaton.State> workList = new ArrayDeque<>();
 

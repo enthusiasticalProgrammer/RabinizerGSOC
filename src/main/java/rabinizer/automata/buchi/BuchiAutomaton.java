@@ -1,16 +1,14 @@
 package rabinizer.automata.buchi;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.ltl.ValuationSetFactory;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class BuchiAutomaton {
 
@@ -109,6 +107,32 @@ public class BuchiAutomaton {
         }
 
         consumer.done();
+    }
+
+    public boolean isLimitDeterministic() {
+        Set<State> visited = new HashSet<>();
+        Queue<State> workList = new ArrayDeque<>(acceptingStates);
+
+        while (!workList.isEmpty()) {
+            State current = workList.remove();
+            visited.add(current);
+
+            for (Set<String> valuation : Sets.powerSet(valuationSetFactory.getAlphabet())) {
+                Collection<State> nexts = getTransitions(current, valuation);
+
+                if (nexts.size() > 1) {
+                    return false;
+                }
+
+                for (State next : nexts) {
+                    if (!visited.contains(next)) {
+                        workList.add(next);
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     public static class State {
