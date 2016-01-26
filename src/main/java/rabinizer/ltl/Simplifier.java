@@ -29,7 +29,6 @@ public final class Simplifier {
 
     public static Formula simplify(Formula formula, Strategy strategy) {
         switch (strategy) {
-
             case PROPOSITIONAL:
                 return formula.accept(Simplifier.PROPOSITIONAL_SIMPLIFIER);
 
@@ -61,14 +60,11 @@ public final class Simplifier {
 
             default:
                 throw new AssertionError();
-
         }
     }
 
     public enum Strategy {
-
-        PROPOSITIONAL, MODAL, PULLUP_X, MODAL_PULLUP_X, MODAL_EXT, AGGRESSIVELY
-
+        PROPOSITIONAL, MODAL, PULLUP_X, MODAL_EXT, AGGRESSIVELY
     }
 
     static class PropositionalSimplifier implements Visitor<Formula> {
@@ -175,26 +171,30 @@ public final class Simplifier {
 
         @Override
         public Formula visit(@NotNull UOperator uOperator) {
-            Formula l = uOperator.left.accept(this);
-            Formula r = uOperator.right.accept(this);
+            Formula left = uOperator.left.accept(this);
+            Formula right = uOperator.right.accept(this);
 
-            if (r.isSuspendable() || r.isPureEventual()) {
-                return r;
+            if (right.isSuspendable() || right.isPureEventual()) {
+                return right;
             }
 
-            if (l.isSuspendable() || l.isPureUniversal()) {
-                Formula f = new Conjunction(l, new FOperator(r));
-                f = new Disjunction(f, r);
-                return f;
+            if (left.equals(BooleanConstant.TRUE)) {
+                return new FOperator(right);
             }
 
-            if (l.isPureEventual()) {
-                Formula f = new FOperator(new Conjunction(l, new XOperator(r)));
-                f = new Disjunction(f, r);
-                return f;
+            if (left.equals(BooleanConstant.FALSE)) {
+                return right;
             }
 
-            return new UOperator(l, r);
+            if (left.isSuspendable() || left.isPureUniversal()) {
+                return new Disjunction(new Conjunction(left, new FOperator(right)), right);
+            }
+
+            if (left.isPureEventual()) {
+                return new Disjunction(new FOperator(new Conjunction(left, new XOperator(right))), right);
+            }
+
+            return new UOperator(left, right);
         }
 
         @Override
@@ -345,7 +345,7 @@ public final class Simplifier {
         }
     }
 
-    public static class AggressiveSimplifier extends ModalSimplifier implements Visitor<Formula> {
+    public static class AggressiveSimplifier extends ModalSimplifier {
         @Override
         public Formula defaultAction(@NotNull Formula f) {
             return f; // for boolean constants and literals
@@ -354,60 +354,20 @@ public final class Simplifier {
         @Override
         public Formula visit(@NotNull Conjunction c) {
             Formula con = super.visit(c);
+
             if (!(con instanceof Conjunction)) {
                 return con;
             }
+
             c = (Conjunction) con;
             Set<Formula> set = new HashSet<>(c.children);
 
             // remove ltl that are implied by other Formulas
             // or do a PseudoSubstitution by a fix-point-iteration
-            for (; innerConjunctionLoop(set);)
+            for (; innerConjunctionLoop(set); )
                 ;
 
             return super.visit(new Conjunction(set));
-        }
-
-        /**
-         * this method helps simplifyAgressively by performing one change of the
-         * children set, and returning true, if something has changed
-         */
-        private boolean innerConjunctionLoop(Set<Formula> set) {
-
-            Set<Formula> toAdd = new HashSet<>();
-
-
-            Iterator<Formula> formula = set.iterator();
-            while (formula.hasNext()) {
-                Formula form = formula.next();
-                Iterator<Formula> formula2 = set.iterator();
-                while (formula2.hasNext()) {
-                    Formula form2 = formula2.next();
-                    if (!form.equals(form2)) {
-                        ImplicationVisitor imp = ImplicationVisitor.getVisitor();
-                        if (form.accept(imp, form2)) {
-                            formula2.remove();
-                            continue;
-                        }
-
-                        if (form.accept(imp, form2.not())) {
-                            toAdd.add(BooleanConstant.FALSE);
-                            break;
-                        }
-
-                        Formula f = form.accept(PseudoSubstitutionVisitor.getVisitor(), form2, true);
-                        if (!f.equals(form)) {
-                            formula.remove();
-                            f = f.accept(this);
-                            toAdd.add(f);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            set.addAll(toAdd);
-            return toAdd.isEmpty();
         }
 
         @Override
@@ -416,58 +376,16 @@ public final class Simplifier {
             if (!(dis instanceof Disjunction)) {
                 return dis;
             }
+
             d = ((Disjunction) dis);
             Set<Formula> set = new HashSet<>(d.children);
 
             // remove ltl that imply other Formulas
             // or do a PseudoSubstitution by a fix-point-iteration
-            for (; innerDisjunctionLoop(set);)
+            for (; innerDisjunctionLoop(set); )
                 ;
 
             return super.visit(new Disjunction(set));
-        }
-
-        /**
-         * this method helps simplifyAgressively by performing one change of the
-         * children set, and returning true, if something has changed
-         */
-        private boolean innerDisjunctionLoop(Set<Formula> set) {
-
-            Set<Formula> toAdd = new HashSet<>();
-
-            Iterator<Formula> formula = set.iterator();
-
-            while (formula.hasNext()) {
-                Formula form = formula.next();
-                Iterator<Formula> formula2 = set.iterator();
-                while (formula2.hasNext()) {
-                    Formula form2 = formula2.next();
-                    if (!form.equals(form2)) {
-                        ImplicationVisitor imp = ImplicationVisitor.getVisitor();
-                        if (form.accept(imp, form2)) {
-                            formula.remove();
-                            break;
-                        }
-
-                        if (form.not().accept(imp, form2)) {
-                            toAdd.add(BooleanConstant.TRUE);
-                            break;
-                        }
-
-                        Formula f = form.accept(PseudoSubstitutionVisitor.getVisitor(), form2, false);
-                        if (!f.equals(form)) {
-                            formula.remove();
-                            f = f.accept(this);
-                            toAdd.add(f);
-                            break;
-                        }
-
-                    }
-                }
-            }
-
-            set.addAll(toAdd);
-            return toAdd.isEmpty();
         }
 
         @Override
@@ -545,6 +463,89 @@ public final class Simplifier {
                 }
             }
             return newU;
+        }
+
+        /**
+         * this method helps simplifyAgressively by performing one change of the
+         * children set, and returning true, if something has changed
+         */
+        private boolean innerConjunctionLoop(Set<Formula> set) {
+
+            Set<Formula> toAdd = new HashSet<>();
+
+
+            Iterator<Formula> formula = set.iterator();
+            while (formula.hasNext()) {
+                Formula form = formula.next();
+                Iterator<Formula> formula2 = set.iterator();
+                while (formula2.hasNext()) {
+                    Formula form2 = formula2.next();
+                    if (!form.equals(form2)) {
+                        ImplicationVisitor imp = ImplicationVisitor.getVisitor();
+                        if (form.accept(imp, form2)) {
+                            formula2.remove();
+                            continue;
+                        }
+
+                        if (form.accept(imp, form2.not())) {
+                            toAdd.add(BooleanConstant.FALSE);
+                            break;
+                        }
+
+                        Formula f = form.accept(PseudoSubstitutionVisitor.getVisitor(), form2, true);
+                        if (!f.equals(form)) {
+                            formula.remove();
+                            f = f.accept(this);
+                            toAdd.add(f);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            set.addAll(toAdd);
+            return toAdd.isEmpty();
+        }
+
+        /**
+         * this method helps simplifyAgressively by performing one change of the
+         * children set, and returning true, if something has changed
+         */
+        private boolean innerDisjunctionLoop(Set<Formula> set) {
+            Set<Formula> toAdd = new HashSet<>();
+
+            Iterator<Formula> formula = set.iterator();
+
+            while (formula.hasNext()) {
+                Formula form = formula.next();
+                Iterator<Formula> formula2 = set.iterator();
+                while (formula2.hasNext()) {
+                    Formula form2 = formula2.next();
+                    if (!form.equals(form2)) {
+                        ImplicationVisitor imp = ImplicationVisitor.getVisitor();
+                        if (form.accept(imp, form2)) {
+                            formula.remove();
+                            break;
+                        }
+
+                        if (form.not().accept(imp, form2)) {
+                            toAdd.add(BooleanConstant.TRUE);
+                            break;
+                        }
+
+                        Formula f = form.accept(PseudoSubstitutionVisitor.getVisitor(), form2, false);
+                        if (!f.equals(form)) {
+                            formula.remove();
+                            f = f.accept(this);
+                            toAdd.add(f);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            set.addAll(toAdd);
+            return toAdd.isEmpty();
         }
     }
 }

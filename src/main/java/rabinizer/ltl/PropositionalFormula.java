@@ -152,19 +152,11 @@ public abstract class PropositionalFormula extends Formula {
         return set;
     }
 
-    private boolean allMatch(Predicate<Formula> p) {
+    public boolean allMatch(Predicate<Formula> p) {
         return children.stream().allMatch(p);
     }
 
-    public Set<Formula> getAllChildren() {
-        Set<Formula> result = new HashSet<Formula>();
-        for (Formula child : children) {
-            if (child.getClass() == this.getClass()) {
-                result.addAll(((PropositionalFormula) child).getAllChildren());
-            } else {
-                result.add(child);
-            }
-        }
-        return result;
+    public boolean anyMatch(Predicate<Formula> p) {
+        return children.stream().anyMatch(p);
     }
 }
