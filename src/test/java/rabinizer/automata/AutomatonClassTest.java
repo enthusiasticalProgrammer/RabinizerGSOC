@@ -7,7 +7,8 @@ import org.junit.Test;
 import rabinizer.Util;
 import rabinizer.exec.Main;
 import rabinizer.ltl.*;
-
+import rabinizer.ltl.FactoryRegistry.Backend;
+import rabinizer.automata.Optimisation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -17,7 +18,7 @@ import static org.junit.Assert.*;
 public class AutomatonClassTest {
     private boolean silent;
 
-    private Set<Optimisation> standard = EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION);
+    private Set<Optimisation> standard = EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION, Optimisation.COMPLETE);
 
     private Set<Optimisation> standardWithEmpty = EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION, Optimisation.COMPLETE,
             Optimisation.EMPTINESS_CHECK);
@@ -219,5 +220,34 @@ public class AutomatonClassTest {
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f.getAtoms());
         DTGRARaw dtgra = new DTGRARaw(f, factory, val, standard);
         assertFalse(dtgra.checkIfEmptyAndRemoveEmptySCCs());
+    }
+
+    @Test
+    public void testRabinSlaveSuccessors() {
+        Formula f = Util.createFormula("G(a)");
+        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(f.getPropositions());
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f.getAtoms());
+        MojmirSlave mSlave = new MojmirSlave((GOperator) f, factory, val, EnumSet.of(Optimisation.EAGER));
+        mSlave.generate();
+        mSlave.removeSinks();
+
+        RabinSlave rSlave = new RabinSlave(mSlave, val);
+        assertFalse(rSlave.getInitialState().getSuccessors().keySet().isEmpty());
+    }
+
+    @Test
+    public void testNotExceptionOccurring() {
+        Formula f = Util.createFormula("G(a)");
+
+        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.Z3, f.getPropositions());
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.Z3, f.getAtoms());
+        DTGRARaw dtgra = new DTGRARaw(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION, Optimisation.NOT_ISABELLE_ACC));
+        assertNotNull(dtgra);
+
+        factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f.getPropositions());
+        val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f.getAtoms());
+        dtgra = new DTGRARaw(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION, Optimisation.NOT_ISABELLE_ACC));
+        assertNotNull(dtgra);
+
     }
 }
