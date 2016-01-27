@@ -47,7 +47,7 @@ public class TranSet<S extends IState<S>> extends HashMap<S, ValuationSet> {
 
     boolean subsetOf(TranSet<S> ts) {
         for (IState s : this.keySet()) {
-            if (!ts.containsKey(s) || !ts.get(s).contains(this.get(s))) {
+            if (!ts.containsKey(s) || !ts.get(s).containsAll(this.get(s))) {
                 return false;
             }
         }
