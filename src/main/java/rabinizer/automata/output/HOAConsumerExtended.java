@@ -124,9 +124,10 @@ public class HOAConsumerExtended<T> {
     }
 
     public void addEdge(T begin, Formula label, T end, List<Integer> accSets) throws HOAConsumerException {
-        if (accType == AutomatonType.STATE) {
+        if (accSets != null && accType == AutomatonType.STATE) {
             throw new UnsupportedOperationException("For state-acceptance-based automata, please use the other addEdge method, where you also put accSets");
         }
+
         hoa.addEdgeWithLabel(stateNumbers.get(begin), Simplifier.simplify(label).accept(new FormulaConverter()), Collections.singletonList(getStateId(end)), accSets);
     }
 
@@ -135,9 +136,7 @@ public class HOAConsumerExtended<T> {
     }
 
     public void addEdge(T begin, Set<String> label, T end) throws HOAConsumerException {
-        if (accType == AutomatonType.TRANSITION) {
-            throw new UnsupportedOperationException("For transition-acceptance-based automata, please use the other addState method, where you also put accSets");
-        }
+
         addEdge(begin, new Conjunction(alphabet.stream().map(l -> new Literal(l, !label.contains(l)))), end, null);
     }
 
@@ -148,13 +147,16 @@ public class HOAConsumerExtended<T> {
     T currentState;
 
     public void addState(T s, List<Integer> accSets) throws HOAConsumerException {
+        if (accSets != null && accType == AutomatonType.TRANSITION) {
+            throw new UnsupportedOperationException("For transition-acceptance-based automata, please use the other addState method, where you also put accSets");
+        }
+
         if (!body) {
             hoa.notifyBodyStart();
             body = true;
         }
 
         currentState = s;
-
         hoa.addState(getStateId(s), s.toString(), null, accSets);
     }
 
@@ -162,6 +164,7 @@ public class HOAConsumerExtended<T> {
         if (!acceptanceNumbers.containsKey(o)) {
             acceptanceNumbers.put(o, acceptanceNumbers.size());
         }
+
         return acceptanceNumbers.get(o);
     }
 
