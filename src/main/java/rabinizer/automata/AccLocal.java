@@ -40,7 +40,7 @@ public class AccLocal {
                 maxRankF = maxRankF >= rs.size() ? maxRankF : rs.size();
             }
             maxRank.put(f, maxRankF);
-            topmostGs.put(f, new HashSet<>(f.topmostGs()));
+            topmostGs.put(f, new HashSet<>(f.operand.topmostGs()));
             Map<Set<GOperator>, Map<Integer, RabinPair>> optionForf = computeAccSlavesOptions(f);
             accSlavesOptions.put(f, optionForf);
         }
