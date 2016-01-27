@@ -1,6 +1,6 @@
-package rabinizer.automata.nxt;
+package rabinizer.automata;
 
-import rabinizer.ltl.*;
+import rabinizer.ltl.ValuationSet;
 
 import java.util.ArrayList;
 import java.util.Collection;
