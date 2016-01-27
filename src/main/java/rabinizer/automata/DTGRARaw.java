@@ -110,19 +110,8 @@ public class DTGRARaw {
         automaton.makeComplete();
 
         if (automaton.states.contains(automaton.trapState)) {
-            for (Table.Cell<ProductState, ValuationSet, ProductState> entry : automaton.transitions.cellSet()) {
-                if (entry.getRowKey().equals(automaton.trapState)) {
-                    for (GRabinPairRaw<ProductState> rabPair : accTGR) {
-                        Map<ProductState, ValuationSet> finTrans = rabPair.left;
-                        if (finTrans.get(entry.getRowKey()) != null) {
-                            ValuationSet newVal = finTrans.get(entry.getRowKey());
-                            newVal.addAll(entry.getColumnKey());
-                            finTrans.put(entry.getRowKey(), newVal);
-                        } else {
-                            finTrans.put(entry.getRowKey(), entry.getColumnKey());
-                        }
-                    }
-                }
+            for (GRabinPairRaw<ProductState> rabPair : accTGR) {
+                rabPair.left.put(automaton.trapState, valuationSetFactory.createUniverseValuationSet());
             }
         }
 
