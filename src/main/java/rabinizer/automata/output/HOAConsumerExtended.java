@@ -196,9 +196,6 @@ public class HOAConsumerExtended<T> {
             both = new BooleanExpression<>(BooleanExpression.Type.EXP_AND, left, right);
             all = new BooleanExpression<>(BooleanExpression.Type.EXP_OR, all, both);
         }
-        if (all.isFALSE()) {
-            all = TRUE;
-        }
 
         hoa.setAcceptanceCondition(acceptanceNumbers.size(), new RemoveConstants().visit(all));
     }
