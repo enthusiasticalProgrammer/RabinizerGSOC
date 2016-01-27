@@ -4,9 +4,10 @@ import java.util.EnumSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import rabinizer.Util;
 import rabinizer.exec.Main;
 import rabinizer.ltl.*;
-import rabinizer.automata.Optimisation;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;

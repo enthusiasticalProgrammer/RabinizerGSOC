@@ -1,6 +1,7 @@
 package rabinizer.ltl.bdd;
 
 import org.junit.Test;
+import rabinizer.Util;
 import rabinizer.ltl.*;
 
 import java.util.Set;

@@ -2,6 +2,7 @@ package rabinizer.ltl;
 
 import org.junit.Before;
 import org.junit.Test;
+import rabinizer.Util;
 
 import java.util.ArrayList;
 import java.util.Collection;

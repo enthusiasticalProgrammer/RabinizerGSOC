@@ -1,6 +1,7 @@
 package rabinizer.ltl;
 
 import org.junit.Test;
+import rabinizer.Util;
 
 import java.util.Collections;
 import java.util.Set;

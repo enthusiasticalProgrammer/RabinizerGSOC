@@ -3,7 +3,7 @@ package rabinizer.ltl.z3;
 import com.microsoft.z3.BoolExpr;
 import org.junit.Test;
 import rabinizer.ltl.Formula;
-import rabinizer.ltl.Util;
+import rabinizer.Util;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;

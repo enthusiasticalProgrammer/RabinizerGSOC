@@ -1,12 +1,28 @@
-package rabinizer.automata;
+package rabinizer;
 
+import rabinizer.ltl.Formula;
 import rabinizer.ltl.ValuationSet;
+import rabinizer.parser.LTLParser;
+import rabinizer.parser.ParseException;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.junit.Assert.fail;
+
 public final class Util {
+    public static Formula createFormula(String s) {
+        LTLParser parser = new LTLParser(new StringReader(s));
+
+        try {
+            return parser.parse();
+        } catch (ParseException e) {
+            fail("Failed to construct formula from string");
+            return null;
+        }
+    }
 
     public static void checkPartition(Collection<ValuationSet> set, boolean checkUniverse) {
         List<ValuationSet> list = new ArrayList<>(set);

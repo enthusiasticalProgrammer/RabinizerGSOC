@@ -3,6 +3,7 @@ package rabinizer.ltl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import rabinizer.Util;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -45,7 +46,7 @@ public class FormulaStorage {
                         Formula formula = Util.createFormula(line);
                         listBuilder.add(formula);
                     }
-                    
+
                     line = reader.readLine();
                 }
             } catch (Exception e) {
