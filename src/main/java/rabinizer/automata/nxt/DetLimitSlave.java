@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Sets;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import rabinizer.automata.Automaton;
 import rabinizer.automata.IState;
 import rabinizer.automata.Optimisation;
@@ -20,14 +21,14 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
     protected final EquivalenceClass initialFormula;
     protected final EquivalenceClass True;
     protected final boolean eager;
-    protected final boolean cover;
+    protected final boolean removeCover;
 
     private final LoadingCache<State, ValuationSet> acceptanceCache;
 
     public DetLimitSlave(Formula formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
         super(valuationSetFactory, false);
         eager = optimisations.contains(Optimisation.EAGER);
-        cover = optimisations.contains(Optimisation.COVER);
+        removeCover = optimisations.contains(Optimisation.COVER);
         initialFormula = eager ? equivalenceClassFactory.createEquivalenceClass(formula.unfold(true)) : equivalenceClassFactory.createEquivalenceClass(formula);
         True = equivalenceClassFactory.getTrue();
 
@@ -41,13 +42,13 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
         acceptanceCache = CacheBuilder.newBuilder().build(acceptanceLoader);
     }
 
+    public ValuationSet getAcceptance(State state) {
+        return acceptanceCache.getUnchecked(state);
+    }
+
     @Override
     protected @NotNull State generateInitialState() {
         return new State(initialFormula, True);
-    }
-
-    public ValuationSet getAcceptance(State state) {
-        return acceptanceCache.getUnchecked(state);
     }
 
     public final class State implements IState<State> {
@@ -81,26 +82,29 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
         }
 
         @Override
-        public State getSuccessor(@NotNull Set<String> valuation) {
+        public @Nullable State getSuccessor(@NotNull Set<String> valuation) {
             EquivalenceClass successor = step(current, valuation);
-
-            // Successor is done and we can switch components.
-            if (successor.isTrue()) {
-                return new State(step(next, valuation).and(initialFormula), True);
-            }
+            EquivalenceClass nextSuccessor = step(next, valuation);
 
             // We cannot recover from false. (non-accepting trap)
-            if (successor.isFalse()) {
+            if (successor.isFalse() || nextSuccessor.isFalse()) {
                 return null;
             }
 
-            EquivalenceClass nextSuccessor = step(next, valuation);
-
-            if (cover) {
-                return removeCover(successor, nextSuccessor);
+            // Successor is done and we can switch components.
+            if (successor.isTrue()) {
+                return new State(nextSuccessor.and(initialFormula), True);
             }
 
-            return new State(successor, nextSuccessor.and(initialFormula));
+            if (removeCover && successor.implies(nextSuccessor)) {
+                nextSuccessor = True;
+            }
+
+            if (!removeCover || !successor.implies(initialFormula)) {
+                nextSuccessor = nextSuccessor.and(initialFormula);
+            }
+
+            return new State(successor, nextSuccessor);
         }
 
         public ValuationSet getAcceptance() {
@@ -125,7 +129,7 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
         }
 
         @Override
-        public Set<String> getSensitiveAlphabet() {
+        public @NotNull Set<String> getSensitiveAlphabet() {
             Set<String> sensitiveLetters = new HashSet<>();
 
             for (Formula literal : Sets.union(current.unfold(true).getSupport(), next.unfold(true).getSupport())) {
@@ -138,28 +142,12 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
         }
 
         @Override
-        public ValuationSetFactory getFactory() {
+        public @NotNull ValuationSetFactory getFactory() {
             return valuationSetFactory;
         }
 
         private EquivalenceClass getInitialFormula() {
             return initialFormula;
-        }
-
-        private State removeCover(EquivalenceClass currentSuccessor, EquivalenceClass nextCandidate) {
-            EquivalenceClass nextSuccessor;
-
-            if (currentSuccessor.implies(nextCandidate)) {
-                nextSuccessor = True;
-            } else {
-                nextSuccessor = nextCandidate;
-            }
-
-            if (!currentSuccessor.implies(initialFormula)) {
-                nextSuccessor = nextSuccessor.and(initialFormula);
-            }
-
-            return new State(currentSuccessor, nextSuccessor);
         }
 
         private EquivalenceClass step(EquivalenceClass clazz, Set<String> valuation) {

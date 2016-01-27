@@ -1,9 +1,6 @@
 package rabinizer.ltl;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public final class Literal extends FormulaNullary {
 
@@ -57,6 +54,11 @@ public final class Literal extends FormulaNullary {
         Set<Formula> propositions = new HashSet<>();
         propositions.add(this);
         return propositions;
+    }
+
+    @Override
+    public Set<Formula> getTopMostPropositions() {
+        return Collections.singleton(this);
     }
 
     @Override

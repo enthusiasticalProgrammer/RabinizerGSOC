@@ -2,7 +2,10 @@ package rabinizer.automata.nxt;
 
 import rabinizer.automata.Master;
 import rabinizer.automata.Optimisation;
-import rabinizer.ltl.*;
+import rabinizer.ltl.BooleanConstant;
+import rabinizer.ltl.EquivalenceClass;
+import rabinizer.ltl.EquivalenceClassFactory;
+import rabinizer.ltl.ValuationSetFactory;
 
 import java.util.Collection;
 

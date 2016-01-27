@@ -1,7 +1,7 @@
 package rabinizer.ltl;
 
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -48,6 +48,11 @@ public final class BooleanConstant extends FormulaNullary {
     @Override
     public Set<Formula> getPropositions() {
         return new HashSet<>();
+    }
+
+    @Override
+    public Set<Formula> getTopMostPropositions() {
+        return Collections.emptySet();
     }
 
     @Override

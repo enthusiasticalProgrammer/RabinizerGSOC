@@ -92,6 +92,7 @@ public class BDDEquivalenceClass implements EquivalenceClass {
             return Collections.emptySet();
         }
 
+        // TODO: Traverse bdd or fix bdd library
         try {
             Formula support = factory.createRepresentative(bdd.support());
 
@@ -109,8 +110,7 @@ public class BDDEquivalenceClass implements EquivalenceClass {
 
             return Collections.singleton(support);
         } catch (NullPointerException e) {
-            // TODO: Traverse bdd or fix bdd library
-            return getRepresentative().getPropositions();
+            return getRepresentative().getTopMostPropositions();
         }
     }
 

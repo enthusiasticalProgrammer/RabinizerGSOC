@@ -75,6 +75,11 @@ public abstract class PropositionalFormula extends Formula {
     }
 
     @Override
+    public Set<Formula> getTopMostPropositions() {
+        return collect(Formula::getTopMostPropositions);
+    }
+
+    @Override
     public Set<GOperator> gSubformulas() {
         return collect(Formula::gSubformulas);
     }
