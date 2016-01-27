@@ -83,10 +83,10 @@ public class BuchiAutomaton {
     @Override
     public String toString() {
         return "Buchi Automaton:\n" +
-                " Q = " + states + "\n" +
-                " F = " + acceptingStates + "\n" +
-                " d = " + transitions + "\n" +
-                " i = " + initialState + "\n";
+                " Q = " + states + '\n' +
+                " F = " + acceptingStates + '\n' +
+                " d = " + transitions + '\n' +
+                " i = " + initialState + '\n';
     }
 
     public void toHOA(HOAConsumer c) throws HOAConsumerException {
@@ -97,16 +97,45 @@ public class BuchiAutomaton {
         consumer.setBuchiAcceptance();
 
         for (State s : states) {
-            consumer.addState(s, acceptingStates.contains(s) ? Collections.singletonList(0) : Collections.emptyList());
+            consumer.addState(s, acceptingStates.contains(s) ? Collections.singletonList(0) : null);
 
             for (Map.Entry<Set<String>, Set<State>> t : transitions.row(s).entrySet()) {
                 for (State s2 : t.getValue()) {
                     consumer.addEdge(s, t.getKey(), s2);
                 }
             }
+
+            consumer.stateDone();
         }
 
         consumer.done();
+    }
+
+    public boolean isDeterministic() {
+        Set<State> visited = new HashSet<>();
+        Queue<State> workList = new ArrayDeque<>();
+        workList.add(initialState);
+
+        while (!workList.isEmpty()) {
+            State current = workList.remove();
+            visited.add(current);
+
+            for (Set<String> valuation : Sets.powerSet(valuationSetFactory.getAlphabet())) {
+                Collection<State> nexts = getTransitions(current, valuation);
+
+                if (nexts.size() > 1) {
+                    return false;
+                }
+
+                for (State next : nexts) {
+                    if (!visited.contains(next)) {
+                        workList.add(next);
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     public boolean isLimitDeterministic() {
