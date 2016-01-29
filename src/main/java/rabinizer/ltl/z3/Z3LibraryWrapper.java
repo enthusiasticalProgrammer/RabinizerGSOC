@@ -88,7 +88,7 @@ public class Z3LibraryWrapper<F extends Formula> {
         Set<BoolExpr> result = new HashSet<>();
 
         if (bool.isConst()) {
-            if (bool != FALSE && bool != TRUE) {
+            if (!(bool.equals(FALSE)) && !(bool.equals(TRUE))) {
                 result.add(bool);
             }
         } else {
