@@ -471,8 +471,6 @@ public final class Simplifier {
          */
         private boolean innerConjunctionLoop(Set<Formula> set) {
 
-            Set<Formula> toAdd = new HashSet<>();
-
 
             Iterator<Formula> formula = set.iterator();
             while (formula.hasNext()) {
@@ -484,27 +482,26 @@ public final class Simplifier {
                         ImplicationVisitor imp = ImplicationVisitor.getVisitor();
                         if (form.accept(imp, form2)) {
                             formula2.remove();
-                            continue;
+                            return true;
                         }
 
                         if (form.accept(imp, form2.not())) {
-                            toAdd.add(BooleanConstant.FALSE);
-                            break;
+                            set.add(BooleanConstant.FALSE);
+                            return true;
                         }
 
                         Formula f = form.accept(PseudoSubstitutionVisitor.getVisitor(), form2, true);
                         if (!f.equals(form)) {
                             formula.remove();
                             f = f.accept(this);
-                            toAdd.add(f);
-                            break;
+                            set.add(f);
+                            return true;
                         }
                     }
                 }
             }
 
-            set.addAll(toAdd);
-            return toAdd.isEmpty();
+            return false;
         }
 
         /**
@@ -512,7 +509,6 @@ public final class Simplifier {
          * children set, and returning true, if something has changed
          */
         private boolean innerDisjunctionLoop(Set<Formula> set) {
-            Set<Formula> toAdd = new HashSet<>();
 
             Iterator<Formula> formula = set.iterator();
 
@@ -525,27 +521,26 @@ public final class Simplifier {
                         ImplicationVisitor imp = ImplicationVisitor.getVisitor();
                         if (form.accept(imp, form2)) {
                             formula.remove();
-                            break;
+                            return true;
                         }
 
                         if (form.not().accept(imp, form2)) {
-                            toAdd.add(BooleanConstant.TRUE);
-                            break;
+                            set.add(BooleanConstant.TRUE);
+                            return true;
                         }
 
                         Formula f = form.accept(PseudoSubstitutionVisitor.getVisitor(), form2, false);
                         if (!f.equals(form)) {
                             formula.remove();
                             f = f.accept(this);
-                            toAdd.add(f);
-                            break;
+                            set.add(f);
+                            return true;
                         }
                     }
                 }
             }
 
-            set.addAll(toAdd);
-            return toAdd.isEmpty();
+            return false;
         }
     }
 }
