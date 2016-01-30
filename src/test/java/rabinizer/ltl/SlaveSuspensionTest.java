@@ -66,7 +66,7 @@ public class SlaveSuspensionTest {
     @Test
     public void testAnd1() {
         Formula testAnd = new Conjunction(eventual);
-        assertTrue(testAnd.accept(visitor));
+        assertFalse(testAnd.accept(visitor));
     }
 
     @Test
