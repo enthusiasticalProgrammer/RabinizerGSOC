@@ -40,7 +40,7 @@ public class EmptinessCheck<S extends IState<S>> {
      */
     public static <S extends IState<S>> boolean checkEmptiness(Automaton<S> automaton,
                                                                Collection<? extends Tuple<TranSet<S>, Set<TranSet<S>>>> accTGR) {
-        return new EmptinessCheck<>(automaton, accTGR).checkIfEmpty();
+        return new EmptinessCheck<S>(automaton, accTGR).checkIfEmpty();
 
     }
 
@@ -49,15 +49,20 @@ public class EmptinessCheck<S extends IState<S>> {
         for (Set<S> scc : sccs) {
             boolean sccEmpty = true;
             Set<Cell<S, ValuationSet, S>> trans1 = automaton.getTransitionsInSCC(scc);
-            Map<S, ValuationSet> trans = new HashMap<>();
+            Map<S, ValuationSet> trans = new HashMap<>();// Transitions, that
+            // are "really in the
+            // SCC (begin+end)"
             for (S s : scc) {
                 trans.put(s, valuationFactory.createEmptyValuationSet());
             }
+
+            // remove inter-SCC-transitions from any set, and crowd trans
             for (Cell<S, ValuationSet, S> entry : trans1) {
-                ValuationSet val = trans.get(entry.getRowKey());
-                val.addAll(entry.getColumnKey());
-                trans.put(entry.getRowKey(), val);
-                if (!scc.contains(entry.getValue())) {
+                if (scc.contains(entry.getValue())) {
+                    ValuationSet val = trans.get(entry.getRowKey());
+                    val.addAll(entry.getColumnKey());
+                    trans.put(entry.getRowKey(), val);
+                } else {
                     for (Tuple<TranSet<S>, Set<TranSet<S>>> pair : accTGR) {
                         for (TranSet<S> inf : pair.right) {
                             if (inf.get(entry.getRowKey()) != null) {
@@ -76,15 +81,16 @@ public class EmptinessCheck<S extends IState<S>> {
                 }
             }
 
-            for (Tuple<TranSet<S>, Set<TranSet<S>>> pair : accTGR) {
 
-                if (!allInfSetsOfRabinPairPresentInSCC(scc, pair, trans) || checkForFinTransitions(scc, pair, trans)) {
+            for (Tuple<TranSet<S>, Set<TranSet<S>>> pair : accTGR) {
+                if (allInfSetsOfRabinPairPresentInSCC(scc, pair, trans) && checkForFinTransitions(scc, pair, trans)) {
+                    sccEmpty = false;
+                } else {
                     // all components of infinite
                     // sets in current scc can be
                     // deleted and all components of finite sets of current scc
                     // if any infinite condition is present
-                    sccEmpty = false;
-                } else {
+
                     for (TranSet<S> inf : pair.right) {
                         for (S s : scc) {
                             inf.remove(s);
@@ -121,7 +127,7 @@ public class EmptinessCheck<S extends IState<S>> {
 
         boolean allInfs = true;
         for (TranSet<S> inf : pair.right) {
-            Set<Map.Entry<S, ValuationSet>> intersect1 = inf.entrySet();
+            Set<Map.Entry<S, ValuationSet>> intersect1 = new HashSet<>(inf.entrySet());
             Map<S, ValuationSet> intersect = new HashMap<>();
             for (Map.Entry<S, ValuationSet> i : intersect1) {
                 if (scc.contains(i.getKey())) {
@@ -155,7 +161,7 @@ public class EmptinessCheck<S extends IState<S>> {
      */
     private boolean checkForFinTransitions(Set<S> scc, Tuple<TranSet<S>, Set<TranSet<S>>> pair,
                                            Map<S, ValuationSet> trans) {
-        Set<Map.Entry<S, ValuationSet>> intersect1 = pair.left.entrySet();
+        Set<Map.Entry<S, ValuationSet>> intersect1 = new HashSet<>(pair.left.entrySet());
 
         Map<S, ValuationSet> intersect = new HashMap<>();
         for (Map.Entry<S, ValuationSet> i : intersect1) {
@@ -165,7 +171,11 @@ public class EmptinessCheck<S extends IState<S>> {
                     val.retainAll(trans.get(i.getKey()));
                     intersect.put(i.getKey(), val);
                 } else {
-                    intersect.put(i.getKey(), trans.get(i.getKey()));
+                    ValuationSet valu = trans.get(i.getKey()).clone();
+                    valu.retainAll(i.getValue());
+                    if (!valu.isEmpty()) {
+                        intersect.put(i.getKey(), valu);
+                    }
                 }
             }
         }
