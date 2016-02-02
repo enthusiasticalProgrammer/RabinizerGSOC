@@ -58,7 +58,7 @@ public class TranSet<S extends IState<S>> extends HashMap<S, ValuationSet> {
         for (Entry<S, ValuationSet> sValuationSetEntry : ts.entrySet()) {
             if (this.containsKey(sValuationSetEntry.getKey())) {
                 ValuationSet old = get(sValuationSetEntry.getKey()).clone();
-                old.remove(sValuationSetEntry.getValue());
+                old.removeAll(sValuationSetEntry.getValue());
                 this.put(sValuationSetEntry.getKey(), old);
                 if (this.get(sValuationSetEntry.getKey()).isEmpty()) {
                     this.remove(sValuationSetEntry.getKey());
