@@ -51,10 +51,15 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
                 TranSet Fin = new TranSet(valuationSetFactory);
                 Set<TranSet> Infs = new HashSet<>();
                 Fin.addAll((TranSet) accLocal.accMasterOptions.get(gSet).get(ranking).left);
-                for (Formula f : gSet) {
+                for (GOperator g : gSet) {
                     Set<GOperator> localGSet = new HashSet<>(gSet);
-                    localGSet.retainAll(accLocal.topmostGs.get(f));
-                    RabinPair fPair = accLocal.accSlavesOptions.get(f).get(localGSet).get(ranking.get(f));
+                    localGSet.retainAll(accLocal.topmostGs.get(g));
+                    RabinPair fPair;
+                    if (accLocal.accSlavesOptions.get(g).get(localGSet) != null) {
+                        fPair = accLocal.accSlavesOptions.get(g).get(localGSet).get(ranking.get(g));
+                    } else {
+                        fPair = accLocal.computeAccSlavesOptions(g, true).get(localGSet).get(ranking.get(g));
+                    }
                     Fin.addAll((TranSet) fPair.left);
                     Infs.add((TranSet) fPair.right);
                 }

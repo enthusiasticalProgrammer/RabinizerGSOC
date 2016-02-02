@@ -1,9 +1,11 @@
 package rabinizer.automata;
 
 import com.google.common.collect.Sets;
+
 import rabinizer.exec.Main;
 import rabinizer.ltl.*;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -20,20 +22,23 @@ public class AccLocal {
     protected final Product product;
     protected final Formula formula;
     protected final Map<Formula, Integer> maxRank = new HashMap<>();
-    final Map<Formula, Set<GOperator>> topmostGs = new HashMap<>();
-    final TranSet<Product.ProductState> allTrans;
+    protected final Map<Formula, Set<GOperator>> topmostGs = new HashMap<>();
+    protected final TranSet<Product.ProductState> allTrans;
+    private final boolean gSkeleton;
+
     // separate automata acceptance projected to the whole product
     Map<Formula, Map<Set<GOperator>, Map<Integer, RabinPair>>> accSlavesOptions = new HashMap<>();
     Map<Set<GOperator>, Map<Map<Formula, Integer>, RabinPair>> accMasterOptions = new HashMap<>();
     // actually just coBuchi
 
-    public AccLocal(Product product, ValuationSetFactory factory, EquivalenceClassFactory factory2) {
+    public AccLocal(Product product, ValuationSetFactory factory, EquivalenceClassFactory factory2, Collection<Optimisation> opts) {
         this.product = product;
         // TODO: Drop this.formula
         this.formula = product.primaryAutomaton.getInitialState().getClazz().getRepresentative();
         this.valuationSetFactory = factory;
         this.equivalenceClassFactory = factory2;
         allTrans = new TranSet<>(valuationSetFactory);
+        gSkeleton = opts.contains(Optimisation.SKELETON);
         for (GOperator f : formula.gSubformulas()) {
             int maxRankF = 0;
             for (RabinSlave.State rs : product.secondaryAutomata.get(f).states) {
@@ -41,7 +46,7 @@ public class AccLocal {
             }
             maxRank.put(f, maxRankF);
             topmostGs.put(f, new HashSet<>(f.operand.topmostGs()));
-            Map<Set<GOperator>, Map<Integer, RabinPair>> optionForf = computeAccSlavesOptions(f);
+            Map<Set<GOperator>, Map<Integer, RabinPair>> optionForf = computeAccSlavesOptions(f, false);
             accSlavesOptions.put(f, optionForf);
         }
         Main.verboseln("Acceptance for secondaryAutomata:\n" + this.accSlavesOptions);
@@ -82,10 +87,17 @@ public class AccLocal {
         return antClazz.implies(consequent.temporalStep(v));
     }
 
-    protected Map<Set<GOperator>, Map<Integer, RabinPair>> computeAccSlavesOptions(Formula f) {
+    protected Map<Set<GOperator>, Map<Integer, RabinPair>> computeAccSlavesOptions(GOperator g, boolean forceAllSlaves) {
         Map<Set<GOperator>, Map<Integer, RabinPair>> result = new HashMap<>();
-        RabinSlave rSlave = product.secondaryAutomata.get(f);
-        Set<Set<GOperator>> gSets = Sets.powerSet(topmostGs.get(f));
+        RabinSlave rSlave = product.secondaryAutomata.get(g);
+        Set<Set<GOperator>> gSets;
+        if (gSkeleton || forceAllSlaves) {
+            gSets = g.operand.accept(new SkeletonVisitor());
+            gSets.retainAll(Sets.powerSet(topmostGs.get(g)));
+        } else {
+            gSets = Sets.powerSet(topmostGs.get(g));
+        }
+
         for (Set<GOperator> gSet : gSets) {
             Set<IState> finalStates = new HashSet<>();
 
@@ -95,8 +107,15 @@ public class AccLocal {
                 }
             }
 
+            for (MojmirSlave.State fs : rSlave.mojmir.sinks) {
+
+                if (equivalenceClassFactory.createEquivalenceClass(new Conjunction(gSet)).implies(fs.getClazz())) {
+                    finalStates.add(fs);
+                }
+            }
+
             result.put(gSet, new HashMap<>());
-            for (int rank = 1; rank <= maxRank.get(f); rank++) {
+            for (int rank = 1; rank <= maxRank.get(g); rank++) {
                 result.get(gSet).put(rank, new RabinPair(rSlave, finalStates, rank, product, valuationSetFactory));
             }
         }
@@ -107,7 +126,12 @@ public class AccLocal {
     protected Map<Set<GOperator>, Map<Map<Formula, Integer>, RabinPair>> computeAccMasterOptions() {
         Map<Set<GOperator>, Map<Map<Formula, Integer>, RabinPair>> result = new HashMap<>();
 
-        Set<Set<GOperator>> gSets = Sets.powerSet(formula.gSubformulas());
+        Set<Set<GOperator>> gSets;
+        if (gSkeleton) {
+            gSets = formula.accept(new SkeletonVisitor());
+        } else {
+            gSets = Sets.powerSet(formula.gSubformulas());
+        }
         for (Set<GOperator> gSet : gSets) {
             Main.verboseln("\tGSet " + gSet);
 
