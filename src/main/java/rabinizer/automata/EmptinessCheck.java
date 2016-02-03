@@ -3,9 +3,11 @@ package rabinizer.automata;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Table.Cell;
 
@@ -141,8 +143,9 @@ public class EmptinessCheck<S extends IState<S>> {
                 }
             }
 
-            allInfs = allInfs && intersect.entrySet().stream().anyMatch(entry -> entry.getValue() != null
-                    && scc.contains(automaton.transitions.get(entry.getKey(), entry.getValue())));
+            allInfs = allInfs && automaton.transitions.cellSet().stream().filter(
+                    entry -> intersect.get(entry.getRowKey()) != null && intersect.get(entry.getRowKey()).containsAll((entry.getColumnKey())) && scc.contains(entry.getValue()))
+                    .anyMatch(entry -> true);
 
         }
         return allInfs;
@@ -183,8 +186,7 @@ public class EmptinessCheck<S extends IState<S>> {
             return true;
         } else {
             List<Set<S>> subSCC = automaton.subSCCs(scc, intersect);
-            return subSCC.stream()
-                    .allMatch(sub -> pair.right.stream().allMatch(c -> !Collections.disjoint(c.keySet(), sub)));
+            return subSCC.stream().anyMatch(sub -> pair.right.stream().allMatch(c -> !Collections.disjoint(c.keySet(), sub)));
         }
     }
 
