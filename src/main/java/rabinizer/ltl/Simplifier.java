@@ -481,21 +481,25 @@ public final class Simplifier {
                     if (!form.equals(form2)) {
                         ImplicationVisitor imp = ImplicationVisitor.getVisitor();
                         if (form.accept(imp, form2)) {
-                            formula2.remove();
-                            return true;
+                            if (set.remove(formula2))
+                                return true;
                         }
 
                         if (form.accept(imp, form2.not())) {
+                            set.clear();
                             set.add(BooleanConstant.FALSE);
                             return true;
                         }
 
                         Formula f = form.accept(PseudoSubstitutionVisitor.getVisitor(), form2, true);
                         if (!f.equals(form)) {
-                            formula.remove();
+                            boolean possibleResult = set.remove(formula);
+                            set.remove(formula);
                             f = f.accept(this);
-                            set.add(f);
-                            return true;
+                            possibleResult = set.add(f) || possibleResult;
+                            if (possibleResult) {
+                                return true;
+                            }
                         }
                     }
                 }
@@ -520,21 +524,24 @@ public final class Simplifier {
                     if (!form.equals(form2)) {
                         ImplicationVisitor imp = ImplicationVisitor.getVisitor();
                         if (form.accept(imp, form2)) {
-                            formula.remove();
-                            return true;
+                            if (set.remove(formula))
+                                return true;
                         }
 
                         if (form.not().accept(imp, form2)) {
+                            set.clear();
                             set.add(BooleanConstant.TRUE);
                             return true;
                         }
 
                         Formula f = form.accept(PseudoSubstitutionVisitor.getVisitor(), form2, false);
                         if (!f.equals(form)) {
-                            formula.remove();
+                            boolean possibleResult = set.remove(formula);
                             f = f.accept(this);
-                            set.add(f);
-                            return true;
+                            possibleResult = set.add(f) || possibleResult;
+                            if (possibleResult) {
+                                return true;
+                            }
                         }
                     }
                 }
