@@ -9,8 +9,8 @@ import java.util.*;
  */
 public class AccLocalFolded extends AccLocal {
 
-    public AccLocalFolded(Product product, ValuationSetFactory factory, EquivalenceClassFactory factory2) {
-        super(product, factory, factory2);
+    public AccLocalFolded(Product product, ValuationSetFactory factory, EquivalenceClassFactory factory2, Collection<Optimisation> opts) {
+        super(product, factory, factory2, opts);
     }
 
     @Override

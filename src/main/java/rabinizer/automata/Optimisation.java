@@ -2,10 +2,10 @@ package rabinizer.automata;
 
 public enum Optimisation {
     /* Common */
-    EAGER,
+    EAGER, SKELETON,
 
     /* DetLimit */
-    COVER, SKELETON,
+    COVER,
 
     /* Rabinizer */
     ONLY_RELEVANT_SLAVES, SLAVE_SUSPENSION,

@@ -84,6 +84,7 @@ public class Main {
                 + "   -sinks-on                   : uses the sink-optimization for Mojmir slaves, default if optimize\n"
                 + "   -sinks-off                  : does not use the sink-optimization, default if isabelle \n"
                 + "   -optimize-initial-state     : remove transient pair in Rabin Slave, default if optimize\n"
+                + "   -g-skeleton                 : uses the G-Skeleton optimisation (not default)"
                 + "   -not-optimize-initial-state : does not remove transient pair in Rabin Slave, default if isabelle \n"
                 + "   -z3                         : use z3 as backend\n"
                 + "   -bdd                        : use bdd as backend (default)\n"
@@ -195,6 +196,8 @@ public class Main {
                 opts.add(Optimisation.COMPLETE);
             } else if (arg.equals("-slave-suspension") || arg.equals("--slave-suspension")) {
                 opts.add(Optimisation.SLAVE_SUSPENSION);
+            } else if (arg.equals("-g-skeleton") || arg.equals("--g-skeleton")) {
+                opts.add(Optimisation.SKELETON);
             } else if (arg.substring(0, 1).equals("-")) {
                 System.out.println("\n\nERROR: unknown option " + arg);
                 printUsage();
