@@ -124,7 +124,7 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
         return builder.build();
     }
 
-    private Map<ValuationSet, Map<K, S>> secondaryJointMove() {
+    protected Map<ValuationSet, Map<K, S>> secondaryJointMove() {
         Map<K, ? extends Automaton<S>> secondary = getSecondaryAutomata();
         Map<ValuationSet, Map<K, S>> current = new HashMap<>();
         current.put(getFactory().createUniverseValuationSet(), Collections.emptyMap());
