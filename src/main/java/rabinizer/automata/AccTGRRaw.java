@@ -61,7 +61,7 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
                         fPair = accLocal.computeAccSlavesOptions(g, true).get(localGSet).get(ranking.get(g));
                     }
                     Fin.addAll((TranSet) fPair.left);
-                    Infs.add((TranSet) fPair.right);
+                    Infs.add(((TranSet) fPair.right).clone());
                 }
                 GRabinPairRaw pair = new GRabinPairRaw(Fin, Infs);
                 Main.verboseln(pair.toString());
