@@ -67,4 +67,11 @@ public class TranSet<S extends IState<S>> extends HashMap<S, ValuationSet> {
         }
     }
 
+    @Override
+    public TranSet<S> clone() {
+        TranSet<S> result = new TranSet<>(factory);
+        result.addAll(this);
+        return result;
+    }
+
 }
