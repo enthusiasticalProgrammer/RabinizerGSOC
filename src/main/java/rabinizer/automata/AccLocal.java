@@ -108,7 +108,7 @@ public class AccLocal {
         RabinSlave rSlave = product.secondaryAutomata.get(g);
         Set<Set<GOperator>> gSets;
         if (gSkeleton && !forceAllSlaves) {
-            gSets = g.operand.accept(new SkeletonVisitor());
+            gSets = g.operand.accept(new SkeletonVisitor(SkeletonVisitor.SkeletonApproximation.LOWER_BOUND));
             gSets.retainAll(Sets.powerSet(topmostGs.get(g)));
         } else {
             gSets = Sets.powerSet(topmostGs.get(g));
@@ -138,7 +138,7 @@ public class AccLocal {
 
         Set<Set<GOperator>> gSets;
         if (gSkeleton) {
-            gSets = formula.accept(new SkeletonVisitor());
+            gSets = formula.accept(new SkeletonVisitor(SkeletonVisitor.SkeletonApproximation.LOWER_BOUND));
         } else {
             gSets = Sets.powerSet(formula.gSubformulas());
         }
