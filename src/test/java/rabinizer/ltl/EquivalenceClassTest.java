@@ -21,8 +21,8 @@ public abstract class EquivalenceClassTest {
 
     @Before
     public void setUp() {
-        contradiction = new Conjunction(new GOperator(new Literal("a", false)), new FOperator(new Literal("a", true)));
-        tautology = new Disjunction(new XOperator(new Literal("b", true)), new XOperator(new Literal("b", false)));
+        contradiction = BooleanConstant.FALSE;
+        tautology = BooleanConstant.TRUE;
         literal = new Literal("c", false);
 
         factory = setUpFactory(new Conjunction(contradiction, tautology, literal).getPropositions());
@@ -56,7 +56,7 @@ public abstract class EquivalenceClassTest {
         EquivalenceClass c = factory.createEquivalenceClass(contradiction);
 
         assertTrue(c.equivalent(c));
-        assertTrue(c.equivalent(factory.createEquivalenceClass(new Conjunction(literal, new Literal("c", true)))));
+        assertTrue(c.equivalent(factory.createEquivalenceClass(Simplifier.simplify(new Conjunction(literal, new Literal("c", true)), Simplifier.Strategy.MODAL_EXT))));
     }
 
     @Test
@@ -97,7 +97,7 @@ public abstract class EquivalenceClassTest {
 
     @Test
     public void testGetSupport() throws Exception {
-        Formula f = Util.createFormula("(p2 | F p1) & (!p2 | F p1)");
+        Formula f = Util.createFormula("(F p1) & (!p2 | F p1)");
         EquivalenceClassFactory factory = setUpFactory(f.getPropositions());
         EquivalenceClass clazz = factory.createEquivalenceClass(f);
         assertEquals(Collections.singleton(Util.createFormula("F p1")), clazz.getSupport());

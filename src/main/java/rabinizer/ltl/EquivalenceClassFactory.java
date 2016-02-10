@@ -1,14 +1,16 @@
 package rabinizer.ltl;
 
+import org.jetbrains.annotations.NotNull;
+
 public interface EquivalenceClassFactory {
 
-    default EquivalenceClass getTrue() {
+    @NotNull EquivalenceClass createEquivalenceClass(@NotNull Formula formula);
+
+    default @NotNull EquivalenceClass getTrue() {
         return createEquivalenceClass(BooleanConstant.TRUE);
     }
 
-    default EquivalenceClass getFalse() {
+    default @NotNull EquivalenceClass getFalse() {
         return createEquivalenceClass(BooleanConstant.FALSE);
     }
-
-    EquivalenceClass createEquivalenceClass(Formula formula);
 }

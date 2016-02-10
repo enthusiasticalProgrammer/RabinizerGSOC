@@ -108,10 +108,6 @@ public final class Simplifier {
                 return set.iterator().next();
             }
 
-            if (set.stream().anyMatch(e -> set.contains(e.not()))) {
-                return BooleanConstant.FALSE;
-            }
-
             return new Conjunction(set);
         }
 
@@ -127,10 +123,6 @@ public final class Simplifier {
 
             if (set.size() == 1) {
                 return set.iterator().next();
-            }
-
-            if (set.stream().anyMatch(e -> set.contains(e.not()))) {
-                return BooleanConstant.TRUE;
             }
 
             return new Disjunction(set);
@@ -206,6 +198,36 @@ public final class Simplifier {
             }
 
             return new XOperator(operand);
+        }
+
+        @Override
+        public Formula visit(@NotNull Conjunction conjunction) {
+            Formula c = super.visit(conjunction);
+
+            if (c instanceof Conjunction) {
+                Conjunction c2 = (Conjunction) c;
+
+                if (c2.children.stream().anyMatch(e -> c2.children.contains(e.not()))) {
+                    return BooleanConstant.FALSE;
+                }
+            }
+
+            return c;
+        }
+
+        @Override
+        public Formula visit(@NotNull Disjunction disjunction) {
+            Formula d = super.visit(disjunction);
+
+            if (d instanceof Disjunction) {
+                Disjunction d2 = (Disjunction) d;
+
+                if (d2.children.stream().anyMatch(e -> d2.children.contains(e.not()))) {
+                    return BooleanConstant.TRUE;
+                }
+            }
+
+            return d;
         }
     }
 

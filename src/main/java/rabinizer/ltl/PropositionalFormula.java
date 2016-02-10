@@ -61,17 +61,7 @@ public abstract class PropositionalFormula extends Formula {
 
     @Override
     public Set<Formula> getPropositions() {
-        Set<Formula> propositions = new HashSet<>();
-
-        for (Formula child : children) {
-            for (Formula proposition : child.getPropositions()) {
-                if (!propositions.contains(proposition.not())) {
-                    propositions.add(proposition);
-                }
-            }
-        }
-
-        return propositions;
+        return collect(Formula::getPropositions);
     }
 
     @Override
