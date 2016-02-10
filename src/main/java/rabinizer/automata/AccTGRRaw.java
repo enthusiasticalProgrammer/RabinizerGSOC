@@ -178,7 +178,7 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
         removalPairs = new AccTGRRaw(valuationSetFactory, equivalenceClassFactory);
         for (GRabinPairRaw pair1 : this) {
             for (GRabinPairRaw pair2 : this) {
-                if (!pair1.equals(pair2) && pairSubsumed(pair1, pair2)) {
+                if (!pair1.equals(pair2) && pairSubsumed(pair1, pair2) && !removalPairs.contains(pair2) && !removalPairs.contains(pair1)) {
                     removalPairs.add(pair1);
                     break;
                 }
