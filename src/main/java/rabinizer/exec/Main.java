@@ -100,7 +100,7 @@ public class Main {
         return (clock2 - start) / 1000.0;
     }
 
-    public static void main(String[] args) throws IOException, HOAConsumerException {
+    public static void main(String... args) throws IOException, HOAConsumerException {
         // Parsing arguments
         AutomatonType type = AutomatonType.TGR;
         Format format = Format.DOT;

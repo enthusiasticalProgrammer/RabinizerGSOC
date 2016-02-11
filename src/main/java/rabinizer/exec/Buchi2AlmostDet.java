@@ -10,7 +10,7 @@ import rabinizer.automata.buchi.SemiDeterminization;
 
 public class Buchi2AlmostDet {
 
-    public static void main(String[] args) throws ParseException {
+    public static void main(String... args) throws ParseException {
         BuchiAutomatonBuilder builder = new BuchiAutomatonBuilder();
         HOAFParser.parseHOA(System.in, builder);
 

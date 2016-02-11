@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class Buchi2DetLimit {
 
-    public static void main(String[] args) throws ParseException {
+    public static void main(String... args) throws ParseException {
         BuchiAutomatonBuilder builder = new BuchiAutomatonBuilder();
         HOAFParser.parseHOA(System.in, builder);
 

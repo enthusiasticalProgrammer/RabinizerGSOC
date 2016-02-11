@@ -29,7 +29,7 @@ public class RelevantGFormulaeWithSlaveSuspension implements Visitor<Boolean> {
     @Override
     public Boolean visit(Conjunction c) {
         Set<Formula> canBeWaited = c.children.stream().filter(child -> !child.accept(new ContainsVisitor(GOperator.class))).collect(Collectors.toSet());
-        c.children.stream().filter(child -> child.accept(new PatientSlaveVisitor())).forEach(child -> canBeWaited.add(child));
+        c.children.stream().filter(child -> child.accept(new PatientSlaveVisitor())).forEach(canBeWaited::add);
         Set<Formula> relevantChildren = new HashSet<>(c.children);
         relevantChildren.removeIf(child -> child.accept(new PatientSlaveVisitor()));
 

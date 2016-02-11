@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -122,7 +121,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
                     for (GRabinPairT<ProductState> pair : acc) {
                         pair.right.stream()
                                 .filter(inf -> inf != null && inf.get(s) != null && inf.get(s).containsAll(trans.getColumnKey()))
-                                .map(q -> hoa.getNumber(q))
+                                .map(hoa::getNumber)
                                 .forEach(accSets::add);
                     }
 

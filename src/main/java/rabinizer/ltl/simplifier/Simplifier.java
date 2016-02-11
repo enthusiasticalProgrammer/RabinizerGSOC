@@ -69,7 +69,7 @@ public final class Simplifier {
     }
 
     static class PropositionalSimplifier implements Visitor<Formula> {
-        private static Set<Formula> flatten(BaseStream workStream, Predicate<PropositionalFormula> shouldUnfold,
+        private static Set<Formula> flatten(Stream<Formula> workStream, Predicate<PropositionalFormula> shouldUnfold,
                                             BooleanConstant breakC, BooleanConstant continueC) {
             Set<Formula> flattSet = new HashSet<>();
             Iterator<Formula> iterator = workStream.iterator();
@@ -402,7 +402,6 @@ public final class Simplifier {
             // remove ltl that imply other Formulas
             // or do a PseudoSubstitution by a fix-point-iteration
             while (innerDisjunctionLoop(set)) {
-                ;
             }
 
             return super.visit(new Disjunction(set));
@@ -538,9 +537,7 @@ public final class Simplifier {
 
             while (formula.hasNext()) {
                 Formula form = formula.next();
-                Iterator<Formula> formula2 = set.iterator();
-                while (formula2.hasNext()) {
-                    Formula form2 = formula2.next();
+                for (Formula form2 : set) {
                     if (!form.equals(form2)) {
                         ImplicationVisitor imp = ImplicationVisitor.getVisitor();
                         if (form.accept(imp, form2)) {

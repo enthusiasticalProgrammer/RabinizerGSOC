@@ -44,11 +44,13 @@ public class AccLocalFolded extends AccLocal {
     }
 
     @Override
-    protected TranSet computeAccMasterForState(Set<GOperator> gSet, Map<Formula, Integer> ranking, Product.ProductState ps) {
-        TranSet result = new TranSet(valuationSetFactory);
+    protected TranSet<Product.ProductState> computeAccMasterForState(Set<GOperator> gSet, Map<Formula, Integer> ranking, Product.ProductState ps) {
+        TranSet<Product.ProductState> result = new TranSet<>(valuationSetFactory);
+
         if (!slavesEntail(gSet, ps, ranking, null, ps.getPrimaryState().getClazz())) {
             result.add(ps, valuationSetFactory.createUniverseValuationSet());
         }
+
         return result;
     }
 

@@ -133,7 +133,7 @@ public class DTRA<T extends IState<T>> extends Automaton<DTRA<T>.ProductDegenSta
                     for (GRabinPairT<ProductDegenState> pair : acc) {
                         accSets.addAll(pair.right.stream()
                                 .filter(inf -> inf != null && inf.get(s) != null && inf.get(s).containsAll(trans.getColumnKey()))
-                                .map(x -> hoa.getNumber(x)).collect(Collectors.toList()));
+                                .map(hoa::getNumber).collect(Collectors.toList()));
                     }
                     hoa.addEdge(trans.getRowKey(), trans.getColumnKey().toFormula(), trans.getValue(), accSets);
                 }

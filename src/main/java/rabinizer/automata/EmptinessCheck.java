@@ -41,7 +41,7 @@ public class EmptinessCheck<S extends IState<S>> {
      */
     public static <S extends IState<S>> boolean checkEmptiness(Automaton<S> automaton,
                                                                Collection<? extends Tuple<TranSet<S>, Set<TranSet<S>>>> accTGR) {
-        return new EmptinessCheck<S>(automaton, accTGR).checkIfEmpty();
+        return new EmptinessCheck<>(automaton, accTGR).checkIfEmpty();
 
     }
 

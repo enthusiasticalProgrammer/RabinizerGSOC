@@ -191,19 +191,19 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
         @Override
         public @NotNull EquivalenceClass and(@NotNull EquivalenceClass eq) {
             if (eq instanceof BDDEquivalenceClass) {
-                return new BDDEquivalenceClass(Simplifier.simplify(new Conjunction(getRepresentative(), eq.getRepresentative()), Strategy.PROPOSITIONAL), bdd.and(((BDDEquivalenceClassFactory.BDDEquivalenceClass) eq).bdd));
+                return new BDDEquivalenceClass(Simplifier.simplify(new Conjunction(representative, eq.getRepresentative()), Strategy.PROPOSITIONAL), bdd.and(((BDDEquivalenceClassFactory.BDDEquivalenceClass) eq).bdd));
             }
 
-            return createEquivalenceClass(new Conjunction(getRepresentative(), eq.getRepresentative()));
+            return createEquivalenceClass(new Conjunction(representative, eq.getRepresentative()));
         }
 
         @Override
         public @NotNull EquivalenceClass or(@NotNull EquivalenceClass eq) {
             if (eq instanceof BDDEquivalenceClass) {
-                return new BDDEquivalenceClass(Simplifier.simplify(new Disjunction(getRepresentative(), eq.getRepresentative()), Strategy.PROPOSITIONAL), bdd.or(((BDDEquivalenceClassFactory.BDDEquivalenceClass) eq).bdd));
+                return new BDDEquivalenceClass(Simplifier.simplify(new Disjunction(representative, eq.getRepresentative()), Strategy.PROPOSITIONAL), bdd.or(((BDDEquivalenceClassFactory.BDDEquivalenceClass) eq).bdd));
             }
 
-            return createEquivalenceClass(new Disjunction(getRepresentative(), eq.getRepresentative()));
+            return createEquivalenceClass(new Disjunction(representative, eq.getRepresentative()));
         }
 
         @Override
