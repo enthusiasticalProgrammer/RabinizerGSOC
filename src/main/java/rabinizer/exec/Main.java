@@ -1,20 +1,12 @@
 package rabinizer.exec;
 
-import java.io.BufferedReader;
+import java.io.*;
 
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.*;
 import rabinizer.ltl.simplifier.Simplifier;
 import rabinizer.ltl.simplifier.Simplifier.Strategy;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.StringReader;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -108,7 +100,7 @@ public class Main {
         return (clock2 - start) / 1000.0;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, HOAConsumerException {
         // Parsing arguments
         AutomatonType type = AutomatonType.TGR;
         Format format = Format.DOT;
@@ -276,7 +268,7 @@ public class Main {
             writer = System.out;
         }
 
-        String input, output;
+        String input;
         HOAConsumer hoa = new HOAConsumerPrint(writer);
         while ((input = bReader.readLine()) != null) { // TODO possible
             // IOException
@@ -286,43 +278,34 @@ public class Main {
 
             nonsilent("Time for construction: " + stopwatch() + " s");
             nonsilent("Outputting DGRA");
+
             switch (format) {
             case HOA:
-                try {
-                    automaton.toHOANew(hoa);
-                } catch (HOAConsumerException e) {
-                    e.printStackTrace();
-                }
-                output = "";
+                automaton.toHOA(hoa);
                 break;
             case DOT:
-                output = automaton.toDotty();
-                output += "\n" + automaton.acc();
+                automaton.toDotty(new PrintStream(writer));
+                automaton.acc(new PrintStream(writer));
                 break;
             case SIZE:
-                output = String.format("%8s", automaton.size());
+                writer.write(String.format("%8s", automaton.size()).getBytes());
                 break;
             case SIZEACC:
-                output = String.format("%8s%8s", automaton.size(), automaton.pairNumber());
-                // throw new UnsupportedOperationException("Not supported
-                // yet.");
+                writer.write(String.format("%8s%8s", automaton.size(), automaton.pairNumber()).getBytes());
                 break;
-            default:
-                output = null;
             }
-            if (format != Format.HOA) {
-                writer.write(output.getBytes());
-            }
+
             writer.flush();
         }
+
         if (fw != null) {
             try {
                 fw.close();
             } catch (IOException e) {
                 errorMessageAndExit("IO exception when closing the file: " + e.getMessage());
             }
-
         }
+
         nonsilent("Done!");
         reader.close();
         bReader.close();
@@ -364,9 +347,9 @@ public class Main {
             // case SGR:
             // return new DSGRA(dtgra);
         case TR:
-            return new DTRA(dtgra, valuationSetFactory);
+            return new DTRA(dtgra);
         case SR:
-            return new DSRA(new DTRA(dtgra, valuationSetFactory), valuationSetFactory);
+            return new DSRA(new DTRA(dtgra));
         case BUCHI:
         }
         errorMessageAndExit("Unsupported automaton type");

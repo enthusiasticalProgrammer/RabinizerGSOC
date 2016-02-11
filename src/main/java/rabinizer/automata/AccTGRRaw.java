@@ -26,20 +26,6 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
         this.equivalenceClassFactory = factory2;
     }
 
-    public AccTGRRaw(TranSet allTrans, ValuationSetFactory factory,
-                     EquivalenceClassFactory factory2) {
-        this.allTrans = allTrans;
-        this.valuationSetFactory = factory;
-        this.equivalenceClassFactory = factory2;
-    }
-
-    public AccTGRRaw(AccTGRRaw accTGR, ValuationSetFactory factory, EquivalenceClassFactory factory2) {
-        super(accTGR);
-        allTrans = accTGR.allTrans;
-        this.valuationSetFactory = factory;
-        this.equivalenceClassFactory = factory2;
-    }
-
     public AccTGRRaw(AccLocal accLocal, ValuationSetFactory factory, EquivalenceClassFactory factory2) {
         allTrans = accLocal.allTrans;
         this.valuationSetFactory = factory;
@@ -78,7 +64,6 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
         Main.stopwatchLocal();
 
         Main.verboseln(phase + ". Raw Generalized Rabin Acceptance Condition\n");
-        // Main.verboseln(this.toString());
         printProgress(phase++);
 
         /*
@@ -100,7 +85,6 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
             }
         }
         this.removeAll(removalPairs);
-        // Main.verboseln(this.toString());
         printProgress(phase++);
 
         Main.verboseln(phase + ". Removing complete Ii in (F, {I1,...,In}), i.e. Ii U F = Q \n");
@@ -120,7 +104,6 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
         }
         this.clear();
         this.addAll(temp);
-        // Main.verboseln(this.toString());
         printProgress(phase++);
 
         Main.verboseln(phase + ". Removing F from each Ii: (F, {I1,...,In}) |-> (F, {I1\\F,...,In\\F})\n");
@@ -171,6 +154,7 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
         }
         this.clear();
         this.addAll(temp);
+
         // Main.verboseln(this.toString());
         printProgress(phase++);
 
@@ -184,7 +168,9 @@ public class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
                 }
             }
         }
-        this.removeAll(removalPairs);
+
+        removeAll(removalPairs);
+
         // Main.verboseln(this.toString());
         printProgress(phase);
     }

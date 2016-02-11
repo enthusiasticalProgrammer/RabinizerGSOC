@@ -34,7 +34,7 @@ public class HOAConsumerExtended<T> {
         accType = type;
     }
 
-    private static AccType getAccCondition(List<GRabinPair<?>> acc) {
+    private static <T> AccType getAccCondition(List<GRabinPair<T>> acc) {
         if (acc.isEmpty()) {
             return AccType.NONE;
         }
@@ -96,7 +96,7 @@ public class HOAConsumerExtended<T> {
      *
      * @throws HOAConsumerException
      */
-    public void setAcceptanceCondition(List<GRabinPair<?>> acc) throws HOAConsumerException {
+    public void setAcceptanceCondition(List<GRabinPair<T>> acc) throws HOAConsumerException {
         AccType accT = getAccCondition(acc);
 
         hoa.provideAcceptanceName(accT.toString(), Collections.emptyList());
@@ -176,10 +176,10 @@ public class HOAConsumerExtended<T> {
         currentState = null;
     }
 
-    private void setAccCond(List<GRabinPair<?>> acc) throws HOAConsumerException {
+    private void setAccCond(List<GRabinPair<T>> acc) throws HOAConsumerException {
         BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
 
-        for (GRabinPair<?> rabin : acc) {
+        for (GRabinPair<T> rabin : acc) {
             BooleanExpression<AtomAcceptance> left = TRUE;
             BooleanExpression<AtomAcceptance> right = TRUE;
             BooleanExpression<AtomAcceptance> both;
@@ -190,7 +190,7 @@ public class HOAConsumerExtended<T> {
 
 
             if (rabin.right != null) {
-                for (Object inf : rabin.right) {
+                for (T inf : rabin.right) {
                     right = new BooleanExpression<>(BooleanExpression.Type.EXP_AND, right, new BooleanExpression<>(mkInf(getNumber(inf))));
                 }
             }

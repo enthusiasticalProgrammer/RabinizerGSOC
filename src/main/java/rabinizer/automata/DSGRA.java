@@ -1,5 +1,7 @@
 package rabinizer.automata;
 
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 
 import org.jetbrains.annotations.NotNull;
@@ -38,8 +40,8 @@ public class DSGRA extends Automaton<DSGRA.ProductAccState> implements AccAutoma
     }
 
     @Override
-    public String acc() {
-        return accSGR.toString();
+    public void acc(PrintStream p) {
+        p.print(accSGR);
     }
 
     @Override
@@ -104,7 +106,7 @@ public class DSGRA extends Automaton<DSGRA.ProductAccState> implements AccAutoma
     }
 
     @Override
-    public void toHOANew(HOAConsumer ho) throws HOAConsumerException {
+    public void toHOA(HOAConsumer ho) throws HOAConsumerException {
         HOAConsumerExtended hoa = new HOAConsumerExtended(ho, HOAConsumerExtended.AutomatonType.STATE);
         hoa.setHeader(null, valuationSetFactory.getAlphabet());
         hoa.setInitialState(this.initialState);

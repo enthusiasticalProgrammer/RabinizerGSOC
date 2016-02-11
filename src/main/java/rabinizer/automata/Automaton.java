@@ -1,5 +1,6 @@
 package rabinizer.automata;
 
+import java.io.PrintStream;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -140,27 +141,21 @@ public abstract class Automaton<S extends IState<S>> {
         return states.size();
     }
 
-    public @NotNull String toDotty() {
-        String r = "digraph \"Automaton for " + initialState + "\" \n{\n";
+    public void toDotty(PrintStream p) {
+        p.println("digraph \"Automaton for " + initialState + "\" \n{");
 
         for (IState<S> s : states) {
             if (s.equals(initialState)) {
-                r += "node [shape=oval, label=\"" + s + "\"]\"" + s + "\";\n";
+                p.println("node [shape=oval, label=\"" + s + "\"]\"" + s + "\";");
             } else {
-                r += "node [shape=rectangle, label=\"" + s + "\"]\"" + s + "\";\n";
+                p.println("node [shape=rectangle, label=\"" + s + "\"]\"" + s + "\";");
             }
         }
 
         for (Cell<S, ValuationSet, S> cell : transitions.cellSet()) {
-            r += "\"" + cell.getRowKey() + "\" -> \"" + cell.getColumnKey() + "\" [label=\"" + cell.getValue()
-                    + "\"];\n";
+            p.println("\"" + cell.getRowKey() + "\" -> \"" + cell.getColumnKey() + "\" [label=\"" + cell.getValue()
+                    + "\"];");
         }
-
-        return r + "}";
-    }
-
-    public String acc() {
-        return "";
     }
 
     public @NotNull Set<S> getStates() {
@@ -289,7 +284,6 @@ public abstract class Automaton<S extends IState<S>> {
     }
 
     protected abstract @NotNull S generateInitialState();
-
 
     /**
      * @param scc: an SCC for which the transitions inside need to be determined

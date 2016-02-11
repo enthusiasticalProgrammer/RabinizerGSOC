@@ -1,5 +1,6 @@
 package rabinizer.automata;
 
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,8 +24,8 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
     AccTR<? extends IState<?>> accTR;
     Map<IState, Set<Integer>> stateAcceptance;
 
-    public DSRA(DTRA<Product.ProductState> dtra, ValuationSetFactory factory) {
-        super(factory);
+    public DSRA(DTRA<Product.ProductState> dtra) {
+        super(dtra.valuationSetFactory);
         this.dtra = dtra;
         trapState = new ProductDegenAccState(dtra.trapState, new HashSet<>());
         this.accTR = dtra.accTR;
@@ -45,8 +46,8 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
     }
 
     @Override
-    public String acc() {
-        return accSR.toString();
+    public void acc(PrintStream p) {
+        p.print(accSR);
     }
 
     @Override
@@ -126,7 +127,7 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
     }
 
     @Override
-    public void toHOANew(HOAConsumer hoa) throws HOAConsumerException {
+    public void toHOA(HOAConsumer hoa) throws HOAConsumerException {
         throw new UnsupportedOperationException();
     }
 }

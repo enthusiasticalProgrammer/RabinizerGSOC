@@ -1,5 +1,6 @@
 package rabinizer.automata;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,8 +43,8 @@ public class DTGRA extends Product implements AccAutomatonInterface {
     }
 
     @Override
-    public String acc() {
-        return acc.toString();
+    public void acc(PrintStream p) {
+        p.print(acc);
     }
 
     @Override
@@ -52,7 +53,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
     }
 
     @Override
-    public void toHOANew(HOAConsumer ho) throws HOAConsumerException {
+    public void toHOA(HOAConsumer ho) throws HOAConsumerException {
         HOAConsumerExtended hoa = new HOAConsumerExtended(ho, HOAConsumerExtended.AutomatonType.TRANSITION);
         hoa.setHeader(null, valuationSetFactory.getAlphabet());
         hoa.setInitialState(this.initialState);
@@ -115,16 +116,16 @@ public class DTGRA extends Product implements AccAutomatonInterface {
                 if (trans.getRowKey().equals(s)) {
                     List<Integer> accSets = new ArrayList<>();
                     acc.stream()
-                    .filter(pair -> pair.left != null && pair.left.get(s) != null
-                    && pair.left.get(s).containsAll(trans.getColumnKey()))
-                    .map(p -> hoa.getNumber(p.left)).forEach(accSets::add);
+                        .filter(pair -> pair.left != null && pair.left.get(s) != null && pair.left.get(s).containsAll(trans.getColumnKey()))
+                        .map(p -> hoa.getNumber(p.left)).forEach(accSets::add);
 
                     for (GRabinPairT<ProductState> pair : acc) {
-                        accSets.addAll(pair.right.stream()
-                                .filter(inf -> inf != null && inf.get(s) != null
-                                        && inf.get(s).containsAll(trans.getColumnKey()))
-                                .map(hoa::getNumber).collect(Collectors.toList()));
+                        pair.right.stream()
+                                .filter(inf -> inf != null && inf.get(s) != null && inf.get(s).containsAll(trans.getColumnKey()))
+                                .map(q -> hoa.getNumber(q))
+                                .forEach(accSets::add);
                     }
+
                     hoa.addEdge(trans.getRowKey(), trans.getColumnKey().toFormula(), trans.getValue(), accSets);
                 }
             }

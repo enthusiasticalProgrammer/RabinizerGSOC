@@ -9,15 +9,15 @@ import java.util.Set;
 /**
  * @author jkretinsky
  */
-public class GRabinPair<BaseSet> extends Tuple<BaseSet, List<BaseSet>> {
+public class GRabinPair<S> extends Tuple<S, List<S>> {
 
-    public GRabinPair(BaseSet l, List<BaseSet> r) {
+    public GRabinPair(S l, List<S> r) {
         super(l, r);
     }
 
-    public final List<BaseSet> order(Set<BaseSet> r) {
-        List<BaseSet> result = new ArrayList<>(r.size());
-        for (BaseSet ts : r) {
+    public final List<S> order(Set<S> r) {
+        List<S> result = new ArrayList<>(r.size());
+        for (S ts : r) {
             result.add(ts);
         }
         return result;
@@ -30,7 +30,7 @@ public class GRabinPair<BaseSet> extends Tuple<BaseSet, List<BaseSet>> {
             result += "0\ntrivial";
         } else {
             result += right.size();
-            for (BaseSet inf : right) {
+            for (S inf : right) {
                 result += "\n" + inf;
             }
         }
