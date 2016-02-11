@@ -1,6 +1,7 @@
-package rabinizer.ltl.bdd;
+package rabinizer.ltl.equivalence;
 
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.collections.valuationset.BDDValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.ValuationSetTest;
 
 import java.util.Set;

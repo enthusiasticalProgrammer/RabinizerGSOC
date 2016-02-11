@@ -2,8 +2,13 @@ package rabinizer.automata;
 
 import com.google.common.collect.Sets;
 
+import rabinizer.ltl.equivalence.EquivalenceClass;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.exec.Main;
 import rabinizer.ltl.*;
+import rabinizer.ltl.simplifier.Simplifier;
+import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -106,14 +111,7 @@ public class AccLocal {
                     finalStates.add(fs);
                 }
             }
-
-            for (MojmirSlave.State fs : rSlave.mojmir.sinks) {
-
-                if (equivalenceClassFactory.createEquivalenceClass(new Conjunction(gSet)).implies(fs.getClazz())) {
-                    finalStates.add(fs);
-                }
-            }
-
+            
             result.put(gSet, new HashMap<>());
             for (int rank = 1; rank <= maxRank.get(g); rank++) {
                 result.get(gSet).put(rank, new RabinPair(rSlave, finalStates, rank, product, valuationSetFactory));

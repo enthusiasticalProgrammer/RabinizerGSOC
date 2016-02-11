@@ -1,9 +1,9 @@
 package rabinizer;
 
 import rabinizer.ltl.Formula;
-import rabinizer.ltl.ValuationSet;
-import rabinizer.parser.LTLParser;
-import rabinizer.parser.ParseException;
+import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.ltl.parser.LTLParser;
+import rabinizer.ltl.parser.ParseException;
 
 import java.io.StringReader;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package rabinizer.ltl;
+package rabinizer.collections.valuationset;
 
 import java.util.Set;
 

@@ -1,4 +1,4 @@
-package rabinizer.ltl.bdd;
+package rabinizer.ltl.equivalence;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -10,7 +10,8 @@ import net.sf.javabdd.BDDFactory;
 import org.jetbrains.annotations.NotNull;
 import rabinizer.collections.Tuple;
 import rabinizer.ltl.*;
-import rabinizer.ltl.Simplifier.Strategy;
+import rabinizer.ltl.simplifier.Simplifier;
+import rabinizer.ltl.simplifier.Simplifier.Strategy;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -190,7 +191,7 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
         @Override
         public @NotNull EquivalenceClass and(@NotNull EquivalenceClass eq) {
             if (eq instanceof BDDEquivalenceClass) {
-                return new BDDEquivalenceClass(Simplifier.simplify(new Conjunction(getRepresentative(), eq.getRepresentative()), Strategy.PROPOSITIONAL), bdd.and(((rabinizer.ltl.bdd.BDDEquivalenceClassFactory.BDDEquivalenceClass) eq).bdd));
+                return new BDDEquivalenceClass(Simplifier.simplify(new Conjunction(getRepresentative(), eq.getRepresentative()), Strategy.PROPOSITIONAL), bdd.and(((BDDEquivalenceClassFactory.BDDEquivalenceClass) eq).bdd));
             }
 
             return createEquivalenceClass(new Conjunction(getRepresentative(), eq.getRepresentative()));
@@ -199,7 +200,7 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
         @Override
         public @NotNull EquivalenceClass or(@NotNull EquivalenceClass eq) {
             if (eq instanceof BDDEquivalenceClass) {
-                return new BDDEquivalenceClass(Simplifier.simplify(new Disjunction(getRepresentative(), eq.getRepresentative()), Strategy.PROPOSITIONAL), bdd.or(((rabinizer.ltl.bdd.BDDEquivalenceClassFactory.BDDEquivalenceClass) eq).bdd));
+                return new BDDEquivalenceClass(Simplifier.simplify(new Disjunction(getRepresentative(), eq.getRepresentative()), Strategy.PROPOSITIONAL), bdd.or(((BDDEquivalenceClassFactory.BDDEquivalenceClass) eq).bdd));
             }
 
             return createEquivalenceClass(new Disjunction(getRepresentative(), eq.getRepresentative()));

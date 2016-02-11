@@ -1,9 +1,10 @@
-package rabinizer.ltl.bdd;
+package rabinizer.ltl.equivalence;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
+import rabinizer.collections.valuationset.BDDValuationSetFactory;
 
 import java.util.Collections;
 import java.util.Set;

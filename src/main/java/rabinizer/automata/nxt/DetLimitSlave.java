@@ -9,7 +9,11 @@ import org.jetbrains.annotations.Nullable;
 import rabinizer.automata.Automaton;
 import rabinizer.automata.IState;
 import rabinizer.automata.Optimisation;
+import rabinizer.ltl.equivalence.EquivalenceClass;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.*;
+import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.Collection;
 import java.util.HashSet;

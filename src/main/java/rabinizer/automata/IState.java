@@ -3,8 +3,8 @@ package rabinizer.automata;
 import com.google.common.collect.Sets;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import rabinizer.ltl.ValuationSet;
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;

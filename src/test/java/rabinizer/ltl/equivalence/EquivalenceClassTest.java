@@ -1,8 +1,11 @@
-package rabinizer.ltl;
+package rabinizer.ltl.equivalence;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import rabinizer.Util;
+import rabinizer.ltl.*;
+import rabinizer.ltl.simplifier.Simplifier;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +33,7 @@ public abstract class EquivalenceClassTest {
 
     @Test
     public void testGetRepresentative() throws Exception {
-        assertEquals(Simplifier.simplify(contradiction, Simplifier.Strategy.PROPOSITIONAL), factory.createEquivalenceClass(contradiction).getRepresentative());
+        Assert.assertEquals(Simplifier.simplify(contradiction, Simplifier.Strategy.PROPOSITIONAL), factory.createEquivalenceClass(contradiction).getRepresentative());
     }
 
     @Test

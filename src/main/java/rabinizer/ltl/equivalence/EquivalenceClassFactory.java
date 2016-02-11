@@ -1,6 +1,8 @@
-package rabinizer.ltl;
+package rabinizer.ltl.equivalence;
 
 import org.jetbrains.annotations.NotNull;
+import rabinizer.ltl.BooleanConstant;
+import rabinizer.ltl.Formula;
 
 public interface EquivalenceClassFactory {
 

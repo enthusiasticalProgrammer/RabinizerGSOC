@@ -1,5 +1,7 @@
 package rabinizer.ltl;
 
+import rabinizer.ltl.simplifier.Simplifier;
+
 import java.util.HashSet;
 import java.util.Set;
 

@@ -16,7 +16,7 @@ options
 }
 
 PARSER_BEGIN(LTLParser)
-package rabinizer.parser;
+package rabinizer.ltl.parser;
 
 import rabinizer.ltl.*;
 import rabinizer.exec.*;

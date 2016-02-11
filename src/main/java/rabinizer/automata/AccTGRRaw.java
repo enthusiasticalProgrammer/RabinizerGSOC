@@ -1,10 +1,10 @@
 package rabinizer.automata;
 
 import rabinizer.exec.Main;
-import rabinizer.ltl.EquivalenceClassFactory;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.GOperator;
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.HashSet;
 import java.util.Map;

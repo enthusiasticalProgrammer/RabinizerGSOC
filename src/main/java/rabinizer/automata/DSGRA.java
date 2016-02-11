@@ -1,10 +1,9 @@
 package rabinizer.automata;
 
-import java.io.OutputStream;
 import java.util.ArrayList;
 
 import org.jetbrains.annotations.NotNull;
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,11 +15,9 @@ import com.google.common.collect.Table;
 
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import jhoafparser.consumer.HOAConsumerPrint;
-import rabinizer.automata.DSGRA.ProductAccState;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.Tuple;
-import rabinizer.ltl.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSet;
 
 /**
  * @author jkretinsky

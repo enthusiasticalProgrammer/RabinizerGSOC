@@ -1,7 +1,8 @@
-package rabinizer.ltl.z3;
+package rabinizer.ltl.equivalence;
 
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.ValuationSetTest;
+import rabinizer.collections.valuationset.Z3ValuationSetFactory;
 
 import java.util.Set;
 

@@ -7,13 +7,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.google.common.collect.Table.Cell;
 
 import rabinizer.collections.Tuple;
-import rabinizer.ltl.ValuationSet;
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 /**
  * @author Christopher Ziegler

@@ -1,13 +1,10 @@
-package rabinizer.ltl.z3;
+package rabinizer.collections.valuationset;
 
 import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableBiMap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.microsoft.z3.*;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import jhoafparser.ast.BooleanExpression;
 import org.jetbrains.annotations.NotNull;
 import rabinizer.ltl.*;
 

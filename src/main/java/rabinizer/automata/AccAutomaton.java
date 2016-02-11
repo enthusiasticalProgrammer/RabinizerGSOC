@@ -1,6 +1,6 @@
 package rabinizer.automata;
 
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 /**
  * @author jkretinsky

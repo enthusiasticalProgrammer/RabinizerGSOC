@@ -1,6 +1,5 @@
 package rabinizer.automata;
 
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,8 +10,8 @@ import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import org.jetbrains.annotations.NotNull;
 import rabinizer.collections.Tuple;
-import rabinizer.ltl.ValuationSet;
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 /**
  * @author jkretinsky

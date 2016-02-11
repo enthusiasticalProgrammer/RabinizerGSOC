@@ -1,6 +1,8 @@
 package rabinizer.automata;
 
+import rabinizer.ltl.equivalence.EquivalenceClass;
 import rabinizer.ltl.*;
+import rabinizer.collections.valuationset.ValuationSet;
 
 import java.util.HashSet;
 import java.util.Objects;

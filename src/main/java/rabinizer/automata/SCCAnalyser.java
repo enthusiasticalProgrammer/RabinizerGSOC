@@ -2,7 +2,7 @@ package rabinizer.automata;
 
 import rabinizer.collections.HashTarjanStack;
 import rabinizer.collections.TarjanStack;
-import rabinizer.ltl.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSet;
 
 import java.util.*;
 

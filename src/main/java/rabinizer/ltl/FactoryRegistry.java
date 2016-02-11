@@ -1,9 +1,11 @@
 package rabinizer.ltl;
 
-import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
-import rabinizer.ltl.bdd.BDDValuationSetFactory;
-import rabinizer.ltl.z3.Z3EquivalenceClassFactory;
-import rabinizer.ltl.z3.Z3ValuationSetFactory;
+import rabinizer.ltl.equivalence.BDDEquivalenceClassFactory;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
+import rabinizer.collections.valuationset.BDDValuationSetFactory;
+import rabinizer.ltl.equivalence.Z3EquivalenceClassFactory;
+import rabinizer.collections.valuationset.Z3ValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.Set;
 

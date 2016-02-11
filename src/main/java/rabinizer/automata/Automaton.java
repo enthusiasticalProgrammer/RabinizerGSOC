@@ -1,6 +1,5 @@
 package rabinizer.automata;
 
-import java.io.OutputStream;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -9,14 +8,10 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
 import com.google.common.collect.Table.Cell;
-import jhoafparser.consumer.HOAConsumerException;
-import jhoafparser.consumer.HOAConsumerPrint;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import rabinizer.automata.output.HOAConsumerExtended;
-import rabinizer.ltl.ValuationSet;
-import rabinizer.ltl.ValuationSetFactory;
-import rabinizer.ltl.Visitor;
+import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 public abstract class Automaton<S extends IState<S>> {
 

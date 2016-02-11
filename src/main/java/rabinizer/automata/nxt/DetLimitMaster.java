@@ -3,9 +3,9 @@ package rabinizer.automata.nxt;
 import rabinizer.automata.Master;
 import rabinizer.automata.Optimisation;
 import rabinizer.ltl.BooleanConstant;
-import rabinizer.ltl.EquivalenceClass;
-import rabinizer.ltl.EquivalenceClassFactory;
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.ltl.equivalence.EquivalenceClass;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.Collection;
 

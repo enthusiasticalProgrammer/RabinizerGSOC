@@ -5,10 +5,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import rabinizer.Util;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.exec.Main;
 import rabinizer.ltl.*;
 import rabinizer.ltl.FactoryRegistry.Backend;
-import rabinizer.automata.Optimisation;
+import rabinizer.ltl.simplifier.Simplifier;
+import rabinizer.collections.valuationset.ValuationSetFactory;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;

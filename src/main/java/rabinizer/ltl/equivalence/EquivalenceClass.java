@@ -1,6 +1,7 @@
-package rabinizer.ltl;
+package rabinizer.ltl.equivalence;
 
 import org.jetbrains.annotations.NotNull;
+import rabinizer.ltl.Formula;
 
 import java.util.Set;
 

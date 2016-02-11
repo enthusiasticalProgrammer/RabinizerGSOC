@@ -1,7 +1,11 @@
 package rabinizer.automata;
 
 import org.jetbrains.annotations.NotNull;
+import rabinizer.ltl.equivalence.EquivalenceClass;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.*;
+import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.Collection;
 import java.util.Set;

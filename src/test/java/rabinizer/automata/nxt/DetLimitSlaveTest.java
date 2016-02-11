@@ -5,9 +5,11 @@ import org.junit.Before;
 import org.junit.Test;
 import rabinizer.automata.IState;
 import rabinizer.automata.Optimisation;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.*;
-import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
-import rabinizer.ltl.bdd.BDDValuationSetFactory;
+import rabinizer.ltl.equivalence.BDDEquivalenceClassFactory;
+import rabinizer.collections.valuationset.BDDValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.Collections;
 import java.util.EnumSet;

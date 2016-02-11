@@ -1,4 +1,4 @@
-package rabinizer.ltl.z3;
+package rabinizer.ltl.equivalence;
 
 import com.microsoft.z3.BoolExpr;
 import org.junit.Test;

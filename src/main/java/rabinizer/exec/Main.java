@@ -1,8 +1,11 @@
 package rabinizer.exec;
 
 import java.io.BufferedReader;
+
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.*;
-import rabinizer.ltl.Simplifier.Strategy;
+import rabinizer.ltl.simplifier.Simplifier;
+import rabinizer.ltl.simplifier.Simplifier.Strategy;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,13 +27,9 @@ import rabinizer.automata.DTGRA;
 import rabinizer.automata.DTGRARaw;
 import rabinizer.automata.DTRA;
 import rabinizer.automata.Optimisation;
-import rabinizer.ltl.ValuationSetFactory;
-import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
-import rabinizer.ltl.bdd.BDDValuationSetFactory;
-import rabinizer.ltl.z3.Z3EquivalenceClassFactory;
-import rabinizer.ltl.z3.Z3ValuationSetFactory;
-import rabinizer.parser.LTLParser;
-import rabinizer.parser.ParseException;
+import rabinizer.collections.valuationset.ValuationSetFactory;
+import rabinizer.ltl.parser.LTLParser;
+import rabinizer.ltl.parser.ParseException;
 
 /**
  * @author jkretinsky

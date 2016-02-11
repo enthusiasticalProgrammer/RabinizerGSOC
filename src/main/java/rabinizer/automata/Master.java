@@ -2,10 +2,13 @@ package rabinizer.automata;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import rabinizer.ltl.equivalence.EquivalenceClass;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.*;
+import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 public class Master extends Automaton<Master.State> {

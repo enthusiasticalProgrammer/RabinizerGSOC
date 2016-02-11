@@ -10,7 +10,7 @@ import rabinizer.automata.GRabinPair;
 import rabinizer.ltl.Conjunction;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.Literal;
-import rabinizer.ltl.Simplifier;
+import rabinizer.ltl.simplifier.Simplifier;
 
 import java.util.*;
 
@@ -136,7 +136,6 @@ public class HOAConsumerExtended<T> {
     }
 
     public void addEdge(T begin, Set<String> label, T end) throws HOAConsumerException {
-
         addEdge(begin, new Conjunction(alphabet.stream().map(l -> new Literal(l, !label.contains(l)))), end, null);
     }
 

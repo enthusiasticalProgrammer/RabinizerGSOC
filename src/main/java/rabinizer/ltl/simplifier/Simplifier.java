@@ -1,6 +1,7 @@
-package rabinizer.ltl;
+package rabinizer.ltl.simplifier;
 
 import org.jetbrains.annotations.NotNull;
+import rabinizer.ltl.*;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -368,10 +369,6 @@ public final class Simplifier {
     }
 
     public static class AggressiveSimplifier extends ModalSimplifier {
-        @Override
-        public Formula defaultAction(@NotNull Formula f) {
-            return f; // for boolean constants and literals
-        }
 
         @Override
         public Formula visit(@NotNull Conjunction c) {
@@ -399,13 +396,14 @@ public final class Simplifier {
                 return dis;
             }
 
-            d = ((Disjunction) dis);
+            d = (Disjunction) dis;
             Set<Formula> set = new HashSet<>(d.children);
 
             // remove ltl that imply other Formulas
             // or do a PseudoSubstitution by a fix-point-iteration
-            for (; innerDisjunctionLoop(set); )
+            while (innerDisjunctionLoop(set)) {
                 ;
+            }
 
             return super.visit(new Disjunction(set));
         }

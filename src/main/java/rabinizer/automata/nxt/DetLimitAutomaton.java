@@ -6,13 +6,19 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
+import jhoafparser.consumer.HOAConsumerNull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rabinizer.automata.*;
 import rabinizer.automata.output.HOAConsumerExtended;
+import rabinizer.ltl.equivalence.EquivalenceClass;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.*;
-import rabinizer.ltl.bdd.BDDEquivalenceClassFactory;
-import rabinizer.ltl.bdd.BDDValuationSetFactory;
+import rabinizer.ltl.equivalence.BDDEquivalenceClassFactory;
+import rabinizer.ltl.simplifier.Simplifier;
+import rabinizer.collections.valuationset.BDDValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.*;
 

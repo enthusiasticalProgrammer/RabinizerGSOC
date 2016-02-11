@@ -1,7 +1,5 @@
-package rabinizer.ltl.z3;
+package rabinizer.ltl.equivalence;
 
-import rabinizer.ltl.EquivalenceClassFactory;
-import rabinizer.ltl.EquivalenceClassTest;
 import rabinizer.ltl.Formula;
 
 import java.util.Set;

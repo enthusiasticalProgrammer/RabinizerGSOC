@@ -1,6 +1,8 @@
 package rabinizer.ltl;
 
 import org.jetbrains.annotations.NotNull;
+import rabinizer.ltl.equivalence.EquivalenceClass;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.Set;
 

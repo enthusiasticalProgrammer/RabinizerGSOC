@@ -2,7 +2,8 @@ package rabinizer.ltl;
 
 import org.junit.Test;
 
-import rabinizer.ltl.Simplifier.Strategy;
+import rabinizer.ltl.simplifier.Simplifier;
+import rabinizer.ltl.simplifier.Simplifier.Strategy;
 
 import java.util.Collections;
 

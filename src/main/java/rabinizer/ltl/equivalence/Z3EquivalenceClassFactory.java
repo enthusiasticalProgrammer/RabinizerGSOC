@@ -1,12 +1,12 @@
-package rabinizer.ltl.z3;
+package rabinizer.ltl.equivalence;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.ImmutableBiMap;
 import com.microsoft.z3.*;
 import org.jetbrains.annotations.NotNull;
 import rabinizer.ltl.*;
-import rabinizer.ltl.Simplifier.Strategy;
+import rabinizer.ltl.simplifier.Simplifier;
+import rabinizer.ltl.simplifier.Simplifier.Strategy;
 
 import java.util.*;
 

@@ -2,8 +2,8 @@ package rabinizer.automata;
 
 import com.google.common.collect.*;
 import org.jetbrains.annotations.NotNull;
-import rabinizer.ltl.ValuationSet;
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.*;
 import java.util.function.Function;

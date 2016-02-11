@@ -1,5 +1,7 @@
 package rabinizer.ltl;
 
+import rabinizer.ltl.simplifier.Simplifier;
+
 /**
  * visit(a,b) returns true if a=>b, and if we don't know it or a doesn't imply b
  * then false. it is highly recommended to have the subformulae aggressively

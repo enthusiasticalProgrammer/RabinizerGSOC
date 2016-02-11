@@ -1,6 +1,9 @@
 package rabinizer.automata;
 
+import rabinizer.ltl.equivalence.EquivalenceClass;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.*;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.*;
 

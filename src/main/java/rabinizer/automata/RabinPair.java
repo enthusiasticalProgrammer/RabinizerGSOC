@@ -2,8 +2,8 @@ package rabinizer.automata;
 
 import rabinizer.exec.Main;
 import rabinizer.collections.Tuple;
-import rabinizer.ltl.ValuationSet;
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.Map;
 import java.util.Set;

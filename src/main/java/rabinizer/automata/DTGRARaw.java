@@ -1,22 +1,16 @@
 package rabinizer.automata;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.Table;
-
 import rabinizer.automata.Product.ProductState;
 import rabinizer.exec.Main;
-import rabinizer.ltl.EquivalenceClassFactory;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.GOperator;
-import rabinizer.ltl.ValuationSet;
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 /**
  * @author jkretinsky

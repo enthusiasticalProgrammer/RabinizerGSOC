@@ -9,9 +9,9 @@ import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.buchi.BuchiAutomaton.State;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.ltl.Literal;
-import rabinizer.ltl.ValuationSet;
-import rabinizer.ltl.ValuationSetFactory;
-import rabinizer.ltl.bdd.BDDValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSetFactory;
+import rabinizer.collections.valuationset.BDDValuationSetFactory;
 
 import java.util.*;
 

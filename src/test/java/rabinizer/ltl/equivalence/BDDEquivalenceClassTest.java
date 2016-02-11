@@ -1,8 +1,12 @@
-package rabinizer.ltl.bdd;
+package rabinizer.ltl.equivalence;
 
 import org.junit.Test;
 import rabinizer.Util;
+import rabinizer.ltl.equivalence.BDDEquivalenceClassFactory;
+import rabinizer.ltl.equivalence.EquivalenceClass;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.*;
+import rabinizer.ltl.equivalence.EquivalenceClassTest;
 
 import java.util.Set;
 

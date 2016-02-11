@@ -1,6 +1,5 @@
 package rabinizer.automata;
 
-import java.io.OutputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -9,12 +8,11 @@ import com.google.common.collect.Table;
 
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import jhoafparser.consumer.HOAConsumerPrint;
 import org.jetbrains.annotations.NotNull;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.Tuple;
-import rabinizer.ltl.ValuationSet;
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 /**
  * TODO: decouple DTRA from DTGRARaw

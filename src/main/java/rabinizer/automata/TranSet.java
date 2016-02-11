@@ -1,10 +1,9 @@
 package rabinizer.automata;
 
-import rabinizer.ltl.ValuationSet;
-import rabinizer.ltl.ValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author jkretinsky
@@ -73,5 +72,4 @@ public class TranSet<S extends IState<S>> extends HashMap<S, ValuationSet> {
         result.addAll(this);
         return result;
     }
-
 }

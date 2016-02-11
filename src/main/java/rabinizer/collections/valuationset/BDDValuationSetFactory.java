@@ -1,4 +1,4 @@
-package rabinizer.ltl.bdd;
+package rabinizer.collections.valuationset;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -6,7 +6,8 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.jetbrains.annotations.NotNull;
 import rabinizer.ltl.*;
-import rabinizer.ltl.Simplifier.Strategy;
+import rabinizer.ltl.simplifier.Simplifier;
+import rabinizer.ltl.simplifier.Simplifier.Strategy;
 
 import java.lang.reflect.Method;
 import java.util.*;
