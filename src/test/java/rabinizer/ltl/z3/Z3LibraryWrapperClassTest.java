@@ -13,7 +13,7 @@ public class Z3LibraryWrapperClassTest {
     @Test
     public void checkSatAssignmentNotNull() {
         Formula f = Util.createFormula("true");
-        Z3LibraryWrapper<Formula> lib = new Z3LibraryWrapper<Formula>(f.getPropositions());
+        Z3EquivalenceClassFactory lib = new Z3EquivalenceClassFactory(f.getPropositions());
         BoolExpr b = lib.createZ3(f);
 
         assertNotEquals(lib.getSatAssignment(b), null);
@@ -23,7 +23,7 @@ public class Z3LibraryWrapperClassTest {
     @Test
     public void checkGetPropositionsOutOfBoolReturnsOnlyLiterals() {
         Formula f = Util.createFormula("true");
-        Z3LibraryWrapper<Formula> lib = new Z3LibraryWrapper<Formula>(f.getPropositions());
+        Z3EquivalenceClassFactory lib = new Z3EquivalenceClassFactory(f.getPropositions());
         BoolExpr b = lib.createZ3(f);
         assertFalse(lib.getPropositionsOutOfBoolExpr(b).contains(b));
     }
