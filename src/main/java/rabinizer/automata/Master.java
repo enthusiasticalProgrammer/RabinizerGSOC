@@ -14,23 +14,35 @@ import java.util.Set;
 public class Master extends Automaton<Master.State> {
 
     final boolean eager;
-    final EquivalenceClass initialState;
-    protected final EquivalenceClass TRUE;
+    final @Nullable EquivalenceClass initialState;
+    final EquivalenceClass TRUE;
 
-    public Master(Formula formula, EquivalenceClassFactory equivalenceClassFactory,
-                  ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
+    public Master(EquivalenceClass clazz, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
         super(valuationSetFactory, mergingEnabled);
-        initialState = equivalenceClassFactory.createEquivalenceClass(formula);
+        initialState = clazz;
         eager = optimisations.contains(Optimisation.EAGER);
         TRUE = equivalenceClassFactory.getTrue();
     }
 
+    public Master(EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
+        this((EquivalenceClass) null, equivalenceClassFactory, valuationSetFactory, optimisations, mergingEnabled);
+    }
+
+    public Master(Formula formula, EquivalenceClassFactory equivalenceClassFactory,
+                  ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
+        this(equivalenceClassFactory.createEquivalenceClass(formula), equivalenceClassFactory, valuationSetFactory, optimisations, mergingEnabled);
+    }
+
     @Override
     protected @NotNull State generateInitialState() {
+        if (initialState == null) {
+            throw new IllegalStateException("There is no initial state!");
+        }
+
         return generateInitialState(initialState);
     }
 
-    public State generateInitialState(EquivalenceClass clazz) {
+    public State generateInitialState(@NotNull EquivalenceClass clazz) {
         if (eager) {
             return new State(clazz.unfold(true));
         } else {

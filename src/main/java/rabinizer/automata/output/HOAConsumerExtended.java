@@ -7,6 +7,8 @@ import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.GRabinPair;
+import rabinizer.automata.IState;
+import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.ltl.Conjunction;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.Literal;
@@ -65,10 +67,10 @@ public class HOAConsumerExtended<T> {
      *
      * @throws HOAConsumerException
      */
-    public void setHeader(Formula formula, Collection<String> APs) throws HOAConsumerException {
+    public void setHeader(String info, Collection<String> APs) throws HOAConsumerException {
         hoa.notifyHeaderStart("v1");
         hoa.setTool("Rabinizer", "infty");
-        hoa.setName("Automaton for " + formula);
+        hoa.setName("Automaton for " + info);
 
         alphabet = ImmutableList.copyOf(APs);
         hoa.setAPs(alphabet);
@@ -121,6 +123,20 @@ public class HOAConsumerExtended<T> {
         }
 
         return conjunction;
+    }
+
+    public void addEdges(T begin, Map<ValuationSet, ? extends T> successors) throws HOAConsumerException {
+        for (Map.Entry<ValuationSet, ? extends T> entry : successors.entrySet()) {
+            hoa.addEdgeWithLabel(stateNumbers.get(begin), Simplifier.simplify(entry.getKey().toFormula()).accept(new FormulaConverter()), Collections.singletonList(getStateId(entry.getValue())), null);
+        }
+    }
+
+    public void addEdges2(T begin, Map<ValuationSet, Set<?>> successors) throws HOAConsumerException {
+        for (Map.Entry<ValuationSet, Set<?>> entry : successors.entrySet()) {
+            for (Object successor : entry.getValue()) {
+                hoa.addEdgeWithLabel(stateNumbers.get(begin), Simplifier.simplify(entry.getKey().toFormula()).accept(new FormulaConverter()), Collections.singletonList(getStateId((T) successor)), null);
+            }
+        }
     }
 
     public void addEdge(T begin, Formula label, T end, List<Integer> accSets) throws HOAConsumerException {
