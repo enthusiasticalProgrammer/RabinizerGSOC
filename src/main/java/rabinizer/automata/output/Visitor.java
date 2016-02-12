@@ -1,21 +1,22 @@
 package rabinizer.automata.output;
 
+import jhoafparser.ast.Atom;
 import jhoafparser.ast.BooleanExpression;
 
-public interface Visitor<R> {
-    R visitTrue(BooleanExpression b);
+public interface Visitor<T extends Atom, R> {
+    R visitTrue(BooleanExpression<T> b);
 
-    R visitFalse(BooleanExpression f);
+    R visitFalse(BooleanExpression<T> f);
 
-    R visitNot(BooleanExpression n);
+    R visitNot(BooleanExpression<T> n);
 
-    R visitOr(BooleanExpression o);
+    R visitOr(BooleanExpression<T> o);
 
-    R visitAnd(BooleanExpression a);
+    R visitAnd(BooleanExpression<T> a);
 
-    R visitAtom(BooleanExpression at);
+    R visitAtom(BooleanExpression<T> at);
 
-    default R visit(BooleanExpression b) {
+    default R visit(BooleanExpression<T> b) {
         if (b.isNOT()) {
             return visitNot(b);
         } else if (b.isAND()) {

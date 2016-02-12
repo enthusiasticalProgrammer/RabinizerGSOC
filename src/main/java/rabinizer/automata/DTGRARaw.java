@@ -1,9 +1,6 @@
 package rabinizer.automata;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import rabinizer.automata.Product.ProductState;
 import rabinizer.exec.Main;
@@ -76,7 +73,7 @@ public class DTGRARaw {
             }
             Main.verboseln("========================================");
             Main.nonsilent("Generating global acceptance condition");
-            accTGR = new AccTGRRaw<>(accLocal, valuationSetFactory, equivalenceClassFactory);
+            accTGR = AccTGRRaw.createAccTGRRaw(accLocal, valuationSetFactory);
             if (opts.contains(Optimisation.EMPTINESS_CHECK)) {
                 checkIfEmptyAndRemoveEmptySCCs();
             } else if (opts.contains(Optimisation.COMPLETE)) {
@@ -111,4 +108,200 @@ public class DTGRARaw {
 
     }
 
+    /**
+     * @author jkretinsky
+     */
+    public static class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
+
+        private static final long serialVersionUID = 245172601429256815L;
+        protected final ValuationSetFactory valuationSetFactory;
+        private final TranSet<S> allTrans;
+
+        private AccTGRRaw(TranSet<S> allTrans, ValuationSetFactory factory) {
+            this.allTrans = allTrans;
+            this.valuationSetFactory = factory;
+        }
+
+        public static AccTGRRaw<ProductState> createAccTGRRaw(AccLocal accLocal, ValuationSetFactory factory) {
+            AccTGRRaw<ProductState> accTGRRaw = new AccTGRRaw<>(accLocal.allTrans, factory);
+
+            for (Set<GOperator> gSet : accLocal.accMasterOptions.keySet()) {
+                Main.verboseln("\tGSet " + gSet);
+                for (Map<Formula, Integer> ranking : accLocal.accMasterOptions.get(gSet).keySet()) {
+                    Main.verboseln("\t  Ranking " + ranking);
+                    TranSet<ProductState> Fin = new TranSet<>(factory);
+                    Set<TranSet<ProductState>> Infs = new HashSet<>();
+                    Fin.addAll(accLocal.accMasterOptions.get(gSet).get(ranking).left);
+                    for (GOperator g : gSet) {
+                        Set<GOperator> localGSet = new HashSet<>(gSet);
+                        localGSet.retainAll(accLocal.topmostGs.get(g));
+                        RabinPair<ProductState> fPair;
+                        if (accLocal.accSlavesOptions.get(g).get(localGSet) != null) {
+                            fPair = accLocal.accSlavesOptions.get(g).get(localGSet).get(ranking.get(g));
+                        } else {
+                            fPair = accLocal.computeAccSlavesOptions(g, true).get(localGSet).get(ranking.get(g));
+                        }
+                        Fin.addAll(fPair.left);
+                        Infs.add((fPair.right).clone());
+                    }
+                    GRabinPairRaw<ProductState> pair = new GRabinPairRaw<>(Fin, Infs);
+                    Main.verboseln(pair.toString());
+                    accTGRRaw.add(pair);
+                }
+            }
+
+            return accTGRRaw;
+        }
+
+        public void removeRedundancy() { // (TranSet<ProductState> allTrans) {
+            AccTGRRaw<S> removalPairs;
+            AccTGRRaw<S> temp;
+            Set<TranSet<S>> copy;
+            int phase = 0;
+            Main.stopwatchLocal();
+
+            Main.verboseln(phase + ". Raw Generalized Rabin Acceptance Condition\n");
+            printProgress(phase++);
+
+            Main.verboseln(phase + ". Removing (F, {I1,...,In}) with complete F\n");
+            removalPairs = new AccTGRRaw<>(null, valuationSetFactory);
+            for (GRabinPairRaw<S> pair : this) {
+                if (pair.left.equals(allTrans)) {
+                    removalPairs.add(pair);
+                }
+            }
+            this.removeAll(removalPairs);
+            printProgress(phase++);
+
+            Main.verboseln(phase + ". Removing complete Ii in (F, {I1,...,In}), i.e. Ii U F = Q \n");
+            temp = new AccTGRRaw<>(null, valuationSetFactory);
+            for (GRabinPairRaw<S> pair : this) {
+                copy = new HashSet<>(pair.right);
+                for (TranSet<S> i : pair.right) {
+                    TranSet<S> iUf = new TranSet<>(valuationSetFactory);
+                    iUf.addAll(i);
+                    iUf.addAll(pair.left);
+                    if (iUf.equals(allTrans)) {
+                        copy.remove(i);
+                        break;
+                    }
+                }
+                temp.add(new GRabinPairRaw<>(pair.left, copy));
+            }
+            this.clear();
+            this.addAll(temp);
+            printProgress(phase++);
+
+            Main.verboseln(phase + ". Removing F from each Ii: (F, {I1,...,In}) |-> (F, {I1\\F,...,In\\F})\n");
+            temp = new AccTGRRaw<>(null, valuationSetFactory);
+            for (GRabinPairRaw<S> pair : this) {
+                copy = new HashSet<>(pair.right);
+                for (TranSet<S> i : pair.right) {
+                    copy.remove(i); // System.out.println("101:::::::"+i);
+                    TranSet<S> inew = new TranSet<>(valuationSetFactory);
+                    inew.addAll(i); // System.out.println("105TEMP-BEFORE"+temp+"\n=====");
+                    inew.removeAll(pair.left); // System.out.println("105TEMP-BETWEEN"+temp+"\n=====");
+                    copy.add(inew); // System.out.println("103TEMP-AFTER"+temp);
+                }
+                temp.add(new GRabinPairRaw<>(pair.left, copy));// System.out.println("105TEMP-AFTER"+temp+"\n=====");
+            }
+            this.clear();
+            this.addAll(temp);
+            // Main.verboseln(this.toString());
+            printProgress(phase++);
+
+            Main.verboseln(phase + ". Removing (F, {..., \\emptyset, ...} )\n");
+            removalPairs = new AccTGRRaw<>(null, valuationSetFactory);
+            for (GRabinPairRaw<S> pair : this) {
+                for (TranSet<S> i : pair.right) {
+                    if (i.isEmpty()) {
+                        removalPairs.add(pair);
+                        break;
+                    }
+                }
+            }
+            this.removeAll(removalPairs);
+            // Main.verboseln(this.toString());
+            printProgress(phase++);
+
+            Main.verboseln(
+                    phase + ". Removing redundant Ii: (F, I) |-> (F, { i | i in I and !\\exists j in I : Ij <= Ii })\n");
+            for (GRabinPairRaw<S> pair : this) {
+                copy = new HashSet<>(pair.right);
+                for (TranSet<S> i : pair.right) {
+                    for (TranSet<S> j : pair.right) {
+                        if (!j.equals(i) && j.subsetOf(i)) {
+                            copy.remove(i);
+                            break;
+                        }
+                    }
+                }
+                temp.add(new GRabinPairRaw<>(pair.left, copy));
+            }
+            this.clear();
+            this.addAll(temp);
+
+            // Main.verboseln(this.toString());
+            printProgress(phase++);
+
+            Main.verboseln(phase + ". Removing (F, I) for which there is a less restrictive (G, J) \n");
+            removalPairs = new AccTGRRaw<>(null, valuationSetFactory);
+
+            for (GRabinPairRaw<S> pair1 : this) {
+                for (GRabinPairRaw<S> pair2 : this) {
+                    if (pair1 == pair2) {
+                        continue;
+                    }
+
+                    if (pairSubsumed(pair1, pair2) && !removalPairs.contains(pair2) && !removalPairs.contains(pair1)) {
+                        removalPairs.add(pair1);
+                        break;
+                    }
+                }
+            }
+
+            removeAll(removalPairs);
+
+            // Main.verboseln(this.toString());
+            printProgress(phase);
+        }
+
+        public void printProgress(int phase) {
+            Main.nonsilent("Phase " + phase + ": " + Main.stopwatchLocal() + " s " + this.size() + " pairs");
+        }
+
+        @Override
+        public String toString() {
+            String result = "Gen. Rabin acceptance condition";
+            int i = 1;
+            for (GRabinPairRaw<S> pair : this) {
+                result += "\nPair " + i + "\n" + pair;
+                i++;
+            }
+            return result;
+        }
+
+        /**
+         * True if pair1 is more restrictive than pair2
+         */
+        private boolean pairSubsumed(GRabinPairRaw<S> pair1, GRabinPairRaw<S> pair2) {
+            if (!pair2.left.subsetOf(pair1.left)) {
+                return false;
+            }
+            for (TranSet<S> i2 : pair2.right) {
+                boolean i2CanBeMatched = false;
+                for (TranSet<S> i1 : pair1.right) {
+                    if (i1.subsetOf(i2)) {
+                        i2CanBeMatched = true;
+                        break;
+                    }
+                }
+                if (!i2CanBeMatched) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+    }
 }

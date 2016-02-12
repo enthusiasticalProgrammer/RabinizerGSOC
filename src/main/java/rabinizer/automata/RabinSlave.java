@@ -41,7 +41,7 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
         return init;
     }
 
-    private boolean noIncomingTransitions(IState in) {
+    private boolean noIncomingTransitions(RabinSlave.State in) {
         return !transitions.values().contains(in);
     }
 

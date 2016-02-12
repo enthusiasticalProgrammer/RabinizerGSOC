@@ -8,7 +8,7 @@ import java.util.HashMap;
 /**
  * @author jkretinsky
  */
-public class TranSet<S extends IState<S>> extends HashMap<S, ValuationSet> {
+public class TranSet<S> extends HashMap<S, ValuationSet> {
 
     private static final long serialVersionUID = 1013653255527479470L;
     private final ValuationSetFactory factory;
@@ -37,7 +37,7 @@ public class TranSet<S extends IState<S>> extends HashMap<S, ValuationSet> {
     public String toString() {
         String result = "{";
         boolean first = true;
-        for (IState s : this.keySet()) {
+        for (S s : this.keySet()) {
             result += (first ? "" : ";\n") + s + "  ->  " + get(s);
             first = false;
         }
@@ -45,7 +45,7 @@ public class TranSet<S extends IState<S>> extends HashMap<S, ValuationSet> {
     }
 
     boolean subsetOf(TranSet<S> ts) {
-        for (IState s : this.keySet()) {
+        for (S s : this.keySet()) {
             if (!ts.containsKey(s) || !ts.get(s).containsAll(this.get(s))) {
                 return false;
             }

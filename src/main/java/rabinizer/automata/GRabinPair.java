@@ -15,14 +15,6 @@ public class GRabinPair<S> extends Tuple<S, List<S>> {
         super(l, r);
     }
 
-    public final List<S> order(Set<S> r) {
-        List<S> result = new ArrayList<>(r.size());
-        for (S ts : r) {
-            result.add(ts);
-        }
-        return result;
-    }
-
     @Override
     public String toString() {
         String result = "Fin:\n" + (left == null ? "trivial" : left) + "\nInf: ";

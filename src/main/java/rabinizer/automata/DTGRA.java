@@ -2,10 +2,8 @@ package rabinizer.automata;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -13,21 +11,14 @@ import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.output.HOAConsumerExtended;
-import rabinizer.ltl.GOperator;
 import rabinizer.collections.valuationset.ValuationSet;
-import rabinizer.collections.valuationset.ValuationSetFactory;
 
 /**
  * @author jkretinsky
  */
 public class DTGRA extends Product implements AccAutomatonInterface {
 
-    private AccTGR<ProductState> acc;
-
-    public DTGRA(Master master, Map<GOperator, RabinSlave> slaves, ValuationSetFactory factory,
-            Collection<Optimisation> optimisations) {
-        super(master, slaves, factory, optimisations);
-    }
+    private AccTGR acc;
 
     public DTGRA(DTGRARaw raw) {
         super(raw.automaton.primaryAutomaton, raw.automaton.secondaryAutomata, raw.automaton.valuationSetFactory, Collections.emptySet());
@@ -37,7 +28,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
         this.edgeBetween.putAll(raw.automaton.edgeBetween);
         if (raw.accTGR != null) { // for computing the state space only (with no
             // acc. condition)
-            this.acc = new AccTGR<>(raw.accTGR);
+            this.acc = new AccTGR(raw.accTGR);
         }
     }
 
@@ -53,13 +44,13 @@ public class DTGRA extends Product implements AccAutomatonInterface {
 
     @Override
     public void toHOA(HOAConsumer ho) throws HOAConsumerException {
-        HOAConsumerExtended hoa = new HOAConsumerExtended(ho, HOAConsumerExtended.AutomatonType.TRANSITION);
+        HOAConsumerExtended<Product.ProductState> hoa = new HOAConsumerExtended<>(ho, HOAConsumerExtended.AutomatonType.TRANSITION);
         hoa.setHeader(null, valuationSetFactory.getAlphabet());
         hoa.setInitialState(this.initialState);
         hoa.setAcceptanceCondition(acc);
 
         //split transitions according to accepting Sets:
-        for(GRabinPairT<Product.ProductState> pair: acc){
+        for(GRabinPair<TranSet<ProductState>> pair: acc){
             Table<Product.ProductState,ValuationSet,Product.ProductState> toAdd = HashBasedTable.create();
             Table<Product.ProductState,ValuationSet,Product.ProductState> toRemove = HashBasedTable.create();
             if(pair.left!=null){
@@ -118,7 +109,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
                         .filter(pair -> pair.left != null && pair.left.get(s) != null && pair.left.get(s).containsAll(trans.getColumnKey()))
                         .map(p -> hoa.getNumber(p.left)).forEach(accSets::add);
 
-                    for (GRabinPairT<ProductState> pair : acc) {
+                    for (GRabinPair<TranSet<ProductState>> pair : acc) {
                         pair.right.stream()
                                 .filter(inf -> inf != null && inf.get(s) != null && inf.get(s).containsAll(trans.getColumnKey()))
                                 .map(hoa::getNumber)

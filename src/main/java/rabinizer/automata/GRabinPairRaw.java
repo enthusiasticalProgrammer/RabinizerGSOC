@@ -9,7 +9,7 @@ import java.util.Set;
 /**
  * @author jkretinsky
  */
-public class GRabinPairRaw<S extends IState<S>> extends Tuple<TranSet<S>, Set<TranSet<S>>> {
+public class GRabinPairRaw<S> extends Tuple<TranSet<S>, Set<TranSet<S>>> {
 
     public GRabinPairRaw(TranSet<S> l, Set<TranSet<S>> r) {
         super(l, r);
@@ -29,12 +29,12 @@ public class GRabinPairRaw<S extends IState<S>> extends Tuple<TranSet<S>, Set<Tr
         return result;
     }
 
-    public GRabinPairT order() {
+    public GRabinPair<TranSet<S>> order() {
         List<TranSet<S>> rightOrdered = new ArrayList<>(right.size());
         for (TranSet<S> ts : right) {
             rightOrdered.add(ts);
         }
-        return new GRabinPairT(left, rightOrdered);
+        return new GRabinPair<>(left, rightOrdered);
     }
 
 }

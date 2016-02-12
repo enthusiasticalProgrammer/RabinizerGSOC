@@ -4,9 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ContainsVisitor implements Visitor<Boolean> {
-    private final Class c;
+    private final Class<? extends  Formula> c;
 
-    public ContainsVisitor(Class cl) {
+    public ContainsVisitor(Class<? extends  Formula> cl) {
         if (!Formula.class.isAssignableFrom(cl)) {
             throw new IllegalArgumentException("");
         }

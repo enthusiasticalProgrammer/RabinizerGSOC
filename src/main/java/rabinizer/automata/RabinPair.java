@@ -8,7 +8,7 @@ import rabinizer.collections.valuationset.ValuationSetFactory;
 import java.util.Map;
 import java.util.Set;
 
-public class RabinPair<S extends IState<S>> extends Tuple<TranSet<S>, TranSet<S>> {
+public class RabinPair<S> extends Tuple<TranSet<S>, TranSet<S>> {
 
     public RabinPair(TranSet<S> l, TranSet<S> r) {
         super(l, r);
@@ -18,13 +18,13 @@ public class RabinPair<S extends IState<S>> extends Tuple<TranSet<S>, TranSet<S>
         super(rp.left, rp.right);
     }
 
-    public RabinPair(RabinSlave slave, Set<IState> finalStates, int rank, Product product,
-                     ValuationSetFactory valuationSetFactory) {
-        this(RabinPair.fromSlave(slave, finalStates, rank, product, valuationSetFactory));
+    public static RabinPair<Product.ProductState> createRabinPair(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank, Product product,
+                                                                     ValuationSetFactory valuationSetFactory) {
+        return new RabinPair<>(RabinPair.fromSlave(slave, finalStates, rank, product, valuationSetFactory));
     }
 
-    private static RabinPair fromSlave(RabinSlave slave, Set<IState> finalStates, int rank,
-                                       Product product, ValuationSetFactory valuationSetFactory) {
+    private static RabinPair<Product.ProductState> fromSlave(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank,
+                                                             Product product, ValuationSetFactory valuationSetFactory) {
 
         // Set fail
         // Mojmir
@@ -43,7 +43,7 @@ public class RabinPair<S extends IState<S>> extends Tuple<TranSet<S>, TranSet<S>
         for (Product.ProductState ps : product.states) {
             RabinSlave.State rs = ps.getSecondaryState(slave.mojmir.label);
             if (rs != null) { // relevant slave
-                for (IState fs : rs.keySet()) {
+                for (MojmirSlave.State fs : rs.keySet()) {
                     if (failM.containsKey(fs)) {
                         failP.add(ps, failM.get(fs));
                     }
@@ -92,8 +92,8 @@ public class RabinPair<S extends IState<S>> extends Tuple<TranSet<S>, TranSet<S>
         for (RabinSlave.State rs : slave.states) {
             for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : rs.entrySet()) {
                 if (stateIntegerEntry.getValue() < rank) {
-                    for (IState fs2 : rs.keySet()) {
-                        for (IState succ : slave.mojmir.states) {
+                    for (MojmirSlave.State fs2 : rs.keySet()) {
+                        for (MojmirSlave.State succ : slave.mojmir.states) {
                             ValuationSet vs1, vs2;
                             if (!finalStates.contains(succ) && (vs1 = slave.mojmir.edgeBetween.get(stateIntegerEntry.getKey(), succ)) != null
                                     && (vs2 = slave.mojmir.edgeBetween.get(fs2, succ)) != null) {
@@ -124,7 +124,7 @@ public class RabinPair<S extends IState<S>> extends Tuple<TranSet<S>, TranSet<S>
 
         Main.verboseln("\tAn acceptance pair for slave " + slave.mojmir.label + ":\n" + failP + buyP + succeedP);
         failP.addAll(buyP);
-        return new RabinPair(failP, succeedP);
+        return new RabinPair<>(failP, succeedP);
     }
 
     @Override

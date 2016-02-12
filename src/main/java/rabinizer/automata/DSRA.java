@@ -1,11 +1,7 @@
 package rabinizer.automata;
 
 import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
@@ -21,19 +17,17 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
 
     public AccSR accSR;
     DTRA dtra;
-    AccTR<? extends IState<?>> accTR;
-    Map<IState, Set<Integer>> stateAcceptance;
+    Map<DTRA.ProductDegenState, Set<Integer>> stateAcceptance;
 
-    public DSRA(DTRA<Product.ProductState> dtra) {
+    public DSRA(DTRA dtra) {
         super(dtra.valuationSetFactory);
         this.dtra = dtra;
         trapState = new ProductDegenAccState(dtra.trapState, new HashSet<>());
-        this.accTR = dtra.accTR;
         stateAcceptance = new HashMap<>();
         for (DTRA.ProductDegenState s : dtra.getStates()) {
             stateAcceptance.put(s, new HashSet<>());
-            for (int i = 0; i < accTR.size(); i++) {
-                RabinPair<? extends IState<?>> rp = accTR.get(i);
+            for (int i = 0; i < dtra.accTR.size(); i++) {
+                RabinPair<? extends IState<?>> rp = dtra.accTR.get(i);
                 if (valuationSetFactory.createAllValuationSets().equals(rp.left.get(s))) {
                     stateAcceptance.get(s).add(2 * i);
                 } else if (valuationSetFactory.createAllValuationSets().equals(rp.right.get(s))) {
@@ -42,7 +36,7 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
             }
         }
         generate();
-        accSR = new AccSR(accTR, this);
+        accSR = new AccSR(dtra.accTR.size(), this);
     }
 
     @Override
@@ -60,9 +54,9 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
         return new ProductDegenAccState(dtra.initialState, stateAcceptance.get(dtra.initialState));
     }
 
-    public class ProductDegenAccState extends Tuple<IState, Set<Integer>> implements IState<ProductDegenAccState> {
+    public class ProductDegenAccState extends Tuple<DTRA.ProductDegenState, Set<Integer>> implements IState<ProductDegenAccState> {
 
-        public ProductDegenAccState(IState pds, Set<Integer> accSets) {
+        public ProductDegenAccState(DTRA.ProductDegenState pds, Set<Integer> accSets) {
             super(pds, accSets);
         }
 
@@ -85,10 +79,10 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
 
         @Override
         public ProductDegenAccState getSuccessor(@NotNull Set<String> valuation) {
-            IState succ = dtra.getSuccessor(left, valuation);
+            DTRA.ProductDegenState succ = dtra.getSuccessor(left, valuation);
             Set<Integer> accSets = new HashSet<>(stateAcceptance.get(succ));
-            for (int i = 0; i < accTR.size(); i++) {
-                RabinPair<? extends IState<?>> rp = accTR.get(i);
+            for (int i = 0; i < dtra.accTR.size(); i++) {
+                RabinPair<? extends IState<?>> rp = dtra.accTR.get(i);
                 if (rp.left != null && rp.left.get(left) != null
                         && rp.left.get(left).contains(valuation) && !stateAcceptance.get(left).contains(2 * i)) {
                     // acceptance
@@ -129,5 +123,34 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
     @Override
     public void toHOA(HOAConsumer hoa) throws HOAConsumerException {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @author jkretinsky
+     */
+    public static class AccSR extends ArrayList<Set<ProductDegenAccState>> {
+
+        private static final long serialVersionUID = 1L;
+
+        AccSR(int size, DSRA dsra) {
+            for (int i = 0; i < 2 * size; i++) {
+                this.add(new HashSet<>());
+            }
+
+            for (ProductDegenAccState s : dsra.states) {
+                for (Integer i : s.right) {
+                    this.get(i).add(s);
+                }
+            }
+        }
+
+        @Override
+        public String toString() {
+            String result = "Rabin state-based acceptance condition";
+            for (int i = 0; i < size() / 2; i++) {
+                result += "\nPair " + (i + 1) + "\nFin:\n" + get(2 * i) + "\nInf:\n" + get(2 * i + 1);
+            }
+            return result;
+        }
     }
 }

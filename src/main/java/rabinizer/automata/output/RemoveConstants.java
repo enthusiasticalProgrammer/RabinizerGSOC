@@ -1,57 +1,58 @@
 package rabinizer.automata.output;
 
+import jhoafparser.ast.Atom;
 import jhoafparser.ast.BooleanExpression;
 
-public class RemoveConstants implements Visitor<BooleanExpression> {
+public class RemoveConstants<T extends Atom> implements Visitor<T, BooleanExpression<T>> {
 
     @Override
-    public BooleanExpression visitTrue(BooleanExpression b) {
+    public BooleanExpression<T> visitTrue(BooleanExpression<T> b) {
         return b;
     }
 
     @Override
-    public BooleanExpression visitFalse(BooleanExpression f) {
+    public BooleanExpression<T> visitFalse(BooleanExpression<T> f) {
         return f;
     }
 
     @Override
-    public BooleanExpression visitNot(BooleanExpression n) {
+    public BooleanExpression<T> visitNot(BooleanExpression<T> n) {
         throw new UnsupportedOperationException();
 
     }
 
     @Override
-    public BooleanExpression visitOr(BooleanExpression o) {
-        BooleanExpression l = visit(o.getLeft());
-        BooleanExpression r = visit(o.getRight());
+    public BooleanExpression<T> visitOr(BooleanExpression<T> o) {
+        BooleanExpression<T> l = visit(o.getLeft());
+        BooleanExpression<T> r = visit(o.getRight());
         if (l.isTRUE() || r.isTRUE()) {
-            return HOAConsumerExtended.TRUE;
+            return new BooleanExpression<>(BooleanExpression.Type.EXP_TRUE, null, null);
         } else if (l.isFALSE()) {
             return r;
         } else if (r.isFALSE()) {
             return l;
         } else {
-            return new BooleanExpression(BooleanExpression.Type.EXP_OR, l, r);
+            return new BooleanExpression<>(BooleanExpression.Type.EXP_OR, l, r);
         }
     }
 
     @Override
-    public BooleanExpression visitAnd(BooleanExpression a) {
-        BooleanExpression l = visit(a.getLeft());
-        BooleanExpression r = visit(a.getRight());
+    public BooleanExpression<T> visitAnd(BooleanExpression<T> a) {
+        BooleanExpression<T> l = visit(a.getLeft());
+        BooleanExpression<T> r = visit(a.getRight());
         if (l.isFALSE() || r.isFALSE()) {
-            return HOAConsumerExtended.FALSE;
+            return new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
         } else if (l.isTRUE()) {
             return r;
         } else if (r.isTRUE()) {
             return l;
         } else {
-            return new BooleanExpression(BooleanExpression.Type.EXP_AND, l, r);
+            return new BooleanExpression<>(BooleanExpression.Type.EXP_AND, l, r);
         }
     }
 
     @Override
-    public BooleanExpression visitAtom(BooleanExpression at) {
+    public BooleanExpression<T> visitAtom(BooleanExpression<T> at) {
         return at;
     }
 

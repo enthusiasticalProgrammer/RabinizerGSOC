@@ -6,8 +6,7 @@ import jhoafparser.ast.AtomLabel;
 import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import rabinizer.automata.GRabinPair;
-import rabinizer.automata.IState;
+import rabinizer.automata.*;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.ltl.Conjunction;
 import rabinizer.ltl.Formula;
@@ -15,11 +14,12 @@ import rabinizer.ltl.Literal;
 import rabinizer.ltl.simplifier.Simplifier;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class HOAConsumerExtended<T> {
 
-    public static final BooleanExpression TRUE = new BooleanExpression<>(BooleanExpression.Type.EXP_TRUE, null, null);
-    public static final BooleanExpression FALSE = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
+    public static final BooleanExpression<AtomAcceptance> TRUE = new BooleanExpression<>(BooleanExpression.Type.EXP_TRUE, null, null);
+    public static final BooleanExpression<AtomAcceptance> FALSE = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
     private final HOAConsumer hoa;
 
     private final Map<T, Integer> stateNumbers;
@@ -36,17 +36,17 @@ public class HOAConsumerExtended<T> {
         accType = type;
     }
 
-    private static <T> AccType getAccCondition(List<GRabinPair<T>> acc) {
+    private static <T> AccType getAccCondition(Collection<? extends GRabinPair<T>> acc) {
         if (acc.isEmpty()) {
             return AccType.NONE;
         }
 
         if (acc.size() == 1) {
-            if (acc.get(0).left == null) {
+            if (acc.iterator().next().left == null) {
                 return AccType.COBUCHI;
             }
 
-            if (acc.get(0).right == null) {
+            if (acc.iterator().next().right == null) {
                 return AccType.BUCHI;
             }
         }
@@ -98,11 +98,15 @@ public class HOAConsumerExtended<T> {
      *
      * @throws HOAConsumerException
      */
-    public void setAcceptanceCondition(List<GRabinPair<T>> acc) throws HOAConsumerException {
+    public void setAcceptanceCondition(Collection<GRabinPair<TranSet<T>>> acc) throws HOAConsumerException {
         AccType accT = getAccCondition(acc);
 
         hoa.provideAcceptanceName(accT.toString(), Collections.emptyList());
         setAccCond(acc);
+    }
+
+    public void setAcceptanceCondition2(Collection<RabinPair<T>> acc) throws HOAConsumerException {
+        setAcceptanceCondition(acc.stream().map(pair -> new GRabinPair<>(pair.left, Collections.singletonList(pair.right))).collect(Collectors.toList()));
     }
 
     public void setBuchiAcceptance() throws HOAConsumerException {
@@ -192,10 +196,11 @@ public class HOAConsumerExtended<T> {
         currentState = null;
     }
 
-    private void setAccCond(List<GRabinPair<T>> acc) throws HOAConsumerException {
+
+    private void setAccCond(Collection<GRabinPair<TranSet<T>>> acc) throws HOAConsumerException {
         BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
 
-        for (GRabinPair<T> rabin : acc) {
+        for (GRabinPair<TranSet<T>> rabin : acc) {
             BooleanExpression<AtomAcceptance> left = TRUE;
             BooleanExpression<AtomAcceptance> right = TRUE;
             BooleanExpression<AtomAcceptance> both;
@@ -206,7 +211,7 @@ public class HOAConsumerExtended<T> {
 
 
             if (rabin.right != null) {
-                for (T inf : rabin.right) {
+                for (TranSet<T> inf : rabin.right) {
                     right = new BooleanExpression<>(BooleanExpression.Type.EXP_AND, right, new BooleanExpression<>(mkInf(getNumber(inf))));
                 }
             }
@@ -215,7 +220,7 @@ public class HOAConsumerExtended<T> {
             all = new BooleanExpression<>(BooleanExpression.Type.EXP_OR, all, both);
         }
 
-        hoa.setAcceptanceCondition(acceptanceNumbers.size(), new RemoveConstants().visit(all));
+        hoa.setAcceptanceCondition(acceptanceNumbers.size(), new RemoveConstants<AtomAcceptance>().visit(all));
     }
 
     private int getStateId(T state) {
