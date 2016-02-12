@@ -15,22 +15,20 @@ public class Master extends Automaton<Master.State> {
 
     final boolean eager;
     final @Nullable EquivalenceClass initialState;
-    final EquivalenceClass TRUE;
 
-    public Master(EquivalenceClass clazz, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
+    public Master(EquivalenceClass clazz, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
         super(valuationSetFactory, mergingEnabled);
         initialState = clazz;
         eager = optimisations.contains(Optimisation.EAGER);
-        TRUE = equivalenceClassFactory.getTrue();
     }
 
-    public Master(EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
-        this((EquivalenceClass) null, equivalenceClassFactory, valuationSetFactory, optimisations, mergingEnabled);
+    public Master(ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
+        this((EquivalenceClass) null, valuationSetFactory, optimisations, true);
     }
 
     public Master(Formula formula, EquivalenceClassFactory equivalenceClassFactory,
                   ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
-        this(equivalenceClassFactory.createEquivalenceClass(formula), equivalenceClassFactory, valuationSetFactory, optimisations, mergingEnabled);
+        this(equivalenceClassFactory.createEquivalenceClass(formula), valuationSetFactory, optimisations, mergingEnabled);
     }
 
     @Override

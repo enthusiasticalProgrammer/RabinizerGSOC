@@ -57,11 +57,6 @@ public final class Literal extends FormulaNullary {
     }
 
     @Override
-    public Set<Formula> getTopMostPropositions() {
-        return Collections.singleton(this);
-    }
-
-    @Override
     public Set<String> getAtoms() {
         Set<String> atoms = new HashSet<>();
         atoms.add(this.atom);

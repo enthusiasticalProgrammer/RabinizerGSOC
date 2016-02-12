@@ -117,14 +117,6 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
         return testUnsatisfiability(negate(ctx.mkEq(b1, b2)));
     }
 
-    protected BoolExpr and(BoolExpr... children) {
-        return (BoolExpr) ctx.mkAnd(children).simplify();
-    }
-
-    protected BoolExpr or(BoolExpr... children) {
-        return (BoolExpr) ctx.mkOr(children).simplify();
-    }
-
     protected BoolExpr negate(BoolExpr child) {
         return (BoolExpr) ctx.mkNot(child).simplify();
     }

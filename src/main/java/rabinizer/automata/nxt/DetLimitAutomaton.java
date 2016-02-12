@@ -54,7 +54,7 @@ public class DetLimitAutomaton {
         acceptanceConditionSize = 1;
         EquivalenceClass initialClazz = equivalenceClassFactory.createEquivalenceClass(formula);
         Set<Set<GOperator>> keys = skeleton ? formula.accept(SKELETON_VISITOR) : Sets.powerSet(formula.gSubformulas());
-        accComponent = new AccComponent(new Master(equivalenceClassFactory, valuationSetFactory, optimisations, true), valuationSetFactory, optimisations);
+        accComponent = new AccComponent(new Master(valuationSetFactory, optimisations), valuationSetFactory, optimisations);
 
         if (isImpatientState(initialClazz) && keys.size() <= 1) {
             jumps = null;
@@ -70,13 +70,12 @@ public class DetLimitAutomaton {
         } else {
             jumps = HashBasedTable.create();
             jumpToFalse = new HashMap<>();
-            initComponent = new InitComponent(initialClazz, equivalenceClassFactory, valuationSetFactory, optimisations);
+            initComponent = new InitComponent(initialClazz, valuationSetFactory, optimisations);
             initComponent.generate();
         }
     }
 
-    @NotNull
-    private IState<?> getInitialState() {
+    private @NotNull IState<?> getInitialState() {
         if (initComponent != null) {
             return initComponent.getInitialState();
         }
@@ -144,8 +143,8 @@ public class DetLimitAutomaton {
     }
 
     class InitComponent extends Master {
-        InitComponent(EquivalenceClass initialClazz, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
-            super(initialClazz, equivalenceClassFactory, valuationSetFactory, optimisations, true);
+        InitComponent(EquivalenceClass initialClazz, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
+            super(initialClazz, valuationSetFactory, optimisations, true);
         }
 
         @Override
@@ -262,9 +261,8 @@ public class DetLimitAutomaton {
             acceptanceIndexMapping = HashBasedTable.create();
         }
 
-        @Nullable State jumpInitial(EquivalenceClass master, Set<GOperator> keys) {
+        void jumpInitial(EquivalenceClass master, Set<GOperator> keys) {
             initialState = jump(master, keys, null);
-            return initialState;
         }
 
         @Nullable State jump(@NotNull EquivalenceClass master, @NotNull Set<GOperator> keys, @Nullable Set<String> valuation) {

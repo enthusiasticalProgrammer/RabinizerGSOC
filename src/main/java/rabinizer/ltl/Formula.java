@@ -63,8 +63,6 @@ public abstract class Formula {
      */
     public abstract Set<Formula> getPropositions();
 
-    public abstract Set<Formula> getTopMostPropositions();
-
     public abstract Set<String> getAtoms();
 
     public abstract <R> R accept(Visitor<R> v);

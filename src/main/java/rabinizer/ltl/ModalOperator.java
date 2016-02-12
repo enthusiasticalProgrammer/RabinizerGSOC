@@ -1,6 +1,5 @@
 package rabinizer.ltl;
 
-import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -55,11 +54,6 @@ public abstract class ModalOperator extends Formula {
         Set<Formula> propositions = operand.getPropositions();
         propositions.add(this);
         return propositions;
-    }
-
-    @Override
-    public Set<Formula> getTopMostPropositions() {
-        return Collections.singleton(this);
     }
 
     @Override
