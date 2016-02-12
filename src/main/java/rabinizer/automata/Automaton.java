@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 
 import com.google.common.collect.Table.Cell;
@@ -292,15 +293,14 @@ public abstract class Automaton<S extends IState<S>> {
 
     protected @NotNull Set<Table.Cell<S, ValuationSet, S>> getTransitionsInSCC(@NotNull Set<S> scc) {
         Set<Table.Cell<S, ValuationSet, S>> result = new HashSet<>();
-        for (Table.Cell<S, ValuationSet, S> entry : transitions.cellSet()) {
 
+        for (Table.Cell<S, ValuationSet, S> entry : transitions.cellSet()) {
             if (scc.contains(entry.getRowKey())) {
                 result.add(entry);
             }
-
         }
-        return result;
 
+        return result;
     }
 
     /**
@@ -311,8 +311,7 @@ public abstract class Automaton<S extends IState<S>> {
      * otherwise
      */
     protected boolean isSink(@NotNull Set<S> scc) {
-        Set<S> nonSCCStates = new HashSet<>(states);
-        nonSCCStates.removeAll(scc);
+        Set<S> nonSCCStates = Sets.difference(states, scc);
         return scc.stream().filter(s -> transitions.row(s) != null)
                 .allMatch(s -> (Collections.disjoint(transitions.row(s).values(), nonSCCStates)));
     }

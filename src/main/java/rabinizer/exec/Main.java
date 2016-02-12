@@ -7,6 +7,7 @@ import rabinizer.ltl.*;
 import rabinizer.ltl.simplifier.Simplifier;
 import rabinizer.ltl.simplifier.Simplifier.Strategy;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -111,7 +112,7 @@ public class Main {
         boolean z3 = false;
 
 
-        Set<Optimisation> opts = new HashSet<>();
+        Set<Optimisation> opts = EnumSet.noneOf(Optimisation.class);
         opts.add(Optimisation.OPTIMISE_INITIAL_STATE);
         opts.add(Optimisation.EAGER);
         opts.add(Optimisation.SINKS);
@@ -283,13 +284,16 @@ public class Main {
             case HOA:
                 automaton.toHOA(hoa);
                 break;
+
             case DOT:
                 automaton.toDotty(new PrintStream(writer));
                 automaton.acc(new PrintStream(writer));
                 break;
+
             case SIZE:
                 writer.write(String.format("%8s", automaton.size()).getBytes());
                 break;
+
             case SIZEACC:
                 writer.write(String.format("%8s%8s", automaton.size(), automaton.pairNumber()).getBytes());
                 break;

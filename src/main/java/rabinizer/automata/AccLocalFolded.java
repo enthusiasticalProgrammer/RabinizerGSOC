@@ -25,6 +25,7 @@ public class AccLocalFolded extends AccLocal {
             children.add(f);
 
             Formula slaveAntecedent = BooleanConstant.get(true);
+
             if (ps.getSecondaryState(f) != null) {
                 RabinSlave.State rs = ps.getSecondaryState(f);
 
@@ -34,8 +35,8 @@ public class AccLocalFolded extends AccLocal {
                     }
                 }
             }
-            slaveAntecedent = slaveAntecedent.evaluate(gSet);
 
+            slaveAntecedent = slaveAntecedent.evaluate(gSet);
             children.add(slaveAntecedent);
         }
 

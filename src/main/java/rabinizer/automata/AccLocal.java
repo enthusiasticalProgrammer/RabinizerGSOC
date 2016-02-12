@@ -105,16 +105,17 @@ public class AccLocal {
 
         for (Set<GOperator> gSet : gSets) {
             Set<MojmirSlave.State> finalStates = new HashSet<>();
+            EquivalenceClass gSetClazz = equivalenceClassFactory.createEquivalenceClass(new Conjunction(gSet));
 
             for (MojmirSlave.State fs : rSlave.mojmir.states) {
-                if (equivalenceClassFactory.createEquivalenceClass(new Conjunction(gSet)).implies(fs.getClazz())) {
+                if (gSetClazz.implies(fs.getClazz())) {
                     finalStates.add(fs);
                 }
             }
             
             result.put(gSet, new HashMap<>());
             for (int rank = 1; rank <= maxRank.get(g); rank++) {
-                result.get(gSet).put(rank, new RabinPair(rSlave, finalStates, rank, product, valuationSetFactory));
+                result.get(gSet).put(rank, RabinPair.createRabinPair(rSlave, finalStates, rank, product, valuationSetFactory));
             }
         }
 
