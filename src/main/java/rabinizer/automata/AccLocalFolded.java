@@ -7,9 +7,6 @@ import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.*;
 
-/**
- * @author jkretinsky
- */
 public class AccLocalFolded extends AccLocal {
 
     public AccLocalFolded(Product product, ValuationSetFactory factory, EquivalenceClassFactory factory2, Collection<Optimisation> opts) {
@@ -17,13 +14,13 @@ public class AccLocalFolded extends AccLocal {
     }
 
     @Override
-    protected boolean slavesEntail(Set<GOperator> gSet, Product.ProductState ps, Map<Formula, Integer> ranking, Set<String> v,
+    protected boolean slavesEntail(Product.ProductState ps, Map<GOperator, Integer> ranking, Set<String> v,
                                    EquivalenceClass consequent) {
+        Set<GOperator> gSet = ranking.keySet();
         Collection<Formula> children = new ArrayList<>(2 * gSet.size());
 
         for (GOperator f : gSet) {
             children.add(f);
-
             Formula slaveAntecedent = BooleanConstant.get(true);
 
             if (ps.getSecondaryState(f) != null) {
@@ -45,10 +42,10 @@ public class AccLocalFolded extends AccLocal {
     }
 
     @Override
-    protected TranSet<Product.ProductState> computeAccMasterForState(Set<GOperator> gSet, Map<Formula, Integer> ranking, Product.ProductState ps) {
+    protected TranSet<Product.ProductState> computeAccMasterForState(Map<GOperator, Integer> ranking, Product.ProductState ps) {
         TranSet<Product.ProductState> result = new TranSet<>(valuationSetFactory);
 
-        if (!slavesEntail(gSet, ps, ranking, null, ps.getPrimaryState().getClazz())) {
+        if (!slavesEntail(ps, ranking, null, ps.getPrimaryState().getClazz())) {
             result.add(ps, valuationSetFactory.createUniverseValuationSet());
         }
 

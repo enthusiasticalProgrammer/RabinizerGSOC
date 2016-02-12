@@ -108,9 +108,6 @@ public class DTGRARaw {
 
     }
 
-    /**
-     * @author jkretinsky
-     */
     public static class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
 
         private static final long serialVersionUID = 245172601429256815L;
@@ -125,29 +122,35 @@ public class DTGRARaw {
         public static AccTGRRaw<ProductState> createAccTGRRaw(AccLocal accLocal, ValuationSetFactory factory) {
             AccTGRRaw<ProductState> accTGRRaw = new AccTGRRaw<>(accLocal.allTrans, factory);
 
-            for (Set<GOperator> gSet : accLocal.accMasterOptions.keySet()) {
+            for (Map.Entry<Map<GOperator, Integer>, RabinPair<Product.ProductState>> entry : accLocal.accMasterOptions.entrySet()) {
+                Map<GOperator, Integer> ranking = entry.getKey();
+                Set<GOperator> gSet = ranking.keySet();
+
                 Main.verboseln("\tGSet " + gSet);
-                for (Map<Formula, Integer> ranking : accLocal.accMasterOptions.get(gSet).keySet()) {
-                    Main.verboseln("\t  Ranking " + ranking);
-                    TranSet<ProductState> Fin = new TranSet<>(factory);
-                    Set<TranSet<ProductState>> Infs = new HashSet<>();
-                    Fin.addAll(accLocal.accMasterOptions.get(gSet).get(ranking).left);
-                    for (GOperator g : gSet) {
-                        Set<GOperator> localGSet = new HashSet<>(gSet);
-                        localGSet.retainAll(accLocal.topmostGs.get(g));
-                        RabinPair<ProductState> fPair;
-                        if (accLocal.accSlavesOptions.get(g).get(localGSet) != null) {
-                            fPair = accLocal.accSlavesOptions.get(g).get(localGSet).get(ranking.get(g));
-                        } else {
-                            fPair = accLocal.computeAccSlavesOptions(g, true).get(localGSet).get(ranking.get(g));
-                        }
-                        Fin.addAll(fPair.left);
-                        Infs.add((fPair.right).clone());
+                Main.verboseln("\t  Ranking " + ranking);
+
+                TranSet<ProductState> Fin = new TranSet<>(factory);
+                Set<TranSet<ProductState>> Infs = new HashSet<>();
+                Fin.addAll(entry.getValue().left);
+
+                for (GOperator g : gSet) {
+                    Set<GOperator> localGSet = new HashSet<>(gSet);
+                    localGSet.retainAll(accLocal.topmostGs.get(g));
+                    RabinPair<ProductState> fPair;
+
+                    if (accLocal.accSlavesOptions.get(g).get(localGSet) != null) {
+                        fPair = accLocal.accSlavesOptions.get(g).get(localGSet).get(ranking.get(g));
+                    } else {
+                        fPair = accLocal.computeAccSlavesOptions(g, true).get(localGSet).get(ranking.get(g));
                     }
-                    GRabinPairRaw<ProductState> pair = new GRabinPairRaw<>(Fin, Infs);
-                    Main.verboseln(pair.toString());
-                    accTGRRaw.add(pair);
+
+                    Fin.addAll(fPair.left);
+                    Infs.add((fPair.right).clone());
                 }
+
+                GRabinPairRaw<ProductState> pair = new GRabinPairRaw<>(Fin, Infs);
+                Main.verboseln(pair.toString());
+                accTGRRaw.add(pair);
             }
 
             return accTGRRaw;
