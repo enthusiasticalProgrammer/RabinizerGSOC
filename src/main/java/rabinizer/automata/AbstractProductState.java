@@ -2,6 +2,7 @@ package rabinizer.automata;
 
 import com.google.common.collect.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
@@ -58,7 +59,7 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
         return "(" + primaryState + "::" + secondaryStates + ')';
     }
 
-    public T getSuccessor(Set<String> valuation) {
+    public @Nullable T getSuccessor(Set<String> valuation) {
         P primarySuccessor = primaryState.getSuccessor(valuation);
 
         if (primarySuccessor == null) {
@@ -114,6 +115,8 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
                         for (K key : keys) {
                             secondaryStates2.put(key, secondaryStates.get(key));
                         }
+
+                        secondaryStates = secondaryStates2;
                     }
 
                     builder.put(set, constructState(entry1.getValue(), secondaryStates));
