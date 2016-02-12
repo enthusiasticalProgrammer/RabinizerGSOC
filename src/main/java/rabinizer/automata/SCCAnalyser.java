@@ -1,6 +1,5 @@
 package rabinizer.automata;
 
-import rabinizer.collections.HashTarjanStack;
 import rabinizer.collections.TarjanStack;
 import rabinizer.collections.valuationset.ValuationSet;
 
@@ -12,7 +11,7 @@ import java.util.*;
 public class SCCAnalyser<S extends IState<S>> {
     private final Map<S, Integer> lowlink = new HashMap<>();
     private final Map<S, Integer> number = new HashMap<>();
-    private final TarjanStack<S> stack = new HashTarjanStack<>();
+    private final Deque<S> stack = new TarjanStack<>();
     private final Automaton<S> a;
     private final Map<S, ValuationSet> forbiddenEdges;
     private final Set<S> allowedStates;

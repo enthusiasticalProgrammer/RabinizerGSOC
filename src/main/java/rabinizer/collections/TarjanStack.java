@@ -2,9 +2,7 @@ package rabinizer.collections;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * it is designed to be a stack that can handle push, pop, peek, contains and
@@ -12,123 +10,133 @@ import java.util.Iterator;
  * elements is distributed reasonably well. However, as the TrivialTarjanStack,
  * some subclasses may take longer in theory, but they might be faster, because
  * we are using only rather small automata.
- * 
+ *
  * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Important!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  * This class always assumes the Objects to be unique, i.e. no Object can be in
  * the stack twice
- * 
+ *
  */
+public class TarjanStack<E> extends AbstractCollection<E> implements Deque<E> {
 
-public abstract class TarjanStack<E> implements Deque<E> {
-
+    Set<E> elementsInTheStack;
     Deque<E> stack;
 
     public TarjanStack() {
         stack = new ArrayDeque<>();
+        elementsInTheStack = new HashSet<>();
     }
 
     @Override
-    public abstract boolean contains(Object o);
+    public boolean contains(Object o) {
+        return elementsInTheStack.contains(o);
+    }
 
     @Override
-    public abstract boolean isEmpty();
+    public boolean isEmpty() {
+        return elementsInTheStack.isEmpty();
+    }
 
     @Override
-    public abstract TarjanStack<E> clone();
+    public TarjanStack<E> clone() {
+        TarjanStack<E> stack = new TarjanStack<>();
+        stack.stack = new ArrayDeque<>(this.stack);
+        stack.elementsInTheStack = new HashSet<>(this.elementsInTheStack);
+        return stack;
+    }
 
     @Override
     public E pop() {
         E e = stack.pop();
-        rmElem(e);
+        elementsInTheStack.remove(e);
         return e;
     }
 
     @Override
     public void push(E e) {
         stack.push(e);
-        addElem(e);
+        elementsInTheStack.add(e);
     }
 
     @Override
     public boolean add(E e) {
-        addElem(e);
+        elementsInTheStack.add(e);
         return stack.add(e);
     }
 
     @Override
     public void addFirst(E e) {
         stack.addFirst(e);
-        addElem(e);
+        elementsInTheStack.add(e);
     }
 
     @Override
     public void addLast(E e) {
         stack.addLast(e);
-        addElem(e);
+        elementsInTheStack.add(e);
     }
 
     @Override
     public void clear() {
-        rmAllElems();
+        elementsInTheStack.clear();
         stack.clear();
     }
 
     @Override
     public boolean offer(E e) {
-        addElem(e);
+        elementsInTheStack.add(e);
         return stack.offer(e);
     }
 
     @Override
     public boolean offerFirst(E e) {
-        addElem(e);
+        elementsInTheStack.add(e);
         return stack.offerFirst(e);
     }
 
     @Override
     public boolean offerLast(E e) {
-        addElem(e);
+        elementsInTheStack.add(e);
         return stack.offerLast(e);
     }
 
     @Override
     public E poll() {
         E e = stack.poll();
-        rmElem(e);
+        elementsInTheStack.remove(e);
         return e;
     }
 
     @Override
     public E pollFirst() {
         E e = stack.pollFirst();
-        rmElem(e);
+        elementsInTheStack.remove(e);
         return e;
     }
 
     @Override
     public E pollLast() {
         E e = stack.pollLast();
-        rmElem(e);
+        elementsInTheStack.remove(e);
         return e;
     }
 
     @Override
     public E remove() {
         E e = stack.remove();
-        rmElem(e);
+        elementsInTheStack.remove(e);
         return e;
     }
 
     @Override
     public boolean remove(Object o) {
-        rmElem(o);
+        elementsInTheStack.remove(o);
         return stack.remove(o);
     }
 
     @Override
     public E removeFirst() {
         E e = stack.removeFirst();
-        rmElem(e);
+        elementsInTheStack.remove(e);
         return e;
     }
 
@@ -138,13 +146,14 @@ public abstract class TarjanStack<E> implements Deque<E> {
             this.remove(o);
             return true;
         }
+
         return false;
     }
 
     @Override
     public E removeLast() {
         E e = stack.removeLast();
-        rmElem(e);
+        elementsInTheStack.remove(e);
         return e;
     }
 
@@ -153,14 +162,8 @@ public abstract class TarjanStack<E> implements Deque<E> {
         return removeFirstOccurrence(o);
     }
 
-    protected abstract void rmElem(Object o);
-
-    protected abstract void addElem(Object o);
-
-    protected abstract void rmAllElems();
-
     @Override
-    public Iterator<E> descendingIterator() {
+    public @NotNull Iterator<E> descendingIterator() {
         return stack.descendingIterator();
     }
 
@@ -180,7 +183,7 @@ public abstract class TarjanStack<E> implements Deque<E> {
     }
 
     @Override
-    public Iterator<E> iterator() {
+    public @NotNull Iterator<E> iterator() {
         return stack.iterator();
     }
 
@@ -205,13 +208,12 @@ public abstract class TarjanStack<E> implements Deque<E> {
     }
 
     @Override
-    public Object[] toArray() {
+    public @NotNull Object[] toArray() {
         return stack.toArray();
     }
 
     @Override
-    public <T> T[] toArray(@NotNull T[] a) {
+    public @NotNull <T> T[] toArray(@NotNull T[] a) {
         return stack.toArray(a);
     }
-
 }
