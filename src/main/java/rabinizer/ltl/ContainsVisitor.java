@@ -17,6 +17,8 @@
 
 package rabinizer.ltl;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,17 +33,17 @@ public class ContainsVisitor implements Visitor<Boolean> {
     }
 
     @Override
-    public Boolean defaultAction(Formula formula) {
+    public Boolean defaultAction(@NotNull Formula formula) {
         throw new AssertionError();
     }
 
     @Override
-    public Boolean visit(BooleanConstant booleanConstant) {
+    public Boolean visit(@NotNull BooleanConstant booleanConstant) {
         return c.equals(BooleanConstant.class);
     }
 
     @Override
-    public Boolean visit(Conjunction conjunction) {
+    public Boolean visit(@NotNull Conjunction conjunction) {
         if (c.equals(Conjunction.class)) {
             return true;
         }
@@ -49,7 +51,7 @@ public class ContainsVisitor implements Visitor<Boolean> {
     }
 
     @Override
-    public Boolean visit(Disjunction disjunction) {
+    public Boolean visit(@NotNull Disjunction disjunction) {
         if (c.equals(Disjunction.class)) {
             return true;
         }
@@ -57,7 +59,7 @@ public class ContainsVisitor implements Visitor<Boolean> {
     }
 
     @Override
-    public Boolean visit(FOperator fOperator) {
+    public Boolean visit(@NotNull FOperator fOperator) {
         if (c.equals(FOperator.class)) {
             return true;
         }
@@ -65,7 +67,7 @@ public class ContainsVisitor implements Visitor<Boolean> {
     }
 
     @Override
-    public Boolean visit(GOperator gOperator) {
+    public Boolean visit(@NotNull GOperator gOperator) {
         if (c.equals(GOperator.class)) {
             return true;
         }
@@ -73,12 +75,12 @@ public class ContainsVisitor implements Visitor<Boolean> {
     }
 
     @Override
-    public Boolean visit(Literal literal) {
+    public Boolean visit(@NotNull Literal literal) {
         return c.equals(Literal.class);
     }
 
     @Override
-    public Boolean visit(UOperator uOperator) {
+    public Boolean visit(@NotNull UOperator uOperator) {
 
         if (c.equals(UOperator.class)) {
             return true;
@@ -87,7 +89,7 @@ public class ContainsVisitor implements Visitor<Boolean> {
     }
 
     @Override
-    public Boolean visit(XOperator xOperator) {
+    public Boolean visit(@NotNull XOperator xOperator) {
         if (c.equals(XOperator.class)) {
             return true;
         }

@@ -53,13 +53,7 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
         initialFormula = eager ? equivalenceClassFactory.createEquivalenceClass(formula.unfold(true)) : equivalenceClassFactory.createEquivalenceClass(formula);
         True = equivalenceClassFactory.getTrue();
 
-        CacheLoader<State, ValuationSet> acceptanceLoader = new CacheLoader<State, ValuationSet>() {
-            @Override
-            public ValuationSet load(State arg) {
-                return arg.getAcceptance();
-            }
-        };
-
+        CacheLoader<State, ValuationSet> acceptanceLoader = new AcceptanceCacheLoader();
         acceptanceCache = CacheBuilder.newBuilder().build(acceptanceLoader);
     }
 
@@ -177,6 +171,13 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
             } else {
                 return clazz.unfold(true).temporalStep(valuation);
             }
+        }
+    }
+
+    private static class AcceptanceCacheLoader extends CacheLoader<State, ValuationSet> {
+        @Override
+        public ValuationSet load(State arg) {
+            return arg.getAcceptance();
         }
     }
 }

@@ -146,7 +146,7 @@ public class DetLimitAutomaton {
 
         @Override
         public Boolean visit(@NotNull Conjunction conjunction) {
-            return conjunction.children.stream().allMatch(e -> e.accept(this));
+            return conjunction.allMatch(e -> e.accept(this));
         }
 
         @Override

@@ -86,6 +86,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
 
     @Override
     public ValuationSet createValuationSet(Set<String> valuation, Set<String> base) {
+        // TODO: Implement Method.
         return null;
     }
 
@@ -215,7 +216,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
-        public Iterator<Set<String>> iterator() {
+        public @NotNull Iterator<Set<String>> iterator() {
             return Sets.powerSet(alphabet).stream().filter(this::contains).iterator();
         }
 

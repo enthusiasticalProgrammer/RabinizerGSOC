@@ -45,9 +45,9 @@ public interface EquivalenceClass {
      */
     boolean equivalent(EquivalenceClass equivalenceClass);
 
-    EquivalenceClass unfold(boolean unfoldG);
+    @NotNull EquivalenceClass unfold(boolean unfoldG);
 
-    EquivalenceClass temporalStep(Set<String> valuation);
+    @NotNull EquivalenceClass temporalStep(Set<String> valuation);
 
     @NotNull EquivalenceClass and(@NotNull EquivalenceClass eq);
 
@@ -57,5 +57,5 @@ public interface EquivalenceClass {
 
     boolean isFalse();
 
-    Set<Formula> getSupport();
+    @NotNull Set<Formula> getSupport();
 }

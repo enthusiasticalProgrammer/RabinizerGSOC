@@ -122,17 +122,17 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
         }
 
         @Override
-        public Set<ValuationSet> partitionSuccessors() {
+        public @NotNull Set<ValuationSet> partitionSuccessors() {
             return valuationSetFactory.createAllValuationSets(); // TODO symbolic
         }
 
         @Override
-        public Set<String> getSensitiveAlphabet() {
+        public @NotNull Set<String> getSensitiveAlphabet() {
             return valuationSetFactory.getAlphabet();
         }
 
         @Override
-        public ValuationSetFactory getFactory() {
+        public @NotNull ValuationSetFactory getFactory() {
             return valuationSetFactory;
         }
     }

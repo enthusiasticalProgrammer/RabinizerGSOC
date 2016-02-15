@@ -26,76 +26,78 @@ import rabinizer.ltl.Formula;
 import rabinizer.ltl.GOperator;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
-/**
- * @author jkretinsky
- */
 public class DTGRARaw {
 
-    final EquivalenceClassFactory equivalenceClassFactory;
     final ValuationSetFactory valuationSetFactory;
     public Product automaton;
     public AccTGRRaw<ProductState> accTGR;
     AccLocal accLocal;
 
-    public DTGRARaw(Formula phi, EquivalenceClassFactory equivalenceClassFactory,
-            ValuationSetFactory valuationSetFactory, Collection<Optimisation> opts) {
+    public DTGRARaw(Formula phi, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> opts) {
         this.valuationSetFactory = valuationSetFactory;
-        this.equivalenceClassFactory = equivalenceClassFactory;
 
         // phi assumed in NNF
         Main.verboseln("========================================");
         Main.nonsilent("Generating primaryAutomaton");
         Master master;
-        boolean mergingEnabled = true;
 
-        master = new Master(phi, equivalenceClassFactory, valuationSetFactory, opts, mergingEnabled);
+        master = new Master(phi, equivalenceClassFactory, valuationSetFactory, opts, true);
         master.generate();
 
         Main.verboseln("========================================");
         Main.nonsilent("Generating Mojmir & Rabin secondaryAutomata");
         Set<GOperator> gSubformulas = phi.gSubformulas();
         Map<GOperator, RabinSlave> slaves = new HashMap<>();
+
         for (GOperator f : gSubformulas) {
             MojmirSlave mSlave;
 
             mSlave = new MojmirSlave(f, equivalenceClassFactory, valuationSetFactory, opts);
             mSlave.generate();
 
-            if (opts.contains(Optimisation.SINKS)) { // selfloop-only states
-                // keep no tokens
+            // Remove sinks
+            if (opts.contains(Optimisation.SINKS)) {
                 mSlave.removeSinks();
             }
+
             RabinSlave rSlave = new RabinSlave(mSlave, valuationSetFactory);
             rSlave.generate();
-            if (opts.contains(Optimisation.OPTIMISE_INITIAL_STATE)) { // remove
-                // transient
-                // part
+
+            // remove transient part
+            if (opts.contains(Optimisation.OPTIMISE_INITIAL_STATE)) {
                 rSlave.optimizeInitialState();
             }
+
             slaves.put(f, rSlave);
         }
+
         Main.verboseln("========================================");
         Main.nonsilent("Generating product");
 
         automaton = new Product(master, slaves, valuationSetFactory, opts);
-
         automaton.generate();
+
         if (opts.contains(Optimisation.COMPUTE_ACC_CONDITION)) {
             Main.verboseln("========================================");
             Main.nonsilent("Generating local acceptance conditions");
+
             if (opts.contains(Optimisation.EAGER) && !opts.contains(Optimisation.NOT_ISABELLE_ACC)) {
                 accLocal = new AccLocal(automaton, valuationSetFactory, equivalenceClassFactory, opts);
             } else {
                 accLocal = new AccLocalFolded(automaton, valuationSetFactory, equivalenceClassFactory, opts);
             }
+
             Main.verboseln("========================================");
             Main.nonsilent("Generating global acceptance condition");
             accTGR = AccTGRRaw.createAccTGRRaw(accLocal, valuationSetFactory);
+
             if (opts.contains(Optimisation.EMPTINESS_CHECK)) {
+                // if it is empty, we have to complete it
                 if (checkIfEmptyAndRemoveEmptySCCs()) {
-                    opts.add(Optimisation.COMPLETE);// if it is empty, we have
-                    // to complete it
+                    opts.add(Optimisation.COMPLETE);
+                }
             }
+
             if (opts.contains(Optimisation.COMPLETE)) {
                 completeAutomaton();
             }
@@ -112,8 +114,7 @@ public class DTGRARaw {
      * @return true if automaton together witch acceptance condition is empty
      */
     public boolean checkIfEmptyAndRemoveEmptySCCs() {
-        boolean result = EmptinessCheck.<ProductState> checkEmptiness(automaton, accTGR);
-        return result;
+        return EmptinessCheck.checkEmptiness(automaton, accTGR);
     }
 
     public void completeAutomaton() {

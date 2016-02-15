@@ -207,22 +207,22 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public EquivalenceClass unfold(boolean unfoldG) {
+        public @NotNull EquivalenceClass unfold(boolean unfoldG) {
             return createEquivalenceClass(getRepresentative().unfold(unfoldG));
         }
 
         @Override
-        public EquivalenceClass temporalStep(Set<String> valuation) {
+        public @NotNull EquivalenceClass temporalStep(Set<String> valuation) {
             return createEquivalenceClass(getRepresentative().temporalStep(valuation));
         }
 
         @Override
-        public @NotNull EquivalenceClass and(EquivalenceClass eq) {
+        public @NotNull EquivalenceClass and(@NotNull EquivalenceClass eq) {
             return createEquivalenceClass(new Conjunction(getRepresentative(), eq.getRepresentative()));
         }
 
         @Override
-        public @NotNull EquivalenceClass or(EquivalenceClass eq) {
+        public @NotNull EquivalenceClass or(@NotNull EquivalenceClass eq) {
             return createEquivalenceClass(new Disjunction(getRepresentative(), eq.getRepresentative()));
         }
 
@@ -237,7 +237,8 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public Set<Formula> getSupport() {
+        public @NotNull Set<Formula> getSupport() {
+            // TODO: Return support.
             return null;
         }
     }

@@ -101,7 +101,7 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
         } else {
             if (c) {
                 if (f.operand.equals(b)) {
-                    return BooleanConstant.get(c);
+                    return BooleanConstant.get(true);
                 }
             }
             return f;

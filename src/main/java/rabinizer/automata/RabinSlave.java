@@ -75,7 +75,7 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
         }
 
         @Override
-        public Set<ValuationSet> partitionSuccessors() {
+        public @NotNull Set<ValuationSet> partitionSuccessors() {
             Set<Set<ValuationSet>> product = new HashSet<>();
             for (MojmirSlave.State fs : keySet()) {
                 product.add(mojmir.transitions.row(fs).keySet());
@@ -84,12 +84,12 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
         }
 
         @Override
-        public Set<String> getSensitiveAlphabet() {
+        public @NotNull Set<String> getSensitiveAlphabet() {
             return valuationSetFactory.getAlphabet();
         }
 
         @Override
-        public ValuationSetFactory getFactory() {
+        public @NotNull ValuationSetFactory getFactory() {
             return valuationSetFactory;
         }
 

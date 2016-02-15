@@ -195,13 +195,13 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public EquivalenceClass unfold(boolean unfoldG) {
+        public @NotNull EquivalenceClass unfold(boolean unfoldG) {
             LoadingCache<EquivalenceClass, EquivalenceClass> cache = unfoldG ? unfoldGCache : unfoldCache;
             return cache.getUnchecked(this);
         }
 
         @Override
-        public EquivalenceClass temporalStep(Set<String> valuation) {
+        public @NotNull EquivalenceClass temporalStep(Set<String> valuation) {
             return temporalStepCache.getUnchecked(new Tuple<>(this, valuation));
         }
 
@@ -234,7 +234,7 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public Set<Formula> getSupport() {
+        public @NotNull Set<Formula> getSupport() {
             Set<Formula> support = new HashSet<>();
             getSupport(bdd, support);
             return support;

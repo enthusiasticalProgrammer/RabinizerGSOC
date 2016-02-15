@@ -33,17 +33,17 @@ public class Master extends Automaton<Master.State> {
     final boolean eager;
     final @Nullable EquivalenceClass initialState;
 
-    public Master(EquivalenceClass clazz, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
+    public Master(@Nullable EquivalenceClass clazz, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
         super(valuationSetFactory, mergingEnabled);
         initialState = clazz;
         eager = optimisations.contains(Optimisation.EAGER);
     }
 
     public Master(ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
-        this((EquivalenceClass) null, valuationSetFactory, optimisations, true);
+        this(null, valuationSetFactory, optimisations, true);
     }
 
-    public Master(Formula formula, EquivalenceClassFactory equivalenceClassFactory,
+    public Master(@NotNull Formula formula, EquivalenceClassFactory equivalenceClassFactory,
                   ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
         this(equivalenceClassFactory.createEquivalenceClass(formula), valuationSetFactory, optimisations, mergingEnabled);
     }
@@ -95,7 +95,7 @@ public class Master extends Automaton<Master.State> {
         }
 
         @Override
-        public Set<ValuationSet> partitionSuccessors() {
+        public @NotNull Set<ValuationSet> partitionSuccessors() {
             if (eager) {
                 return generatePartitioning(clazz.getRepresentative());
             } else {
@@ -104,7 +104,7 @@ public class Master extends Automaton<Master.State> {
         }
 
         @Override
-        public Set<String> getSensitiveAlphabet() {
+        public @NotNull Set<String> getSensitiveAlphabet() {
             return getSensitive(true);
         }
 
@@ -119,7 +119,7 @@ public class Master extends Automaton<Master.State> {
         }
 
         @Override
-        public ValuationSetFactory getFactory() {
+        public @NotNull ValuationSetFactory getFactory() {
             return valuationSetFactory;
         }
     }

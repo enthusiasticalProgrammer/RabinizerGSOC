@@ -76,7 +76,7 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
         return "(" + primaryState + "::" + secondaryStates + ')';
     }
 
-    public @Nullable T getSuccessor(Set<String> valuation) {
+    public @Nullable T getSuccessor(@NotNull Set<String> valuation) {
         P primarySuccessor = primaryState.getSuccessor(valuation);
 
         if (primarySuccessor == null) {
@@ -111,7 +111,7 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
     protected abstract Automaton<P> getPrimaryAutomaton();
     protected abstract Map<K, ? extends Automaton<S>> getSecondaryAutomata();
 
-    public Map<ValuationSet, T> getSuccessors() {
+    public @NotNull Map<ValuationSet, T> getSuccessors() {
         ImmutableMap.Builder<ValuationSet, T> builder = ImmutableMap.builder();
 
         Map<ValuationSet, P> primarySuccessors = getPrimaryAutomaton().getSuccessors(primaryState);
@@ -176,7 +176,7 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
         return current;
     }
 
-    public Set<String> getSensitiveAlphabet() {
+    public @NotNull Set<String> getSensitiveAlphabet() {
         Set<String> sensitiveLetters = new HashSet<>(primaryState.getSensitiveAlphabet());
 
         for (S secondaryState : secondaryStates.values()) {
@@ -186,7 +186,7 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
         return sensitiveLetters;
     }
 
-    protected Set<K> relevantSecondary(P primaryState) {
+    protected @Nullable Set<K> relevantSecondary(P primaryState) {
         return null;
     }
 

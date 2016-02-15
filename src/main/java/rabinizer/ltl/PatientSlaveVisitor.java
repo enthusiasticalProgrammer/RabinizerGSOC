@@ -17,25 +17,27 @@
 
 package rabinizer.ltl;
 
+import org.jetbrains.annotations.NotNull;
+
 public class PatientSlaveVisitor implements Visitor<Boolean> {
 
     @Override
-    public Boolean visit(XOperator x) {
+    public Boolean visit(@NotNull XOperator x) {
         return true;
     }
 
     @Override
-    public Boolean visit(Conjunction p) {
+    public Boolean visit(@NotNull Conjunction p) {
         return p.children.stream().allMatch(child -> child.accept(this));
     }
 
     @Override
-    public Boolean visit(Disjunction p) {
+    public Boolean visit(@NotNull Disjunction p) {
         return p.children.stream().allMatch(child -> child.accept(this));
     }
 
     @Override
-    public Boolean defaultAction(Formula formula) {
+    public Boolean defaultAction(@NotNull Formula formula) {
         return false;
     }
 }

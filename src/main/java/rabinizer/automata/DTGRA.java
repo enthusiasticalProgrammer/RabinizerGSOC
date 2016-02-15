@@ -70,8 +70,9 @@ public class DTGRA extends Product implements AccAutomatonInterface {
         for(GRabinPair<TranSet<ProductState>> pair: acc){
             Table<Product.ProductState,ValuationSet,Product.ProductState> toAdd = HashBasedTable.create();
             Table<Product.ProductState,ValuationSet,Product.ProductState> toRemove = HashBasedTable.create();
+
             if(pair.left!=null){
-                for(Table.Cell<Product.ProductState,ValuationSet,Product.ProductState> currTrans:transitions.cellSet()){
+                for(Table.Cell<Product.ProductState,ValuationSet,Product.ProductState> currTrans : transitions.cellSet()){
                     if(pair.left.keySet().contains(currTrans.getRowKey())){
                         ValuationSet valu=pair.left.get(currTrans.getRowKey()).clone();
                         valu.retainAll(currTrans.getColumnKey());
@@ -90,6 +91,7 @@ public class DTGRA extends Product implements AccAutomatonInterface {
                 toRemove.clear();
                 toAdd.clear();
             }
+
             if (pair.right != null) {
                 for (TranSet<Product.ProductState> currAccSet : pair.right) {
                     for (Table.Cell<Product.ProductState, ValuationSet, Product.ProductState> currTrans : transitions
@@ -115,7 +117,6 @@ public class DTGRA extends Product implements AccAutomatonInterface {
                 }
             }
         }
-
 
         for (ProductState s : states) {
             hoa.addState(s);

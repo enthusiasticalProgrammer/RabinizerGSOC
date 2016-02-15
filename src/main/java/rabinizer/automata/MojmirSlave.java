@@ -65,7 +65,7 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
         }
 
         @Override
-        public Set<ValuationSet> partitionSuccessors() {
+        public @NotNull Set<ValuationSet> partitionSuccessors() {
             if (eager) {
                 return generatePartitioning(clazz.getRepresentative());
             } else {
@@ -74,12 +74,12 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
         }
 
         @Override
-        public Set<String> getSensitiveAlphabet() {
+        public @NotNull Set<String> getSensitiveAlphabet() {
             return getSensitive(false);
         }
 
         @Override
-        public ValuationSetFactory getFactory() {
+        public @NotNull ValuationSetFactory getFactory() {
             return valuationSetFactory;
         }
 

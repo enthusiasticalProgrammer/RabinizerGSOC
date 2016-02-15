@@ -443,6 +443,7 @@ public final class Simplifier {
         @Override
         public Formula visit(@NotNull GOperator g) {
             Formula newG = super.visit(g);
+
             if (newG instanceof GOperator) {
                 Formula child = ((GOperator) newG).operand;
                 if (child.isPureUniversal() || child.isSuspendable()) {
@@ -463,13 +464,14 @@ public final class Simplifier {
                     return new Conjunction(l, r).accept(this);
                 }
             }
+
             return newG;
         }
 
         @Override
         public Formula visit(@NotNull UOperator u) {
-
             Formula newU = super.visit(u);
+
             if (newU instanceof UOperator) {
                 Formula l = ((UOperator) newU).left;
                 Formula r = ((UOperator) newU).right;
@@ -498,6 +500,7 @@ public final class Simplifier {
                     return new Disjunction(((Disjunction) r).children.stream().map(right -> new UOperator(l, right)).collect(Collectors.toSet())).accept(this);
                 }
             }
+
             return newU;
         }
 
@@ -506,9 +509,8 @@ public final class Simplifier {
          * children set, and returning true, if something has changed
          */
         private boolean innerConjunctionLoop(Set<Formula> set) {
-
-
             Iterator<Formula> formula = set.iterator();
+
             while (formula.hasNext()) {
                 Formula form = formula.next();
                 Iterator<Formula> formula2 = set.iterator();
@@ -516,6 +518,7 @@ public final class Simplifier {
                     Formula form2 = formula2.next();
                     if (!form.equals(form2)) {
                         ImplicationVisitor imp = ImplicationVisitor.getVisitor();
+
                         if (form.accept(imp, form2)) {
                             if (set.remove(formula2))
                                 return true;
@@ -528,6 +531,7 @@ public final class Simplifier {
                         }
 
                         Formula f = form.accept(PseudoSubstitutionVisitor.getVisitor(), form2, true);
+
                         if (!f.equals(form)) {
                             boolean possibleResult = set.remove(formula);
                             set.remove(formula);
@@ -549,7 +553,6 @@ public final class Simplifier {
          * children set, and returning true, if something has changed
          */
         private boolean innerDisjunctionLoop(Set<Formula> set) {
-
             Iterator<Formula> formula = set.iterator();
 
             while (formula.hasNext()) {
@@ -557,6 +560,7 @@ public final class Simplifier {
                 for (Formula form2 : set) {
                     if (!form.equals(form2)) {
                         ImplicationVisitor imp = ImplicationVisitor.getVisitor();
+
                         if (form.accept(imp, form2)) {
                             if (set.remove(formula))
                                 return true;
@@ -569,6 +573,7 @@ public final class Simplifier {
                         }
 
                         Formula f = form.accept(PseudoSubstitutionVisitor.getVisitor(), form2, false);
+
                         if (!f.equals(form)) {
                             boolean possibleResult = set.remove(formula);
                             f = f.accept(this);

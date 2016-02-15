@@ -120,7 +120,7 @@ public class Product extends Automaton<Product.ProductState> {
         }
 
         @Override
-        public ValuationSetFactory getFactory() {
+        public @NotNull ValuationSetFactory getFactory() {
             return valuationSetFactory;
         }
 
