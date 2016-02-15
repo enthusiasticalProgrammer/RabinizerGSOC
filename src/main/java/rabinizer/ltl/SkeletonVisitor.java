@@ -29,7 +29,7 @@ public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
     private final SkeletonApproximation strategy;
 
     public enum SkeletonApproximation {
-        UPPER_BOUND, LOWER_BOUND, BOTH;
+        LOWER_BOUND, BOTH;
     }
 
     public SkeletonVisitor() {
@@ -63,23 +63,6 @@ public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
             skeleton = skeletonNext;
         }
 
-        if (strategy == SkeletonApproximation.UPPER_BOUND) {
-            Set<GOperator> allGs = new HashSet<>();
-            skeleton.stream().forEach(set -> allGs.addAll(set));
-
-            Set<Set<GOperator>> result = Sets.powerSet(allGs);// because we also
-            // want subsets
-
-            Set<Set<GOperator>> skeleton2 = new HashSet(skeleton);
-            result = result.stream().filter(set -> new HashSet<>(skeleton2).stream().anyMatch(skel -> skel.containsAll(set))).collect(Collectors.toSet());
-
-            Set<Set<GOperator>> finalResult = new HashSet<>();
-            for (Set<GOperator> res : result) {
-                finalResult.add(new HashSet<>(res));
-            }
-            return finalResult;
-        }
-
         return skeleton;
     }
 
@@ -88,17 +71,17 @@ public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
         Set<Set<GOperator>> skeleton = new HashSet<>();
         disjunction.children.forEach(e -> skeleton.addAll(e.accept(this)));
         if (strategy == SkeletonApproximation.LOWER_BOUND) {
+            final Set<Set<Set<GOperator>>> result = Sets.powerSet(skeleton);
 
-            Set<GOperator> allGs = new HashSet<>();
-            skeleton.stream().forEach(set -> allGs.addAll(set));
+            Set<Set<GOperator>> finalResult = Collections.emptySet();
+            for (Set<Set<GOperator>> s : result) {
+                if (s.isEmpty()) {
+                    continue;
+                }
 
-            Set<Set<GOperator>> result = Sets.powerSet(allGs);// because we also
-            // want supersets
-            result = result.stream().filter(set -> skeleton.stream().anyMatch(skel -> set.containsAll(skel))).collect(Collectors.toSet());
-
-            Set<Set<GOperator>> finalResult = new HashSet<>();
-            for (Set<GOperator> res : result) {
-                finalResult.add(new HashSet<>(res));
+                Set<GOperator> union = new HashSet<>();
+                s.stream().forEach(elem -> union.addAll(elem));
+                finalResult.add(union);
             }
             return finalResult;
         }
