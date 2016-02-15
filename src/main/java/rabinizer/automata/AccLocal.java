@@ -45,6 +45,7 @@ public class AccLocal {
     protected final Map<GOperator, Set<GOperator>> topmostGs = new HashMap<>();
     protected final TranSet<Product.ProductState> allTrans;
     private final boolean gSkeleton;
+    private final boolean eager;
 
     // separate automata acceptance projected to the whole product
     final Map<GOperator, Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>>> accSlavesOptions = new HashMap<>();
@@ -59,6 +60,8 @@ public class AccLocal {
         this.equivalenceClassFactory = factory2;
         allTrans = new TranSet<>(valuationSetFactory);
         gSkeleton = opts.contains(Optimisation.SKELETON);
+        eager = opts.contains(Optimisation.EAGER);
+
         for (GOperator f : formula.gSubformulas()) {
             int maxRankF = 0;
             for (RabinSlave.State rs : product.secondaryAutomata.get(f).states) {
@@ -80,31 +83,58 @@ public class AccLocal {
     }
 
     protected boolean slavesEntail(Product.ProductState ps, Map<GOperator, Integer> ranking, Set<String> v, EquivalenceClass consequent) {
+
         Set<GOperator> gSet = ranking.keySet();
+        if (eager) {
+            Formula antecedent = BooleanConstant.get(true);
 
-        Formula antecedent = BooleanConstant.get(true);
+            for (GOperator f : gSet) {
+                Formula slaveAntecedent = BooleanConstant.get(true);
 
-        for (GOperator f : gSet) {
-            Formula slaveAntecedent = BooleanConstant.get(true);
-
-            if (ps.getSecondaryMap().containsKey(f)) {
-                for (MojmirSlave.State s : ps.getSecondaryState(f).keySet()) {
-                    if (ps.getSecondaryState(f).get(s) >= ranking.get(f)) {
-                        slaveAntecedent = new Conjunction(slaveAntecedent, s.getClazz().getRepresentative());
+                if (ps.getSecondaryMap().containsKey(f)) {
+                    for (MojmirSlave.State s : ps.getSecondaryState(f).keySet()) {
+                        if (ps.getSecondaryState(f).get(s) >= ranking.get(f)) {
+                            slaveAntecedent = new Conjunction(slaveAntecedent, s.getClazz().getRepresentative());
+                        }
                     }
                 }
+
+                slaveAntecedent = slaveAntecedent.temporalStep(v).evaluate(gSet);
+                antecedent = new Conjunction(antecedent, f, f.operand.evaluate(gSet), slaveAntecedent);
             }
 
-            slaveAntecedent = slaveAntecedent.temporalStep(v).evaluate(gSet);
-            antecedent = new Conjunction(antecedent, f, f.operand.evaluate(gSet), slaveAntecedent);
-        }
+            EquivalenceClass antClazz = equivalenceClassFactory.createEquivalenceClass(antecedent);
+            return antClazz.implies(consequent.temporalStep(v));
+        } else {
 
-        EquivalenceClass antClazz = equivalenceClassFactory.createEquivalenceClass(antecedent);
-        return antClazz.implies(consequent.temporalStep(v));
+            Collection<Formula> children = new ArrayList<>(2 * gSet.size());
+
+            for (GOperator f : gSet) {
+                children.add(f);
+                Formula slaveAntecedent = BooleanConstant.get(true);
+
+                if (ps.getSecondaryState(f) != null) {
+                    RabinSlave.State rs = ps.getSecondaryState(f);
+
+                    for (Map.Entry<MojmirSlave.State, Integer> entry : rs.entrySet()) {
+                        if (entry.getValue() >= ranking.get(f)) {
+                            slaveAntecedent = new Conjunction(slaveAntecedent, entry.getKey().getClazz().getRepresentative());
+                        }
+                    }
+                }
+
+                slaveAntecedent = slaveAntecedent.evaluate(gSet);
+                children.add(slaveAntecedent);
+            }
+
+            EquivalenceClass antClazz = equivalenceClassFactory.createEquivalenceClass(new Conjunction(children));
+            return antClazz.implies(consequent);
+        }
     }
 
     protected Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> computeAccSlavesOptions(GOperator g, boolean forceAllSlaves) {
         Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> result = new HashMap<>();
+
         RabinSlave rSlave = product.secondaryAutomata.get(g);
         Set<Set<GOperator>> gSets;
         if (gSkeleton && !forceAllSlaves) {
@@ -123,7 +153,7 @@ public class AccLocal {
                     finalStates.add(fs);
                 }
             }
-            
+
             result.put(gSet, new HashMap<>());
             for (int rank = 1; rank <= maxRank.get(g); rank++) {
                 result.get(gSet).put(rank, RabinPair.createRabinPair(rSlave, finalStates, rank, product, valuationSetFactory));
@@ -131,6 +161,7 @@ public class AccLocal {
         }
 
         return result;
+
     }
 
     protected Map<Map<GOperator, Integer>, RabinPair<Product.ProductState>> computeAccMasterOptions() {
@@ -168,6 +199,7 @@ public class AccLocal {
         return builder.build();
     }
 
+
     protected Collection<Map<GOperator, Integer>> powersetRanks(Collection<GOperator> gSet) {
         if (gSet.isEmpty()) {
             return Collections.singleton(Collections.emptyMap());
@@ -192,10 +224,16 @@ public class AccLocal {
     // symbolic version
     protected TranSet<Product.ProductState> computeAccMasterForState(Map<GOperator, Integer> ranking, Product.ProductState ps) {
         TranSet<Product.ProductState> result = new TranSet<>(valuationSetFactory);
-        Set<ValuationSet> fineSuccVs = product.generateSuccTransitionsReflectingSinks(ps);
-        for (ValuationSet vs : fineSuccVs) {
-            if (!slavesEntail(ps, ranking, vs.pickAny(), ps.getPrimaryState().getClazz())) {
-                result.add(ps, vs);
+        if (eager) {
+            Set<ValuationSet> fineSuccVs = product.generateSuccTransitionsReflectingSinks(ps);
+            for (ValuationSet vs : fineSuccVs) {
+                if (!slavesEntail(ps, ranking, vs.pickAny(), ps.getPrimaryState().getClazz())) {
+                    result.add(ps, vs);
+                }
+            }
+        } else {
+            if (!slavesEntail(ps, ranking, null, ps.getPrimaryState().getClazz())) {
+                result.add(ps, valuationSetFactory.createUniverseValuationSet());
             }
         }
         return result;
