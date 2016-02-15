@@ -92,8 +92,11 @@ public class DTGRARaw {
             Main.nonsilent("Generating global acceptance condition");
             accTGR = AccTGRRaw.createAccTGRRaw(accLocal, valuationSetFactory);
             if (opts.contains(Optimisation.EMPTINESS_CHECK)) {
-                checkIfEmptyAndRemoveEmptySCCs();
-            } else if (opts.contains(Optimisation.COMPLETE)) {
+                if (checkIfEmptyAndRemoveEmptySCCs()) {
+                    opts.add(Optimisation.COMPLETE);// if it is empty, we have
+                    // to complete it
+            }
+            if (opts.contains(Optimisation.COMPLETE)) {
                 completeAutomaton();
             }
             Main.nonsilent("Generating optimized acceptance condition");
@@ -109,8 +112,7 @@ public class DTGRARaw {
      * @return true if automaton together witch acceptance condition is empty
      */
     public boolean checkIfEmptyAndRemoveEmptySCCs() {
-        boolean result = EmptinessCheck.checkEmptiness(automaton, accTGR);
-        this.completeAutomaton();
+        boolean result = EmptinessCheck.<ProductState> checkEmptiness(automaton, accTGR);
         return result;
     }
 

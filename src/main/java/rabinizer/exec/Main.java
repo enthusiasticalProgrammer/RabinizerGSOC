@@ -200,7 +200,6 @@ public class Main {
                 z3 = true;
             } else if (arg.equals("-emptiness-check") || arg.equals("--emptiness-check")) {
                 opts.add(Optimisation.EMPTINESS_CHECK);
-                opts.add(Optimisation.COMPLETE);
             }else if(arg.equals("-complete")||arg.equals("--complete")){
                 opts.add(Optimisation.COMPLETE);
             } else if (arg.equals("-slave-suspension") || arg.equals("--slave-suspension")) {
