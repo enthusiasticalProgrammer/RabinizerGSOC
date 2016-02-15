@@ -253,4 +253,24 @@ public class AutomatonClassTest {
         assertNotNull(dtgra);
 
     }
+
+    @Test
+    public void testEmptinessCheck() {
+        Formula f = Util.createFormula("G(!a | X(X(!a)))");
+
+        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f.getPropositions());
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f.getAtoms());
+        DTGRARaw dtgra = new DTGRARaw(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION, Optimisation.NOT_ISABELLE_ACC));
+        assertFalse(dtgra.checkIfEmptyAndRemoveEmptySCCs());
+    }
+
+    @Test
+    public void testSCC3() {
+        Formula f = Util.createFormula("G(!a | X(X(!a)))");
+
+        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f.getPropositions());
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f.getAtoms());
+        DTGRARaw dtgra = new DTGRARaw(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION, Optimisation.NOT_ISABELLE_ACC));
+        assertEquals(dtgra.automaton.SCCs().size(), 1);
+    }
 }
