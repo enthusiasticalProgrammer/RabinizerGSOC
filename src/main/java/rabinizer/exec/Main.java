@@ -90,8 +90,6 @@ public class Main {
                 + "   -relevant-slaves-only       : computes only relevant slaves, default if optimize \n"
                 + "   -all-slaves                 : computes all slaves, default if isabelle \n"
                 + "   -slave-suspension           : suspends the slaves, whenever possible \n"
-                + "   -sinks-on                   : uses the sink-optimization for Mojmir slaves, default if optimize\n"
-                + "   -sinks-off                  : does not use the sink-optimization, default if isabelle \n"
                 + "   -optimize-initial-state     : remove transient pair in Rabin Slave, default if optimize\n"
                 + "   -g-skeleton                 : uses the G-Skeleton optimisation (not default)"
                 + "   -not-optimize-initial-state : does not remove transient pair in Rabin Slave, default if isabelle \n"
@@ -158,7 +156,7 @@ public class Main {
             } else if (arg.equals("-format=sizeacc") || arg.equals("--format=sizeacc")) {
                 format = Format.SIZEACC;
             } else if (arg.equals("-how=isabelle") || arg.equals("--how=isabelle")) {
-                opts = EnumSet.of(Optimisation.EAGER, Optimisation.SINKS, Optimisation.COMPUTE_ACC_CONDITION);
+                opts = EnumSet.of(Optimisation.EAGER, Optimisation.COMPUTE_ACC_CONDITION);
             } else if (arg.equals("-how=optimize") || arg.equals("--how=optimize")) {
                 opts.add(Optimisation.EAGER);
             } else if (arg.equals("-in=formula") || arg.equals("--in=formula")) {
@@ -181,10 +179,6 @@ public class Main {
                 opts.add(Optimisation.ONLY_RELEVANT_SLAVES);
             } else if (arg.equals("-all-slaves") || arg.equals("--all-slaves")) {
                 opts.remove(Optimisation.ONLY_RELEVANT_SLAVES);
-            } else if (arg.equals("-sinks-on") || arg.equals("--sinks-on")) {
-                opts.add(Optimisation.SINKS);
-            } else if (arg.equals("-sinks-off") || arg.equals("--sinks-off")) {
-                opts.remove(Optimisation.SINKS);
             } else if (arg.equals("-optimize-initial-state") || arg.equals("--optimize-initial-state")) {
                 opts.add(Optimisation.OPTIMISE_INITIAL_STATE);
             } else if (arg.equals("-not-optimize-initial-state") || arg.equals("--not-optimize-initial-state")) {

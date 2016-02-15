@@ -98,16 +98,16 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
             State succ = new State();
 
             // move tokens, keeping the lowest only
-            for (MojmirSlave.State currFormula : keySet()) {
-                MojmirSlave.State succFormula = currFormula.getSuccessor(valuation);
-                if (succ.get(succFormula) == null || succ.get(succFormula) > get(currFormula)) {
-                    succ.put(succFormula, get(currFormula));
+            for (MojmirSlave.State currMojmir : keySet()) {
+                MojmirSlave.State succMojmir = currMojmir.getSuccessor(valuation);
+                if (!mojmir.isSink(succMojmir)) {
+                    if (((succ.get(succMojmir) == null) || (succ.get(succMojmir) > get(currMojmir)))) {
+                        succ.put(succMojmir, get(currMojmir));
+                    }
                 }
             }
 
-            mojmir.states.stream().filter(mojmir::isSink).forEach(succ::remove);
 
-            // TODO recompute tokens, eliminating gaps
             int[] tokens = new int[succ.keySet().size()];
             int i = 0;
             for (Entry<MojmirSlave.State, Integer> stateIntegerEntry : succ.entrySet()) {
@@ -123,7 +123,6 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
                 }
             }
 
-            // TODO add token to the initial state
             if (!succ.containsKey(mojmir.getInitialState())) {
                 succ.put(mojmir.getInitialState(), succ.keySet().size() + 1);
             }
