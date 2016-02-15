@@ -55,11 +55,6 @@ public class DTGRARaw {
             mSlave = new MojmirSlave(f, equivalenceClassFactory, valuationSetFactory, opts);
             mSlave.generate();
 
-            // Remove sinks
-            if (opts.contains(Optimisation.SINKS)) {
-                mSlave.removeSinks();
-            }
-
             RabinSlave rSlave = new RabinSlave(mSlave, valuationSetFactory);
             rSlave.generate();
 
