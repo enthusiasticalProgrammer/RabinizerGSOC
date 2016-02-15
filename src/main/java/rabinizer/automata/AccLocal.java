@@ -107,7 +107,7 @@ public class AccLocal {
         Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> result = new HashMap<>();
         RabinSlave rSlave = product.secondaryAutomata.get(g);
         Set<Set<GOperator>> gSets;
-        if (gSkeleton || forceAllSlaves) {
+        if (gSkeleton && !forceAllSlaves) {
             gSets = g.operand.accept(new SkeletonVisitor());
             gSets.retainAll(Sets.powerSet(topmostGs.get(g)));
         } else {
