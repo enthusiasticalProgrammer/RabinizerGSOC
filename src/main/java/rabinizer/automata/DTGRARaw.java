@@ -81,7 +81,7 @@ public class DTGRARaw {
             Main.verboseln("========================================");
             Main.nonsilent("Generating local acceptance conditions");
 
-            if (opts.contains(Optimisation.EAGER) && !opts.contains(Optimisation.NOT_ISABELLE_ACC)) {
+            if (opts.contains(Optimisation.EAGER)) {
                 accLocal = new AccLocal(automaton, valuationSetFactory, equivalenceClassFactory, opts);
             } else {
                 accLocal = new AccLocalFolded(automaton, valuationSetFactory, equivalenceClassFactory, opts);

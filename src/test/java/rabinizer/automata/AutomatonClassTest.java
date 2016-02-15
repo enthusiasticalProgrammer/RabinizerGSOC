@@ -1,6 +1,8 @@
 package rabinizer.automata;
 
 import java.util.EnumSet;
+
+import jhoafparser.consumer.HOAConsumerPrint;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -244,12 +246,12 @@ public class AutomatonClassTest {
 
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.Z3, f.getPropositions());
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.Z3, f.getAtoms());
-        DTGRARaw dtgra = new DTGRARaw(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION, Optimisation.NOT_ISABELLE_ACC));
+        DTGRARaw dtgra = new DTGRARaw(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
         assertNotNull(dtgra);
 
         factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f.getPropositions());
         val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f.getAtoms());
-        dtgra = new DTGRARaw(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION, Optimisation.NOT_ISABELLE_ACC));
+        dtgra = new DTGRARaw(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
         assertNotNull(dtgra);
 
     }
@@ -260,7 +262,7 @@ public class AutomatonClassTest {
 
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f.getPropositions());
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f.getAtoms());
-        DTGRARaw dtgra = new DTGRARaw(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION, Optimisation.NOT_ISABELLE_ACC));
+        DTGRARaw dtgra = new DTGRARaw(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
         assertFalse(dtgra.checkIfEmptyAndRemoveEmptySCCs());
     }
 
@@ -270,7 +272,7 @@ public class AutomatonClassTest {
 
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f.getPropositions());
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f.getAtoms());
-        DTGRARaw dtgra = new DTGRARaw(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION, Optimisation.NOT_ISABELLE_ACC));
+        DTGRARaw dtgra = new DTGRARaw(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
         assertEquals(dtgra.automaton.SCCs().size(), 1);
     }
 }

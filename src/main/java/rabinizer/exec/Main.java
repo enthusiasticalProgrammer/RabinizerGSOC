@@ -125,15 +125,11 @@ public class Main {
         boolean inFormula = true;
         boolean outFile = true;
         String argument = null;
-        boolean simplifyFormula = false; // NULL Pointer
+        boolean simplifyFormula = false;
         boolean z3 = false;
 
-
-        Set<Optimisation> opts = EnumSet.noneOf(Optimisation.class);
-        opts.add(Optimisation.OPTIMISE_INITIAL_STATE);
-        opts.add(Optimisation.EAGER);
-        opts.add(Optimisation.SINKS);
-        opts.add(Optimisation.ONLY_RELEVANT_SLAVES);
+        Set<Optimisation> opts = EnumSet.allOf(Optimisation.class);
+        opts.remove(Optimisation.SLAVE_SUSPENSION);
 
         for (String arg : args) {
             if (arg.equals("-h") || arg.equals("--h") || arg.equals("-help") || arg.equals("--help")) {
@@ -162,10 +158,7 @@ public class Main {
             } else if (arg.equals("-format=sizeacc") || arg.equals("--format=sizeacc")) {
                 format = Format.SIZEACC;
             } else if (arg.equals("-how=isabelle") || arg.equals("--how=isabelle")) {
-                opts.remove(Optimisation.EAGER);
-                opts.remove(Optimisation.SINKS);
-                opts.remove(Optimisation.ONLY_RELEVANT_SLAVES);
-                opts.remove(Optimisation.OPTIMISE_INITIAL_STATE);
+                opts = EnumSet.of(Optimisation.EAGER, Optimisation.SINKS, Optimisation.COMPUTE_ACC_CONDITION);
             } else if (arg.equals("-how=optimize") || arg.equals("--how=optimize")) {
                 opts.add(Optimisation.EAGER);
             } else if (arg.equals("-in=formula") || arg.equals("--in=formula")) {
@@ -226,10 +219,9 @@ public class Main {
         }
 
 
-        if (format != Format.SIZE || type != AutomatonType.TGR)
+        if (format != Format.SIZE || type != AutomatonType.TGR) {
             opts.add(Optimisation.COMPUTE_ACC_CONDITION);
-
-        opts.add(Optimisation.NOT_ISABELLE_ACC);
+        }
 
         nonsilent("\n******************************************************************************\n"
                 + "* Rabinizer 3.1.0 by Jan Kretinsky                                           *\n"
