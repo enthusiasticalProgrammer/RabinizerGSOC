@@ -201,6 +201,7 @@ public abstract class Automaton<S extends IState<S>> {
      */
     void makeComplete() {
         boolean usedTrapState = false;
+        states.add(trapState);
 
         if (initialState == null) {
             initialState = trapState;
@@ -233,6 +234,8 @@ public abstract class Automaton<S extends IState<S>> {
             transitions.put(trapState, valuationSetFactory.createUniverseValuationSet(), trapState);
             edgeBetween.put(trapState, trapState, valuationSetFactory.createUniverseValuationSet());
             states.add(trapState);
+        } else {
+            states.remove(trapState);
         }
     }
 
