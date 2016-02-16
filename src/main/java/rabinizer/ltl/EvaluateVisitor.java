@@ -21,8 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import rabinizer.ltl.equivalence.EquivalenceClass;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
-import java.util.Set;
-
 public class EvaluateVisitor implements Visitor<Formula> {
 
     private final EquivalenceClassFactory factory;
@@ -31,10 +29,6 @@ public class EvaluateVisitor implements Visitor<Formula> {
     public EvaluateVisitor(EquivalenceClassFactory factory, Formula environment) {
         this.factory = factory;
         this.environment = factory.createEquivalenceClass(environment);
-    }
-
-    public EvaluateVisitor(EquivalenceClassFactory factory, Set<Formula> environment) {
-        this(factory, new Conjunction(environment));
     }
 
     @Override

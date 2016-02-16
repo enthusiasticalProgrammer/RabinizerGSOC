@@ -17,6 +17,8 @@
 
 package rabinizer.ltl;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Set;
 
 public final class XOperator extends ModalOperator {
@@ -26,17 +28,17 @@ public final class XOperator extends ModalOperator {
     }
 
     @Override
-    public Formula unfold(boolean unfoldG) {
+    public @NotNull Formula unfold(boolean unfoldG) {
         return this;
     }
 
     @Override
-    public Formula not() {
+    public @NotNull Formula not() {
         return new XOperator(operand.not());
     }
 
     @Override
-    public Formula temporalStep(Set<String> valuation) {
+    public @NotNull Formula temporalStep(@NotNull Set<String> valuation) {
         return operand;
     }
 
@@ -73,5 +75,10 @@ public final class XOperator extends ModalOperator {
     @Override
     protected char getOperator() {
         return 'X';
+    }
+
+    @Override
+    protected ModalOperator build(Formula operand) {
+        return new XOperator(operand);
     }
 }

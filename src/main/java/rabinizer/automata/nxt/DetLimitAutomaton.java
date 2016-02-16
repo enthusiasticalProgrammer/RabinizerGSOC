@@ -79,9 +79,7 @@ public class DetLimitAutomaton {
             initComponent = null;
 
             Set<GOperator> key = keys.iterator().next();
-            Visitor<Formula> visitor = new GSubstitutionVisitor(g -> BooleanConstant.get(key.contains(g)));
-
-            initialClazz = equivalenceClassFactory.createEquivalenceClass(Simplifier.simplify(formula.accept(visitor), Simplifier.Strategy.MODAL_EXT));
+            initialClazz = equivalenceClassFactory.createEquivalenceClass(Simplifier.simplify(formula.evaluate(key, Formula.EvaluationStrategy.LTL), Simplifier.Strategy.MODAL_EXT));
             accComponent.jumpInitial(initialClazz, key);
             accComponent.generate();
         } else {
@@ -339,12 +337,10 @@ public class DetLimitAutomaton {
 
             if (secondaryAutomatonMap == null) {
                 secondaryAutomatonMap = new HashMap<>(keys.size());
-                Visitor<Formula> visitor = new GSubstitutionVisitor(g -> BooleanConstant.get(keys.contains(g)));
-
                 int i = 0;
 
                 for (GOperator key : keys) {
-                    Formula initialFormula = Simplifier.simplify(key.operand.accept(visitor), Simplifier.Strategy.MODAL_EXT);
+                    Formula initialFormula = Simplifier.simplify(key.operand.evaluate(keys, Formula.EvaluationStrategy.LTL), Simplifier.Strategy.MODAL_EXT);
                     DetLimitSlave slave = new DetLimitSlave(initialFormula, equivalenceClassFactory, valuationSetFactory, optimisations);
                     secondaryAutomatonMap.put(key, slave);
                     acceptanceIndexMapping.put(keys, key, i);
@@ -380,11 +376,9 @@ public class DetLimitAutomaton {
         }
 
         private @Nullable Master.State getPrimaryState(@NotNull EquivalenceClass master, @NotNull Set<GOperator> keys, @Nullable Set<String> valuation) {
-            Visitor<Formula> visitor = new GSubstitutionVisitor(g -> BooleanConstant.get(keys.contains(g)));
-
             if (valuation != null) {
-                Formula formula = Simplifier.simplify(master.getRepresentative().accept(visitor), Simplifier.Strategy.MODAL_EXT);
-                Conjunction facts = new Conjunction(keys.stream().map(key -> Simplifier.simplify(key.operand.accept(visitor), Simplifier.Strategy.MODAL_EXT)));
+                Formula formula = Simplifier.simplify(master.getRepresentative().evaluate(keys, Formula.EvaluationStrategy.LTL), Simplifier.Strategy.MODAL_EXT);
+                Conjunction facts = new Conjunction(keys.stream().map(key -> Simplifier.simplify(key.operand.evaluate(keys, Formula.EvaluationStrategy.LTL), Simplifier.Strategy.MODAL_EXT)));
                 Visitor<Formula> evaluateVisitor = new EvaluateVisitor(equivalenceClassFactory, facts);
                 formula = Simplifier.simplify(formula.accept(evaluateVisitor), Simplifier.Strategy.MODAL_EXT);
 
@@ -392,7 +386,7 @@ public class DetLimitAutomaton {
                 return primaryAutomaton.getSuccessor(preState, valuation);
             }
 
-            Formula formula = Simplifier.simplify(master.getRepresentative().accept(visitor), Simplifier.Strategy.MODAL_EXT);
+            Formula formula = Simplifier.simplify(master.getRepresentative().evaluate(keys, Formula.EvaluationStrategy.LTL), Simplifier.Strategy.MODAL_EXT);
             EquivalenceClass clazz = equivalenceClassFactory.createEquivalenceClass(formula);
             return primaryAutomaton.generateInitialState(clazz);
         }

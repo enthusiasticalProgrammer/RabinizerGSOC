@@ -90,42 +90,6 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
         return f.accept(visitor);
     }
 
-    protected Set<Formula> getSatAssignment(BoolExpr expression) {
-        Set<Formula> result = new HashSet<>();
-        Solver s = ctx.mkSolver();
-        s.add(expression);
-        if (s.check() != Status.SATISFIABLE) {
-            throw new NoSuchElementException();
-        }
-        Model m = s.getModel();
-        m.getConstDecls();
-        for (BoolExpr e : getPropositionsOutOfBoolExpr(expression)) {
-            if (m.getConstInterp(e).isTrue()) {
-                result.add(mapping.inverse().get(e));
-            } else if (m.getConstInterp(e).isFalse()) {
-                result.add(mapping.inverse().get(negate(e)));
-            }
-        }
-        return result;
-    }
-
-    protected Set<BoolExpr> getPropositionsOutOfBoolExpr(BoolExpr bool) {
-
-        Set<BoolExpr> result = new HashSet<>();
-
-        if (bool.isConst()) {
-            if (!bool.equals(FALSE) && !bool.equals(TRUE)) {
-                result.add(bool);
-            }
-        } else {
-            for (Expr exp : bool.getArgs()) {
-                BoolExpr b = (BoolExpr) exp;
-                result.addAll(getPropositionsOutOfBoolExpr(b));
-            }
-        }
-        return result;
-    }
-
     protected boolean checkImplies(BoolExpr condition, BoolExpr conclusion) {
         return testUnsatisfiability(negate(mkImp(condition, conclusion)));
     }

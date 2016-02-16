@@ -17,6 +17,8 @@
 
 package rabinizer.ltl;
 
+import org.jetbrains.annotations.NotNull;
+
 public final class FOperator extends ModalOperator {
 
     public FOperator(Formula f) {
@@ -24,13 +26,13 @@ public final class FOperator extends ModalOperator {
     }
 
     @Override
-    public Formula unfold(boolean unfoldG) {
+    public @NotNull Formula unfold(boolean unfoldG) {
         // U(F phi) = U(phi) \/ X F U(phi)
         return new Disjunction(operand.unfold(unfoldG), this);
     }
 
     @Override
-    public GOperator not() {
+    public @NotNull GOperator not() {
         return new GOperator(operand.not());
     }
 
@@ -67,6 +69,11 @@ public final class FOperator extends ModalOperator {
     @Override
     protected char getOperator() {
         return 'F';
+    }
+
+    @Override
+    protected ModalOperator build(Formula operand) {
+        return new FOperator(operand);
     }
 
 }

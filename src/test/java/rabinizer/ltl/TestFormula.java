@@ -1,11 +1,15 @@
 package rabinizer.ltl;
 
+import com.google.common.collect.ImmutableSet;
+import jdk.nashorn.internal.ir.annotations.Immutable;
 import org.junit.Test;
 
+import rabinizer.Util;
 import rabinizer.ltl.simplifier.Simplifier;
 import rabinizer.ltl.simplifier.Simplifier.Strategy;
 
 import java.util.Collections;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -355,5 +359,17 @@ public class TestFormula {
             assertTrue(!formula.isSuspendable() || formula.isPureUniversal());
             assertTrue(!formula.isSuspendable() || formula.isPureEventual());
         }
+    }
+
+    @Test
+    public void testEvaluateSetG() throws Exception {
+        GOperator G1 = (GOperator) Util.createFormula("G(p2)");
+        GOperator G2 = (GOperator) Util.createFormula("G(F(G(p2)))");
+        Formula formula = Util.createFormula("(p1) U (X((G(F(G(p2)))) & (F(X(X(G(p2)))))))");
+
+        Set<GOperator> set1 = Collections.singleton(G1);
+
+        assertEquals(Collections.emptySet(), formula.evaluate(set1, Formula.EvaluationStrategy.LTL).gSubformulas());
+        assertEquals(ImmutableSet.of(G1, G2), formula.evaluate(set1, Formula.EvaluationStrategy.PROPOSITIONAL).gSubformulas());
     }
 }

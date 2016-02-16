@@ -17,14 +17,11 @@
 
 package rabinizer.ltl;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.stream.Stream;
 
-/**
- * @author Andreas Gaiser & Ruslan Ledesma-Garza & Christopher Ziegler
- */
 public final class Conjunction extends PropositionalFormula {
 
     public Conjunction(Collection<? extends Formula> conjuncts) {
@@ -40,7 +37,7 @@ public final class Conjunction extends PropositionalFormula {
     }
 
     @Override
-    public Formula not() {
+    public @NotNull Formula not() {
         return new Disjunction(children.stream().map(Formula::not));
     }
 

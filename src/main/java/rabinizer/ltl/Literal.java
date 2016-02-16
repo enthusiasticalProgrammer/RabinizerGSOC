@@ -17,24 +17,19 @@
 
 package rabinizer.ltl;
 
+import com.google.common.collect.Sets;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 
-public final class Literal extends FormulaNullary {
+public final class Literal extends ImmutableObject implements Formula {
 
-    final String atom;
-    final boolean negated;
+    public final String atom;
+    public final boolean negated;
 
     public Literal(String atom, boolean negated) {
         this.atom = atom;
         this.negated = negated;
-    }
-
-    public boolean getNegated() {
-        return negated;
-    }
-
-    public Literal positiveLiteral() {
-        return new Literal(this.atom, false);
     }
 
     @Override
@@ -43,7 +38,7 @@ public final class Literal extends FormulaNullary {
     }
 
     @Override
-    public Formula evaluate(Literal literal) {
+    public @NotNull Formula evaluate(Literal literal) {
         if (literal.atom.equals(this.atom)) {
             return BooleanConstant.get(literal.negated == this.negated);
         }
@@ -52,36 +47,32 @@ public final class Literal extends FormulaNullary {
     }
 
     @Override
-    public Literal not() {
+    public @NotNull Literal not() {
         return new Literal(atom, !negated);
     }
 
     @Override
-    public Optional<Literal> getAnUnguardedLiteral() {
-        return Optional.of(this);
+    public Literal getAnUnguardedLiteral() {
+        return this;
     }
 
     @Override
-    public Formula temporalStep(Set<String> valuation) {
+    public @NotNull Formula temporalStep(@NotNull Set<String> valuation) {
         return BooleanConstant.get(valuation.contains(atom) ^ negated);
     }
 
     @Override
-    public Set<Formula> getPropositions() {
+    public @NotNull Set<Formula> getPropositions() {
         Set<Formula> propositions = new HashSet<>();
         propositions.add(this);
         return propositions;
     }
 
     @Override
-    public Set<String> getAtoms() {
+    public @NotNull Set<String> getAtoms() {
         Set<String> atoms = new HashSet<>();
         atoms.add(this.atom);
         return atoms;
-    }
-
-    public String getAtom() {
-        return atom;
     }
 
     @Override
@@ -115,13 +106,29 @@ public final class Literal extends FormulaNullary {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
+    public boolean equals2(ImmutableObject o) {
         Literal literal = (Literal) o;
         return negated == literal.negated && Objects.equals(atom, literal.atom);
+    }
+
+    @Override
+    public @NotNull Formula unfold(boolean unfoldG) {
+        return this;
+    }
+
+    @Override
+    public @NotNull Literal evaluate(@NotNull Set<GOperator> Gs, @NotNull EvaluationStrategy s) {
+        return this;
+    }
+
+    @Override
+    public @NotNull Set<GOperator> gSubformulas() {
+        return Sets.newHashSet();
+    }
+
+    @Override
+    public @NotNull Set<GOperator> topmostGs() {
+        return Sets.newHashSet();
     }
 
     @Override

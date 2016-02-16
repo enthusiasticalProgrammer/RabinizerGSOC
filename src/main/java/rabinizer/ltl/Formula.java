@@ -17,41 +17,24 @@
 
 package rabinizer.ltl;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Optional;
 import java.util.Set;
 
+public interface Formula {
+    @NotNull Set<GOperator> gSubformulas();
 
-/**
- * @author Jan Kretinsky
- */
-public abstract class Formula {
-
-    private int cachedHashCode;
-
-    @Override
-    public int hashCode() {
-        if (cachedHashCode == 0) {
-            cachedHashCode = hashCodeOnce();
-        }
-
-        return cachedHashCode;
-    }
-
-    @Override
-    public abstract boolean equals(Object o);
-
-    public abstract Set<GOperator> gSubformulas();
-
-    public abstract Set<GOperator> topmostGs();
+    @NotNull Set<GOperator> topmostGs();
 
     /**
-     * Unfold temporal operators. This is also called LTL Formula expansion.
+     * Unfold temporal operators. This is also called LTL ImmutableObject expansion.
      *
      * @param unfoldG If unfoldG is set to true the G-operator is also unfolded.
      *                This is used in for the master transition system.
      * @return The unfolded formula
      */
-    public abstract Formula unfold(boolean unfoldG);
+    @NotNull Formula unfold(boolean unfoldG);
 
     /**
      * Do a single temporal step. This means that one layer of X-operators is
@@ -60,40 +43,44 @@ public abstract class Formula {
      * @param valuation
      * @return
      */
-    public abstract Formula temporalStep(Set<String> valuation);
+    @NotNull Formula temporalStep(@NotNull Set<String> valuation);
 
-    public abstract Formula not();
+    @NotNull Formula not();
 
-    public abstract Formula evaluate(Literal literal);
+    @NotNull Formula evaluate(Literal literal);
 
-    public abstract Formula evaluate(Set<GOperator> Gs);
+    default @NotNull Formula evaluate(@NotNull Set<GOperator> Gs) {
+        return evaluate(Gs, EvaluationStrategy.PROPOSITIONAL);
+    }
 
-    public abstract Optional<Literal> getAnUnguardedLiteral();
+    @NotNull Formula evaluate(@NotNull Set<GOperator> Gs, @NotNull EvaluationStrategy s);
+
+    Literal getAnUnguardedLiteral();
 
     /**
      * For the propositional view on LTL modal operators (F, G, U, X) and
-     * literals (a, !a) are treated as propositions. The method reduces the set
-     * by leaving out the negation of a formula. The propositional reasoning
-     * libraries are expected to register negations accordingly.
+     * literals (a, !a) are treated as propositions.
      *
      * @return
      */
-    public abstract Set<Formula> getPropositions();
+    @NotNull Set<Formula> getPropositions();
 
-    public abstract Set<String> getAtoms();
+    @NotNull Set<String> getAtoms();
 
-    public abstract <R> R accept(Visitor<R> v);
+    <R> R accept(Visitor<R> v);
 
-    public abstract <A, B> A accept(BinaryVisitor<A, B> v, B f);
+    <A, B> A accept(BinaryVisitor<A, B> v, B f);
 
-    public abstract <A, B, C> A accept(TripleVisitor<A, B, C> v, B f, C c);
+    <A, B, C> A accept(TripleVisitor<A, B, C> v, B f, C c);
 
-    // Temporal Properties of an LTL Formula
-    public abstract boolean isPureEventual();
+    // Temporal Properties of an LTL ImmutableObject
+    boolean isPureEventual();
 
-    public abstract boolean isPureUniversal();
+    boolean isPureUniversal();
 
-    public abstract boolean isSuspendable();
+    boolean isSuspendable();
 
-    protected abstract int hashCodeOnce();
+    enum EvaluationStrategy {
+        PROPOSITIONAL, LTL
+    }
 }

@@ -18,6 +18,7 @@
 package rabinizer.ltl;
 
 import com.google.common.collect.Sets;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
@@ -33,7 +34,12 @@ public final class GOperator extends ModalOperator {
     }
 
     @Override
-    public Formula unfold(boolean unfoldG) {
+    protected ModalOperator build(Formula operand) {
+        return new GOperator(operand);
+    }
+
+    @Override
+    public @NotNull Formula unfold(boolean unfoldG) {
         if (unfoldG) {
             return new Conjunction(operand.unfold(true), this);
         }
@@ -42,24 +48,24 @@ public final class GOperator extends ModalOperator {
     }
 
     @Override
-    public FOperator not() {
+    public @NotNull FOperator not() {
         return new FOperator(operand.not());
     }
 
     @Override
-    public Set<GOperator> gSubformulas() {
+    public @NotNull Set<GOperator> gSubformulas() {
         Set<GOperator> r = operand.gSubformulas();
         r.add(this);
         return r;
     }
 
     @Override
-    public BooleanConstant evaluate(Set<GOperator> Gs) {
+    public @NotNull BooleanConstant evaluate(@NotNull Set<GOperator> Gs, @NotNull EvaluationStrategy s) {
         return BooleanConstant.get(Gs.contains(this));
     }
 
     @Override
-    public Set<GOperator> topmostGs() {
+    public @NotNull Set<GOperator> topmostGs() {
         return Sets.newHashSet(this);
     }
 

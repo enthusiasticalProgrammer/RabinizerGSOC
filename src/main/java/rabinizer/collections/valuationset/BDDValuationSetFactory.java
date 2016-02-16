@@ -118,13 +118,13 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
     }
 
     BDD createBDD(Literal letter) {
-        int i = Arrays.binarySearch(mapping, letter.getAtom());
+        int i = Arrays.binarySearch(mapping, letter.atom);
 
         if (i < 0) {
             throw new IllegalArgumentException("The alphabet does not contain the following letter: " + letter);
         }
 
-        if (letter.getNegated()) {
+        if (letter.negated) {
             return factory.nithVar(i);
         }
 

@@ -76,13 +76,13 @@ public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
                 return true;
             }
         } else if (fo instanceof Conjunction) {
-            if (((Conjunction) fo).children.stream().allMatch(ch -> d.accept(this, ch)))
+            if (((Conjunction) fo).allMatch(ch -> d.accept(this, ch)))
                 return true;
         } else if (fo instanceof Disjunction) {
-            if (((Disjunction) fo).children.stream().anyMatch(ch -> d.accept(this, ch)))
+            if (((Disjunction) fo).anyMatch(ch -> d.accept(this, ch)))
                 return true;
         }
-        return d.children.stream().allMatch(c -> c.accept(this, fo));
+        return d.allMatch(c -> c.accept(this, fo));
     }
 
     @Override

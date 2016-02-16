@@ -17,16 +17,13 @@
 
 package rabinizer.ltl;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * Represents a until formula.
- *
- * @author Andreas & Ruslan
- */
-public final class UOperator extends Formula {
+public final class UOperator extends ImmutableObject implements Formula {
 
     public final Formula left;
     public final Formula right;
@@ -42,79 +39,71 @@ public final class UOperator extends Formula {
     }
 
     @Override
-    public Set<GOperator> gSubformulas() {
+    public @NotNull Set<GOperator> gSubformulas() {
         Set<GOperator> r = left.gSubformulas();
         r.addAll(right.gSubformulas());
         return r;
     }
 
     @Override
-    public Set<GOperator> topmostGs() {
+    public @NotNull Set<GOperator> topmostGs() {
         Set<GOperator> result = left.topmostGs();
         result.addAll(right.topmostGs());
         return result;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        if (hashCode() != o.hashCode())
-            return false;
+    public boolean equals2(ImmutableObject o) {
         UOperator uOperator = (UOperator) o;
         return Objects.equals(left, uOperator.left) && Objects.equals(right, uOperator.right);
     }
 
     @Override
-    public Formula unfold(boolean unfoldG) {
+    public @NotNull Formula unfold(boolean unfoldG) {
         // unfold(a U b) = unfold(b) v (unfold(a) ^ X (a U b))
         return new Disjunction(right.unfold(unfoldG), new Conjunction(left.unfold(unfoldG), this));
     }
 
     @Override
-    public Formula temporalStep(Set<String> valuation) {
+    public @NotNull Formula temporalStep(@NotNull Set<String> valuation) {
         return this;
     }
 
     @Override
-    public Formula not() {
+    public @NotNull Formula not() {
         return new Disjunction(new GOperator(right.not()),
                 new UOperator(right.not(), new Conjunction(left.not(), right.not())));
     }
 
     @Override
-    public Formula evaluate(Literal literal) {
+    public @NotNull Formula evaluate(Literal literal) {
         return this;
     }
 
     @Override
-    public Formula evaluate(Set<GOperator> Gs) {
-        return this;
-    }
-
-    @Override
-    public Optional<Literal> getAnUnguardedLiteral() {
-        return Optional.empty();
-    }
-
-    @Override
-    public Set<Formula> getPropositions() {
-        Set<Formula> propositions = left.getPropositions();
-
-        for (Formula proposition : right.getPropositions()) {
-            if (!propositions.contains(proposition.not())) {
-                propositions.add(proposition);
-            }
+    public @NotNull Formula evaluate(@NotNull Set<GOperator> Gs, @NotNull EvaluationStrategy s) {
+        if (s == EvaluationStrategy.PROPOSITIONAL) {
+            return this;
         }
 
+        return new UOperator(left.evaluate(Gs, s), right.evaluate(Gs, s));
+    }
+
+    @Override
+    public Literal getAnUnguardedLiteral() {
+        return null;
+    }
+
+    @Override
+    public @NotNull Set<Formula> getPropositions() {
+        Set<Formula> propositions = left.getPropositions();
+        propositions.addAll(right.getPropositions());
         propositions.add(this);
         return propositions;
     }
 
     @Override
-    public Set<String> getAtoms() {
+    public @NotNull Set<String> getAtoms() {
         Set<String> atoms = left.getAtoms();
         atoms.addAll(right.getAtoms());
         return atoms;

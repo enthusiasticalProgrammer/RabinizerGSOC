@@ -24,9 +24,6 @@ import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.*;
 
-/**
- * @author jkretinsky
- */
 public class RabinSlave extends Automaton<RabinSlave.State> {
 
     public MojmirSlave mojmir;

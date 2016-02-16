@@ -142,7 +142,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
         Set<BoolExpr> result = new HashSet<>();
 
         if (bool.isConst()) {
-            if (!bool.equals(FALSE) && !bool.equals(TRUE)) {
+            if (!bool.isTrue() && !bool.isFalse()) {
                 result.add(bool);
             }
         } else {
@@ -265,7 +265,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
         @Override
         public Set<String> pickAny() {
             Set<Literal> satAssignment = getSatAssignment(valuation);
-            return satAssignment.stream().filter(literal -> !literal.getNegated()).map(Literal::getAtom)
+            return satAssignment.stream().filter(literal -> !literal.negated).map(literal -> literal.atom)
                     .collect(Collectors.toSet());
         }
 

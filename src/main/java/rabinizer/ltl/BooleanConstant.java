@@ -17,11 +17,14 @@
 
 package rabinizer.ltl;
 
+import com.google.common.collect.Sets;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public final class BooleanConstant extends FormulaNullary {
+public final class BooleanConstant extends ImmutableObject implements Formula {
 
     public static final BooleanConstant TRUE = new BooleanConstant(true);
     public static final BooleanConstant FALSE = new BooleanConstant(false);
@@ -42,32 +45,32 @@ public final class BooleanConstant extends FormulaNullary {
     }
 
     @Override
-    public BooleanConstant not() {
+    public @NotNull BooleanConstant not() {
         return value ? FALSE : TRUE;
     }
 
     @Override
-    public Formula evaluate(Literal literal) {
+    public @NotNull Formula evaluate(Literal literal) {
         return this;
     }
 
     @Override
-    public Optional<Literal> getAnUnguardedLiteral() {
-        return Optional.empty();
+    public Literal getAnUnguardedLiteral() {
+        return null;
     }
 
     @Override
-    public Formula temporalStep(Set<String> valuation) {
+    public @NotNull Formula temporalStep(@NotNull Set<String> valuation) {
         return this;
     }
 
     @Override
-    public Set<Formula> getPropositions() {
+    public @NotNull Set<Formula> getPropositions() {
         return new HashSet<>();
     }
 
     @Override
-    public Set<String> getAtoms() {
+    public @NotNull Set<String> getAtoms() {
         return new HashSet<>();
     }
 
@@ -102,13 +105,29 @@ public final class BooleanConstant extends FormulaNullary {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
+    public boolean equals2(ImmutableObject o) {
         BooleanConstant that = (BooleanConstant) o;
         return value == that.value;
+    }
+
+    @Override
+    public @NotNull Formula unfold(boolean unfoldG) {
+        return this;
+    }
+
+    @Override
+    public @NotNull BooleanConstant evaluate(@NotNull Set<GOperator> Gs, @NotNull EvaluationStrategy s) {
+        return this;
+    }
+
+    @Override
+    public @NotNull Set<GOperator> gSubformulas() {
+        return Sets.newHashSet();
+    }
+
+    @Override
+    public @NotNull Set<GOperator> topmostGs() {
+        return Sets.newHashSet();
     }
 
     @Override

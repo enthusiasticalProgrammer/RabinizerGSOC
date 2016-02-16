@@ -29,7 +29,7 @@ public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
     private final SkeletonApproximation strategy;
 
     public enum SkeletonApproximation {
-        LOWER_BOUND, BOTH;
+        LOWER_BOUND, BOTH
     }
 
     public SkeletonVisitor() {
@@ -80,7 +80,7 @@ public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
                 }
 
                 Set<GOperator> union = new HashSet<>();
-                s.stream().forEach(elem -> union.addAll(elem));
+                s.stream().forEach(union::addAll);
                 finalResult.add(union);
             }
             return finalResult;

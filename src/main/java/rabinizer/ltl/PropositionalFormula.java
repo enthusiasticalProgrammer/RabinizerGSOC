@@ -18,16 +18,14 @@
 package rabinizer.ltl;
 
 import com.google.common.collect.ImmutableSet;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-/**
- * @author jkretinsky & Christopher Ziegler
- */
-public abstract class PropositionalFormula extends Formula {
+public abstract class PropositionalFormula extends ImmutableObject implements Formula {
 
     public final Set<Formula> children;
 
@@ -44,45 +42,45 @@ public abstract class PropositionalFormula extends Formula {
     }
 
     @Override
-    public Formula unfold(boolean unfoldG) {
+    public @NotNull Formula unfold(boolean unfoldG) {
         return create(children.stream().map(c -> c.unfold(unfoldG)));
     }
 
     @Override
-    public Formula evaluate(Literal literal) {
+    public @NotNull Formula evaluate(Literal literal) {
         return create(children.stream().map(c -> c.evaluate(literal)));
     }
 
     @Override
-    public Formula evaluate(Set<GOperator> Gs) {
-        return create(children.stream().map(c -> c.evaluate(Gs)));
+    public @NotNull Formula evaluate(@NotNull Set<GOperator> Gs, @NotNull EvaluationStrategy s) {
+        return create(children.stream().map(c -> c.evaluate(Gs, s)));
     }
 
     @Override
-    public Optional<Literal> getAnUnguardedLiteral() {
+    public Literal getAnUnguardedLiteral() {
         for (Formula child : children) {
-            Optional<Literal> literal = child.getAnUnguardedLiteral();
+            Literal literal = child.getAnUnguardedLiteral();
 
-            if (literal.isPresent()) {
+            if (literal != null) {
                 return literal;
             }
         }
 
-        return Optional.empty();
+        return null;
     }
 
     @Override
-    public Set<GOperator> topmostGs() {
+    public @NotNull Set<GOperator> topmostGs() {
         return collect(Formula::topmostGs);
     }
 
     @Override
-    public Set<Formula> getPropositions() {
+    public @NotNull Set<Formula> getPropositions() {
         return collect(Formula::getPropositions);
     }
 
     @Override
-    public Set<GOperator> gSubformulas() {
+    public @NotNull Set<GOperator> gSubformulas() {
         return collect(Formula::gSubformulas);
     }
 
@@ -108,19 +106,13 @@ public abstract class PropositionalFormula extends Formula {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        if (hashCode() != o.hashCode())
-            return false;
+    public boolean equals2(ImmutableObject o) {
         PropositionalFormula that = (PropositionalFormula) o;
         return Objects.equals(children, that.children);
     }
 
     @Override
-    public Set<String> getAtoms() {
+    public @NotNull Set<String> getAtoms() {
         return collect(Formula::getAtoms);
     }
 
@@ -140,7 +132,7 @@ public abstract class PropositionalFormula extends Formula {
     }
 
     @Override
-    public Formula temporalStep(Set<String> valuation) {
+    public @NotNull Formula temporalStep(@NotNull Set<String> valuation) {
         return create(children.stream().map(c -> c.temporalStep(valuation)));
     }
 
@@ -148,12 +140,12 @@ public abstract class PropositionalFormula extends Formula {
 
     @Override
     protected int hashCodeOnce() {
-        return Objects.hash(children);
+        return Objects.hash(getClass(), children);
     }
 
     protected abstract char getOperator();
 
-    private <E> Set<E> collect(Function<Formula, Collection<E>> f) {
+    private <E> @NotNull Set<E> collect(@NotNull Function<Formula, Collection<E>> f) {
         Set<E> set = new HashSet<>(children.size());
         children.forEach(c -> set.addAll(f.apply(c)));
         return set;

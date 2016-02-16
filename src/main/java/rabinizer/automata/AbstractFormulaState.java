@@ -67,7 +67,7 @@ public abstract class AbstractFormulaState {
 
         for (Formula literal : clazz.unfold(unfoldG).getSupport()) {
             if (literal instanceof Literal) {
-                letters.add(((Literal) literal).getAtom());
+                letters.add(((Literal) literal).atom);
             }
         }
 
@@ -76,22 +76,21 @@ public abstract class AbstractFormulaState {
 
     protected Set<ValuationSet> generatePartitioning(Formula f) {
         Set<ValuationSet> result = new HashSet<>();
-        Optional<Literal> l = f.getAnUnguardedLiteral();
+        Literal literal = f.getAnUnguardedLiteral();
 
-        if (l.isPresent()) {
-            Literal literal = l.get().positiveLiteral();
-            Set<ValuationSet> pos = generatePartitioning(f.evaluate(literal));
-            Set<ValuationSet> neg = generatePartitioning(f.evaluate(literal.not()));
-            for (ValuationSet vs : pos) {
-                vs.restrictWith(literal);
-                result.add(vs);
-            }
-            for (ValuationSet vs : neg) {
-                vs.restrictWith(literal.not());
-                result.add(vs);
-            }
-        } else {
+        if (literal == null) {
             result.add(createUniverseValuationSet());
+            return result;
+        }
+
+        for (ValuationSet vs : generatePartitioning(f.evaluate(literal))) {
+            vs.restrictWith(literal);
+            result.add(vs);
+        }
+
+        for (ValuationSet vs : generatePartitioning(f.evaluate(literal.not()))) {
+            vs.restrictWith(literal.not());
+            result.add(vs);
         }
 
         return result;

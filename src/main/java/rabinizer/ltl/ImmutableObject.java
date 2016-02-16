@@ -17,34 +17,31 @@
 
 package rabinizer.ltl;
 
-import com.google.common.collect.Sets;
+public abstract class ImmutableObject {
 
-import java.util.Collections;
-import java.util.Set;
-
-/**
- * @author jkretinsky
- */
-public abstract class FormulaNullary extends Formula {
+    private int cachedHashCode;
 
     @Override
-    public Formula unfold(boolean unfoldG) {
-        return this;
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        if (hashCode() != o.hashCode())
+            return false;
+        return equals2((ImmutableObject) o);
     }
 
     @Override
-    public FormulaNullary evaluate(Set<GOperator> Gs) {
-        return this;
+    public int hashCode() {
+        if (cachedHashCode == 0) {
+            cachedHashCode = hashCodeOnce();
+        }
+
+        return cachedHashCode;
     }
 
-    @Override
-    public Set<GOperator> gSubformulas() {
-        return Sets.newHashSet();
-    }
+    protected abstract int hashCodeOnce();
 
-    @Override
-    public Set<GOperator> topmostGs() {
-        return Sets.newHashSet();
-    }
-
+    protected abstract boolean equals2(ImmutableObject o);
 }

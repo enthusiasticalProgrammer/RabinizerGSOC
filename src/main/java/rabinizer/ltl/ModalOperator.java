@@ -17,14 +17,13 @@
 
 package rabinizer.ltl;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * @author jkretinsky
- */
-public abstract class ModalOperator extends Formula {
+public abstract class ModalOperator extends ImmutableObject implements Formula {
 
     public final Formula operand;
 
@@ -37,60 +36,56 @@ public abstract class ModalOperator extends Formula {
         return getOperator() + operand.toString();
     }
 
-    @Override
-    // to be overrridden by GOperator
-    public Set<GOperator> gSubformulas() {
+    @Override // to be overridden by GOperator
+    public @NotNull Set<GOperator> gSubformulas() {
         return operand.gSubformulas();
     }
 
-    @Override
-    // to be overrridden by GOperator
-    public Set<GOperator> topmostGs() {
+    @Override // to be overridden by GOperator
+    public @NotNull Set<GOperator> topmostGs() {
         return operand.topmostGs();
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        if (hashCode() != o.hashCode())
-            return false;
+    public boolean equals2(ImmutableObject o) {
         ModalOperator that = (ModalOperator) o;
         return Objects.equals(operand, that.operand);
     }
 
     @Override
-    public Formula temporalStep(Set<String> valuation) {
+    public @NotNull Formula temporalStep(@NotNull Set<String> valuation) {
         return this;
     }
 
     @Override
-    public Set<Formula> getPropositions() {
+    public @NotNull Set<Formula> getPropositions() {
         Set<Formula> propositions = operand.getPropositions();
         propositions.add(this);
         return propositions;
     }
 
     @Override
-    public Set<String> getAtoms() {
+    public @NotNull Set<String> getAtoms() {
         return operand.getAtoms();
     }
 
     @Override
-    public Formula evaluate(Literal literal) {
+    public @NotNull Formula evaluate(Literal literal) {
         return this;
     }
 
     @Override
-    public Formula evaluate(Set<GOperator> Gs) {
-        return this;
+    public @NotNull Formula evaluate(@NotNull Set<GOperator> Gs, @NotNull EvaluationStrategy s) {
+        if (s == EvaluationStrategy.PROPOSITIONAL) {
+            return this;
+        }
+
+        return build(operand.evaluate(Gs, s));
     }
 
     @Override
-    public Optional<Literal> getAnUnguardedLiteral() {
-        return Optional.empty();
+    public Literal getAnUnguardedLiteral() {
+        return null;
     }
 
     @Override
@@ -100,4 +95,5 @@ public abstract class ModalOperator extends Formula {
 
     protected abstract char getOperator();
 
+    protected abstract ModalOperator build(Formula operand);
 }

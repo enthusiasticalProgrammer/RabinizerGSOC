@@ -127,7 +127,7 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
 
             for (Formula literal : current.unfold(true).getSupport()) {
                 if (literal instanceof Literal) {
-                    sensitiveLetters.add(((Literal) literal).getAtom());
+                    sensitiveLetters.add(((Literal) literal).atom);
                 }
             }
 
@@ -149,7 +149,7 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
 
             for (Formula literal : Sets.union(current.unfold(true).getSupport(), next.unfold(true).getSupport())) {
                 if (literal instanceof Literal) {
-                    sensitiveLetters.add(((Literal) literal).getAtom());
+                    sensitiveLetters.add(((Literal) literal).atom);
                 }
             }
 
