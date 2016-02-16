@@ -28,6 +28,7 @@ import rabinizer.ltl.equivalence.EquivalenceClass;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.*;
 import rabinizer.ltl.equivalence.BDDEquivalenceClassFactory;
+import rabinizer.ltl.equivalence.EvaluateVisitor;
 import rabinizer.ltl.simplifier.Simplifier;
 import rabinizer.collections.valuationset.BDDValuationSetFactory;
 import rabinizer.collections.valuationset.ValuationSet;

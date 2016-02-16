@@ -15,8 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package rabinizer.ltl;
+package rabinizer.exec;
 
+import rabinizer.ltl.Formula;
 import rabinizer.ltl.equivalence.BDDEquivalenceClassFactory;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.collections.valuationset.BDDValuationSetFactory;

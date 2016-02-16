@@ -2,15 +2,15 @@ package rabinizer.automata;
 
 import java.util.EnumSet;
 
-import jhoafparser.consumer.HOAConsumerPrint;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import rabinizer.Util;
+import rabinizer.exec.FactoryRegistry;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.exec.Main;
 import rabinizer.ltl.*;
-import rabinizer.ltl.FactoryRegistry.Backend;
+import rabinizer.exec.FactoryRegistry.Backend;
 import rabinizer.ltl.simplifier.Simplifier;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 

@@ -15,11 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package rabinizer.ltl;
+package rabinizer.ltl.equivalence;
 
 import org.jetbrains.annotations.NotNull;
-import rabinizer.ltl.equivalence.EquivalenceClass;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
+import rabinizer.ltl.*;
 
 public class EvaluateVisitor implements Visitor<Formula> {
 
