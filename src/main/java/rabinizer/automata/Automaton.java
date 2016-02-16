@@ -226,7 +226,9 @@ public abstract class Automaton<S extends IState<S>> {
             if (!vs2.isEmpty()) {
                 transitions.put(s, vs2, trapState);
                 edgeBetween.put(s, trapState, vs2);
-                usedTrapState = true;
+                if (s != trapState) {
+                    usedTrapState = true;
+                }
             }
         }
 
