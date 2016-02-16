@@ -35,8 +35,6 @@ import rabinizer.ltl.simplifier.Simplifier;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
 public class HOAConsumerExtended<T> {
 
     public static final BooleanExpression<AtomAcceptance> TRUE = new BooleanExpression<>(BooleanExpression.Type.EXP_TRUE, null, null);
