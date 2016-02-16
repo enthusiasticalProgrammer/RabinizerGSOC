@@ -19,9 +19,26 @@ package rabinizer.ltl;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.google.common.collect.Sets;
+
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
+
+    private final SkeletonApproximation strategy;
+
+    public enum SkeletonApproximation {
+        LOWER_BOUND, BOTH;
+    }
+
+    public SkeletonVisitor() {
+        strategy = SkeletonApproximation.BOTH;
+    }
+
+    public SkeletonVisitor(SkeletonApproximation appr) {
+        strategy = appr;
+    }
 
     @Override
     public Set<Set<GOperator>> defaultAction(@NotNull Formula formula) {
@@ -53,6 +70,22 @@ public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
     public Set<Set<GOperator>> visit(@NotNull Disjunction disjunction) {
         Set<Set<GOperator>> skeleton = new HashSet<>();
         disjunction.children.forEach(e -> skeleton.addAll(e.accept(this)));
+        if (strategy == SkeletonApproximation.LOWER_BOUND) {
+            final Set<Set<Set<GOperator>>> result = Sets.powerSet(skeleton);
+
+            Set<Set<GOperator>> finalResult = Collections.emptySet();
+            for (Set<Set<GOperator>> s : result) {
+                if (s.isEmpty()) {
+                    continue;
+                }
+
+                Set<GOperator> union = new HashSet<>();
+                s.stream().forEach(elem -> union.addAll(elem));
+                finalResult.add(union);
+            }
+            return finalResult;
+        }
+
         return skeleton;
     }
 
