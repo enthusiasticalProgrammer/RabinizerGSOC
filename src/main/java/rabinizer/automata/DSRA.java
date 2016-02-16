@@ -19,10 +19,19 @@ package rabinizer.automata;
 
 import java.io.PrintStream;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import org.jetbrains.annotations.NotNull;
+
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+
+import rabinizer.automata.Product.ProductState;
+import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
@@ -63,7 +72,7 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
 
     @Override
     public int pairNumber() {
-        return accSR.size() / 2;
+        return accSR.acc.size();
     }
 
     @Override
@@ -138,25 +147,45 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
     }
 
     @Override
-    public void toHOA(HOAConsumer hoa) throws HOAConsumerException {
-        throw new UnsupportedOperationException();
+    public void toHOA(HOAConsumer ho) throws HOAConsumerException {
+        HOAConsumerExtended<DSRA.ProductDegenAccState> hoa = new HOAConsumerExtended<>(ho, HOAConsumerExtended.AutomatonType.STATE);
+        hoa.setHeader(null, valuationSetFactory.getAlphabet());
+        hoa.setInitialState(this.initialState);
+        hoa.setAcceptanceCondition(accSR.acc);
+
+
+        for (ProductDegenAccState s : states) {
+            List<Integer> stAccSetIds = new ArrayList<Integer>();
+            IntStream.range(0, accSR.acc.size()).filter(i -> (i % 2 == 0 ? accSR.acc.get(i / 2).left : accSR.acc.get(i / 2).right).contains(s)).forEach(i -> stAccSetIds.add(i));
+            hoa.addState(s);
+            for (Table.Cell<ProductDegenAccState, ValuationSet, ProductDegenAccState> trans : transitions.cellSet()) {
+                if (trans.getRowKey().equals(s)) {
+                    hoa.addEdge(trans.getRowKey(), trans.getColumnKey().toFormula(), trans.getValue());
+                }
+            }
+        }
+        hoa.done();
+
     }
 
-    /**
-     * @author jkretinsky
-     */
-    public static class AccSR extends ArrayList<Set<ProductDegenAccState>> {
+
+    public static class AccSR {
 
         private static final long serialVersionUID = 1L;
 
+        /**
+         * This represents the state-based acceptance, left is Fin, right is
+         * Inf.
+         */
+        public final List<Tuple<? extends Set<ProductDegenAccState>, ? extends Set<ProductDegenAccState>>> acc;
+
         AccSR(int size, DSRA dsra) {
-            for (int i = 0; i < 2 * size; i++) {
-                this.add(new HashSet<>());
-            }
+            acc = IntStream.range(0, size).mapToObj(i -> new Tuple(new HashSet<ProductDegenAccState>(), new HashSet<ProductDegenAccState>()))
+                    .collect(Collectors.toList());
 
             for (ProductDegenAccState s : dsra.states) {
                 for (Integer i : s.right) {
-                    this.get(i).add(s);
+                    (i % 2 == 0 ? this.acc.get(i / 2).left : this.acc.get(i / 2).right).add(s);
                 }
             }
         }
@@ -164,8 +193,8 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
         @Override
         public String toString() {
             String result = "Rabin state-based acceptance condition";
-            for (int i = 0; i < size() / 2; i++) {
-                result += "\nPair " + (i + 1) + "\nFin:\n" + get(2 * i) + "\nInf:\n" + get(2 * i + 1);
+            for (Tuple<? extends Set<ProductDegenAccState>, ? extends Set<ProductDegenAccState>> pair : acc) {
+                result += "\nPair " + "\nFin:\n" + pair.left + "\nInf:\n" + pair.right;
             }
             return result;
         }
