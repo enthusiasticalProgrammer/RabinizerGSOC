@@ -48,7 +48,6 @@ public class DetLimitAutomaton {
     private final InitComponent initComponent;
     private final AccComponent accComponent;
     private final Table<Master.State, ValuationSet, Set<?>> jumps;
-    private final Map<EquivalenceClass, ValuationSet> jumpToFalse;
 
     private int acceptanceConditionSize;
 
@@ -76,7 +75,6 @@ public class DetLimitAutomaton {
 
         if (isImpatientState(initialClazz) && keys.size() <= 1) {
             jumps = null;
-            jumpToFalse = null;
             initComponent = null;
 
             Set<GOperator> key = keys.iterator().next();
@@ -85,7 +83,6 @@ public class DetLimitAutomaton {
             accComponent.generate();
         } else {
             jumps = HashBasedTable.create();
-            jumpToFalse = new HashMap<>();
             initComponent = new InitComponent(initialClazz, valuationSetFactory, optimisations);
             initComponent.generate();
         }
@@ -228,36 +225,18 @@ public class DetLimitAutomaton {
         }
 
         private boolean isComplete(Master.State state) {
-            ValuationSet valuationSet = jumpToFalse.get(state.getClazz());
-
-            if (valuationSet == null) {
-                valuationSet = valuationSetFactory.createEmptyValuationSet();
-            } else {
-                valuationSet = valuationSet.clone();
-            }
+            ValuationSet valuationSet = valuationSetFactory.createEmptyValuationSet();
 
             for (ValuationSet vs : transitions.row(state).keySet()) {
                 valuationSet.addAll(vs);
             }
 
-            return valuationSet.isUniverse();
+            return valuationSet.complement().stream().allMatch(vs -> step(state.getClazz(), vs).isFalse());
         }
 
         @Override
         protected boolean suppressEdge(EquivalenceClass current, Set<String> valuation, EquivalenceClass successor) {
-            if (successor.isFalse()) {
-                ValuationSet valuationSet = jumpToFalse.remove(current);
-
-                if (valuationSet == null) {
-                    valuationSet = valuationSetFactory.createEmptyValuationSet();
-                }
-
-                valuationSet.add(valuation);
-                jumpToFalse.put(current, valuationSet);
-                return true;
-            }
-
-            return isImpatientState(current) || isImpatientState(successor);
+            return successor.isFalse() || isImpatientState(current) || isImpatientState(successor);
         }
     }
 
