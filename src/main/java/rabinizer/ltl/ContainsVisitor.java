@@ -44,7 +44,7 @@ public class ContainsVisitor implements Visitor<Boolean> {
         if (c.equals(Conjunction.class)) {
             return true;
         }
-        return conjunction.children.stream().anyMatch(child -> child.accept(this));
+        return conjunction.anyMatch(child -> child.accept(this));
     }
 
     @Override
@@ -52,7 +52,7 @@ public class ContainsVisitor implements Visitor<Boolean> {
         if (c.equals(Disjunction.class)) {
             return true;
         }
-        return disjunction.children.stream().anyMatch(child -> child.accept(this));
+        return disjunction.anyMatch(child -> child.accept(this));
     }
 
     @Override

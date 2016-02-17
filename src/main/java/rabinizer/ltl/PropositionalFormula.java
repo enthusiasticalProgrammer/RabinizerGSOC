@@ -71,17 +71,17 @@ public abstract class PropositionalFormula extends ImmutableObject implements Fo
 
     @Override
     public @NotNull Set<GOperator> topmostGs() {
-        return collect(Formula::topmostGs);
+        return union(Formula::topmostGs);
     }
 
     @Override
     public @NotNull Set<Formula> getPropositions() {
-        return collect(Formula::getPropositions);
+        return union(Formula::getPropositions);
     }
 
     @Override
     public @NotNull Set<GOperator> gSubformulas() {
-        return collect(Formula::gSubformulas);
+        return union(Formula::gSubformulas);
     }
 
     @Override
@@ -113,7 +113,7 @@ public abstract class PropositionalFormula extends ImmutableObject implements Fo
 
     @Override
     public @NotNull Set<String> getAtoms() {
-        return collect(Formula::getAtoms);
+        return union(Formula::getAtoms);
     }
 
     @Override
@@ -145,9 +145,23 @@ public abstract class PropositionalFormula extends ImmutableObject implements Fo
 
     protected abstract char getOperator();
 
-    private <E> @NotNull Set<E> collect(@NotNull Function<Formula, Collection<E>> f) {
+    public <E> @NotNull Set<E> union(@NotNull Function<Formula, Collection<E>> f) {
         Set<E> set = new HashSet<>(children.size());
         children.forEach(c -> set.addAll(f.apply(c)));
+        return set;
+    }
+
+    public <E> @NotNull Set<E> intersection(@NotNull Function<Formula, Collection<E>> f) {
+        Set<E> set = new HashSet<>(children.size());
+
+        if (children.isEmpty()) {
+            return set;
+        }
+
+        Iterator<Formula> iterator = children.iterator();
+
+        set.addAll(f.apply(iterator.next()));
+        iterator.forEachRemaining(c -> set.retainAll(f.apply(c)));
         return set;
     }
 
