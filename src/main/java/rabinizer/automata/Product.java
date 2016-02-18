@@ -33,7 +33,6 @@ public class Product extends Automaton<Product.ProductState> {
     protected final Map<GOperator, RabinSlave> secondaryAutomata;
 
     protected final boolean allSlaves;
-    protected final boolean slaveSuspension;
 
     public Product(Master primaryAutomaton, Map<GOperator, RabinSlave> slaves, ValuationSetFactory factory, Collection<Optimisation> optimisations) {
         super(factory);
@@ -43,7 +42,6 @@ public class Product extends Automaton<Product.ProductState> {
         this.primaryAutomaton = primaryAutomaton;
         this.secondaryAutomata = slaves;
         this.allSlaves = !optimisations.contains(Optimisation.ONLY_RELEVANT_SLAVES);
-        this.slaveSuspension = optimisations.contains(Optimisation.SLAVE_SUSPENSION);
         this.trapState = new ProductState(primaryAutomaton.trapState, Collections.emptyMap());
     }
 
@@ -79,11 +77,8 @@ public class Product extends Automaton<Product.ProductState> {
             primaryState.getClazz().getSupport().forEach(f -> keys.addAll(f.gSubformulas()));
         }
 
-        if (slaveSuspension) {
-            boolean hastySlavesPresent = primaryState.getClazz().getRepresentative().accept(new RelevantGFormulaeWithSlaveSuspension());
-            if (!hastySlavesPresent && parentKeys.isEmpty()) {
-                return Collections.emptySet();
-            }
+        if (primaryState instanceof SuspendedMaster.State && ((SuspendedMaster.State) primaryState).slavesSuspended) {
+            return Collections.emptySet();
         }
         return keys;
 
@@ -131,7 +126,7 @@ public class Product extends Automaton<Product.ProductState> {
             current.put(getFactory().createUniverseValuationSet(), Collections.emptyMap());
 
             Map<GOperator, RabinSlave.State> keys;
-            if (!slaveSuspension || !secondaryStates.isEmpty()) {
+            if (!secondaryStates.isEmpty()) {
                 keys = new HashMap<>(secondaryStates);
             } else {
                 keys = new HashMap<>();
@@ -145,7 +140,7 @@ public class Product extends Automaton<Product.ProductState> {
                 RabinSlave.State state = entry.getValue();
 
                 Map<ValuationSet, RabinSlave.State> successors;
-                if (!slaveSuspension || !secondary.isEmpty()) {
+                if (!secondary.isEmpty()) {
                     successors = secondary.get(key).getSuccessors(state);
                 } else {
                     successors = secondaryAutomata.get(key).getSuccessors(state);

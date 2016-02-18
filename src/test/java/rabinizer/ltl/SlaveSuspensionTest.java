@@ -21,7 +21,7 @@ public class SlaveSuspensionTest {
 
     @Before
     public void setUp() throws Exception {
-        visitor = new RelevantGFormulaeWithSlaveSuspension();
+        visitor = RelevantGFormulaeWithSlaveSuspension.RELEVANT_G_FORMULAE_PRESENT;
         patientOnes = new HashSet<Formula>();
         patientOnes.add(Util.createFormula("(X G a) | (X X F a)"));
         patientOnes.add(Util.createFormula("(X G c)"));
