@@ -21,25 +21,19 @@ import java.io.PrintStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
-import rabinizer.automata.Product.ProductState;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
-/**
- * @author jkretinsky
- */
 public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAutomatonInterface {
 
     public AccSR accSR;
@@ -81,18 +75,23 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
         return new ProductDegenAccState(dtra.initialState, stateAcceptance.get(dtra.initialState));
     }
 
-    public class ProductDegenAccState extends Tuple<DTRA.ProductDegenState, Set<Integer>> implements IState<ProductDegenAccState> {
+    public class ProductDegenAccState implements IState<ProductDegenAccState> {
 
-        public ProductDegenAccState(@NotNull DTRA.ProductDegenState pds, @NotNull Set<Integer> accSets) {
-            super(pds, accSets);
+        final DTRA.ProductDegenState productDegenState;
+        // TODO: Replace by BitSet
+        final Set<Integer> accSet;
+
+        public ProductDegenAccState(@NotNull DTRA.ProductDegenState pds, @NotNull Set<Integer> accSet) {
+            this.productDegenState = pds;
+            this.accSet = accSet;
         }
 
         @Override
         public String toString() {
-            String result = left.toString();
-            int[] orderedSets = new int[right.size()];
+            String result = productDegenState.toString();
+            int[] orderedSets = new int[accSet.size()];
             int i = 0;
-            for (Integer set : right) {
+            for (Integer set : accSet) {
                 orderedSets[i] = set;
                 i++;
             }
@@ -106,42 +105,47 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
 
         @Override
         public @Nullable ProductDegenAccState getSuccessor(@NotNull Set<String> valuation) {
-            DTRA.ProductDegenState succ = dtra.getSuccessor(left, valuation);
+            DTRA.ProductDegenState succ = dtra.getSuccessor(productDegenState, valuation);
+
             if (succ == null) {
                 return null;
             }
+
             Set<Integer> accSets;
+
             if (stateAcceptance.get(succ) == null) {
                 accSets = new HashSet<>();
             } else {
                 accSets = new HashSet<>(stateAcceptance.get(succ));
             }
+
+            // TODO: foreach loop
             for (int i = 0; i < dtra.accTR.size(); i++) {
                 RabinPair<? extends IState<?>> rp = dtra.accTR.get(i);
-                if (rp.left != null && rp.left.get(left) != null
-                        && rp.left.get(left).contains(valuation) && !stateAcceptance.get(left).contains(2 * i)) {
-                    // acceptance
-                    // dealt
-                    // with
-                    // already
-                    // in s
+
+                // acceptance dealt with already in s
+                if (rp.left != null && rp.left.get(productDegenState) != null
+                        && rp.left.get(productDegenState).contains(valuation) && !stateAcceptance.get(productDegenState).contains(2 * i)) {
                     accSets.add(2 * i);
                 }
-                if (rp.right != null && rp.right.get(left) != null
-                        && rp.right.get(left).contains(valuation)
-                        && !stateAcceptance.get(left).contains(2 * i + 1)) {
+
+                if (rp.right != null && rp.right.get(productDegenState) != null
+                        && rp.right.get(productDegenState).contains(valuation)
+                        && !stateAcceptance.get(productDegenState).contains(2 * i + 1)) {
                     accSets.add(2 * i + 1);
                 }
-                if (accSets.contains(2 * i) && accSets.contains(2 * i + 1)) {
+
+                if (accSets.contains(2 * i)) {
                     accSets.remove(2 * i + 1);
                 }
             }
+
             return new ProductDegenAccState(succ, accSets);
         }
 
         @Override
         public @NotNull Set<ValuationSet> partitionSuccessors() {
-            return valuationSetFactory.createAllValuationSets(); // TODO symbolic
+            return valuationSetFactory.createAllValuationSets();
         }
 
         @Override
@@ -152,6 +156,20 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
         @Override
         public @NotNull ValuationSetFactory getFactory() {
             return valuationSetFactory;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ProductDegenAccState tuple = (ProductDegenAccState) o;
+            return Objects.equals(productDegenState, tuple.productDegenState) &&
+                    Objects.equals(accSet, tuple.accSet);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(productDegenState, accSet);
         }
     }
 
@@ -180,8 +198,6 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
 
     public static class AccSR {
 
-        private static final long serialVersionUID = 1L;
-
         /**
          * This represents the state-based acceptance, left is Fin, right is
          * Inf.
@@ -189,11 +205,11 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
         public final List<Tuple<? extends Set<ProductDegenAccState>, ? extends Set<ProductDegenAccState>>> acc;
 
         AccSR(int size, DSRA dsra) {
-            acc = IntStream.range(0, size).mapToObj(i -> new Tuple(new HashSet<ProductDegenAccState>(), new HashSet<ProductDegenAccState>()))
+            acc = IntStream.range(0, size).mapToObj(i -> new Tuple<>(new HashSet<ProductDegenAccState>(), new HashSet<ProductDegenAccState>()))
                     .collect(Collectors.toList());
 
             for (ProductDegenAccState s : dsra.states) {
-                for (Integer i : s.right) {
+                for (Integer i : s.accSet) {
                     (i % 2 == 0 ? this.acc.get(i / 2).left : this.acc.get(i / 2).right).add(s);
                 }
             }
