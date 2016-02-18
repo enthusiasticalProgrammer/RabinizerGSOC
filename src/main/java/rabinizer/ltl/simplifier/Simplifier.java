@@ -520,7 +520,7 @@ public final class Simplifier {
                         ImplicationVisitor imp = ImplicationVisitor.getVisitor();
 
                         if (form.accept(imp, form2)) {
-                            if (set.remove(formula2))
+                            if (set.remove(form2))
                                 return true;
                         }
 
@@ -533,8 +533,8 @@ public final class Simplifier {
                         Formula f = form.accept(PseudoSubstitutionVisitor.getVisitor(), form2, true);
 
                         if (!f.equals(form)) {
-                            boolean possibleResult = set.remove(formula);
-                            set.remove(formula);
+                            boolean possibleResult = set.remove(form);
+                            set.remove(form);
                             f = f.accept(this);
                             possibleResult = set.add(f) || possibleResult;
                             if (possibleResult) {
@@ -562,7 +562,7 @@ public final class Simplifier {
                         ImplicationVisitor imp = ImplicationVisitor.getVisitor();
 
                         if (form.accept(imp, form2)) {
-                            if (set.remove(formula))
+                            if (set.remove(form))
                                 return true;
                         }
 
@@ -575,7 +575,7 @@ public final class Simplifier {
                         Formula f = form.accept(PseudoSubstitutionVisitor.getVisitor(), form2, false);
 
                         if (!f.equals(form)) {
-                            boolean possibleResult = set.remove(formula);
+                            boolean possibleResult = set.remove(form);
                             f = f.accept(this);
                             possibleResult = set.add(f) || possibleResult;
                             if (possibleResult) {
