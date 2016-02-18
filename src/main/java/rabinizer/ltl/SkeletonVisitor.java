@@ -73,7 +73,7 @@ public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
         if (strategy == SkeletonApproximation.LOWER_BOUND) {
             final Set<Set<Set<GOperator>>> result = Sets.powerSet(skeleton);
 
-            Set<Set<GOperator>> finalResult = Collections.emptySet();
+            Set<Set<GOperator>> finalResult = new HashSet<>();
             for (Set<Set<GOperator>> s : result) {
                 if (s.isEmpty()) {
                     continue;
