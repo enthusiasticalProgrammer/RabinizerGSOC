@@ -332,7 +332,7 @@ public class Main {
 
         if (simplify) {
             nonsilent("Formula unsimplified: " + input);
-            Simplifier.simplify(formula, Strategy.AGGRESSIVELY);
+            formula = Simplifier.simplify(formula, Strategy.AGGRESSIVELY);
             nonsilent("Formula simplified:" + formula);
         } else {
             nonsilent("Input formula: " + formula);
