@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -82,7 +83,7 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
 
     public class ProductDegenAccState extends Tuple<DTRA.ProductDegenState, Set<Integer>> implements IState<ProductDegenAccState> {
 
-        public ProductDegenAccState(DTRA.ProductDegenState pds, Set<Integer> accSets) {
+        public ProductDegenAccState(@NotNull DTRA.ProductDegenState pds, @NotNull Set<Integer> accSets) {
             super(pds, accSets);
         }
 
@@ -104,9 +105,17 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
         }
 
         @Override
-        public ProductDegenAccState getSuccessor(@NotNull Set<String> valuation) {
+        public @Nullable ProductDegenAccState getSuccessor(@NotNull Set<String> valuation) {
             DTRA.ProductDegenState succ = dtra.getSuccessor(left, valuation);
-            Set<Integer> accSets = new HashSet<>(stateAcceptance.get(succ));
+            if (succ == null) {
+                return null;
+            }
+            Set<Integer> accSets;
+            if (stateAcceptance.get(succ) == null) {
+                accSets = new HashSet<>();
+            } else {
+                accSets = new HashSet<>(stateAcceptance.get(succ));
+            }
             for (int i = 0; i < dtra.accTR.size(); i++) {
                 RabinPair<? extends IState<?>> rp = dtra.accTR.get(i);
                 if (rp.left != null && rp.left.get(left) != null
