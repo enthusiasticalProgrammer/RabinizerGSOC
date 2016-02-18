@@ -403,7 +403,12 @@ public final class Simplifier {
             for (; innerConjunctionLoop(set); )
                 ;
 
-            return super.visit(new Conjunction(set));
+            Formula f = Simplifier.simplify(c, Strategy.PULLUP_X);
+            if (f instanceof Conjunction) {
+                return f;
+            }
+
+            return f.accept(this);
         }
 
         @Override
@@ -421,7 +426,12 @@ public final class Simplifier {
             while (innerDisjunctionLoop(set)) {
             }
 
-            return super.visit(new Disjunction(set));
+            Formula f = Simplifier.simplify(d, Strategy.PULLUP_X);
+            if (f instanceof Disjunction) {
+                return f;
+            }
+
+            return f.accept(this);
         }
 
         @Override
