@@ -27,6 +27,8 @@ import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
@@ -161,7 +163,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> implements AccAutoma
 
     public class ProductDegenState extends Tuple<Product.ProductState, Map<Integer, Integer>> implements IState<ProductDegenState> {
 
-        public ProductDegenState(Product.ProductState ps, Map<Integer, Integer> awaitedIndices) {
+        public ProductDegenState(@NotNull Product.ProductState ps, @NotNull Map<Integer, Integer> awaitedIndices) {
             super(ps, awaitedIndices);
         }
 
@@ -171,7 +173,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> implements AccAutoma
         }
 
         @Override
-        public ProductDegenState getSuccessor(@NotNull Set<String> valuation) {
+        public @Nullable ProductDegenState getSuccessor(@NotNull Set<String> valuation) {
             Map<Integer, Integer> awaitedIndices = new HashMap<>();
             for (int i = 0; i < accTGR.size(); i++) {
                 GRabinPair<TranSet<Product.ProductState>> grp = accTGR.get(i);
@@ -187,6 +189,9 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> implements AccAutoma
                 }
 
                 awaitedIndices.put(i, awaited);
+            }
+            if (dtgra.automaton.getSuccessor(left, valuation) == null) {
+                return null;
             }
 
             return new ProductDegenState(dtgra.automaton.getSuccessor(left, valuation), awaitedIndices);
