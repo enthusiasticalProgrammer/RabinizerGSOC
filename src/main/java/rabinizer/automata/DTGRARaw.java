@@ -41,7 +41,7 @@ public class DTGRARaw {
         Main.nonsilent("Generating primaryAutomaton");
         Master master;
 
-        master = new Master(phi, equivalenceClassFactory, valuationSetFactory, opts, true);
+        master = new SuspendedMaster(phi, equivalenceClassFactory, valuationSetFactory, opts, true);
         master.generate();
 
         Main.verboseln("========================================");

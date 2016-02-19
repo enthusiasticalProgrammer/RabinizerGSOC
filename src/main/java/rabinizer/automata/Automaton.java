@@ -338,4 +338,56 @@ public abstract class Automaton<S extends IState<S>> {
                 .allMatch(s -> (Collections.disjoint(transitions.row(s).values(), nonSCCStates)));
     }
 
+    /**
+     * The method replaces antecessor by replacement. Both must be in the
+     * states-set (and both must not be null) when calling the method.
+     * Antecessor gets deleted during the method, and the transitions to
+     * antecessor will be recurved towards replacement.
+     *
+     * The method throws an IllegalArgumentException, when one of the parameters
+     * is not in the states-set
+     */
+    protected void replaceBy(@NotNull S antecessor, @NotNull S replacement) {
+        if (!(states.contains(antecessor) && states.contains(replacement))) {
+            throw new IllegalArgumentException();
+        }
+
+        states.remove(antecessor);
+        transitions.row(antecessor).clear();
+
+        Iterator<Table.Cell<S, ValuationSet, S>> it = transitions.cellSet().iterator();
+
+        Table<S, ValuationSet, S> toAdd = HashBasedTable.create();
+        while (it.hasNext()) {
+            Table.Cell<S, ValuationSet, S> elem = it.next();
+            if (antecessor.equals(elem.getValue())) {
+                toAdd.put(elem.getRowKey(), elem.getColumnKey(), replacement);
+                it.remove();
+            }
+        }
+        transitions.putAll(toAdd);
+
+        edgeBetween.row(antecessor).clear();
+
+        Iterator<Table.Cell<S, S, ValuationSet>> it2 = edgeBetween.cellSet().iterator();
+
+        Table<S, S, ValuationSet> toAdd2 = HashBasedTable.create();
+        while (it2.hasNext()) {
+            Table.Cell<S, S, ValuationSet> elem = it2.next();
+            if (antecessor.equals(elem.getColumnKey())) {
+                toAdd2.put(elem.getRowKey(), replacement, elem.getValue());
+                it2.remove();
+            }
+        }
+        edgeBetween.putAll(toAdd2);
+
+        if (antecessor.equals(trapState)) {
+            trapState = replacement;
+        }
+
+        if (antecessor.equals(initialState)) {
+            initialState = replacement;
+        }
+    }
+
 }

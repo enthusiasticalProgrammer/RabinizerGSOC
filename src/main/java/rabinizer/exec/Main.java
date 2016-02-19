@@ -127,7 +127,6 @@ public class Main {
         boolean z3 = false;
 
         Set<Optimisation> opts = EnumSet.allOf(Optimisation.class);
-        opts.remove(Optimisation.SLAVE_SUSPENSION);
 
         for (String arg : args) {
             if (arg.equals("-h") || arg.equals("--h") || arg.equals("-help") || arg.equals("--help")) {
@@ -191,6 +190,7 @@ public class Main {
                 opts.add(Optimisation.COMPLETE);
             } else if (arg.equals("-slave-suspension") || arg.equals("--slave-suspension")) {
                 opts.add(Optimisation.SLAVE_SUSPENSION);
+                simplifyFormula = true;
             } else if (arg.equals("-g-skeleton") || arg.equals("--g-skeleton")) {
                 opts.add(Optimisation.SKELETON);
             } else if (arg.substring(0, 1).equals("-")) {
@@ -204,12 +204,6 @@ public class Main {
 
         if (argument == null) {
             errorMessageAndExit("No input given.");
-        }
-
-        if (opts.contains(Optimisation.EAGER) && opts.contains(Optimisation.SLAVE_SUSPENSION)) {
-            System.err.println("Please do not use eager together with slave suspension, since eagerness will negate the slave suspensions effect.");
-            System.err.println("Warning (in this context): eager unfolding is deactivated.");
-            opts.remove(Optimisation.EAGER);
         }
 
 

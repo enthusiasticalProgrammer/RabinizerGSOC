@@ -19,6 +19,7 @@ package rabinizer.automata;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import rabinizer.ltl.equivalence.EquivalenceClass;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.*;
@@ -44,7 +45,7 @@ public class Master extends Automaton<Master.State> {
     }
 
     public Master(@NotNull Formula formula, EquivalenceClassFactory equivalenceClassFactory,
-                  ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
+            ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
         this(equivalenceClassFactory.createEquivalenceClass(formula), valuationSetFactory, optimisations, mergingEnabled);
     }
 

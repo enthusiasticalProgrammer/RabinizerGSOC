@@ -25,6 +25,12 @@ import java.util.stream.Collectors;
 
 public class RelevantGFormulaeWithSlaveSuspension implements Visitor<Boolean> {
 
+    public static final RelevantGFormulaeWithSlaveSuspension RELEVANT_G_FORMULAE_PRESENT = new RelevantGFormulaeWithSlaveSuspension();
+
+    private RelevantGFormulaeWithSlaveSuspension() {
+        super();
+    }
+
     @Override
     public Boolean defaultAction(@NotNull Formula formula) {
         return false;
