@@ -490,22 +490,23 @@ public final class Simplifier {
 
                 if (l instanceof BooleanConstant) {
                     if (((BooleanConstant) l).value) {
-                        return new FOperator(r).accept(this);
+                        return Simplifier.simplify(new FOperator(r), Strategy.PULLUP_X);
                     } else {
                         return r;
                     }
                 }
 
                 if (l instanceof XOperator && r instanceof XOperator) {
-                    return new XOperator(new UOperator(((ModalOperator) l).operand, ((ModalOperator) r).operand)).accept(this);
+                    return Simplifier.simplify(new XOperator(new UOperator(((ModalOperator) l).operand, ((ModalOperator) r).operand)), Strategy.PULLUP_X);
                 }
 
                 if (l instanceof Conjunction) {
-                    return new Conjunction(((Conjunction) l).children.stream().map(left -> new UOperator(left, r)).collect(Collectors.toSet())).accept(this);
+                    return Simplifier.simplify(new Conjunction(((Conjunction) l).children.stream().map(left -> new UOperator(left, r)).collect(Collectors.toSet())),
+                            Strategy.PULLUP_X);
                 }
 
                 if (r instanceof Disjunction) {
-                    return new Disjunction(((Disjunction) r).children.stream().map(right -> new UOperator(l, right)).collect(Collectors.toSet())).accept(this);
+                    Simplifier.simplify(new Disjunction(((Disjunction) r).children.stream().map(right -> new UOperator(l, right)).collect(Collectors.toSet())), Strategy.PULLUP_X);
                 }
             }
 
