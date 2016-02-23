@@ -86,7 +86,7 @@ public final class Simplifier {
     }
 
     static class PropositionalSimplifier implements Visitor<Formula> {
-        private static Set<Formula> flatten(Stream<Formula> workStream, Predicate<PropositionalFormula> shouldUnfold,
+        private static Set<Formula> flatten(Stream<Formula> workStream, Class<? extends PropositionalFormula> unfoldClass,
                                             BooleanConstant breakC, BooleanConstant continueC) {
             Set<Formula> flattSet = new HashSet<>();
             Iterator<Formula> iterator = workStream.iterator();
@@ -102,7 +102,7 @@ public final class Simplifier {
                     continue;
                 }
 
-                if (child instanceof PropositionalFormula && shouldUnfold.test((PropositionalFormula) child)) {
+                if (unfoldClass.isInstance(child)) {
                     flattSet.addAll(((PropositionalFormula) child).children);
                 } else {
                     flattSet.add(child);
@@ -115,8 +115,7 @@ public final class Simplifier {
         @Override
         public Formula visit(@NotNull Conjunction conjunction) {
             Stream<Formula> workStream = conjunction.children.stream().map(e -> e.accept(this));
-            Set<Formula> set = PropositionalSimplifier.flatten(workStream, e -> e instanceof Conjunction, BooleanConstant.FALSE,
-                    BooleanConstant.TRUE);
+            Set<Formula> set = flatten(workStream, Conjunction.class, BooleanConstant.FALSE, BooleanConstant.TRUE);
 
             if (set.isEmpty()) {
                 return BooleanConstant.TRUE;
@@ -132,8 +131,7 @@ public final class Simplifier {
         @Override
         public Formula visit(@NotNull Disjunction disjunction) {
             Stream<Formula> workStream = disjunction.children.stream().map(e -> e.accept(this));
-            Set<Formula> set = PropositionalSimplifier.flatten(workStream, e -> e instanceof Disjunction, BooleanConstant.TRUE,
-                    BooleanConstant.FALSE);
+            Set<Formula> set = flatten(workStream, Disjunction.class, BooleanConstant.TRUE, BooleanConstant.FALSE);
 
             if (set.isEmpty()) {
                 return BooleanConstant.FALSE;
