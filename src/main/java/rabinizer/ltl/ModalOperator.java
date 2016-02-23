@@ -88,11 +88,6 @@ public abstract class ModalOperator extends ImmutableObject implements Formula {
         return null;
     }
 
-    @Override
-    protected int hashCodeOnce() {
-        return Objects.hash(operand);
-    }
-
     protected abstract char getOperator();
 
     protected abstract ModalOperator build(Formula operand);

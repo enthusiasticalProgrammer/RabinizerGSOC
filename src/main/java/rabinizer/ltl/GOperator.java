@@ -20,6 +20,7 @@ package rabinizer.ltl;
 import com.google.common.collect.Sets;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.Set;
 
 public final class GOperator extends ModalOperator {
@@ -97,5 +98,10 @@ public final class GOperator extends ModalOperator {
     @Override
     public boolean isSuspendable() {
         return operand.isPureEventual() || operand.isSuspendable();
+    }
+
+    @Override
+    protected int hashCodeOnce() {
+        return Objects.hash(GOperator.class, operand);
     }
 }

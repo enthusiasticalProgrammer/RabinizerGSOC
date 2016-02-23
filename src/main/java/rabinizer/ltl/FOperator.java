@@ -19,6 +19,8 @@ package rabinizer.ltl;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 public final class FOperator extends ModalOperator {
 
     public FOperator(Formula f) {
@@ -76,4 +78,8 @@ public final class FOperator extends ModalOperator {
         return new FOperator(operand);
     }
 
+    @Override
+    protected int hashCodeOnce() {
+        return Objects.hash(FOperator.class, operand);
+    }
 }

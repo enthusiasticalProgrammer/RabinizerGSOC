@@ -19,6 +19,7 @@ package rabinizer.ltl;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.Set;
 
 public final class XOperator extends ModalOperator {
@@ -80,5 +81,10 @@ public final class XOperator extends ModalOperator {
     @Override
     protected ModalOperator build(Formula operand) {
         return new XOperator(operand);
+    }
+
+    @Override
+    protected int hashCodeOnce() {
+        return Objects.hash(XOperator.class, operand);
     }
 }

@@ -20,6 +20,7 @@ package rabinizer.ltl;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public final class Conjunction extends PropositionalFormula {
@@ -64,5 +65,10 @@ public final class Conjunction extends PropositionalFormula {
     @Override
     protected PropositionalFormula create(Stream<? extends Formula> formulaStream) {
         return new Conjunction(formulaStream);
+    }
+
+    @Override
+    protected int hashCodeOnce() {
+        return Objects.hash(Conjunction.class, children);
     }
 }

@@ -138,11 +138,6 @@ public abstract class PropositionalFormula extends ImmutableObject implements Fo
 
     protected abstract PropositionalFormula create(Stream<? extends Formula> formulaStream);
 
-    @Override
-    protected int hashCodeOnce() {
-        return Objects.hash(getClass(), children);
-    }
-
     protected abstract char getOperator();
 
     public <E> @NotNull Set<E> union(@NotNull Function<Formula, Collection<E>> f) {

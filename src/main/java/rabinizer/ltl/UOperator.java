@@ -141,6 +141,6 @@ public final class UOperator extends ImmutableObject implements Formula {
 
     @Override
     protected int hashCodeOnce() {
-        return Objects.hash(left, right);
+        return Objects.hash(UOperator.class, left, right);
     }
 }
