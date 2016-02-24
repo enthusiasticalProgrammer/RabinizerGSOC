@@ -41,18 +41,20 @@ public class CLIParser {
                 "This option determines the acceptance type of the output automaton. Possible values are tgr (default) for transition based generalized Rabin acceptance, tr for transition based Rabin acceptance, and sr for state based Rabin acceptance.");
         result.addOption("m", "format", true,
                 "The format in which the automaton is stored. Possible values are hoa (default), dot for the dotty syntax, size, which prints the size of the automaton, and sizeacc which prints the size of the acceptance condition.");
-        result.addOption("p", "optimisations", true, "This option defines, if optimisations are to be used or not. Possible values are on, off, the default is on");
-        result.addOption("e", "eager", false, "This option defines, if eager unfolding is done. Its options are on, and off. Per default it is on if the optimisation flag is on.");
+        result.addOption("p", "optimisations", true,
+                "This option defines, if optimisations are to be used or not. Possible values are on, off, and experimental (meaning that the experimental slave-suspension is used and all other optimisations too). The default is on");
+        result.addOption("e", "eager", false,
+                "This option defines, if eager unfolding is done. Per default it is on if the optimisation flag is on.");
         result.addOption("s", "skeleton", false,
                 "This option defines, if only the acceptance condition of the skeleton of the G-formulae is used. This reduces the amount of acceptance conditions. Per default it is on if the optimisation flag is on. It is recommended to use it only for a simplify-formula level of at least 1.");
         result.addOption("r", "relevant-slaves-only", false,
-                "This option defines, if only the relevant slaves of a state are to be computed. Per default is on if the optimisation flag is on.");
-        result.addOption("l", "slave-suspension", false,
-                "This option defines, if the slaves can wait until they are useful. Per default it is on if the optimisation flag is on. This requires a simplify-formula level of 2.");
+                "This option defines, if only the relevant slaves of a state are to be computed. Per default it is on if the optimisation flag is on.");
         result.addOption("i", "optimise-initial-state", false,
-                "This option defines, if the initial state of the Rabin-slaves is to be optimised. Per default it is set to on if the optimisation flag is set to on.");
+                "This option defines, if the initial state of the Rabin-slaves is to be optimised. Per default it is on if the optimisation flag is set to on.");
         result.addOption("t", "emptiness-check", false,
                 "This option defines, if at the end of the construction, and emptiness-check is done and all nonaccepting SCCs are removed, and some acceptance conditions are diminished. Per default it is enabled if the optimisation flag is set to on.");
+        result.addOption("l", "slave-suspension", false,
+                "This option defines, if the slaves can wait until they are useful. This feature is yet experimental and may produce errors (in around 1 out of 1000 formulae).Per default it is on if the optimisation flag is experimental. This requires a simplify-formula level of 2.");
         result.addOption("c", "complete", false,
                 "Return a complete automaton (it is made complete by adding a trapState). Per default the resulting automaton is in general not complete");
         result.addOption("y", "simplify-formula", true,
@@ -79,6 +81,7 @@ public class CLIParser {
         Set<Optimisation> optimisations = EnumSet.allOf(Optimisation.class);
         optimisations.remove(Optimisation.COMPLETE);
         optimisations.remove(Optimisation.COMPUTE_ACC_CONDITION);
+        optimisations.remove(Optimisation.SLAVE_SUSPENSION);
 
         Simplifier.Strategy simplification;
         OutputStream writer = System.out;
@@ -99,13 +102,20 @@ public class CLIParser {
             simplification = Simplifier.Strategy.AGGRESSIVELY;
         }
 
-        if (cmd.hasOption('p')) {
-            if (cmd.getOptionValue('p').equals("off")) {
-                optimisations.clear();
-            } else if (!cmd.getOptionValue('p').equals("on")) {
-                System.out.println("wrong optimisations-argument. Look at the help printed below.");
-                printHelp();
-                throw new ParseException();
+        if(cmd.hasOption('p')){
+            switch(cmd.getOptionValue('p')){
+                case "off":
+                    optimisations.clear();
+                    break;
+                case "on":
+                    break;
+                case "experimental":
+                    optimisations.add(Optimisation.SLAVE_SUSPENSION);
+                    break;
+                default:
+                    System.out.println("wrong optimisations-argument. Look at the help printed below.");
+                    printHelp();
+                    throw new ParseException();
             }
         }
 
