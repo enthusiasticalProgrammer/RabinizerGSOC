@@ -1,24 +1,33 @@
+/*
+ * Copyright (C) 2016  (See AUTHORS)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package rabinizer.exec;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.EnumSet;
-import java.util.Set;
-
 import org.apache.commons.cli.*;
-
 import rabinizer.automata.Optimisation;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.parser.LTLParser;
 import rabinizer.ltl.parser.ParseException;
 import rabinizer.ltl.simplifier.Simplifier;
+
+import java.io.*;
+import java.util.EnumSet;
+import java.util.Set;
+
 public class CLIParser {
 
     public static final Options opts = makeOptions();
@@ -63,7 +72,6 @@ public class CLIParser {
 
         CommandLine cmd;
 
-        boolean everyThingAccomplished = false;
         int outputLevel = 1;
         Main.AutomatonType autType = Main.AutomatonType.TGR;
         Main.Format format = Main.Format.HOA;
@@ -74,7 +82,7 @@ public class CLIParser {
 
         Simplifier.Strategy simplification;
         OutputStream writer = System.out;
-        Formula inputFormula = null;
+        Formula inputFormula;
         FactoryRegistry.Backend backend = FactoryRegistry.Backend.BDD;
 
         try {
@@ -91,10 +99,21 @@ public class CLIParser {
             simplification = Simplifier.Strategy.AGGRESSIVELY;
         }
 
+        if (cmd.hasOption('p')) {
+            if (cmd.getOptionValue('p').equals("off")) {
+                optimisations.clear();
+            } else if (!cmd.getOptionValue('p').equals("on")) {
+                System.out.println("wrong optimisations-argument. Look at the help printed below.");
+                printHelp();
+                throw new ParseException();
+            }
+        }
+
         if (cmd.hasOption('h')) {
             printHelp();
             System.exit(39);
         }
+
         if (cmd.hasOption('a')) {
             String s = cmd.getOptionValue('a');
             switch (s) {
@@ -151,15 +170,6 @@ public class CLIParser {
             }
         }
 
-        if (cmd.hasOption('p')) {
-            if (cmd.getOptionValue('p').equals("off")) {
-                optimisations.clear();
-            } else if (!cmd.getOptionValue('p').equals("on")) {
-                System.out.println("wrong optimisations-argument. Look at the help printed below.");
-                printHelp();
-                throw new ParseException();
-            }
-        }
 
         if (cmd.hasOption('e')) {
             optimisations.add(Optimisation.EAGER);
@@ -190,32 +200,20 @@ public class CLIParser {
         }
 
         if (cmd.hasOption('y')) {
-            int tmp;
             try {
-                tmp = Integer.parseInt(cmd.getOptionValue('y'));
-            } catch (NumberFormatException e) {
-                System.out.println("Wrong format for simplify-formula option. Look at the help printed below.");
-                printHelp();
-                throw new ParseException();
-            }
-            if (tmp < 0 || tmp > 2) {
-                System.out.println("Wrong number for simplify-formula option. Look at the help printed below.");
-                printHelp();
-                throw new ParseException();
-            } else {
-                switch (tmp) {
+                switch (Integer.parseInt(cmd.getOptionValue('y'))) {
                     case 0:
                         if (optimisations.contains(Optimisation.SLAVE_SUSPENSION)) {
                             System.out.println("You cannot slave suspension at a simplify-formula-level below 2.");
                             throw new ParseException();
-                        } else if (optimisations.contains(Optimisation.SKELETON)) {
-                            if (optimisations.contains(Optimisation.SKELETON) && outputLevel != 0) {
-                                System.out.println(
-                                        "It is rather bad to use skeleton together with a simplify-formula level below 1. You can continue, but don't be astonished if an exception is raised during the computation.");
-                            }
+                        } else if (optimisations.contains(Optimisation.SKELETON) && outputLevel != 0) {
+                            System.out.println(
+                                    "It is rather bad to use skeleton together with a simplify-formula level below 1. You can continue, but don't be astonished if an exception is raised during the computation.");
                         }
+
                         simplification = Simplifier.Strategy.PROPOSITIONAL;
                         break;
+
                     case 1:
                         if (optimisations.contains(Optimisation.SLAVE_SUSPENSION)) {
                             System.out.println("You cannot slave suspension at a simplify-formula-level below 2.");
@@ -223,14 +221,21 @@ public class CLIParser {
                         }
                         simplification = Simplifier.Strategy.MODAL;
                         break;
+
                     case 2:
                         simplification = Simplifier.Strategy.AGGRESSIVELY;
                         break;
 
+                    default:
+                        System.out.println("Wrong number for simplify-formula option. Look at the help printed below.");
+                        printHelp();
+                        throw new ParseException();
                 }
-
+            } catch (NumberFormatException e) {
+                System.out.println("Wrong format for simplify-formula option. Look at the help printed below.");
+                printHelp();
+                throw new ParseException();
             }
-
         }
 
         if (cmd.hasOption('u')) {
@@ -254,21 +259,10 @@ public class CLIParser {
                 throw new ParseException();
             }
         } else if (!cmd.hasOption('f') && cmd.hasOption('n')) {
-
-            try (Reader reader = new FileReader(new File(cmd.getOptionValue('n')))) {
-                try (BufferedReader bReader = new BufferedReader(reader)) {
-                    String form = bReader.readLine();
-                    bReader.close();
-                    LTLParser parser = new LTLParser(new StringReader(form));
-                    inputFormula = parser.parse();
-                } catch (IOException e) {
-                    System.out.println("the follwing IOException occurred.");
-                    e.printStackTrace();
-                    throw new ParseException();
-                } catch (ParseException e) {
-                    System.out.println("An error occurred while parsing the formula.");
-                    throw new ParseException();
-                }
+            try (BufferedReader bReader = new BufferedReader(new FileReader(new File(cmd.getOptionValue('n'))))) {
+                String form = bReader.readLine();
+                LTLParser parser = new LTLParser(new StringReader(form));
+                inputFormula = parser.parse();
             } catch (FileNotFoundException e) {
                 System.out.println("Error: The input file has not been found.");
                 throw new ParseException();
@@ -276,8 +270,10 @@ public class CLIParser {
                 System.out.println("the follwing IOException occurred.");
                 e.printStackTrace();
                 throw new ParseException();
+            } catch (ParseException e) {
+                System.out.println("An error occurred while parsing the formula.");
+                throw new ParseException();
             }
-
         } else {
             System.out.println(
                     "Error: either you gave me a formula in a file and one via command line and I don't know which one to choose, or you gave me neither nor. Maybe you want to take a look at the --help options below");
@@ -292,8 +288,7 @@ public class CLIParser {
             }
         }
 
-        return new CmdArguments(everyThingAccomplished, outputLevel, autType, format, optimisations, simplification, writer, inputFormula, backend);
-
+        return new CmdArguments(outputLevel, autType, format, optimisations, simplification, writer, inputFormula, backend);
     }
 
     private static void printHelp() {
@@ -301,12 +296,9 @@ public class CLIParser {
         helper.printHelp("CLIParser", opts);
     }
 
-    final static class CmdArguments {
-        final boolean everyThingAccomplished; // true if error happened or
-        // --help
-        // option is called
-        final int outputLevel; // 0: silent, 1: neither silent nor verbose, 2:
-        // verbose
+    static final class CmdArguments {
+        // 0: silent, 1: neither silent nor verbose, 2: verbose
+        final int outputLevel;
         final Main.AutomatonType autType;
         final Main.Format format;
         final Set<Optimisation> optimisations;
@@ -315,9 +307,8 @@ public class CLIParser {
         final Formula inputFormula;
         final FactoryRegistry.Backend backend;
 
-        private CmdArguments(boolean everythingAcc, int outputLevel, Main.AutomatonType autType, Main.Format format, Set<Optimisation> optimisations, Simplifier.Strategy strat,
-                OutputStream writer, Formula inputFormula, FactoryRegistry.Backend backend) {
-            this.everyThingAccomplished = everythingAcc;
+        private CmdArguments(int outputLevel, Main.AutomatonType autType, Main.Format format, Set<Optimisation> optimisations, Simplifier.Strategy strat,
+                             OutputStream writer, Formula inputFormula, FactoryRegistry.Backend backend) {
             this.outputLevel = outputLevel;
             this.autType = autType;
             this.format = format;
@@ -327,7 +318,6 @@ public class CLIParser {
             this.inputFormula = inputFormula;
             this.backend = backend;
         }
-
     }
 
 }

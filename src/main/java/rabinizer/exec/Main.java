@@ -37,14 +37,12 @@ import rabinizer.automata.Optimisation;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.parser.ParseException;
 
-/**
- * @author jkretinsky
- */
+
 public class Main {
 
-    public static boolean verbose = false;
-    public static boolean silent = false;
-    private static long clock = 0L, clock2;
+    public static boolean verbose;
+    public static boolean silent;
+    private static long clock2;
 
     public static void verboseln(String s) {
         if (verbose) {
@@ -63,14 +61,6 @@ public class Main {
         System.exit(1);
     }
 
-
-
-    public static double stopwatch() {
-        long start = clock;
-        clock = System.currentTimeMillis();
-        return (clock - start) / 1000.0;
-    }
-
     public static double stopwatchLocal() {
         long start = clock2;
         clock2 = System.currentTimeMillis();
@@ -85,9 +75,6 @@ public class Main {
         try {
             arguments = CLIParser.parseArgs(args);
         } catch (ParseException e1) {
-            return;
-        }
-        if (arguments.everyThingAccomplished) {
             return;
         }
 
@@ -130,38 +117,37 @@ public class Main {
                 arguments.writer.write(String.format("%8s%8s", automaton.size(), automaton.pairNumber()).getBytes());
                 break;
         }
-        arguments.writer.close();
 
+        arguments.writer.close();
     }
 
     public static AccAutomatonInterface computeAutomaton(Formula inputFormula, AutomatonType type, Simplifier.Strategy simplify, FactoryRegistry.Backend backend,
             Set<Optimisation> opts) {
-
-
         nonsilent("Formula unsimplified: " + inputFormula);
+
         inputFormula = Simplifier.simplify(inputFormula, simplify);
         nonsilent("Formula simplified:" + inputFormula);
 
-
         nonsilent("Enumeration of valuations");
-
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(backend, inputFormula.getPropositions());
         ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(backend, inputFormula.getAtoms());
 
-        // DGRA dgra = new DTGRA(phi); for optimized
         DTGRARaw dtgra = new DTGRARaw(inputFormula, factory, valuationSetFactory, opts);
+
         switch (type) {
             case TGR:
                 return new DTGRA(dtgra);
-                // case SGR:
-                // return new DSGRA(dtgra);
+
             case TR:
                 return new DTRA(dtgra);
+
             case SR:
                 return new DSRA(new DTRA(dtgra));
+
+            default:
+                errorMessageAndExit("Unsupported automaton type");
+                return null;
         }
-        errorMessageAndExit("Unsupported automaton type");
-        return null;
     }
 
     public enum AutomatonType {
