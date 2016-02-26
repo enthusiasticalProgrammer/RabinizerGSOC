@@ -19,13 +19,8 @@ package rabinizer.automata;
 
 import rabinizer.collections.Tuple;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
-/**
- * @author jkretinsky
- */
 public class GRabinPair<S> extends Tuple<S, List<S>> {
 
     public GRabinPair(S l, List<S> r) {

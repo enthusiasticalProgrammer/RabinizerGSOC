@@ -17,10 +17,10 @@
 
 package rabinizer.automata;
 
-import rabinizer.exec.Main;
 import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
+import rabinizer.exec.Main;
 
 import java.util.Map;
 import java.util.Set;
@@ -36,7 +36,7 @@ public class RabinPair<S> extends Tuple<TranSet<S>, TranSet<S>> {
     }
 
     public static RabinPair<Product.ProductState> createRabinPair(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank, Product product,
-                                                                     ValuationSetFactory valuationSetFactory) {
+                                                                  ValuationSetFactory valuationSetFactory) {
         return new RabinPair<>(RabinPair.fromSlave(slave, finalStates, rank, product, valuationSetFactory));
     }
 
@@ -47,14 +47,13 @@ public class RabinPair<S> extends Tuple<TranSet<S>, TranSet<S>> {
         // Mojmir
         TranSet<MojmirSlave.State> failM = new TranSet<>(valuationSetFactory);
         for (MojmirSlave.State fs : slave.mojmir.states) {
-            // if (!slave.mojmir.sinks.contains(fs)) {
             for (Map.Entry<ValuationSet, MojmirSlave.State> vsfs : slave.mojmir.transitions.row(fs).entrySet()) {
                 if (slave.mojmir.isSink(vsfs.getValue()) && !finalStates.contains(vsfs.getValue())) {
                     failM.add(fs, vsfs.getKey());
                 }
             }
-            // }
         }
+
         // Product
         TranSet<Product.ProductState> failP = new TranSet<>(valuationSetFactory);
         for (Product.ProductState ps : product.states) {

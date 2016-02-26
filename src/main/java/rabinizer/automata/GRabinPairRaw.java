@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-/**
- * @author jkretinsky
- */
 public class GRabinPairRaw<S> extends Tuple<TranSet<S>, Set<TranSet<S>>> {
 
     public GRabinPairRaw(TranSet<S> l, Set<TranSet<S>> r) {

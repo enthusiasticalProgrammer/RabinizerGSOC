@@ -338,6 +338,13 @@ public class TestFormula {
     }
 
     @Test
+    public void testSimplifyModal() {
+        Formula f1 = Util.createFormula("true U G(F(a))");
+        Formula f2 = Util.createFormula("G F a");
+        assertEquals(f2, Simplifier.simplify(f1, Strategy.MODAL));
+    }
+
+    @Test
     public void test_simplify_boolean1() {
         Formula f1 = new Literal("p0", false);
         Formula f2 = BooleanConstant.get(true);

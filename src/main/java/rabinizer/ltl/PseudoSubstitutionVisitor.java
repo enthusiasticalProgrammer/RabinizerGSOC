@@ -112,15 +112,13 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
     public Formula visit(GOperator g, Formula b, Boolean c) {
         if (g.equals(b)) {
             return BooleanConstant.get(c);
-        } else {
-            if (!c) {
-                if (g.operand.equals(b)) {
-                    return BooleanConstant.get(c);
-                }
-            }
         }
-        return g;
 
+        if (!c && g.operand.equals(b)) {
+            return BooleanConstant.get(c);
+        }
+
+        return g;
     }
 
     @Override
@@ -146,6 +144,7 @@ public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula
         } else if (b instanceof XOperator) {
             return new XOperator(x.operand.accept(this, ((XOperator) b).operand, c));
         }
+
         return x;
     }
 

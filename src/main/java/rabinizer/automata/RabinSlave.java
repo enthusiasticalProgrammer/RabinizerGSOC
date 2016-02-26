@@ -38,11 +38,14 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
         trapState = trap;
     }
 
-    public void optimizeInitialState() { // TODO better: reach BSCC
-        while (noIncomingTransitions(initialState) && !transitions.row(initialState).isEmpty()) {
+    public void optimizeInitialState() {
+        // TODO: SCC-Analysis
+        while (!transitions.values().contains(initialState) && !transitions.row(initialState).isEmpty()) {
             Main.verboseln("Optimizing initial states");
             State oldInit = initialState;
-            initialState = getSuccessor(initialState, Collections.emptySet());
+            initialState = getSuccessor(oldInit, Collections.emptySet());
+
+            edgeBetween.row(oldInit).clear();
             transitions.row(oldInit).clear();
             states.remove(oldInit);
         }
@@ -53,10 +56,6 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
         State init = new State();
         init.put(mojmir.getInitialState(), 1);
         return init;
-    }
-
-    private boolean noIncomingTransitions(RabinSlave.State in) {
-        return !transitions.values().contains(in);
     }
 
     public class State extends HashMap<MojmirSlave.State, Integer> implements IState<State> {
