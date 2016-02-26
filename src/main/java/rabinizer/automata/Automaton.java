@@ -38,7 +38,7 @@ public abstract class Automaton<S extends IState<S>> {
     protected final boolean mergingEnabled;
 
     protected final Set<S> states;
-    protected final Table<S, ValuationSet, S> transitions;
+    protected final Table<@NotNull S, @NotNull ValuationSet, @NotNull S> transitions;
     protected final Table<S, S, ValuationSet> edgeBetween;
     protected @Nullable S initialState;
     protected S trapState;
@@ -259,7 +259,7 @@ public abstract class Automaton<S extends IState<S>> {
      *
      * @param statess: Set of states that is to be removed
      */
-    public void removeStates(@NotNull Set<S> statess) {
+    public void removeStates(@NotNull Collection<S> statess) {
         if (statess.contains(initialState)) {
             states.clear();
             transitions.clear();
@@ -312,7 +312,6 @@ public abstract class Automaton<S extends IState<S>> {
      * @param scc: an SCC for which the transitions inside need to be determined
      * @return all transitions where start is in the SCC
      */
-
     protected @NotNull Set<Table.Cell<S, ValuationSet, S>> getTransitionsInSCC(@NotNull Set<S> scc) {
         Set<Table.Cell<S, ValuationSet, S>> result = new HashSet<>();
 
