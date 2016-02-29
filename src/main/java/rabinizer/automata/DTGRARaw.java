@@ -82,6 +82,10 @@ public class DTGRARaw {
             Main.nonsilent("Generating global acceptance condition");
             accTGR = AccTGRRaw.createAccTGRRaw(accLocal, valuationSetFactory);
 
+            Main.nonsilent("Generating optimized acceptance condition");
+            accTGR.removeRedundancy();
+            Main.verboseln("========================================");
+
             if (opts.contains(Optimisation.EMPTINESS_CHECK)) {
                 // if it is empty, we have to complete it
                 if (checkIfEmptyAndRemoveEmptySCCs()) {
@@ -92,9 +96,6 @@ public class DTGRARaw {
             if (opts.contains(Optimisation.COMPLETE)) {
                 completeAutomaton();
             }
-            Main.nonsilent("Generating optimized acceptance condition");
-            accTGR.removeRedundancy();
-            Main.verboseln("========================================");
         }
     }
 
