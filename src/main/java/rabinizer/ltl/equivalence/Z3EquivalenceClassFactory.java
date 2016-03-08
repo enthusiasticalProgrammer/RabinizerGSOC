@@ -202,8 +202,7 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
 
         @Override
         public @NotNull Set<Formula> getSupport() {
-            // TODO: Return support.
-            return null;
+            return this.getRepresentative().getPropositions();
         }
     }
 

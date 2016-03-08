@@ -19,6 +19,7 @@ package rabinizer.collections.valuationset;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap.Builder;
+import com.google.common.math.IntMath;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.microsoft.z3.*;
@@ -297,11 +298,11 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
         }
 
         /**
-         * This method would solve an NP-hard Problem--> it is not implemented
+         * Over approximation
          */
         @Override
         public int size() {
-            throw new UnsupportedOperationException();
+            return IntMath.pow(2, this.toFormula().getAtoms().size());
         }
 
         @Override
