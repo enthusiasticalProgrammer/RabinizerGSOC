@@ -182,6 +182,11 @@ public class EmptinessCheck<S extends IState<S>> {
                                            Map<S, ValuationSet> trans) {
         Set<Map.Entry<S, ValuationSet>> intersect1 = new HashSet<>(pair.left.entrySet());
 
+        S helper = scc.iterator().next();
+        if (scc.size() == 1 && (automaton.edgeBetween.get(helper, helper) == null || automaton.edgeBetween.get(helper, helper).isEmpty())) {
+            return false;
+        }
+
         Map<S, ValuationSet> intersect = new HashMap<>();
         for (Map.Entry<S, ValuationSet> i : intersect1) {
             if (scc.contains(i.getKey())) {
@@ -202,7 +207,14 @@ public class EmptinessCheck<S extends IState<S>> {
             return true;
         } else {
             List<Set<S>> subSCC = automaton.subSCCs(scc, intersect);
-            return subSCC.stream().anyMatch(sub -> pair.right.stream().allMatch(c -> !Collections.disjoint(c.keySet(), sub)));
+            for (Set<S> sub : subSCC) {
+                helper = sub.iterator().next();
+                if ((sub.size() > 1 || !intersect.get(helper).equals(automaton.edgeBetween.get(helper, helper)))
+                        && pair.right.stream().allMatch(c -> !Collections.disjoint(c.keySet(), sub))) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
