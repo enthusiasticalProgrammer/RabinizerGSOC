@@ -454,9 +454,6 @@ public final class Simplifier {
 
             if (newG instanceof GOperator) {
                 Formula child = ((GOperator) newG).operand;
-                if (child.isPureUniversal() || child.isSuspendable()) {
-                    return child;
-                }
 
                 if (child instanceof XOperator) {
                     return new XOperator(new GOperator(((ModalOperator) child).operand)).accept(this);
@@ -486,14 +483,6 @@ public final class Simplifier {
                 ImplicationVisitor imp = ImplicationVisitor.getVisitor();
                 if (l.accept(imp, r) || r instanceof BooleanConstant) {
                     return r;
-                }
-
-                if (l instanceof BooleanConstant) {
-                    if (((BooleanConstant) l).value) {
-                        return Simplifier.simplify(new FOperator(r), Strategy.PULLUP_X);
-                    } else {
-                        return r;
-                    }
                 }
 
                 if (l instanceof XOperator && r instanceof XOperator) {
