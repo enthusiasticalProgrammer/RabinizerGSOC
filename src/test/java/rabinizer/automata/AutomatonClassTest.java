@@ -77,7 +77,7 @@ public class AutomatonClassTest {
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, factory, val, standardWithEmpty);
-        List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
+        List<TranSet<Product.ProductState>> SCC = dtgra.automaton.SCCs();
         assertEquals(SCC.size(), 3);
 
     }
@@ -90,7 +90,7 @@ public class AutomatonClassTest {
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, factory, val, standardWithEmpty);
-        List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
+        List<TranSet<Product.ProductState>> SCC = dtgra.automaton.SCCs();
         assertEquals(SCC.size(), 7);
 
     }
@@ -103,8 +103,8 @@ public class AutomatonClassTest {
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, factory, val, standardWithEmpty);
-        List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
-        assertTrue(SCC.get(2).contains(dtgra.automaton.initialState));
+        List<TranSet<Product.ProductState>> SCC = dtgra.automaton.SCCs();
+        assertTrue(SCC.get(2).asMap().keySet().isEmpty());
     }
 
     @Test
@@ -115,28 +115,32 @@ public class AutomatonClassTest {
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, factory, val, standardWithEmpty);
-        List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
+        List<TranSet<Product.ProductState>> SCC = dtgra.automaton.SCCs();
 
         DTGRARaw dtgra2 = new DTGRARaw(formula, factory, val, standardWithEmpty);
 
-        assertTrue(SCC.get(6).stream()
+        assertTrue(SCC.get(6).asMap().keySet().stream()
                 .allMatch(s -> s.primaryState.clazz.equals(dtgra2.automaton.initialState.primaryState.clazz)));
 
         Formula f2 = Util.createFormula("(X a) & (X X a) & (X X X a) & a");
-        assertTrue(SCC.get(5).stream().allMatch(s -> s.primaryState.clazz
-                .equals(new DTGRARaw(f2, factory, val, standard).automaton.initialState.primaryState.clazz)));
+        assertTrue(SCC.get(5).asMap().keySet().stream()
+                .allMatch(s -> s.primaryState.clazz
+                        .equals(new DTGRARaw(f2, factory, val, standard).automaton.initialState.primaryState.clazz)));
 
         Formula f3 = Util.createFormula("(X a) & (X X a)  & a");
-        assertTrue(SCC.get(4).stream().allMatch(s -> s.primaryState.clazz
-                .equals(new DTGRARaw(f3, factory, val, standard).automaton.initialState.primaryState.clazz)));
+        assertTrue(SCC.get(4).asMap().keySet().stream()
+                .allMatch(s -> s.primaryState.clazz
+                        .equals(new DTGRARaw(f3, factory, val, standard).automaton.initialState.primaryState.clazz)));
 
         Formula f4 = Util.createFormula("(X a)  & a");
-        assertTrue(SCC.get(3).stream().allMatch(s -> s.primaryState.clazz
-                .equals(new DTGRARaw(f4, factory, val, standard).automaton.initialState.primaryState.clazz)));
+        assertTrue(SCC.get(3).asMap().keySet().stream()
+                .allMatch(s -> s.primaryState.clazz
+                        .equals(new DTGRARaw(f4, factory, val, standard).automaton.initialState.primaryState.clazz)));
 
         Formula f5 = Util.createFormula("a");
-        assertTrue(SCC.get(2).stream().allMatch(s -> s.primaryState.clazz
-                .equals(new DTGRARaw(f5, factory, val, standard).automaton.initialState.primaryState.clazz)));
+        assertTrue(SCC.get(2).asMap().keySet().stream()
+                .allMatch(s -> s.primaryState.clazz
+                        .equals(new DTGRARaw(f5, factory, val, standard).automaton.initialState.primaryState.clazz)));
     }
 
     @Test
@@ -147,22 +151,9 @@ public class AutomatonClassTest {
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(formula, factory, val, standard);
-        List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
+        List<TranSet<Product.ProductState>> SCC = dtgra.automaton.SCCs();
 
-        assertTrue(dtgra.automaton.isSink(SCC.get(0)));
-    }
-
-    @Test
-    public void testIsSink2() {
-        Formula formula = Util.createFormula("(X a) & (X X a) & (X X X a) & (X X X X a)");
-
-        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(formula.getPropositions());
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula.getAtoms());
-
-        DTGRARaw dtgra = new DTGRARaw(formula, factory, val, standard);
-        List<Set<Product.ProductState>> SCC = dtgra.automaton.SCCs();
-
-        assertFalse(dtgra.automaton.isSink(SCC.get(5)));
+        assertTrue(dtgra.automaton.isSink(SCC.get(0).asMap().keySet()));
     }
 
     @Test

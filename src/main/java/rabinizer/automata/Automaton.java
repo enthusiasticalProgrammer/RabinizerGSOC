@@ -241,11 +241,11 @@ public abstract class Automaton<S extends IState<S>> {
         }
     }
 
-    public List<Set<S>> SCCs() {
+    public List<TranSet<S>> SCCs() {
         return SCCAnalyser.SCCs(this, initialState);
     }
 
-    public List<Set<S>> subSCCs(Set<S> SCC, Map<S, ValuationSet> forbiddenEdges) {
+    public List<TranSet<S>> subSCCs(Set<S> SCC, TranSet<S> forbiddenEdges) {
         return SCCAnalyser.subSCCs(this, SCC, forbiddenEdges);
     }
 
