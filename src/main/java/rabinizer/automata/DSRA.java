@@ -50,9 +50,9 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
             for (int i = 0; i < dtra.accTR.size(); i++) {
                 RabinPair<DTRA.ProductDegenState> rp = dtra.accTR.get(i);
 
-                if (valuationSetFactory.createUniverseValuationSet().equals(rp.left.get(s))) {
+                if (valuationSetFactory.createUniverseValuationSet().equals(rp.left.asMap().get(s))) {
                     stateAcceptance.get(s).set(2 * i);
-                } else if (valuationSetFactory.createUniverseValuationSet().equals(rp.right.get(s))) {
+                } else if (valuationSetFactory.createUniverseValuationSet().equals(rp.right.asMap().get(s))) {
                     stateAcceptance.get(s).set(2 * i + 1);
                 }
             }
@@ -183,12 +183,11 @@ public class DSRA extends Automaton<DSRA.ProductDegenAccState> implements AccAut
                 RabinPair<DTRA.ProductDegenState> rp = dtra.accTR.get(i);
 
                 // acceptance dealt with already in s
-                if (rp.left != null && rp.left.get(productDegenState) != null
-                        && rp.left.get(productDegenState).contains(valuation) && !stateAcceptance.get(productDegenState).get(2 * i)) {
+                if (rp.left != null && rp.left.contains(productDegenState, valuation) && !stateAcceptance.get(productDegenState).get(2 * i)) {
                     accSets.set(2 * i);
                 }
-                if (rp.right != null && rp.right.get(productDegenState) != null
-                        && rp.right.get(productDegenState).contains(valuation)
+
+                if (rp.right != null && rp.right.contains(productDegenState, valuation)
                         && !stateAcceptance.get(productDegenState).get(2 * i + 1)) {
                     accSets.set(2 * i + 1);
                 }

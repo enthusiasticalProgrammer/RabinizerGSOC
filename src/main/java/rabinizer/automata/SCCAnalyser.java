@@ -73,13 +73,11 @@ public class SCCAnalyser<S extends IState<S>> {
      * @param SCC:            the SCC that will be processed
      * @param forbiddenEdges: the edges that are forbidden
      * @return the sub-SCCs of the SCC as list in topologic ordering
-     * @parem a: Automaton, for which the SCC-Analysis has to be made
+     * @param a: Automaton, for which the SCC-Analysis has to be made
      */
-    public static <S extends IState<S>> List<Set<S>> subSCCs(Automaton<S> a, Set<S> SCC,
-                                                             Map<S, ValuationSet> forbiddenEdges) {
+    public static <S extends IState<S>> List<Set<S>> subSCCs(Automaton<S> a, Set<S> SCC, Map<S, ValuationSet> forbiddenEdges) {
         SCCAnalyser<S> s = new SCCAnalyser<>(a, SCC, forbiddenEdges);
         return s.subSCCs();
-
     }
 
     public List<Set<S>> SCCs() {
@@ -90,14 +88,14 @@ public class SCCAnalyser<S extends IState<S>> {
     private List<Set<S>> subSCCs() {
         List<Set<S>> result = new ArrayList<>();
         Set<S> notYetProcessed = new HashSet<>(allowedStates);
-        while (!notYetProcessed.isEmpty()) {
 
+        while (!notYetProcessed.isEmpty()) {
             S state = notYetProcessed.iterator().next();
             stack.push(state);
             result.addAll(SCCsRecursively());
-
             result.stream().forEach(notYetProcessed::removeAll);
         }
+
         return result;
     }
 

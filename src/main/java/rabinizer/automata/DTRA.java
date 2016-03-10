@@ -17,27 +17,23 @@
 
 package rabinizer.automata;
 
-import java.io.PrintStream;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
+import java.io.PrintStream;
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * TODO: decouple DTRA from DTGRARaw
- *
- * @author jkretinsky
  */
 public class DTRA extends Automaton<DTRA.ProductDegenState> implements AccAutomatonInterface {
 
@@ -65,17 +61,6 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> implements AccAutoma
     }
 
     @Override
-    protected @NotNull ProductDegenState generateInitialState() {
-        Map<Integer, Integer> awaitedIndices = new HashMap<>();
-
-        for (int i = 0; i < accTGR.size(); i++) {
-            awaitedIndices.put(i, 0);
-        }
-
-        return new ProductDegenState(dtgra.automaton.initialState, awaitedIndices);
-    }
-
-    @Override
     public void toHOA(HOAConsumer ho) throws HOAConsumerException {
         HOAConsumerExtended<ProductDegenState> hoa = new HOAConsumerExtended(ho, HOAConsumerExtended.AutomatonType.TRANSITION);
         hoa.setHeader(null, valuationSetFactory.getAlphabet());
@@ -91,8 +76,8 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> implements AccAutoma
             Table<ProductDegenState, ValuationSet, ProductDegenState> toRemove = HashBasedTable.create();
             if (pair.left != null) {
                 for (Table.Cell<ProductDegenState, ValuationSet, ProductDegenState> currTrans : transitions.cellSet()) {
-                    if (pair.left.keySet().contains(currTrans.getRowKey())) {
-                        ValuationSet valu = pair.left.get(currTrans.getRowKey()).clone();
+                    if (pair.left.asMap().keySet().contains(currTrans.getRowKey())) {
+                        ValuationSet valu = pair.left.asMap().get(currTrans.getRowKey()).clone();
                         valu.retainAll(currTrans.getColumnKey());
                         if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
                             toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
@@ -114,8 +99,8 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> implements AccAutoma
                 for (TranSet<ProductDegenState> currAccSet : pair.right) {
                     for (Table.Cell<ProductDegenState, ValuationSet, ProductDegenState> currTrans : transitions
                             .cellSet()) {
-                        if (currAccSet.keySet().contains(currTrans.getRowKey())) {
-                            ValuationSet valu = currAccSet.get(currTrans.getRowKey()).clone();
+                        if (currAccSet.asMap().keySet().contains(currTrans.getRowKey())) {
+                            ValuationSet valu = currAccSet.asMap().get(currTrans.getRowKey()).clone();
                             valu.retainAll(currTrans.getColumnKey());
                             if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
                                 toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
@@ -137,28 +122,60 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> implements AccAutoma
 
         for (ProductDegenState s : states) {
             hoa.addState(s);
-            for (Table.Cell<ProductDegenState, ValuationSet, ProductDegenState> trans : transitions.cellSet()) {
-                if (trans.getRowKey().equals(s)) {
-                    List<Integer> accSets = new ArrayList<>();
-                    acc.stream()
-                            .filter(pair -> pair.left != null && pair.left.get(s) != null && pair.left.get(s).containsAll(trans.getColumnKey()))
-                            .map(p -> hoa.getNumber(p.left))
-                            .forEach(accSets::add);
 
-                    //List<GRabinPair<TranSet<Product.ProductState>>> notAccepted = acc.stream()
-                    //        .filter(pair -> pair.left == null || pair.left.get(s) == null || !pair.left.get(s).containsAll(trans.getColumnKey()))
-                    //        .collect(Collectors.toList());
-                    for (GRabinPair<TranSet<ProductDegenState>> pair : acc) {
-                        accSets.addAll(pair.right.stream()
-                                .filter(inf -> inf != null && inf.get(s) != null && inf.get(s).containsAll(trans.getColumnKey()))
-                                .map(hoa::getNumber).collect(Collectors.toList()));
-                    }
-                    hoa.addEdge(trans.getRowKey(), trans.getColumnKey().toFormula(), trans.getValue(), accSets);
+            for (Map.Entry<ValuationSet, ProductDegenState> trans : transitions.row(s).entrySet()) {
+                List<Integer> accSets = acc.stream()
+                        .filter(pair -> pair.left != null && pair.left.containsAll(s, trans.getKey()))
+                        .map(p -> hoa.getNumber(p.left))
+                        .collect(Collectors.toList());
+
+                for (GRabinPair<TranSet<ProductDegenState>> pair : acc) {
+                    pair.right.stream()
+                            .filter(inf -> inf != null && inf.containsAll(s, trans.getKey()))
+                            .map(hoa::getNumber)
+                            .forEach(accSets::add);
                 }
+
+                hoa.addEdge(s, trans.getKey().toFormula(), trans.getValue(), accSets);
             }
+
+            hoa.stateDone();
         }
 
         hoa.done();
+    }
+
+    public List<RabinPair<ProductDegenState>> createAccTR(AccTGR accTGR, DTRA dtra, ValuationSetFactory valuationSetFactory) {
+        List<RabinPair<ProductDegenState>> list = new ArrayList<>();
+
+        for (int i = 0; i < accTGR.size(); i++) {
+            GRabinPair<TranSet<Product.ProductState>> grp = accTGR.get(i);
+            TranSet<ProductDegenState> fin = new TranSet<>(valuationSetFactory);
+            TranSet<ProductDegenState> inf = new TranSet<>(valuationSetFactory);
+            for (ProductDegenState s : dtra.getStates()) {
+                ValuationSet vsFin = grp.left.asMap().get(s.left);
+                if (vsFin != null) {
+                    fin.addAll(s, vsFin);
+                }
+                if (s.right.get(i) == grp.right.size()) {
+                    inf.addAll(s, valuationSetFactory.createUniverseValuationSet());
+                }
+            }
+            list.add(new RabinPair<>(fin, inf));
+        }
+
+        return list;
+    }
+
+    @Override
+    protected @NotNull ProductDegenState generateInitialState() {
+        Map<Integer, Integer> awaitedIndices = new HashMap<>();
+
+        for (int i = 0; i < accTGR.size(); i++) {
+            awaitedIndices.put(i, 0);
+        }
+
+        return new ProductDegenState(dtgra.automaton.initialState, awaitedIndices);
     }
 
     public class ProductDegenState extends Tuple<Product.ProductState, Map<Integer, Integer>> implements IState<ProductDegenState> {
@@ -183,8 +200,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> implements AccAutoma
                     awaited = 0;
                 }
 
-                while (awaited < grp.right.size() && grp.right.get(awaited).containsKey(left)
-                        && grp.right.get(awaited).get(left).contains(valuation)) {
+                while (awaited < grp.right.size() && grp.right.get(awaited).contains(left, valuation)) {
                     awaited++;
                 }
 
@@ -212,40 +228,5 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> implements AccAutoma
             return valuationSetFactory;
         }
     }
-
-
-
-
-        public String toString(List<RabinPair<ProductDegenState>> list) {
-            String result = "Rabin transition-based acceptance condition";
-            int i = 1;
-            for (RabinPair<ProductDegenState> pair : list) {
-                result += "\nPair " + i + "\n" + pair;
-                i++;
-            }
-            return result;
-        }
-
-        public List<RabinPair<ProductDegenState>> createAccTR(AccTGR accTGR, DTRA dtra, ValuationSetFactory valuationSetFactory) {
-            List<RabinPair<ProductDegenState>> list = new ArrayList<>();
-
-            for (int i = 0; i < accTGR.size(); i++) {
-                GRabinPair<TranSet<Product.ProductState>> grp = accTGR.get(i);
-                TranSet<ProductDegenState> fin = new TranSet<>(valuationSetFactory);
-                TranSet<ProductDegenState> inf = new TranSet<>(valuationSetFactory);
-                for (ProductDegenState s : dtra.getStates()) {
-                    ValuationSet vsFin = grp.left.get(s.left);
-                    if (vsFin != null) {
-                        fin.add(s, vsFin);
-                    }
-                    if (s.right.get(i) == grp.right.size()) {
-                        inf.add(s, valuationSetFactory.createUniverseValuationSet());
-                    }
-                }
-                list.add(new RabinPair<>(fin, inf));
-            }
-
-            return list;
-        }
 
 }

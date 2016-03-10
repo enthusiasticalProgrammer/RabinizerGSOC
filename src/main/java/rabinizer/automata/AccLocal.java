@@ -24,12 +24,10 @@ import rabinizer.ltl.equivalence.EquivalenceClass;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.exec.Main;
 import rabinizer.ltl.*;
-import rabinizer.ltl.simplifier.Simplifier;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 public class AccLocal {
 
@@ -65,14 +63,15 @@ public class AccLocal {
                 maxRankF = maxRankF >= rs.size() ? maxRankF : rs.size();
             }
             maxRank.put(f, maxRankF);
-            topmostGs.put(f, new HashSet<>(f.operand.topmostGs()));
+            topmostGs.put(f, f.operand.topmostGs());
             Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> optionForf = computeAccSlavesOptions(f, false);
             accSlavesOptions.put(f, optionForf);
         }
+
         Main.verboseln("Acceptance for secondaryAutomata:\n" + this.accSlavesOptions);
         ValuationSet allVals = valuationSetFactory.createUniverseValuationSet();
         for (Product.ProductState ps : product.getStates()) {
-            allTrans.add(ps, allVals);
+            allTrans.addAll(ps, allVals);
         }
 
         accMasterOptions = computeAccMasterOptions();
@@ -213,12 +212,12 @@ public class AccLocal {
             Set<ValuationSet> fineSuccVs = product.generateSuccTransitionsReflectingSinks(ps);
             for (ValuationSet vs : fineSuccVs) {
                 if (!slavesEntail(ps, ranking, vs.pickAny(), ps.getPrimaryState().getClazz())) {
-                    result.add(ps, vs);
+                    result.addAll(ps, vs);
                 }
             }
         } else {
             if (!slavesEntail(ps, ranking, null, ps.getPrimaryState().getClazz())) {
-                result.add(ps, valuationSetFactory.createUniverseValuationSet());
+                result.addAll(ps, valuationSetFactory.createUniverseValuationSet());
             }
         }
 

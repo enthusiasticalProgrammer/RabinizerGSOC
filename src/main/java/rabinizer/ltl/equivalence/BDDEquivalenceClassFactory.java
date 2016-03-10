@@ -48,7 +48,7 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
     public BDDEquivalenceClassFactory(Set<Formula> domain) {
         int size = domain.isEmpty() ? 1 : domain.size();
 
-        factory = BDDFactory.init("java", 64 * size, 1000);
+        factory = BDDFactory.init("micro", 64 * size, 1000);
         factory.setVarNum(size);
 
         // Silence library

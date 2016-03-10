@@ -21,6 +21,8 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -30,9 +32,6 @@ import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.valuationset.ValuationSet;
 
-/**
- * @author jkretinsky
- */
 public class DTGRA extends Product implements AccAutomatonInterface {
 
     private AccTGR acc;
@@ -71,10 +70,10 @@ public class DTGRA extends Product implements AccAutomatonInterface {
             Table<Product.ProductState,ValuationSet,Product.ProductState> toAdd = HashBasedTable.create();
             Table<Product.ProductState,ValuationSet,Product.ProductState> toRemove = HashBasedTable.create();
 
-            if(pair.left!=null){
+            if (pair.left != null){
                 for(Table.Cell<Product.ProductState,ValuationSet,Product.ProductState> currTrans : transitions.cellSet()){
-                    if(pair.left.keySet().contains(currTrans.getRowKey())){
-                        ValuationSet valu=pair.left.get(currTrans.getRowKey()).clone();
+                    if (pair.left.asMap().containsKey(currTrans.getRowKey())){
+                        ValuationSet valu = pair.left.asMap().get(currTrans.getRowKey()).clone();
                         valu.retainAll(currTrans.getColumnKey());
                         if(!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())){
                             toRemove.put(currTrans.getRowKey(),currTrans.getColumnKey(),currTrans.getValue());
@@ -96,8 +95,8 @@ public class DTGRA extends Product implements AccAutomatonInterface {
                 for (TranSet<Product.ProductState> currAccSet : pair.right) {
                     for (Table.Cell<Product.ProductState, ValuationSet, Product.ProductState> currTrans : transitions
                             .cellSet()) {
-                        if (currAccSet.keySet().contains(currTrans.getRowKey())) {
-                            ValuationSet valu = currAccSet.get(currTrans.getRowKey()).clone();
+                        if (currAccSet.asMap().containsKey(currTrans.getRowKey())) {
+                            ValuationSet valu = currAccSet.asMap().get(currTrans.getRowKey()).clone();
                             valu.retainAll(currTrans.getColumnKey());
                             if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
                                 toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
@@ -120,26 +119,26 @@ public class DTGRA extends Product implements AccAutomatonInterface {
 
         for (ProductState s : states) {
             hoa.addState(s);
-            for (Table.Cell<Product.ProductState, ValuationSet, Product.ProductState> trans : transitions.cellSet()) {
-                if (trans.getRowKey().equals(s)) {
-                    List<Integer> accSets = new ArrayList<>();
-                    acc.stream()
-                        .filter(pair -> pair.left != null && pair.left.get(s) != null && pair.left.get(s).containsAll(trans.getColumnKey()))
-                        .map(p -> hoa.getNumber(p.left)).forEach(accSets::add);
 
-                    for (GRabinPair<TranSet<ProductState>> pair : acc) {
-                        pair.right.stream()
-                                .filter(inf -> inf != null && inf.get(s) != null && inf.get(s).containsAll(trans.getColumnKey()))
-                                .map(hoa::getNumber)
-                                .forEach(accSets::add);
-                    }
+            for (Map.Entry<ValuationSet, ProductState> trans : transitions.row(s).entrySet()) {
+                List<Integer> accSets = acc.stream()
+                    .filter(pair -> pair.left != null && pair.left.containsAll(s, trans.getKey()))
+                    .map(p -> hoa.getNumber(p.left)).collect(Collectors.toList());
 
-                    hoa.addEdge(trans.getRowKey(), trans.getColumnKey().toFormula(), trans.getValue(), accSets);
+                for (GRabinPair<TranSet<ProductState>> pair : acc) {
+                    pair.right.stream()
+                            .filter(inf -> inf != null && inf.containsAll(s, trans.getKey()))
+                            .map(hoa::getNumber)
+                            .forEach(accSets::add);
                 }
-            }
-        }
-        hoa.done();
 
+                hoa.addEdge(s, trans.getKey().toFormula(), trans.getValue(), accSets);
+            }
+
+            hoa.stateDone();
+        }
+
+        hoa.done();
     }
 
 }

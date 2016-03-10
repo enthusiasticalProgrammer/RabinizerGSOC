@@ -20,12 +20,13 @@ package rabinizer.automata;
 import rabinizer.collections.Tuple;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-public class GRabinPairRaw<S> extends Tuple<TranSet<S>, Set<TranSet<S>>> {
+public class GRabinPairRaw<S> extends Tuple<TranSet<S>, Collection<TranSet<S>>> {
 
-    public GRabinPairRaw(TranSet<S> l, Set<TranSet<S>> r) {
+    public GRabinPairRaw(TranSet<S> l, Collection<TranSet<S>> r) {
         super(l, r);
     }
 

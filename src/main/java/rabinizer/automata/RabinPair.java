@@ -49,7 +49,7 @@ public class RabinPair<S> extends Tuple<TranSet<S>, TranSet<S>> {
         for (MojmirSlave.State fs : slave.mojmir.states) {
             for (Map.Entry<ValuationSet, MojmirSlave.State> vsfs : slave.mojmir.transitions.row(fs).entrySet()) {
                 if (slave.mojmir.isSink(vsfs.getValue()) && !finalStates.contains(vsfs.getValue())) {
-                    failM.add(fs, vsfs.getKey());
+                    failM.addAll(fs, vsfs.getKey());
                 }
             }
         }
@@ -60,9 +60,7 @@ public class RabinPair<S> extends Tuple<TranSet<S>, TranSet<S>> {
             RabinSlave.State rs = ps.getSecondaryState(slave.mojmir.label);
             if (rs != null) { // relevant slave
                 for (MojmirSlave.State fs : rs.keySet()) {
-                    if (failM.containsKey(fs)) {
-                        failP.add(ps, failM.get(fs));
-                    }
+                    failP.addAll(ps, failM.asMap().get(fs));
                 }
             }
         }
@@ -74,7 +72,7 @@ public class RabinPair<S> extends Tuple<TranSet<S>, TranSet<S>> {
             for (MojmirSlave.State fs : slave.mojmir.states) {
                 for (Map.Entry<ValuationSet, MojmirSlave.State> vsfs : slave.mojmir.transitions.row(fs)
                         .entrySet()) {
-                    succeedM.add(fs, vsfs.getKey());
+                    succeedM.addAll(fs, vsfs.getKey());
                 }
             }
         } else {
@@ -83,7 +81,7 @@ public class RabinPair<S> extends Tuple<TranSet<S>, TranSet<S>> {
                     for (Map.Entry<ValuationSet, MojmirSlave.State> vsfs : slave.mojmir.transitions.row(fs)
                             .entrySet()) {
                         if (finalStates.contains(vsfs.getValue())) {
-                            succeedM.add(fs, vsfs.getKey());
+                            succeedM.addAll(fs, vsfs.getKey());
                         }
                     }
                 }
@@ -95,9 +93,11 @@ public class RabinPair<S> extends Tuple<TranSet<S>, TranSet<S>> {
             RabinSlave.State rs = ps.getSecondaryState(slave.mojmir.label);
             if (rs != null) { // relevant slave
                 for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : rs.entrySet()) {
-                    if (succeedM.containsKey(stateIntegerEntry.getKey()) && stateIntegerEntry.getValue() == rank) {
-                        succeedP.add(ps, succeedM.get(stateIntegerEntry.getKey()));
+                    if (stateIntegerEntry.getValue().intValue() != rank) {
+                        continue;
                     }
+
+                    succeedP.addAll(ps, succeedM.asMap().get(stateIntegerEntry.getKey()));
                 }
             }
         }
@@ -116,9 +116,9 @@ public class RabinPair<S> extends Tuple<TranSet<S>, TranSet<S>> {
                                 if (!stateIntegerEntry.getKey().equals(fs2)) {
                                     ValuationSet vs1copy = vs1.clone();
                                     vs1copy.retainAll(vs2);
-                                    buyR.add(rs, vs1copy);
+                                    buyR.addAll(rs, vs1copy);
                                 } else if (succ.equals(slave.mojmir.getInitialState())) {
-                                    buyR.add(rs, vs1);
+                                    buyR.addAll(rs, vs1);
                                 }
 
                             }
@@ -132,9 +132,7 @@ public class RabinPair<S> extends Tuple<TranSet<S>, TranSet<S>> {
         for (Product.ProductState ps : product.states) {
             RabinSlave.State rs = ps.getSecondaryState(slave.mojmir.label);
             if (rs != null) { // relevant slave
-                if (buyR.containsKey(rs)) {
-                    buyP.add(ps, buyR.get(rs));
-                }
+                buyP.addAll(ps, buyR.asMap().get(rs));
             }
         }
 
@@ -148,5 +146,4 @@ public class RabinPair<S> extends Tuple<TranSet<S>, TranSet<S>> {
         return "Fin:\n" + (left == null ? "trivial" : left) + "\nInf:\n"
                 + (right == null ? "trivial" : right);
     }
-
 }

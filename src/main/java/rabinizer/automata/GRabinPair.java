@@ -19,6 +19,7 @@ package rabinizer.automata;
 
 import rabinizer.collections.Tuple;
 
+import java.util.Collection;
 import java.util.List;
 
 public class GRabinPair<S> extends Tuple<S, List<S>> {

@@ -29,9 +29,9 @@ import rabinizer.collections.valuationset.ValuationSetFactory;
 public class DTGRARaw {
 
     final ValuationSetFactory valuationSetFactory;
-    public Product automaton;
-    public AccTGRRaw<ProductState> accTGR;
-    AccLocal accLocal;
+    final Product automaton;
+    final AccTGRRaw<ProductState> accTGR;
+    final AccLocal accLocal;
 
     public DTGRARaw(Formula phi, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> opts) {
         this.valuationSetFactory = valuationSetFactory;
@@ -96,6 +96,9 @@ public class DTGRARaw {
             if (opts.contains(Optimisation.COMPLETE)) {
                 completeAutomaton();
             }
+        } else {
+            accLocal = null;
+            accTGR = null;
         }
     }
 
@@ -114,10 +117,9 @@ public class DTGRARaw {
 
         if (automaton.states.contains(automaton.trapState)) {
             for (GRabinPairRaw<ProductState> rabPair : accTGR) {
-                rabPair.left.put(automaton.trapState, valuationSetFactory.createUniverseValuationSet());
+                rabPair.left.addAll(automaton.trapState, valuationSetFactory.createUniverseValuationSet());
             }
         }
-
     }
 
     public static class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
@@ -142,7 +144,7 @@ public class DTGRARaw {
                 Main.verboseln("\t  Ranking " + ranking);
 
                 TranSet<ProductState> Fin = new TranSet<>(factory);
-                Set<TranSet<ProductState>> Infs = new HashSet<>();
+                List<TranSet<ProductState>> Infs = new ArrayList<>();
                 Fin.addAll(entry.getValue().left);
 
                 for (GOperator g : gSet) {
@@ -171,7 +173,7 @@ public class DTGRARaw {
         public void removeRedundancy() { // (TranSet<ProductState> allTrans) {
             AccTGRRaw<S> removalPairs;
             AccTGRRaw<S> temp;
-            Set<TranSet<S>> copy;
+            List<TranSet<S>> copy;
             int phase = 0;
             Main.stopwatchLocal();
 
@@ -191,7 +193,7 @@ public class DTGRARaw {
             Main.verboseln(phase + ". Removing complete Ii in (F, {I1,...,In}), i.e. Ii U F = Q \n");
             temp = new AccTGRRaw<>(null, valuationSetFactory);
             for (GRabinPairRaw<S> pair : this) {
-                copy = new HashSet<>(pair.right);
+                copy = new ArrayList<>(pair.right);
                 for (TranSet<S> i : pair.right) {
                     TranSet<S> iUf = new TranSet<>(valuationSetFactory);
                     iUf.addAll(i);
@@ -210,7 +212,7 @@ public class DTGRARaw {
             Main.verboseln(phase + ". Removing F from each Ii: (F, {I1,...,In}) |-> (F, {I1\\F,...,In\\F})\n");
             temp = new AccTGRRaw<>(null, valuationSetFactory);
             for (GRabinPairRaw<S> pair : this) {
-                copy = new HashSet<>(pair.right);
+                copy = new ArrayList<>(pair.right);
                 for (TranSet<S> i : pair.right) {
                     copy.remove(i); // System.out.println("101:::::::"+i);
                     TranSet<S> inew = new TranSet<>(valuationSetFactory);
@@ -242,10 +244,10 @@ public class DTGRARaw {
             Main.verboseln(
                     phase + ". Removing redundant Ii: (F, I) |-> (F, { i | i in I and !\\exists j in I : Ij <= Ii })\n");
             for (GRabinPairRaw<S> pair : this) {
-                copy = new HashSet<>(pair.right);
+                copy = new ArrayList<>(pair.right);
                 for (TranSet<S> i : pair.right) {
                     for (TranSet<S> j : pair.right) {
-                        if (!j.equals(i) && j.subsetOf(i)) {
+                        if (!j.equals(i) && i.containsAll(j)) {
                             copy.remove(i);
                             break;
                         }
@@ -300,13 +302,14 @@ public class DTGRARaw {
          * True if pair1 is more restrictive than pair2
          */
         private boolean pairSubsumed(GRabinPairRaw<S> pair1, GRabinPairRaw<S> pair2) {
-            if (!pair2.left.subsetOf(pair1.left)) {
+            if (!pair1.left.containsAll(pair2.left)) {
                 return false;
             }
+
             for (TranSet<S> i2 : pair2.right) {
                 boolean i2CanBeMatched = false;
                 for (TranSet<S> i1 : pair1.right) {
-                    if (i1.subsetOf(i2)) {
+                    if (i2.containsAll(i1)) {
                         i2CanBeMatched = true;
                         break;
                     }

@@ -70,8 +70,8 @@ public class SuspendedMaster extends Master {
     }
 
     private void mergeStates() {
-        List<State> worklist = (List<State>) (List<?>) new ArrayList<Master.State>(states);
-        List<State> worklist2 = (List<State>) (List<?>) new ArrayList<Master.State>(states);
+        List<State> worklist = (List<State>) (List<?>) new ArrayList<>(states);
+        List<State> worklist2 = (List<State>) (List<?>) new ArrayList<>(states);
 
         for (State s : worklist) {
             for (State s2 : worklist2) {

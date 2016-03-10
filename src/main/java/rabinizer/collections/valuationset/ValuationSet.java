@@ -34,4 +34,10 @@ public interface ValuationSet extends Set<Set<String>>, Cloneable {
     Formula toFormula();
 
     ValuationSet clone();
+
+    default boolean intersect(ValuationSet other) {
+        ValuationSet thisClone = this.clone();
+        thisClone.retainAll(other);
+        return !thisClone.isEmpty();
+    }
 }

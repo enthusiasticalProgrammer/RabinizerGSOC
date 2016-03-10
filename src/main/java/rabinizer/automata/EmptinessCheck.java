@@ -25,8 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table.Cell;
 
+import org.jetbrains.annotations.NotNull;
 import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
@@ -37,11 +39,11 @@ import rabinizer.collections.valuationset.ValuationSetFactory;
 public class EmptinessCheck<S extends IState<S>> {
     private final Automaton<S> automaton;
     private final List<Set<S>> sccs;
-    private final Collection<? extends Tuple<TranSet<S>, Set<TranSet<S>>>> accTGR;
+    private final Collection<? extends Tuple<TranSet<S>, Collection<TranSet<S>>>> accTGR;
     private final ValuationSetFactory valuationFactory;
 
     private EmptinessCheck(Automaton<S> automaton,
-                           Collection<? extends Tuple<TranSet<S>, Set<TranSet<S>>>> accTGR) {
+                           Collection<? extends Tuple<TranSet<S>, Collection<TranSet<S>>>> accTGR) {
         this.automaton = automaton;
         this.sccs = this.automaton.SCCs();
         this.accTGR = accTGR;
@@ -57,9 +59,8 @@ public class EmptinessCheck<S extends IState<S>> {
      * @return true if the automaton accepts no words
      */
     public static <S extends IState<S>> boolean checkEmptiness(Automaton<S> automaton,
-                                                               Collection<? extends Tuple<TranSet<S>, Set<TranSet<S>>>> accTGR) {
+                                                               Collection<? extends Tuple<TranSet<S>, Collection<TranSet<S>>>> accTGR) {
         return new EmptinessCheck<>(automaton, accTGR).checkIfEmpty();
-
     }
 
     private boolean checkIfEmpty() {
@@ -81,27 +82,18 @@ public class EmptinessCheck<S extends IState<S>> {
                     val.addAll(entry.getColumnKey());
                     trans.put(entry.getRowKey(), val);
                 } else {
-                    for (Tuple<TranSet<S>, Set<TranSet<S>>> pair : accTGR) {
+                    for (Tuple<TranSet<S>, Collection<TranSet<S>>> pair : accTGR) {
                         for (TranSet<S> inf : pair.right) {
-                            if (inf.get(entry.getRowKey()) != null) {
-                                ValuationSet valu = inf.get(entry.getRowKey()).clone();
-                                valu.retainAll(entry.getColumnKey().complement());
-                                inf.put(entry.getRowKey(), valu);
-                            }
+                            inf.removeAll(entry.getRowKey(), entry.getColumnKey());
                         }
-                        TranSet<S> fin = pair.left;
-                        if (fin.get(entry.getRowKey()) != null) {
-                            ValuationSet valu = fin.get(entry.getRowKey()).clone();
-                            valu.retainAll(entry.getColumnKey().complement());
-                            fin.put(entry.getRowKey(), valu);
-                        }
+
+                        pair.left.removeAll(entry.getRowKey(), entry.getColumnKey());
                     }
                 }
             }
 
-
-            for (Tuple<TranSet<S>, Set<TranSet<S>>> pair : accTGR) {
-                if (allInfSetsOfRabinPairPresentInSCC(scc, pair, trans) && checkForFinTransitions(scc, pair, trans)) {
+            for (Tuple<TranSet<S>, Collection<TranSet<S>>> pair : accTGR) {
+                if (allInfSetsOfRabinPairPresentInSCC(scc, pair, trans) && checkForFinTransitions(scc, pair)) {
                     sccEmpty = false;
                 } else {
                     // all components of infinite
@@ -111,12 +103,12 @@ public class EmptinessCheck<S extends IState<S>> {
 
                     for (TranSet<S> inf : pair.right) {
                         for (S s : scc) {
-                            inf.remove(s);
+                            inf.removeAll(s);
                         }
                     }
                     if (pair.right.stream().anyMatch(infCond -> true)) {
                         for (S s : scc) {
-                            pair.left.remove(s);
+                            pair.left.removeAll(s);
                         }
                     }
                 }
@@ -140,7 +132,7 @@ public class EmptinessCheck<S extends IState<S>> {
      * @return true if for all inf-sets of the Rabin Pair, the SCC has a
      * transition in the inf-set
      */
-    private boolean allInfSetsOfRabinPairPresentInSCC(Set<S> scc, Tuple<TranSet<S>, Set<TranSet<S>>> pair,
+    private boolean allInfSetsOfRabinPairPresentInSCC(Set<S> scc, Tuple<TranSet<S>, Collection<TranSet<S>>> pair,
                                                       Map<S, ValuationSet> trans) {
 
         boolean allInfs = true;
@@ -167,55 +159,44 @@ public class EmptinessCheck<S extends IState<S>> {
         return allInfs;
     }
 
+    private static <E> boolean isSingleton(@NotNull Set<E> set) {
+        return set.size() == 1;
+    }
+
+    private static <E> E getElement(@NotNull Iterable<E> collection) {
+        return collection.iterator().next();
+    }
+
     /**
      * Precondition: allInfSetsOfRabinPairPresentInSCC with the same arguments
      * has to be true
      *
      * @param scc:   current SCC
      * @param pair:  current Rabin Pair
-     * @param trans: transitions of current SCC
      * @return true if automaton accepts regarding this Rabin Pair & the current
      * SCC (i.e. if this Rabin Pair can accept a word, if the automaton
      * stays infinitely long in the current SCC)
      */
-    private boolean checkForFinTransitions(Set<S> scc, Tuple<TranSet<S>, Set<TranSet<S>>> pair,
-                                           Map<S, ValuationSet> trans) {
-        Set<Map.Entry<S, ValuationSet>> intersect1 = new HashSet<>(pair.left.entrySet());
-
-        S helper = scc.iterator().next();
-        if (scc.size() == 1 && (automaton.edgeBetween.get(helper, helper) == null || automaton.edgeBetween.get(helper, helper).isEmpty())) {
+    private boolean checkForFinTransitions(Set<S> scc, Tuple<TranSet<S>, Collection<TranSet<S>>> pair) {
+        if (isSingleton(scc) && !automaton.isLooping(getElement(scc))) {
             return false;
         }
 
-        Map<S, ValuationSet> intersect = new HashMap<>();
-        for (Map.Entry<S, ValuationSet> i : intersect1) {
-            if (scc.contains(i.getKey())) {
-                if (intersect.get(i.getKey()) != null) {
-                    ValuationSet val = intersect.get(i.getKey()).complement().clone();
-                    val.retainAll(trans.get(i.getKey()));
-                    intersect.put(i.getKey(), val);
-                } else {
-                    ValuationSet valu = trans.get(i.getKey()).clone();
-                    valu.retainAll(i.getValue());
-                    if (!valu.isEmpty()) {
-                        intersect.put(i.getKey(), valu);
-                    }
-                }
-            }
-        }
-        if (intersect.isEmpty()) {
+        if (Sets.intersection(scc, pair.left.asMap().entrySet()).isEmpty()) {
             return true;
-        } else {
-            List<Set<S>> subSCC = automaton.subSCCs(scc, intersect);
-            for (Set<S> sub : subSCC) {
-                helper = sub.iterator().next();
-                if ((sub.size() > 1 || !intersect.get(helper).equals(automaton.edgeBetween.get(helper, helper)))
-                        && pair.right.stream().allMatch(c -> !Collections.disjoint(c.keySet(), sub))) {
-                    return true;
-                }
-            }
-            return false;
         }
+
+        // Compute SubSCCs without Fin-edges.
+        List<Set<S>> subSCCs = automaton.subSCCs(scc, pair.left.asMap());
+
+        // TODO: These have to be TranSet<S>!
+        for (Set<S> subSCC : subSCCs) {
+            if (pair.right.stream().allMatch(inf -> inf.intersect(subSCC))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }
