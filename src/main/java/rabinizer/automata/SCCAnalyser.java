@@ -104,16 +104,14 @@ public class SCCAnalyser<S extends IState<S>> {
         S v = stack.peek();
         lowlink.put(v, n);
         number.put(v, n);
-        Map<ValuationSet, S> trans = a.transitions.row(v);
         List<TranSet<S>> result = new ArrayList<>();
 
-        for (Map.Entry<ValuationSet, S> entry : trans.entrySet()) {
+        for (Map.Entry<ValuationSet, S> entry : a.transitions.row(v).entrySet()) {
 
-            if (!forbiddenEdges.containsAll(v, entry.getKey())) {// edge
-                // not
-                // forbidden
-
+            // edge not forbidden
+            if (!forbiddenEdges.containsAll(v, entry.getKey())) {
                 S w = entry.getValue();
+
                 if (allowedStates.contains(w) && !number.containsKey(w)) {
                     stack.push(w);
                     result.addAll(SCCsRecursively());
@@ -122,25 +120,26 @@ public class SCCAnalyser<S extends IState<S>> {
                     lowlink.put(v, Math.min(lowlink.get(v), number.get(w)));
                 }
             }
-
         }
 
         if (lowlink.get(v).equals(number.get(v))) {
             Set<S> set = new HashSet<>();
+
             while (!stack.isEmpty() && number.get(stack.peek()) >= number.get(v)) {
                 S w = stack.pop();
                 set.add(w);
             }
-            TranSet tranSet = new TranSet(a.valuationSetFactory);
+
+            TranSet<S> tranSet = new TranSet<>(a.valuationSetFactory);
+
             for (S s : set) {
-                Map<ValuationSet, S> tmpMap = a.transitions.row(s);
-                for (Map.Entry<ValuationSet, S> map : tmpMap.entrySet()) {
-                    if (set.contains(map.getValue()) && !forbiddenEdges.containsAll(s, map.getKey())) {
-                        tranSet.addAll(s, map.getKey());
+                for (Map.Entry<ValuationSet, S> entry : a.transitions.row(s).entrySet()) {
+                    if (set.contains(entry.getValue()) && !forbiddenEdges.containsAll(s, entry.getKey())) {
+                        tranSet.addAll(s, entry.getKey());
                     }
                 }
-
             }
+
             result.add(tranSet);
         }
 

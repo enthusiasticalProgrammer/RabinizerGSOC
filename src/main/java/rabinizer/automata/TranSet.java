@@ -99,6 +99,14 @@ public class TranSet<S> {
         return backingMap.entrySet().stream().anyMatch(e -> other.backingMap.getOrDefault(e.getKey(), empty).intersect(e.getValue()));
     }
 
+    public void removeAll(Collection<S> states) {
+        backingMap.keySet().removeAll(states);
+    }
+
+    public void removeAll(S state) {
+        backingMap.remove(state);
+    }
+
     public void removeAll(S state, ValuationSet vs) {
         ValuationSet valuationSet = backingMap.get(state);
 

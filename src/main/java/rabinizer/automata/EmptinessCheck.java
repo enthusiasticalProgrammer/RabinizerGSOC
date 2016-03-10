@@ -63,6 +63,7 @@ public class EmptinessCheck<S extends IState<S>> {
 
     private boolean checkIfEmpty() {
         boolean automatonEmpty = true;
+
         for (TranSet<S> tranSCC : sccs) {
             Set<S> scc = tranSCC.asMap().keySet();
             boolean sccEmpty = true;
@@ -71,9 +72,7 @@ public class EmptinessCheck<S extends IState<S>> {
             for (Cell<S, ValuationSet, S> entry : automaton.transitions.cellSet()) {
                 if (scc.contains(entry.getRowKey()) && !scc.contains(entry.getValue())) {
                     for (Tuple<TranSet<S>, Collection<TranSet<S>>> pair : accTGR) {
-                        for (TranSet<S> inf : pair.right) {
-                            inf.removeAll(entry.getRowKey(), entry.getColumnKey());
-                        }
+                        pair.right.forEach(inf -> inf.removeAll(entry.getRowKey(), entry.getColumnKey()));
                         pair.left.removeAll(entry.getRowKey(), entry.getColumnKey());
                     }
                 }
@@ -88,15 +87,11 @@ public class EmptinessCheck<S extends IState<S>> {
                     // deleted and all components of finite sets of current scc
                     // if any infinite condition is present
 
-                    for (TranSet<S> inf : pair.right) {
-                        for (S s : scc) {
-                            inf.removeAll(s, automaton.valuationSetFactory.createUniverseValuationSet());
-                        }
-                    }
-                    if (pair.right.stream().anyMatch(infCond -> true)) {
-                        for (S s : scc) {
-                            pair.left.removeAll(s, automaton.valuationSetFactory.createUniverseValuationSet());
-                        }
+                    // @Christopher TODO: Check this.
+                    pair.right.forEach(inf -> inf.removeAll(scc));
+
+                    if (!pair.right.isEmpty()) {
+                        pair.left.removeAll(scc);
                     }
                 }
             }
@@ -105,29 +100,21 @@ public class EmptinessCheck<S extends IState<S>> {
                 if (automaton.isSink(scc)) {
                     automaton.removeStates(scc);
                 }
-
             }
+
             automatonEmpty = sccEmpty && automatonEmpty;
         }
+
         return automatonEmpty;
     }
 
     /**
      * @param scc:   SCC for which the function is applied
-     * @param trans: Transition of the scc
      * @return true if for all inf-sets of the Rabin Pair, the SCC has a
      * transition in the inf-set
      */
-    private boolean allInfSetsOfRabinPairPresentInSCC(TranSet<S> scc, Tuple<TranSet<S>, Collection<TranSet<S>>> pair) {
-
-        TranSet<S> scc2;
-        boolean allInfs = true;
-        for (TranSet<S> inf : pair.right) {
-            scc2 = scc.clone();
-            scc2.intersect(inf);
-            allInfs = allInfs && !scc2.isEmpty();
-        }
-        return allInfs;
+    private static <S> boolean allInfSetsOfRabinPairPresentInSCC(TranSet<S> scc, Tuple<TranSet<S>, Collection<TranSet<S>>> pair) {
+        return pair.right.stream().allMatch(inf -> inf.intersect(scc));
     }
 
     private static <E> boolean isSingleton(@NotNull Set<E> set) {
@@ -159,14 +146,6 @@ public class EmptinessCheck<S extends IState<S>> {
 
         // Compute SubSCCs without Fin-edges.
         List<TranSet<S>> subSCCs = automaton.subSCCs(scc, pair.left);
-
-        for (TranSet<S> subSCC : subSCCs) {
-            if (pair.right.stream().allMatch(inf -> inf.intersect(subSCC))) {
-                return true;
-            }
-        }
-
-        return false;
+        return subSCCs.stream().anyMatch(subSCC -> allInfSetsOfRabinPairPresentInSCC(subSCC, pair));
     }
-
 }
