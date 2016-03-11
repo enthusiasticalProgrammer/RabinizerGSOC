@@ -245,6 +245,10 @@ public abstract class Automaton<S extends IState<S>> {
         return SCCAnalyser.SCCs(this, initialState);
     }
 
+    public List<TranSet<S>> subSCCs(TranSet<S> SCC, TranSet<S> forbiddenEdges) {
+        return SCCAnalyser.subSCCs(this, SCC, forbiddenEdges);
+    }
+
     public List<TranSet<S>> subSCCs(Set<S> SCC, TranSet<S> forbiddenEdges) {
         return SCCAnalyser.subSCCs(this, SCC, forbiddenEdges);
     }
@@ -378,6 +382,7 @@ public abstract class Automaton<S extends IState<S>> {
                 it2.remove();
             }
         }
+
         edgeBetween.putAll(toAdd2);
 
         if (antecessor.equals(trapState)) {
@@ -388,5 +393,4 @@ public abstract class Automaton<S extends IState<S>> {
             initialState = replacement;
         }
     }
-
 }

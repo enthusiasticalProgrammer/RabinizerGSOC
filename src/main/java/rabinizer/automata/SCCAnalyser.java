@@ -17,6 +17,7 @@
 
 package rabinizer.automata;
 
+import rabinizer.collections.Collections3;
 import rabinizer.collections.TarjanStack;
 import rabinizer.collections.valuationset.ValuationSet;
 
@@ -80,6 +81,20 @@ public class SCCAnalyser<S extends IState<S>> {
         return s.subSCCs();
     }
 
+    /**
+     * This method refines the SCC in order to have the sub-SCCs if
+     * forbiddenEdges are not allowed to use
+     *
+     * @param SCC:            the SCC that will be processed
+     * @param forbiddenEdges: the edges that are forbidden
+     * @return the sub-SCCs of the SCC as list in topologic ordering
+     * @param a: Automaton, for which the SCC-Analysis has to be made
+     */
+    public static <S extends IState<S>> List<TranSet<S>> subSCCs(Automaton<S> a, TranSet<S> SCC, TranSet<S> forbiddenEdges) {
+        SCCAnalyser<S> s = new SCCAnalyser<>(a, SCC.asMap().keySet(), forbiddenEdges);
+        return s.subSCCs();
+    }
+
     public List<TranSet<S>> SCCs() {
         stack.push(a.initialState);
         return SCCsRecursively();
@@ -90,10 +105,10 @@ public class SCCAnalyser<S extends IState<S>> {
         Set<S> notYetProcessed = new HashSet<>(allowedStates);
 
         while (!notYetProcessed.isEmpty()) {
-            S state = notYetProcessed.iterator().next();
+            S state = Collections3.removeElement(notYetProcessed);
             stack.push(state);
             result.addAll(SCCsRecursively());
-            result.stream().forEach(s -> notYetProcessed.removeAll(s.asMap().keySet()));
+            result.forEach(s -> notYetProcessed.removeAll(s.asMap().keySet()));
         }
 
         return result;
@@ -107,7 +122,6 @@ public class SCCAnalyser<S extends IState<S>> {
         List<TranSet<S>> result = new ArrayList<>();
 
         for (Map.Entry<ValuationSet, S> entry : a.transitions.row(v).entrySet()) {
-
             // edge not forbidden
             if (!forbiddenEdges.containsAll(v, entry.getKey())) {
                 S w = entry.getValue();

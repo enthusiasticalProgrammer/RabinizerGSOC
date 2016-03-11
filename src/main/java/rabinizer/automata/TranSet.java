@@ -22,9 +22,9 @@ import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.*;
+import java.util.function.Consumer;
 
-// TODO: Implement Collection Interface
-public class TranSet<S> {
+public class TranSet<S> implements Iterable<Map.Entry<S, ValuationSet>> {
 
     private final Map<S, ValuationSet> backingMap;
     private final ValuationSetFactory factory;
@@ -34,20 +34,6 @@ public class TranSet<S> {
         factory = f;
         empty = f.createEmptyValuationSet();
         backingMap = new HashMap<>();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TranSet<?> tranSet = (TranSet<?>) o;
-        return Objects.equals(backingMap, tranSet.backingMap) &&
-                Objects.equals(factory, tranSet.factory);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(backingMap, factory);
     }
 
     public Map<S, ValuationSet> asMap() {
@@ -70,14 +56,11 @@ public class TranSet<S> {
     }
 
     public void addAll(TranSet<S> other) {
-        for (Map.Entry<S, ValuationSet> otherEntry : other.backingMap.entrySet()) {
-            addAll(otherEntry.getKey(), otherEntry.getValue());
-        }
+        other.backingMap.forEach(this::addAll);
     }
 
-    @Override
-    public String toString() {
-        return backingMap.toString();
+    public boolean contains(@NotNull S state) {
+        return backingMap.containsKey(state);
     }
 
     public boolean contains(@NotNull S state, Set<String> valuation) {
@@ -88,15 +71,17 @@ public class TranSet<S> {
         return backingMap.getOrDefault(state, empty).containsAll(vs);
     }
 
-    public boolean containsAll(TranSet<S> other) {
-        return other.backingMap
-                .entrySet()
-                .stream()
+    public boolean containsAll(@NotNull TranSet<S> other) {
+        return other.backingMap.entrySet().stream()
                 .allMatch(e -> containsAll(e.getKey(), e.getValue()));
     }
 
-    public boolean intersect(TranSet<S> other) {
+    public boolean intersects(TranSet<S> other) {
         return backingMap.entrySet().stream().anyMatch(e -> other.backingMap.getOrDefault(e.getKey(), empty).intersect(e.getValue()));
+    }
+
+    public boolean isEmpty() {
+        return backingMap.isEmpty();
     }
 
     public void removeAll(Collection<S> states) {
@@ -121,10 +106,8 @@ public class TranSet<S> {
         }
     }
 
-    public void removeAll(TranSet<S> other) {
-        for (Map.Entry<S, ValuationSet> otherEntry : other.backingMap.entrySet()) {
-            removeAll(otherEntry.getKey(), otherEntry.getValue());
-        }
+    public void removeAll(@NotNull TranSet<S> other) {
+        other.backingMap.forEach(this::removeAll);
     }
 
     @Override
@@ -134,7 +117,32 @@ public class TranSet<S> {
         return result;
     }
 
-    public boolean isEmpty() {
-        return backingMap.isEmpty();
+    @Override
+    public Iterator<Map.Entry<S, ValuationSet>> iterator() {
+        return backingMap.entrySet().iterator();
+    }
+
+    @Override
+    public void forEach(Consumer<? super Map.Entry<S, ValuationSet>> action) {
+        backingMap.entrySet().forEach(action);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TranSet<?> tranSet = (TranSet<?>) o;
+        return Objects.equals(backingMap, tranSet.backingMap) &&
+                Objects.equals(factory, tranSet.factory);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(backingMap, factory);
+    }
+
+    @Override
+    public String toString() {
+        return backingMap.toString();
     }
 }
