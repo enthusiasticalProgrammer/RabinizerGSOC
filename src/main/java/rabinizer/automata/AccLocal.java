@@ -44,7 +44,7 @@ public class AccLocal {
     // separate automata acceptance projected to the whole product
     final Map<GOperator, Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>>> accSlavesOptions = new HashMap<>();
     // actually just coBuchi
-    final Map<Map<GOperator, Integer>, RabinPair<Product.ProductState>> accMasterOptions;
+    final Map<Map<GOperator, Integer>, TranSet<Product.ProductState>> accMasterOptions;
     private final boolean gSkeleton;
     private final boolean eager;
 
@@ -141,16 +141,115 @@ public class AccLocal {
 
             result.put(gSet, new HashMap<>());
             for (int rank = 1; rank <= maxRank.get(g); rank++) {
-                result.get(gSet).put(rank, RabinPair.createRabinPair(rSlave, finalStates, rank, product, valuationSetFactory));
+                result.get(gSet).put(rank, createRabinPair(rSlave, finalStates, rank, product, valuationSetFactory));
             }
         }
 
         return result;
-
     }
 
-    protected Map<Map<GOperator, Integer>, RabinPair<Product.ProductState>> computeAccMasterOptions() {
-        ImmutableMap.Builder<Map<GOperator, Integer>, RabinPair<Product.ProductState>> builder = ImmutableMap.builder();
+    public static RabinPair<Product.ProductState> createRabinPair(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank, Product product,
+                                                                  ValuationSetFactory valuationSetFactory) {
+        // Set fail
+        // Mojmir
+        TranSet<MojmirSlave.State> failM = new TranSet<>(valuationSetFactory);
+        for (MojmirSlave.State fs : slave.mojmir.states) {
+            for (Map.Entry<ValuationSet, MojmirSlave.State> vsfs : slave.mojmir.transitions.row(fs).entrySet()) {
+                if (slave.mojmir.isSink(vsfs.getValue()) && !finalStates.contains(vsfs.getValue())) {
+                    failM.addAll(fs, vsfs.getKey());
+                }
+            }
+        }
+
+        // Product
+        TranSet<Product.ProductState> failP = new TranSet<>(valuationSetFactory);
+        for (Product.ProductState ps : product.states) {
+            RabinSlave.State rs = ps.getSecondaryState(slave.mojmir.label);
+            if (rs != null) { // relevant slave
+                for (MojmirSlave.State fs : rs.keySet()) {
+                    failP.addAll(ps, failM.asMap().get(fs));
+                }
+            }
+        }
+
+        // Set succeed(pi)
+        // Mojmir
+        TranSet<MojmirSlave.State> succeedM = new TranSet<>(valuationSetFactory);
+        if (finalStates.contains(slave.mojmir.getInitialState())) {
+            for (MojmirSlave.State fs : slave.mojmir.states) {
+                for (Map.Entry<ValuationSet, MojmirSlave.State> vsfs : slave.mojmir.transitions.row(fs)
+                        .entrySet()) {
+                    succeedM.addAll(fs, vsfs.getKey());
+                }
+            }
+        } else {
+            for (MojmirSlave.State fs : slave.mojmir.states) {
+                if (!finalStates.contains(fs)) {
+                    for (Map.Entry<ValuationSet, MojmirSlave.State> vsfs : slave.mojmir.transitions.row(fs)
+                            .entrySet()) {
+                        if (finalStates.contains(vsfs.getValue())) {
+                            succeedM.addAll(fs, vsfs.getKey());
+                        }
+                    }
+                }
+            }
+        }
+        // Product
+        TranSet<Product.ProductState> succeedP = new TranSet<>(valuationSetFactory);
+        for (Product.ProductState ps : product.states) {
+            RabinSlave.State rs = ps.getSecondaryState(slave.mojmir.label);
+            if (rs != null) { // relevant slave
+                for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : rs.entrySet()) {
+                    if (stateIntegerEntry.getValue() != rank) {
+                        continue;
+                    }
+
+                    succeedP.addAll(ps, succeedM.asMap().get(stateIntegerEntry.getKey()));
+                }
+            }
+        }
+
+        // Set buy(pi)
+        // Rabin
+        TranSet<RabinSlave.State> buyR = new TranSet<>(valuationSetFactory);
+        for (RabinSlave.State rs : slave.states) {
+            for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : rs.entrySet()) {
+                if (stateIntegerEntry.getValue() < rank) {
+                    for (MojmirSlave.State fs2 : rs.keySet()) {
+                        for (MojmirSlave.State succ : slave.mojmir.states) {
+                            ValuationSet vs1, vs2;
+                            if (!finalStates.contains(succ) && (vs1 = slave.mojmir.edgeBetween.get(stateIntegerEntry.getKey(), succ)) != null
+                                    && (vs2 = slave.mojmir.edgeBetween.get(fs2, succ)) != null) {
+                                if (!stateIntegerEntry.getKey().equals(fs2)) {
+                                    ValuationSet vs1copy = vs1.clone();
+                                    vs1copy.retainAll(vs2);
+                                    buyR.addAll(rs, vs1copy);
+                                } else if (succ.equals(slave.mojmir.getInitialState())) {
+                                    buyR.addAll(rs, vs1);
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // Product
+        TranSet<Product.ProductState> buyP = new TranSet<>(valuationSetFactory);
+        for (Product.ProductState ps : product.states) {
+            RabinSlave.State rs = ps.getSecondaryState(slave.mojmir.label);
+            if (rs != null) { // relevant slave
+                buyP.addAll(ps, buyR.asMap().get(rs));
+            }
+        }
+
+        Main.verboseln("\tAn acceptance pair for slave " + slave.mojmir.label + ":\n" + failP + buyP + succeedP);
+        failP.addAll(buyP);
+        return new RabinPair<>(failP, succeedP);
+    }
+
+    protected Map<Map<GOperator, Integer>, TranSet<Product.ProductState>> computeAccMasterOptions() {
+        ImmutableMap.Builder<Map<GOperator, Integer>, TranSet<Product.ProductState>> builder = ImmutableMap.builder();
 
         Set<Set<GOperator>> gSets;
         if (gSkeleton) {
@@ -176,7 +275,8 @@ public class AccLocal {
                     continue;
                 }
 
-                builder.put(ImmutableMap.copyOf(ranking), new RabinPair<>(avoidP, null));
+
+                builder.put(ImmutableMap.copyOf(ranking), avoidP);
                 Main.verboseln("Avoid for " + gSet + ranking + "\n" + avoidP);
             }
         }

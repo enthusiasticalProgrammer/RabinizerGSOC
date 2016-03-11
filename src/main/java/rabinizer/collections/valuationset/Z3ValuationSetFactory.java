@@ -348,8 +348,13 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
+        public BoolExpr visit(@NotNull Literal l) {
+            return mapping.get(l);
+        }
+
+        @Override
         public BoolExpr defaultAction(@NotNull Formula f) {
-            return mapping.get(f);
+            throw new UnsupportedOperationException();
         }
     }
 }

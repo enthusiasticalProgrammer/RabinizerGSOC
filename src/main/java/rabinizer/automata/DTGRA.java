@@ -60,48 +60,44 @@ public class DTGRA extends Product {
             Table<Product.ProductState, ValuationSet, Product.ProductState> toAdd = HashBasedTable.create();
             Table<Product.ProductState, ValuationSet, Product.ProductState> toRemove = HashBasedTable.create();
 
-            if (pair.left != null) {
-                for (Table.Cell<Product.ProductState, ValuationSet, Product.ProductState> currTrans : transitions.cellSet()) {
-                    if (pair.left.asMap().containsKey(currTrans.getRowKey())) {
-                        ValuationSet valu = pair.left.asMap().get(currTrans.getRowKey()).clone();
-                        valu.retainAll(currTrans.getColumnKey());
-                        if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
-                            toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
-                            toAdd.put(currTrans.getRowKey(), valu, currTrans.getValue());
-                            ValuationSet valu2 = this.valuationSetFactory.createUniverseValuationSet();
-                            valu2.retainAll(currTrans.getColumnKey());
-                            valu2.retainAll(valu.complement());
-                            toAdd.put(currTrans.getRowKey(), valu2, currTrans.getValue());
-                        }
+            for (Table.Cell<ProductState, ValuationSet, ProductState> currTrans : transitions.cellSet()) {
+                if (pair.fin.asMap().containsKey(currTrans.getRowKey())) {
+                    ValuationSet valu = pair.fin.asMap().get(currTrans.getRowKey()).clone();
+                    valu.retainAll(currTrans.getColumnKey());
+                    if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
+                        toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
+                        toAdd.put(currTrans.getRowKey(), valu, currTrans.getValue());
+                        ValuationSet valu2 = this.valuationSetFactory.createUniverseValuationSet();
+                        valu2.retainAll(currTrans.getColumnKey());
+                        valu2.retainAll(valu.complement());
+                        toAdd.put(currTrans.getRowKey(), valu2, currTrans.getValue());
                     }
                 }
-                toRemove.cellSet().stream().forEach(cell -> transitions.remove(cell.getRowKey(), cell.getColumnKey()));
+            }
+            toRemove.cellSet().stream().forEach(cell -> transitions.remove(cell.getRowKey(), cell.getColumnKey()));
+            transitions.putAll(toAdd);
+            toRemove.clear();
+            toAdd.clear();
+
+            for (TranSet<ProductState> currAccSet : pair.infs) {
+                transitions.cellSet().stream().filter(currTrans -> currAccSet.asMap().containsKey(currTrans.getRowKey())).forEach(currTrans -> {
+                    ValuationSet valu = currAccSet.asMap().get(currTrans.getRowKey()).clone();
+                    valu.retainAll(currTrans.getColumnKey());
+                    if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
+                        toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
+                        toAdd.put(currTrans.getRowKey(), valu, currTrans.getValue());
+                        ValuationSet valu2 = this.valuationSetFactory.createUniverseValuationSet();
+                        valu2.retainAll(currTrans.getColumnKey());
+                        valu2.retainAll(valu.complement());
+                        toAdd.put(currTrans.getRowKey(), valu2, currTrans.getValue());
+                    }
+                });
+
+                toRemove.cellSet().stream()
+                        .forEach(cell -> transitions.remove(cell.getRowKey(), cell.getColumnKey()));
                 transitions.putAll(toAdd);
                 toRemove.clear();
                 toAdd.clear();
-            }
-
-            if (pair.right != null) {
-                for (TranSet<Product.ProductState> currAccSet : pair.right) {
-                    transitions.cellSet().stream().filter(currTrans -> currAccSet.asMap().containsKey(currTrans.getRowKey())).forEach(currTrans -> {
-                        ValuationSet valu = currAccSet.asMap().get(currTrans.getRowKey()).clone();
-                        valu.retainAll(currTrans.getColumnKey());
-                        if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
-                            toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
-                            toAdd.put(currTrans.getRowKey(), valu, currTrans.getValue());
-                            ValuationSet valu2 = this.valuationSetFactory.createUniverseValuationSet();
-                            valu2.retainAll(currTrans.getColumnKey());
-                            valu2.retainAll(valu.complement());
-                            toAdd.put(currTrans.getRowKey(), valu2, currTrans.getValue());
-                        }
-                    });
-
-                    toRemove.cellSet().stream()
-                            .forEach(cell -> transitions.remove(cell.getRowKey(), cell.getColumnKey()));
-                    transitions.putAll(toAdd);
-                    toRemove.clear();
-                    toAdd.clear();
-                }
             }
         }
 
@@ -110,11 +106,11 @@ public class DTGRA extends Product {
 
             for (Map.Entry<ValuationSet, ProductState> trans : transitions.row(s).entrySet()) {
                 List<Integer> accSets = acc.stream()
-                        .filter(pair -> pair.left != null && pair.left.containsAll(s, trans.getKey()))
-                        .map(p -> hoa.getNumber(p.left)).collect(Collectors.toList());
+                        .filter(pair -> pair.fin.containsAll(s, trans.getKey()))
+                        .map(p -> hoa.getNumber(p.fin)).collect(Collectors.toList());
 
                 for (GeneralizedRabinPair<ProductState> pair : acc) {
-                    pair.right.stream()
+                    pair.infs.stream()
                             .filter(inf -> inf != null && inf.containsAll(s, trans.getKey()))
                             .map(hoa::getNumber)
                             .forEach(accSets::add);

@@ -17,27 +17,49 @@
 
 package rabinizer.automata;
 
-import rabinizer.collections.Tuple;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
 
-public class GeneralizedRabinPair<S> extends Tuple<TranSet<S>, List<TranSet<S>>> {
+public class GeneralizedRabinPair<S> {
 
-    public GeneralizedRabinPair(TranSet<S> l, List<TranSet<S>> r) {
-        super(l, r);
+    public final @NotNull TranSet<S> fin;
+    public final @NotNull List<@NotNull TranSet<S>> infs;
+
+    public GeneralizedRabinPair(@NotNull TranSet<S> l, @NotNull List<@NotNull TranSet<S>> r) {
+        this.fin = l;
+        this.infs = r;
+    }
+
+    public GeneralizedRabinPair(RabinPair<S> pair) {
+        this.fin = pair.fin;
+        this.infs = Collections.singletonList(pair.inf);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GeneralizedRabinPair<?> tuple = (GeneralizedRabinPair<?>) o;
+        return Objects.equals(fin, tuple.fin) &&
+                Objects.equals(infs, tuple.infs);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fin, infs);
     }
 
     @Override
     public String toString() {
-        String result = "Fin:\n" + (left == null ? "trivial" : left) + "\nInf: ";
-        if (right == null || right.isEmpty()) {
+        String result = "Fin:\n" + (fin) + "\nInf: ";
+        if (infs.isEmpty()) {
             result += "0\ntrivial";
         } else {
-            result += right.size();
-            for (TranSet<S> inf : right) {
+            result += infs.size();
+            for (TranSet<S> inf : infs) {
                 result += "\n" + inf;
             }
         }

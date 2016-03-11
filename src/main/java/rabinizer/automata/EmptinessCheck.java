@@ -41,11 +41,11 @@ public class EmptinessCheck {
      * @param accTGR
      * @return true if the automaton accepts no words
      */
-    public static <S extends IState<S>> boolean checkEmptiness(Automaton<S> automaton, Collection<? extends Tuple<TranSet<S>, ? extends Collection<TranSet<S>>>> accTGR) {
+    public static <S extends IState<S>> boolean checkEmptiness(Automaton<S> automaton, Collection<GeneralizedRabinPair<S>> accTGR) {
         return checkIfEmpty(automaton, accTGR);
     }
 
-    private static <S extends IState<S>> boolean checkIfEmpty(Automaton<S> automaton, Collection<? extends Tuple<TranSet<S>, ? extends Collection<TranSet<S>>>> accTGR) {
+    private static <S extends IState<S>> boolean checkIfEmpty(Automaton<S> automaton, Collection<GeneralizedRabinPair<S>> accTGR) {
         boolean automatonEmpty = true;
 
         for (TranSet<S> tranSCC : automaton.SCCs()) {
@@ -56,16 +56,16 @@ public class EmptinessCheck {
                 S target = entry.getValue();
 
                 if (tranSCC.contains(soure) && !tranSCC.contains(target)) {
-                    for (Tuple<TranSet<S>, ? extends Collection<TranSet<S>>> pair : accTGR) {
-                        pair.right.forEach(inf -> inf.removeAll(soure, label));
-                        pair.left.removeAll(soure, label);
+                    for (GeneralizedRabinPair<S> pair : accTGR) {
+                        pair.infs.forEach(inf -> inf.removeAll(soure, label));
+                        pair.fin.removeAll(soure, label);
                     }
                 }
             }
 
             boolean sccEmpty = true;
 
-            for (Tuple<TranSet<S>, ? extends Collection<TranSet<S>>> pair : accTGR) {
+            for (GeneralizedRabinPair<S> pair : accTGR) {
                 if (infAccepting(tranSCC, pair) && finAndInfAccepting(automaton, tranSCC, pair)) {
                     sccEmpty = false;
                 } else {
@@ -75,10 +75,10 @@ public class EmptinessCheck {
                     // if any infinite condition is present
 
                     // @Christopher TODO: Check this.
-                    pair.right.forEach(inf -> inf.removeAll(tranSCC));
+                    pair.infs.forEach(inf -> inf.removeAll(tranSCC));
 
-                    if (!pair.right.isEmpty()) {
-                        pair.left.removeAll(tranSCC);
+                    if (!pair.infs.isEmpty()) {
+                        pair.fin.removeAll(tranSCC);
                     }
                 }
             }
@@ -102,8 +102,8 @@ public class EmptinessCheck {
      * @return true if for all inf-sets of the Rabin Pair, the SCC has a
      * transition in the inf-set
      */
-    private static <S> boolean infAccepting(TranSet<S> scc, Tuple<TranSet<S>, ? extends Collection<TranSet<S>>> pair) {
-        return pair.right.stream().allMatch(inf -> inf.intersects(scc));
+    private static <S> boolean infAccepting(TranSet<S> scc, GeneralizedRabinPair<S> pair) {
+        return pair.infs.stream().allMatch(inf -> inf.intersects(scc));
     }
 
     /**
@@ -116,17 +116,17 @@ public class EmptinessCheck {
      * SCC (i.e. if this Rabin Pair can accept a word, if the automaton
      * stays infinitely long in the current SCC)
      */
-    private static <S extends IState<S>> boolean finAndInfAccepting(Automaton<S> automaton, TranSet<S> scc, Tuple<TranSet<S>, ? extends Collection<TranSet<S>>> pair) {
+    private static <S extends IState<S>> boolean finAndInfAccepting(Automaton<S> automaton, TranSet<S> scc, GeneralizedRabinPair<S> pair) {
         if (Collections3.isSingleton(scc.asMap().keySet()) && !automaton.isLooping(Collections3.getElement(scc.asMap().keySet()))) {
             return false;
         }
 
-        if (!scc.intersects(pair.left)) {
+        if (!scc.intersects(pair.fin)) {
             return true;
         }
 
         // Compute SubSCCs without Fin-edges.
-        List<TranSet<S>> subSCCs = automaton.subSCCs(scc, pair.left);
+        List<TranSet<S>> subSCCs = automaton.subSCCs(scc, pair.fin);
         return subSCCs.stream().anyMatch(subSCC -> infAccepting(subSCC, pair));
     }
 }

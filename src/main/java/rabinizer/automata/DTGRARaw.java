@@ -117,7 +117,7 @@ public class DTGRARaw {
 
         if (automaton.states.contains(automaton.trapState)) {
             for (GeneralizedRabinPair<ProductState> rabPair : accTGR) {
-                rabPair.left.addAll(automaton.trapState, valuationSetFactory.createUniverseValuationSet());
+                rabPair.fin.addAll(automaton.trapState, valuationSetFactory.createUniverseValuationSet());
             }
         }
     }
@@ -136,7 +136,7 @@ public class DTGRARaw {
         public static AccTGRRaw<ProductState> createAccTGRRaw(AccLocal accLocal, ValuationSetFactory factory) {
             AccTGRRaw<ProductState> accTGRRaw = new AccTGRRaw<>(accLocal.allTrans, factory);
 
-            for (Map.Entry<Map<GOperator, Integer>, RabinPair<Product.ProductState>> entry : accLocal.accMasterOptions.entrySet()) {
+            for (Map.Entry<Map<GOperator, Integer>, TranSet<ProductState>> entry : accLocal.accMasterOptions.entrySet()) {
                 Map<GOperator, Integer> ranking = entry.getKey();
                 Set<GOperator> gSet = ranking.keySet();
 
@@ -145,7 +145,7 @@ public class DTGRARaw {
 
                 TranSet<ProductState> Fin = new TranSet<>(factory);
                 List<TranSet<ProductState>> Infs = new ArrayList<>();
-                Fin.addAll(entry.getValue().left);
+                Fin.addAll(entry.getValue());
 
                 for (GOperator g : gSet) {
                     Set<GOperator> localGSet = new HashSet<>(gSet);
@@ -158,8 +158,8 @@ public class DTGRARaw {
                         fPair = accLocal.computeAccSlavesOptions(g, true).get(localGSet).get(ranking.get(g));
                     }
 
-                    Fin.addAll(fPair.left);
-                    Infs.add((fPair.right).clone());
+                    Fin.addAll(fPair.fin);
+                    Infs.add((fPair.inf).clone());
                 }
 
                 GeneralizedRabinPair<ProductState> pair = new GeneralizedRabinPair<>(Fin, Infs);
@@ -183,7 +183,7 @@ public class DTGRARaw {
             Main.verboseln(phase + ". Removing (F, {I1,...,In}) with complete F\n");
             removalPairs = new AccTGRRaw<>(null, valuationSetFactory);
             for (GeneralizedRabinPair<S> pair : this) {
-                if (pair.left.equals(allTrans)) {
+                if (pair.fin.equals(allTrans)) {
                     removalPairs.add(pair);
                 }
             }
@@ -193,17 +193,19 @@ public class DTGRARaw {
             Main.verboseln(phase + ". Removing complete Ii in (F, {I1,...,In}), i.e. Ii U F = Q \n");
             temp = new AccTGRRaw<>(null, valuationSetFactory);
             for (GeneralizedRabinPair<S> pair : this) {
-                copy = new ArrayList<>(pair.right);
-                for (TranSet<S> i : pair.right) {
+                copy = new ArrayList<>(pair.infs);
+
+                for (TranSet<S> i : pair.infs) {
                     TranSet<S> iUf = new TranSet<>(valuationSetFactory);
                     iUf.addAll(i);
-                    iUf.addAll(pair.left);
+                    iUf.addAll(pair.fin);
                     if (iUf.equals(allTrans)) {
                         copy.remove(i);
                         break;
                     }
                 }
-                temp.add(new GeneralizedRabinPair<>(pair.left, copy));
+
+                temp.add(new GeneralizedRabinPair<>(pair.fin, copy));
             }
             this.clear();
             this.addAll(temp);
@@ -212,15 +214,15 @@ public class DTGRARaw {
             Main.verboseln(phase + ". Removing F from each Ii: (F, {I1,...,In}) |-> (F, {I1\\F,...,In\\F})\n");
             temp = new AccTGRRaw<>(null, valuationSetFactory);
             for (GeneralizedRabinPair<S> pair : this) {
-                copy = new ArrayList<>(pair.right);
-                for (TranSet<S> i : pair.right) {
+                copy = new ArrayList<>(pair.infs);
+                for (TranSet<S> i : pair.infs) {
                     copy.remove(i); // System.out.println("101:::::::"+i);
                     TranSet<S> inew = new TranSet<>(valuationSetFactory);
                     inew.addAll(i); // System.out.println("105TEMP-BEFORE"+temp+"\n=====");
-                    inew.removeAll(pair.left); // System.out.println("105TEMP-BETWEEN"+temp+"\n=====");
+                    inew.removeAll(pair.fin); // System.out.println("105TEMP-BETWEEN"+temp+"\n=====");
                     copy.add(inew); // System.out.println("103TEMP-AFTER"+temp);
                 }
-                temp.add(new GeneralizedRabinPair<>(pair.left, copy));// System.out.println("105TEMP-AFTER"+temp+"\n=====");
+                temp.add(new GeneralizedRabinPair<>(pair.fin, copy));// System.out.println("105TEMP-AFTER"+temp+"\n=====");
             }
             this.clear();
             this.addAll(temp);
@@ -230,7 +232,7 @@ public class DTGRARaw {
             Main.verboseln(phase + ". Removing (F, {..., \\emptyset, ...} )\n");
             removalPairs = new AccTGRRaw<>(null, valuationSetFactory);
             for (GeneralizedRabinPair<S> pair : this) {
-                for (TranSet<S> i : pair.right) {
+                for (TranSet<S> i : pair.infs) {
                     if (i.isEmpty()) {
                         removalPairs.add(pair);
                         break;
@@ -244,16 +246,16 @@ public class DTGRARaw {
             Main.verboseln(
                     phase + ". Removing redundant Ii: (F, I) |-> (F, { i | i in I and !\\exists j in I : Ij <= Ii })\n");
             for (GeneralizedRabinPair<S> pair : this) {
-                copy = new ArrayList<>(pair.right);
-                for (TranSet<S> i : pair.right) {
-                    for (TranSet<S> j : pair.right) {
+                copy = new ArrayList<>(pair.infs);
+                for (TranSet<S> i : pair.infs) {
+                    for (TranSet<S> j : pair.infs) {
                         if (!j.equals(i) && i.containsAll(j)) {
                             copy.remove(i);
                             break;
                         }
                     }
                 }
-                temp.add(new GeneralizedRabinPair<>(pair.left, copy));
+                temp.add(new GeneralizedRabinPair<>(pair.fin, copy));
             }
             this.clear();
             this.addAll(temp);
@@ -302,13 +304,13 @@ public class DTGRARaw {
          * True if pair1 is more restrictive than pair2
          */
         private boolean pairSubsumed(GeneralizedRabinPair<S> pair1, GeneralizedRabinPair<S> pair2) {
-            if (!pair1.left.containsAll(pair2.left)) {
+            if (!pair1.fin.containsAll(pair2.fin)) {
                 return false;
             }
 
-            for (TranSet<S> i2 : pair2.right) {
+            for (TranSet<S> i2 : pair2.infs) {
                 boolean i2CanBeMatched = false;
-                for (TranSet<S> i1 : pair1.right) {
+                for (TranSet<S> i1 : pair1.infs) {
                     if (i2.containsAll(i1)) {
                         i2CanBeMatched = true;
                         break;

@@ -57,16 +57,36 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
         hoa.setAcceptanceCondition2(accTR);
 
         List<GeneralizedRabinPair<ProductDegenState>> acc = new ArrayList<>();
-        accTR.stream().forEach(p -> acc.add(new GeneralizedRabinPair<>(p.left, Collections.singletonList(p.right))));
+        accTR.stream().forEach(p -> acc.add(new GeneralizedRabinPair<>(p)));
 
         // split transitions according to accepting Sets:
         for (GeneralizedRabinPair<ProductDegenState> pair : acc) {
             Table<ProductDegenState, ValuationSet, ProductDegenState> toAdd = HashBasedTable.create();
             Table<ProductDegenState, ValuationSet, ProductDegenState> toRemove = HashBasedTable.create();
-            if (pair.left != null) {
-                for (Table.Cell<ProductDegenState, ValuationSet, ProductDegenState> currTrans : transitions.cellSet()) {
-                    if (pair.left.asMap().keySet().contains(currTrans.getRowKey())) {
-                        ValuationSet valu = pair.left.asMap().get(currTrans.getRowKey()).clone();
+            for (Table.Cell<ProductDegenState, ValuationSet, ProductDegenState> currTrans : transitions.cellSet()) {
+                if (pair.fin.asMap().keySet().contains(currTrans.getRowKey())) {
+                    ValuationSet valu = pair.fin.asMap().get(currTrans.getRowKey()).clone();
+                    valu.retainAll(currTrans.getColumnKey());
+                    if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
+                        toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
+                        toAdd.put(currTrans.getRowKey(), valu, currTrans.getValue());
+                        ValuationSet valu2 = this.valuationSetFactory.createUniverseValuationSet();
+                        valu2.retainAll(currTrans.getColumnKey());
+                        valu2.retainAll(valu.complement());
+                        toAdd.put(currTrans.getRowKey(), valu2, currTrans.getValue());
+                    }
+                }
+            }
+
+            toRemove.cellSet().stream().forEach(cell -> transitions.remove(cell.getRowKey(), cell.getColumnKey()));
+            transitions.putAll(toAdd);
+            toRemove.clear();
+            toAdd.clear();
+            for (TranSet<ProductDegenState> currAccSet : pair.infs) {
+                for (Table.Cell<ProductDegenState, ValuationSet, ProductDegenState> currTrans : transitions
+                        .cellSet()) {
+                    if (currAccSet.asMap().keySet().contains(currTrans.getRowKey())) {
+                        ValuationSet valu = currAccSet.asMap().get(currTrans.getRowKey()).clone();
                         valu.retainAll(currTrans.getColumnKey());
                         if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
                             toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
@@ -78,35 +98,11 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
                         }
                     }
                 }
-
-                toRemove.cellSet().stream().forEach(cell -> transitions.remove(cell.getRowKey(), cell.getColumnKey()));
-                transitions.putAll(toAdd);
-                toRemove.clear();
-                toAdd.clear();
             }
-            if (pair.right != null) {
-                for (TranSet<ProductDegenState> currAccSet : pair.right) {
-                    for (Table.Cell<ProductDegenState, ValuationSet, ProductDegenState> currTrans : transitions
-                            .cellSet()) {
-                        if (currAccSet.asMap().keySet().contains(currTrans.getRowKey())) {
-                            ValuationSet valu = currAccSet.asMap().get(currTrans.getRowKey()).clone();
-                            valu.retainAll(currTrans.getColumnKey());
-                            if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
-                                toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
-                                toAdd.put(currTrans.getRowKey(), valu, currTrans.getValue());
-                                ValuationSet valu2 = this.valuationSetFactory.createUniverseValuationSet();
-                                valu2.retainAll(currTrans.getColumnKey());
-                                valu2.retainAll(valu.complement());
-                                toAdd.put(currTrans.getRowKey(), valu2, currTrans.getValue());
-                            }
-                        }
-                    }
-                }
-                toRemove.cellSet().stream().forEach(cell -> transitions.remove(cell.getRowKey(), cell.getColumnKey()));
-                transitions.putAll(toAdd);
-                toRemove.clear();
-                toAdd.clear();
-            }
+            toRemove.cellSet().stream().forEach(cell -> transitions.remove(cell.getRowKey(), cell.getColumnKey()));
+            transitions.putAll(toAdd);
+            toRemove.clear();
+            toAdd.clear();
         }
 
         for (ProductDegenState s : states) {
@@ -114,12 +110,12 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
 
             for (Map.Entry<ValuationSet, ProductDegenState> trans : transitions.row(s).entrySet()) {
                 List<Integer> accSets = acc.stream()
-                        .filter(pair -> pair.left != null && pair.left.containsAll(s, trans.getKey()))
-                        .map(p -> hoa.getNumber(p.left))
+                        .filter(pair -> pair.fin.containsAll(s, trans.getKey()))
+                        .map(p -> hoa.getNumber(p.fin))
                         .collect(Collectors.toList());
 
                 for (GeneralizedRabinPair<ProductDegenState> pair : acc) {
-                    pair.right.stream()
+                    pair.infs.stream()
                             .filter(inf -> inf != null && inf.containsAll(s, trans.getKey()))
                             .map(hoa::getNumber)
                             .forEach(accSets::add);
@@ -141,15 +137,17 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
             GeneralizedRabinPair<Product.ProductState> grp = accTGR.get(i);
             TranSet<ProductDegenState> fin = new TranSet<>(valuationSetFactory);
             TranSet<ProductDegenState> inf = new TranSet<>(valuationSetFactory);
+
             for (ProductDegenState s : dtra.getStates()) {
-                ValuationSet vsFin = grp.left.asMap().get(s.left);
+                ValuationSet vsFin = grp.fin.asMap().get(s.left);
                 if (vsFin != null) {
                     fin.addAll(s, vsFin);
                 }
-                if (s.right.get(i) == grp.right.size()) {
+                if (s.right.get(i) == grp.infs.size()) {
                     inf.addAll(s, valuationSetFactory.createUniverseValuationSet());
                 }
             }
+
             list.add(new RabinPair<>(fin, inf));
         }
 
@@ -185,11 +183,11 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
                 GeneralizedRabinPair<Product.ProductState> grp = accTGR.get(i);
                 int awaited = right.get(i);
 
-                if (awaited == grp.right.size()) {
+                if (awaited == grp.infs.size()) {
                     awaited = 0;
                 }
 
-                while (awaited < grp.right.size() && grp.right.get(awaited).contains(left, valuation)) {
+                while (awaited < grp.infs.size() && grp.infs.get(awaited).contains(left, valuation)) {
                     awaited++;
                 }
 

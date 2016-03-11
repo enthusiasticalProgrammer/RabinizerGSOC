@@ -17,6 +17,7 @@
 
 package rabinizer.automata.output;
 
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import jhoafparser.ast.AtomAcceptance;
 import jhoafparser.ast.AtomLabel;
@@ -24,6 +25,7 @@ import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.*;
+import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.ltl.Conjunction;
 import rabinizer.ltl.Formula;
@@ -52,26 +54,28 @@ public class HOAConsumerExtended<T> {
         accType = type;
     }
 
-    private static <T> AccType getAccCondition(Collection<? extends GeneralizedRabinPair<T>> acc) {
+    private static <T> AccType getAccCondition(Collection<GeneralizedRabinPair<T>> acc) {
         if (acc.isEmpty()) {
             return AccType.NONE;
         }
 
         if (acc.size() == 1) {
-            if (acc.iterator().next().left == null) {
-                return AccType.COBUCHI;
+            GeneralizedRabinPair<T> pair = Collections3.getElement(acc);
+
+            if (pair.fin.isEmpty() || pair.infs.size() == 1) {
+                return AccType.BUCHI;
             }
 
-            if (acc.iterator().next().right == null) {
-                return AccType.BUCHI;
+            if (pair.infs.isEmpty()) {
+                return AccType.COBUCHI;
             }
         }
 
-        if (acc.stream().allMatch(pair -> pair.left == null)) {
+        if (acc.stream().allMatch(pair -> pair.fin.isEmpty())) {
             return AccType.GENBUCHI;
         }
 
-        if (acc.stream().allMatch(pair -> pair.right == null || pair.right.size() <= 1)) {
+        if (acc.stream().allMatch(pair -> pair.infs.size() <= 1)) {
             return AccType.RABIN;
         }
 
@@ -122,7 +126,7 @@ public class HOAConsumerExtended<T> {
     }
 
     public void setAcceptanceCondition2(Collection<RabinPair<T>> acc) throws HOAConsumerException {
-        setAcceptanceCondition(acc.stream().map(pair -> new GeneralizedRabinPair<>(pair.left, Collections.singletonList(pair.right))).collect(Collectors.toList()));
+        setAcceptanceCondition(acc.stream().map(pair -> new GeneralizedRabinPair<>(pair.fin, Collections.singletonList(pair.inf))).collect(Collectors.toList()));
     }
 
     public void setBuchiAcceptance() throws HOAConsumerException {
@@ -149,6 +153,10 @@ public class HOAConsumerExtended<T> {
         for (Map.Entry<ValuationSet, ? extends T> entry : successors.entrySet()) {
             hoa.addEdgeWithLabel(stateNumbers.get(begin), Simplifier.simplify(entry.getKey().toFormula()).accept(new FormulaConverter()), Collections.singletonList(getStateId(entry.getValue())), null);
         }
+    }
+
+    public void addEdges2(T begin, T successor) throws HOAConsumerException {
+        hoa.addEdgeWithLabel(getStateId(begin), null, Collections.singletonList(getStateId(successor)), null);
     }
 
     public void addEdges2(T begin, Map<ValuationSet, Set<?>> successors) throws HOAConsumerException {
@@ -221,13 +229,13 @@ public class HOAConsumerExtended<T> {
             BooleanExpression<AtomAcceptance> right = TRUE;
             BooleanExpression<AtomAcceptance> both;
 
-            if (rabin.left != null) {
-                left = new BooleanExpression<>(mkFin(getNumber(rabin.left)));
+            if (!rabin.fin.isEmpty()) {
+                left = new BooleanExpression<>(mkFin(getNumber(rabin.fin)));
             }
 
 
-            if (rabin.right != null) {
-                for (TranSet<T> inf : rabin.right) {
+            if (!rabin.infs.isEmpty()) {
+                for (TranSet<T> inf : rabin.infs) {
                     right = new BooleanExpression<>(BooleanExpression.Type.EXP_AND, right, new BooleanExpression<>(mkInf(getNumber(inf))));
                 }
             }
