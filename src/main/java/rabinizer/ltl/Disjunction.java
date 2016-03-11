@@ -25,15 +25,15 @@ import java.util.stream.Stream;
 
 public final class Disjunction extends PropositionalFormula {
 
-    public Disjunction(Collection<? extends Formula> disjuncts) {
+    public Disjunction(@NotNull Collection<? extends Formula> disjuncts) {
         super(disjuncts);
     }
 
-    public Disjunction(Formula... disjuncts) {
+    public Disjunction(@NotNull Formula... disjuncts) {
         super(disjuncts);
     }
 
-    public Disjunction(Stream<? extends Formula> formulaStream) {
+    public Disjunction(@NotNull Stream<? extends Formula> formulaStream) {
         super(formulaStream);
     }
 
@@ -63,7 +63,7 @@ public final class Disjunction extends PropositionalFormula {
     }
 
     @Override
-    protected PropositionalFormula create(Stream<? extends Formula> formulaStream) {
+    protected PropositionalFormula create(@NotNull Stream<? extends Formula> formulaStream) {
         return new Disjunction(formulaStream);
     }
 
