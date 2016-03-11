@@ -32,7 +32,7 @@ import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.valuationset.ValuationSet;
 
-public class DTGRA extends Product implements AccAutomatonInterface {
+public class DTGRA extends Product {
 
     private AccTGR acc;
 
@@ -46,16 +46,6 @@ public class DTGRA extends Product implements AccAutomatonInterface {
             // acc. condition)
             this.acc = new AccTGR(raw.accTGR);
         }
-    }
-
-    @Override
-    public void acc(PrintStream p) {
-        p.print(acc);
-    }
-
-    @Override
-    public int pairNumber() {
-        return acc.size();
     }
 
     @Override

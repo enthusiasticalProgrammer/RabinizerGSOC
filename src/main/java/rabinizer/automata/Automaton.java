@@ -27,6 +27,8 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 
 import com.google.common.collect.Table.Cell;
+import jhoafparser.consumer.HOAConsumer;
+import jhoafparser.consumer.HOAConsumerException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rabinizer.collections.valuationset.ValuationSet;
@@ -234,6 +236,10 @@ public abstract class Automaton<S extends IState<S>> {
 
     public List<TranSet<S>> subSCCs(Set<S> SCC, TranSet<S> forbiddenEdges) {
         return SCCAnalyser.subSCCs(this, SCC, forbiddenEdges);
+    }
+
+    public void toHOA(HOAConsumer hoa) throws HOAConsumerException {
+        throw new UnsupportedOperationException();
     }
 
     /**

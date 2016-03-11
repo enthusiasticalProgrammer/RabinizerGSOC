@@ -24,7 +24,6 @@ import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.*;
-import rabinizer.automata.DSRA.ProductDegenAccState;
 import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.ltl.Conjunction;
@@ -295,17 +294,16 @@ public class HOAConsumerExtended<T> {
         }
     }
 
-    public void setAcceptanceCondition(List<Tuple<? extends Set<ProductDegenAccState>, ? extends Set<ProductDegenAccState>>> acc) throws HOAConsumerException {
-
+    public void setAcceptanceCondition(List<Tuple<? extends Set<?>, ? extends Set<?>>> acc) throws HOAConsumerException {
         hoa.provideAcceptanceName("Rabin", Collections.emptyList());
         setAccCond(acc);
     }
 
-    private void setAccCond(List<Tuple<? extends Set<ProductDegenAccState>, ? extends Set<ProductDegenAccState>>> acc) throws HOAConsumerException {
+    private void setAccCond(List<Tuple<? extends Set<?>, ? extends Set<?>>> acc) throws HOAConsumerException {
 
         BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
 
-        for (Tuple<? extends Set<ProductDegenAccState>, ? extends Set<ProductDegenAccState>> rabin : acc) {
+        for (Tuple<? extends Set<?>, ? extends Set<?>> rabin : acc) {
             BooleanExpression<AtomAcceptance> left = new BooleanExpression<>(mkFin(getNumber(rabin.left)));
             BooleanExpression<AtomAcceptance> right = new BooleanExpression<>(mkInf(getNumber(rabin.right)));
             BooleanExpression<AtomAcceptance> both = new BooleanExpression<>(BooleanExpression.Type.EXP_AND, left, right);

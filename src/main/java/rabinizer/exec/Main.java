@@ -17,27 +17,22 @@
 
 package rabinizer.exec;
 
-import java.io.*;
-
-import rabinizer.automata.output.DotPrinter;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
-import rabinizer.ltl.*;
-import rabinizer.ltl.simplifier.Simplifier;
-
-import java.util.Set;
-
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import jhoafparser.consumer.HOAConsumerPrint;
-import rabinizer.automata.AccAutomatonInterface;
-import rabinizer.automata.DSRA;
-import rabinizer.automata.DTGRA;
-import rabinizer.automata.DTGRARaw;
-import rabinizer.automata.DTRA;
-import rabinizer.automata.Optimisation;
+import jhoafparser.consumer.HOAIntermediateStoreAndManipulate;
+import jhoafparser.transformations.ToStateAcceptance;
+import rabinizer.automata.*;
+import rabinizer.automata.output.DotPrinter;
 import rabinizer.collections.valuationset.ValuationSetFactory;
+import rabinizer.ltl.Formula;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.parser.ParseException;
+import rabinizer.ltl.simplifier.Simplifier;
 
+import java.io.IOException;
+import java.util.Set;
+import java.util.logging.Logger;
 
 public class Main {
 
@@ -55,11 +50,6 @@ public class Main {
         if (!silent) {
             System.out.println(s);
         }
-    }
-
-    public static void errorMessageAndExit(String text) {
-        System.out.println("ERROR: " + text);
-        System.exit(1);
     }
 
     public static double stopwatchLocal() {
@@ -82,10 +72,8 @@ public class Main {
         silent = arguments.outputLevel == 0;
         verbose = arguments.outputLevel == 2;
 
-        Set<Optimisation> opts = arguments.optimisations;
-
-        if (arguments.format != Format.SIZE || arguments.autType != AutomatonType.TGR) {
-            opts.add(Optimisation.COMPUTE_ACC_CONDITION);
+        if (arguments.autType != CLIParser.AutomatonType.TGR) {
+            arguments.optimisations.add(Optimisation.COMPUTE_ACC_CONDITION);
         }
 
         nonsilent("\n******************************************************************************\n"
@@ -99,65 +87,41 @@ public class Main {
                 + "* Version 3 by Zuzana Komarkova and Jan Kretinsky                            *\n"
                 + "******************************************************************************");
 
-        AccAutomatonInterface automaton = computeAutomaton(arguments.inputFormula, arguments.autType, arguments.simplification, arguments.backend, opts);
+        Automaton<?> automaton = computeAutomaton(arguments.inputFormula, arguments.autType, arguments.simplification, arguments.backend, arguments.optimisations);
+
         nonsilent("Done!");
 
-        switch (arguments.format) {
-            case HOA:
-                HOAConsumer hoa = new HOAConsumerPrint(arguments.writer);
-                automaton.toHOA(hoa);
-                break;
-            case DOT:
-                hoa = new DotPrinter(arguments.writer);
-                automaton.toHOA(hoa);
-                automaton.acc(new PrintStream(arguments.writer));
-                break;
-            case SIZE:
-                arguments.writer.write(String.format("%8s", automaton.size()).getBytes());
-                break;
-            case SIZEACC:
-                arguments.writer.write(String.format("%8s%8s", automaton.size(), automaton.pairNumber()).getBytes());
-                break;
+        HOAConsumer outputPipeline = arguments.format == CLIParser.Format.DOT
+                ? new DotPrinter(arguments.writer)
+                : new HOAConsumerPrint(arguments.writer);
+
+        if (arguments.autType == CLIParser.AutomatonType.SGR || arguments.autType == CLIParser.AutomatonType.SR) {
+            outputPipeline = new HOAIntermediateStoreAndManipulate(outputPipeline, new ToStateAcceptance());
         }
 
         arguments.writer.close();
     }
 
-    public static AccAutomatonInterface computeAutomaton(Formula inputFormula, AutomatonType type, Simplifier.Strategy simplify, FactoryRegistry.Backend backend,
-            Set<Optimisation> opts) {
+    public static Automaton<?> computeAutomaton(Formula inputFormula, CLIParser.AutomatonType type, Simplifier.Strategy simplify, FactoryRegistry.Backend backend,
+                                                Set<Optimisation> opts) {
         nonsilent("Formula unsimplified: " + inputFormula);
-
         inputFormula = Simplifier.simplify(inputFormula, simplify);
         nonsilent("Formula simplified:" + inputFormula);
 
-        nonsilent("Enumeration of valuations");
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(backend, inputFormula.getPropositions());
         ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(backend, inputFormula.getAtoms());
 
         DTGRARaw dtgra = new DTGRARaw(inputFormula, factory, valuationSetFactory, opts);
 
         switch (type) {
-            case TGR:
-                return new DTGRA(dtgra);
-
+            case SR:
             case TR:
                 return new DTRA(dtgra);
 
-            case SR:
-                return new DSRA(new DTRA(dtgra));
-
+            case SGR:
+            case TGR:
             default:
-                errorMessageAndExit("Unsupported automaton type");
-                return null;
+                return new DTGRA(dtgra);
         }
     }
-
-    public enum AutomatonType {
-        TGR, TR, SR
-    }
-
-    public enum Format {
-        HOA, DOT, SIZE, SIZEACC
-    }
-
 }

@@ -32,15 +32,15 @@ public class CLIParser {
 
     public static final Options opts = makeOptions();
 
-    public static final Options makeOptions() {
+    public static Options makeOptions() {
         Options result = new Options();
         result.addOption("h", "help", false, "prints this help and exits.");
         result.addOption("o", "output-level", true,
                 "Here you can give the output level. Possible values are 0 (for silent), 1 (default, print only important messages), and 2 (for verbose)");
         result.addOption("a", "automatonType", true,
-                "This option determines the acceptance type of the output automaton. Possible values are tgr (default) for transition based generalized Rabin acceptance, tr for transition based Rabin acceptance, and sr for state based Rabin acceptance.");
+                "This option determines the acceptance type of the output automaton. Possible values are tgr (default) for transition based generalized Rabin acceptance, tr for transition based Rabin acceptance, sgr for state based generalized Rabin acceptance, and sr for state based Rabin acceptance.");
         result.addOption("m", "format", true,
-                "The format in which the automaton is stored. Possible values are hoa (default), dot for the dotty syntax, size, which prints the size of the automaton, and sizeacc which prints the size of the acceptance condition.");
+                "The format in which the automaton is stored. Possible values are hoa (default), dot for the dot syntax.");
         result.addOption("p", "optimisations", true,
                 "This option defines, if optimisations are to be used or not. Possible values are on, off, and experimental (meaning that the experimental slave-suspension is used and all other optimisations too). The default is on");
         result.addOption("e", "eager", false,
@@ -71,12 +71,11 @@ public class CLIParser {
 
     public static CmdArguments parseArgs(String... args) throws ParseException {
         CommandLineParser lvParser = new DefaultParser();
-
         CommandLine cmd;
 
         int outputLevel = 1;
-        Main.AutomatonType autType = Main.AutomatonType.TGR;
-        Main.Format format = Main.Format.HOA;
+        AutomatonType autType = AutomatonType.TGR;
+        Format format = Format.HOA;
 
         Set<Optimisation> optimisations = EnumSet.allOf(Optimisation.class);
         optimisations.remove(Optimisation.COMPLETE);
@@ -128,13 +127,13 @@ public class CLIParser {
             String s = cmd.getOptionValue('a');
             switch (s) {
                 case "tgr":
-                    autType = Main.AutomatonType.TGR;
+                    autType = AutomatonType.TGR;
                     break;
                 case "tr":
-                    autType = Main.AutomatonType.TR;
+                    autType = AutomatonType.TR;
                     break;
                 case "sr":
-                    autType = Main.AutomatonType.SR;
+                    autType = AutomatonType.SR;
                     break;
                 default:
                     System.out.println("Wrong Automaton Type. Look at the help printed below.");
@@ -162,16 +161,10 @@ public class CLIParser {
             String m = cmd.getOptionValue('m');
             switch (m) {
                 case "dot":
-                    format = Main.Format.DOT;
-                    break;
-                case "size":
-                    format = Main.Format.SIZE;
-                    break;
-                case "sizeacc":
-                    format = Main.Format.SIZEACC;
+                    format = Format.DOT;
                     break;
                 case "hoa":
-                    format = Main.Format.HOA;
+                    format = Format.HOA;
                     break;
                 default:
                     System.out.println("wrong format-argument. Look at the help printed below.");
@@ -306,18 +299,26 @@ public class CLIParser {
         helper.printHelp("CLIParser", opts);
     }
 
+    public enum AutomatonType {
+        TGR, TR, SGR, SR
+    }
+
+    public enum Format {
+        HOA, DOT
+    }
+
     static final class CmdArguments {
         // 0: silent, 1: neither silent nor verbose, 2: verbose
         final int outputLevel;
-        final Main.AutomatonType autType;
-        final Main.Format format;
+        final AutomatonType autType;
+        final Format format;
         final Set<Optimisation> optimisations;
         final Simplifier.Strategy simplification;
         final OutputStream writer;
         final Formula inputFormula;
         final FactoryRegistry.Backend backend;
 
-        private CmdArguments(int outputLevel, Main.AutomatonType autType, Main.Format format, Set<Optimisation> optimisations, Simplifier.Strategy strat,
+        private CmdArguments(int outputLevel, AutomatonType autType, Format format, Set<Optimisation> optimisations, Simplifier.Strategy strat,
                              OutputStream writer, Formula inputFormula, FactoryRegistry.Backend backend) {
             this.outputLevel = outputLevel;
             this.autType = autType;

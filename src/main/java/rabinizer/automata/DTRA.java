@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 /**
  * TODO: decouple DTRA from DTGRARaw
  */
-public class DTRA extends Automaton<DTRA.ProductDegenState> implements AccAutomatonInterface {
+public class DTRA extends Automaton<DTRA.ProductDegenState> {
 
     DTGRARaw dtgra;
     AccTGR accTGR;
@@ -48,16 +48,6 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> implements AccAutoma
         accTGR = new AccTGR(dtgra.accTGR);
         generate();
         accTR = createAccTR(accTGR, this, valuationSetFactory);
-    }
-
-    @Override
-    public void acc(PrintStream p) {
-        p.print(accTR);
-    }
-
-    @Override
-    public int pairNumber() {
-        return accTR.size();
     }
 
     @Override
