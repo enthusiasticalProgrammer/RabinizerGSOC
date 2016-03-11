@@ -253,7 +253,7 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
             return bdd.hashCode();
         }
 
-        // We are not using bdd.support since it causes several NPE.
+        // We are not using bdd.support since it causes several NPE. Patch available on github/javabdd.
         private void getSupport(BDD bdd, Set<Formula> support) {
             if (bdd.isZero() || bdd.isOne()) {
                 return;
