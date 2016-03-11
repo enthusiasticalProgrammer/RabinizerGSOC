@@ -19,6 +19,7 @@ package rabinizer.exec;
 
 import java.io.*;
 
+import rabinizer.automata.output.DotPrinter;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.*;
 import rabinizer.ltl.simplifier.Simplifier;
@@ -101,13 +102,14 @@ public class Main {
         AccAutomatonInterface automaton = computeAutomaton(arguments.inputFormula, arguments.autType, arguments.simplification, arguments.backend, opts);
         nonsilent("Done!");
 
-        HOAConsumer hoa = new HOAConsumerPrint(arguments.writer);
         switch (arguments.format) {
             case HOA:
+                HOAConsumer hoa = new HOAConsumerPrint(arguments.writer);
                 automaton.toHOA(hoa);
                 break;
             case DOT:
-                automaton.toDotty(new PrintStream(arguments.writer));
+                hoa = new DotPrinter(arguments.writer);
+                automaton.toHOA(hoa);
                 automaton.acc(new PrintStream(arguments.writer));
                 break;
             case SIZE:

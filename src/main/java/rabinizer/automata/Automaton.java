@@ -158,24 +158,7 @@ public abstract class Automaton<S extends IState<S>> {
     public int size() {
         return states.size();
     }
-
-    public void toDotty(PrintStream p) {
-        p.println("digraph \"Automaton for " + initialState + "\" \n{");
-
-        for (IState<S> s : states) {
-            if (s.equals(initialState)) {
-                p.println("node [shape=oval, label=\"" + s + "\"]\"" + s + "\";");
-            } else {
-                p.println("node [shape=rectangle, label=\"" + s + "\"]\"" + s + "\";");
-            }
-        }
-
-        for (Cell<S, ValuationSet, S> cell : transitions.cellSet()) {
-            p.println("\"" + cell.getRowKey() + "\" -> \"" + cell.getColumnKey() + "\" [label=\"" + cell.getValue()
-                    + "\"];");
-        }
-    }
-
+    
     public @NotNull Set<S> getStates() {
         return Collections.unmodifiableSet(states);
     }

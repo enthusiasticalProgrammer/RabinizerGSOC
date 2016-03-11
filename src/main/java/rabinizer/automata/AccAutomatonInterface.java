@@ -26,8 +26,6 @@ import java.io.PrintStream;
 public interface AccAutomatonInterface {
     void toHOA(HOAConsumer hoa) throws HOAConsumerException;
 
-    void toDotty(PrintStream printStream);
-
     void acc(PrintStream printStream);
 
     int size();
