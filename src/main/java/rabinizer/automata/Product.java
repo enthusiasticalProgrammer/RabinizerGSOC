@@ -18,10 +18,9 @@
 package rabinizer.automata;
 
 import org.jetbrains.annotations.NotNull;
-import rabinizer.ltl.GOperator;
-import rabinizer.ltl.RelevantGFormulaeWithSlaveSuspension;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
+import rabinizer.ltl.GOperator;
 
 import java.util.*;
 import java.util.function.Function;
@@ -63,12 +62,12 @@ public class Product extends Automaton<Product.ProductState> {
 
     @Override
     protected @NotNull Product.ProductState generateInitialState() {
-        return new ProductState(primaryAutomaton.getInitialState(), relevantSecondarySlaves(primaryAutomaton.getInitialState(), Collections.emptySet()),
+        return new ProductState(primaryAutomaton.getInitialState(), relevantSecondarySlaves(primaryAutomaton.getInitialState()),
                 k -> secondaryAutomata.get(k).getInitialState());
     }
 
 
-    private Set<GOperator> relevantSecondarySlaves(@NotNull Master.State primaryState, @NotNull Set<GOperator> parentKeys) {
+    private Set<GOperator> relevantSecondarySlaves(@NotNull Master.State primaryState) {
         Set<GOperator> keys;
         if (allSlaves) {
             keys = secondaryAutomata.keySet();
@@ -80,14 +79,23 @@ public class Product extends Automaton<Product.ProductState> {
         if (primaryState instanceof SuspendedMaster.State && ((SuspendedMaster.State) primaryState).slavesSuspended) {
             return Collections.emptySet();
         }
-        return keys;
 
+        return keys;
     }
 
     public class ProductState extends AbstractProductState<Master.State, GOperator, RabinSlave.State, ProductState> implements IState<ProductState> {
 
         private ProductState(Master.State primaryState, Map<GOperator, RabinSlave.State> secondaryStates) {
             super(primaryState, secondaryStates);
+        }
+
+        private ProductState(Master.State primaryState, Collection<GOperator> keys, Function<GOperator, RabinSlave.State> constructor) {
+            super(primaryState, keys, constructor);
+        }
+
+        @Override
+        public @NotNull ValuationSetFactory getFactory() {
+            return valuationSetFactory;
         }
 
         @Override
@@ -100,23 +108,14 @@ public class Product extends Automaton<Product.ProductState> {
             return secondaryAutomata;
         }
 
-        private ProductState(Master.State primaryState, Collection<GOperator> keys, Function<GOperator, RabinSlave.State> constructor) {
-            super(primaryState, keys, constructor);
-        }
-
         @Override
         protected Set<GOperator> relevantSecondary(Master.State primaryState) {
-            return relevantSecondarySlaves(primaryState, this.secondaryStates.keySet());
+            return relevantSecondarySlaves(primaryState);
         }
 
         @Override
         protected ProductState constructState(Master.State primaryState, Map<GOperator, RabinSlave.State> secondaryStates) {
             return new ProductState(primaryState, secondaryStates);
-        }
-
-        @Override
-        public @NotNull ValuationSetFactory getFactory() {
-            return valuationSetFactory;
         }
 
         @Override

@@ -35,11 +35,6 @@ public final class GOperator extends ModalOperator {
     }
 
     @Override
-    protected ModalOperator build(Formula operand) {
-        return new GOperator(operand);
-    }
-
-    @Override
     public @NotNull Formula unfold(boolean unfoldG) {
         if (unfoldG) {
             return new Conjunction(operand.unfold(true), this);
@@ -98,6 +93,11 @@ public final class GOperator extends ModalOperator {
     @Override
     public boolean isSuspendable() {
         return operand.isPureEventual() || operand.isSuspendable();
+    }
+
+    @Override
+    protected ModalOperator build(Formula operand) {
+        return new GOperator(operand);
     }
 
     @Override

@@ -24,7 +24,6 @@ import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.*;
-import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.ltl.Conjunction;
 import rabinizer.ltl.Formula;
@@ -37,13 +36,12 @@ import java.util.stream.Collectors;
 public class HOAConsumerExtended<T> {
 
     public static final BooleanExpression<AtomAcceptance> TRUE = new BooleanExpression<>(BooleanExpression.Type.EXP_TRUE, null, null);
-    public static final BooleanExpression<AtomAcceptance> FALSE = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
     private final HOAConsumer hoa;
 
     private final Map<T, Integer> stateNumbers;
     private final Map<Object, Integer> acceptanceNumbers;
 
-    private AutomatonType accType;
+    private final AutomatonType accType;
     private boolean body;
     private List<String> alphabet;
 
@@ -54,7 +52,7 @@ public class HOAConsumerExtended<T> {
         accType = type;
     }
 
-    private static <T> AccType getAccCondition(Collection<? extends GRabinPair<T>> acc) {
+    private static <T> AccType getAccCondition(Collection<? extends GeneralizedRabinPair<T>> acc) {
         if (acc.isEmpty()) {
             return AccType.NONE;
         }
@@ -116,7 +114,7 @@ public class HOAConsumerExtended<T> {
      *
      * @throws HOAConsumerException
      */
-    public void setAcceptanceCondition(Collection<GRabinPair<TranSet<T>>> acc) throws HOAConsumerException {
+    public void setAcceptanceCondition(Collection<GeneralizedRabinPair<T>> acc) throws HOAConsumerException {
         AccType accT = getAccCondition(acc);
 
         hoa.provideAcceptanceName(accT.toString(), Collections.emptyList());
@@ -124,7 +122,7 @@ public class HOAConsumerExtended<T> {
     }
 
     public void setAcceptanceCondition2(Collection<RabinPair<T>> acc) throws HOAConsumerException {
-        setAcceptanceCondition(acc.stream().map(pair -> new GRabinPair<>(pair.left, Collections.singletonList(pair.right))).collect(Collectors.toList()));
+        setAcceptanceCondition(acc.stream().map(pair -> new GeneralizedRabinPair<>(pair.left, Collections.singletonList(pair.right))).collect(Collectors.toList()));
     }
 
     public void setBuchiAcceptance() throws HOAConsumerException {
@@ -215,10 +213,10 @@ public class HOAConsumerExtended<T> {
     }
 
 
-    private void setAccCond(Collection<GRabinPair<TranSet<T>>> acc) throws HOAConsumerException {
+    private void setAccCond(Collection<GeneralizedRabinPair<T>> acc) throws HOAConsumerException {
         BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
 
-        for (GRabinPair<TranSet<T>> rabin : acc) {
+        for (GeneralizedRabinPair<T> rabin : acc) {
             BooleanExpression<AtomAcceptance> left = TRUE;
             BooleanExpression<AtomAcceptance> right = TRUE;
             BooleanExpression<AtomAcceptance> both;
@@ -293,24 +291,4 @@ public class HOAConsumerExtended<T> {
             }
         }
     }
-
-    public void setAcceptanceCondition(List<Tuple<? extends Set<?>, ? extends Set<?>>> acc) throws HOAConsumerException {
-        hoa.provideAcceptanceName("Rabin", Collections.emptyList());
-        setAccCond(acc);
-    }
-
-    private void setAccCond(List<Tuple<? extends Set<?>, ? extends Set<?>>> acc) throws HOAConsumerException {
-
-        BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
-
-        for (Tuple<? extends Set<?>, ? extends Set<?>> rabin : acc) {
-            BooleanExpression<AtomAcceptance> left = new BooleanExpression<>(mkFin(getNumber(rabin.left)));
-            BooleanExpression<AtomAcceptance> right = new BooleanExpression<>(mkInf(getNumber(rabin.right)));
-            BooleanExpression<AtomAcceptance> both = new BooleanExpression<>(BooleanExpression.Type.EXP_AND, left, right);
-            all = new BooleanExpression<>(BooleanExpression.Type.EXP_OR, all, both);
-        }
-
-        hoa.setAcceptanceCondition(acceptanceNumbers.size(), new RemoveConstants<AtomAcceptance>().visit(all));
-    }
-
 }

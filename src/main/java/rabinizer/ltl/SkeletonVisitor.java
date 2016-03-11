@@ -17,23 +17,19 @@
 
 package rabinizer.ltl;
 
+import com.google.common.collect.Sets;
 import org.jetbrains.annotations.NotNull;
 
-import com.google.common.collect.Sets;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
 
     private final SkeletonApproximation strategy;
 
-    public enum SkeletonApproximation {
-        LOWER_BOUND, BOTH
-    }
-
     public SkeletonVisitor() {
-        strategy = SkeletonApproximation.BOTH;
+        this(SkeletonApproximation.BOTH);
     }
 
     public SkeletonVisitor(SkeletonApproximation appr) {
@@ -114,5 +110,9 @@ public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
     @Override
     public Set<Set<GOperator>> visit(@NotNull XOperator xOperator) {
         return xOperator.operand.accept(this);
+    }
+
+    public enum SkeletonApproximation {
+        LOWER_BOUND, BOTH
     }
 }

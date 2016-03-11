@@ -17,22 +17,19 @@
 
 package rabinizer.automata;
 
-import java.io.PrintStream;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
-
-import com.google.common.collect.Table.Cell;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 public abstract class Automaton<S extends IState<S>> {
 
@@ -55,16 +52,6 @@ public abstract class Automaton<S extends IState<S>> {
         states = new HashSet<>();
         transitions = HashBasedTable.create();
         edgeBetween = HashBasedTable.create();
-    }
-
-    protected Automaton(@NotNull Automaton<S> a) {
-        states = a.states;
-        transitions = a.transitions;
-        initialState = a.initialState;
-        edgeBetween = a.edgeBetween;
-        valuationSetFactory = a.valuationSetFactory;
-        trapState = a.trapState;
-        mergingEnabled = a.mergingEnabled;
     }
 
     public void generate() {
@@ -90,37 +77,6 @@ public abstract class Automaton<S extends IState<S>> {
                 }
             }
         }
-    }
-
-    private @NotNull Collection<S> generateSingleState(@NotNull S state) {
-        if (states.add(state)) {
-            Map<ValuationSet, S> successors = state.getSuccessors();
-            Map<S, ValuationSet> reverseMap = edgeBetween.row(state);
-
-            // Insert all successors and construct reverse map.
-            for (Entry<ValuationSet, S> transition : successors.entrySet()) {
-                ValuationSet edge = transition.getKey();
-                S successor = transition.getValue();
-
-                ValuationSet vs = reverseMap.remove(successor);
-
-                if (vs == null) {
-                    vs = edge.clone();
-                    transitions.put(state, edge, successor);
-                } else if (mergingEnabled) {
-                    transitions.remove(state, vs);
-                    vs.addAll(edge);
-                    transitions.put(state, vs, successor);
-                } else {
-                    transitions.put(state, edge, successor);
-                    vs.addAll(edge);
-                }
-
-                reverseMap.put(successor, vs);
-            }
-        }
-
-        return transitions.row(state).values();
     }
 
     public boolean isSink(S state) {
@@ -160,7 +116,7 @@ public abstract class Automaton<S extends IState<S>> {
     public int size() {
         return states.size();
     }
-    
+
     public @NotNull Set<S> getStates() {
         return Collections.unmodifiableSet(states);
     }
@@ -175,55 +131,6 @@ public abstract class Automaton<S extends IState<S>> {
         }
 
         return initialState;
-    }
-
-    /**
-     * if the automaton is not complete anymore (e.g. because of optimization),
-     * this method makes it complete by adding a trap state. If you use it after
-     * the generation of the Acceptance-condition, either update the
-     * Acceptance-condition or make sure, every generalized RabinPair is not a
-     * Tautology (like Fin(emptySet)&Inf(allTransitions))
-     */
-    void makeComplete() {
-        boolean usedTrapState = false;
-        states.add(trapState);
-
-        if (initialState == null) {
-            initialState = trapState;
-            usedTrapState = true;
-        }
-
-        Map<S, Map<ValuationSet, S>> trans = transitions.rowMap();
-
-        for (S s : states) {
-            ValuationSet vs = valuationSetFactory.createEmptyValuationSet();
-            Set<Entry<ValuationSet, S>> transOfS;
-            if (trans.get(s) != null) {
-                transOfS = trans.get(s).entrySet();
-            } else {
-                transOfS = Collections.emptySet();
-            }
-
-            transOfS.stream().forEach(edge -> vs.addAll(edge.getKey()));
-            ValuationSet vs2 = vs.complement(); // because vs has to be
-            // final or effectively
-            // final acc. to compiler
-            if (!vs2.isEmpty()) {
-                transitions.put(s, vs2, trapState);
-                edgeBetween.put(s, trapState, vs2);
-                if (s != trapState) {
-                    usedTrapState = true;
-                }
-            }
-        }
-
-        if (usedTrapState) {
-            transitions.put(trapState, valuationSetFactory.createUniverseValuationSet(), trapState);
-            edgeBetween.put(trapState, trapState, valuationSetFactory.createUniverseValuationSet());
-            states.add(trapState);
-        } else {
-            states.remove(trapState);
-        }
     }
 
     public List<TranSet<S>> SCCs() {
@@ -276,6 +183,55 @@ public abstract class Automaton<S extends IState<S>> {
         }
     }
 
+    /**
+     * if the automaton is not complete anymore (e.g. because of optimization),
+     * this method makes it complete by adding a trap state. If you use it after
+     * the generation of the Acceptance-condition, either update the
+     * Acceptance-condition or make sure, every generalized RabinPair is not a
+     * Tautology (like Fin(emptySet)&Inf(allTransitions))
+     */
+    void makeComplete() {
+        boolean usedTrapState = false;
+        states.add(trapState);
+
+        if (initialState == null) {
+            initialState = trapState;
+            usedTrapState = true;
+        }
+
+        Map<S, Map<ValuationSet, S>> trans = transitions.rowMap();
+
+        for (S s : states) {
+            ValuationSet vs = valuationSetFactory.createEmptyValuationSet();
+            Set<Entry<ValuationSet, S>> transOfS;
+            if (trans.get(s) != null) {
+                transOfS = trans.get(s).entrySet();
+            } else {
+                transOfS = Collections.emptySet();
+            }
+
+            transOfS.stream().forEach(edge -> vs.addAll(edge.getKey()));
+            ValuationSet vs2 = vs.complement(); // because vs has to be
+            // final or effectively
+            // final acc. to compiler
+            if (!vs2.isEmpty()) {
+                transitions.put(s, vs2, trapState);
+                edgeBetween.put(s, trapState, vs2);
+                if (s != trapState) {
+                    usedTrapState = true;
+                }
+            }
+        }
+
+        if (usedTrapState) {
+            transitions.put(trapState, valuationSetFactory.createUniverseValuationSet(), trapState);
+            edgeBetween.put(trapState, trapState, valuationSetFactory.createUniverseValuationSet());
+            states.add(trapState);
+        } else {
+            states.remove(trapState);
+        }
+    }
+
     // TODO to abstract ProductAutomaton ?
     protected @NotNull Set<ValuationSet> generatePartitioning(@NotNull Set<Set<ValuationSet>> product) {
         Set<ValuationSet> partitioning = new HashSet<>();
@@ -302,22 +258,6 @@ public abstract class Automaton<S extends IState<S>> {
     protected abstract @NotNull S generateInitialState();
 
     /**
-     * @param scc: an SCC for which the transitions inside need to be determined
-     * @return all transitions where start is in the SCC
-     */
-    protected @NotNull Set<Table.Cell<S, ValuationSet, S>> getTransitionsInSCC(@NotNull Set<S> scc) {
-        Set<Table.Cell<S, ValuationSet, S>> result = new HashSet<>();
-
-        for (Table.Cell<S, ValuationSet, S> entry : transitions.cellSet()) {
-            if (scc.contains(entry.getRowKey())) {
-                result.add(entry);
-            }
-        }
-
-        return result;
-    }
-
-    /**
      * This method has no side effects
      *
      * @param scc: set of states
@@ -335,7 +275,7 @@ public abstract class Automaton<S extends IState<S>> {
      * states-set (and both must not be null) when calling the method.
      * Antecessor gets deleted during the method, and the transitions to
      * antecessor will be recurved towards replacement.
-     *
+     * <p>
      * The method throws an IllegalArgumentException, when one of the parameters
      * is not in the states-set
      */
@@ -381,5 +321,36 @@ public abstract class Automaton<S extends IState<S>> {
         if (antecessor.equals(initialState)) {
             initialState = replacement;
         }
+    }
+
+    private @NotNull Collection<S> generateSingleState(@NotNull S state) {
+        if (states.add(state)) {
+            Map<ValuationSet, S> successors = state.getSuccessors();
+            Map<S, ValuationSet> reverseMap = edgeBetween.row(state);
+
+            // Insert all successors and construct reverse map.
+            for (Entry<ValuationSet, S> transition : successors.entrySet()) {
+                ValuationSet edge = transition.getKey();
+                S successor = transition.getValue();
+
+                ValuationSet vs = reverseMap.remove(successor);
+
+                if (vs == null) {
+                    vs = edge.clone();
+                    transitions.put(state, edge, successor);
+                } else if (mergingEnabled) {
+                    transitions.remove(state, vs);
+                    vs.addAll(edge);
+                    transitions.put(state, vs, successor);
+                } else {
+                    transitions.put(state, edge, successor);
+                    vs.addAll(edge);
+                }
+
+                reverseMap.put(successor, vs);
+            }
+        }
+
+        return transitions.row(state).values();
     }
 }

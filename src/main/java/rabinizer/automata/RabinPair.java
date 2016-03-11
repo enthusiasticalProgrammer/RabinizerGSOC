@@ -93,7 +93,7 @@ public class RabinPair<S> extends Tuple<TranSet<S>, TranSet<S>> {
             RabinSlave.State rs = ps.getSecondaryState(slave.mojmir.label);
             if (rs != null) { // relevant slave
                 for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : rs.entrySet()) {
-                    if (stateIntegerEntry.getValue().intValue() != rank) {
+                    if (stateIntegerEntry.getValue() != rank) {
                         continue;
                     }
 

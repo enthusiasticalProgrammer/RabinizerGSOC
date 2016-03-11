@@ -99,6 +99,7 @@ public class Main {
             outputPipeline = new HOAIntermediateStoreAndManipulate(outputPipeline, new ToStateAcceptance());
         }
 
+        automaton.toHOA(outputPipeline);
         arguments.writer.close();
     }
 

@@ -17,24 +17,22 @@
 
 package rabinizer.automata;
 
-import java.io.PrintStream;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+import jhoafparser.consumer.HOAConsumer;
+import jhoafparser.consumer.HOAConsumerException;
+import rabinizer.automata.output.HOAConsumerExtended;
+import rabinizer.collections.valuationset.ValuationSet;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-
-import jhoafparser.consumer.HOAConsumer;
-import jhoafparser.consumer.HOAConsumerException;
-import rabinizer.automata.output.HOAConsumerExtended;
-import rabinizer.collections.valuationset.ValuationSet;
-
 public class DTGRA extends Product {
 
-    private AccTGR acc;
+    private List<GeneralizedRabinPair<ProductState>> acc;
 
     public DTGRA(DTGRARaw raw) {
         super(raw.automaton.primaryAutomaton, raw.automaton.secondaryAutomata, raw.automaton.valuationSetFactory, Collections.emptySet());
@@ -44,7 +42,9 @@ public class DTGRA extends Product {
         this.edgeBetween.putAll(raw.automaton.edgeBetween);
         if (raw.accTGR != null) { // for computing the state space only (with no
             // acc. condition)
-            this.acc = new AccTGR(raw.accTGR);
+            final DTGRARaw.AccTGRRaw<ProductState> accTGR = raw.accTGR;
+            this.acc = new ArrayList<>();
+            this.acc.addAll(raw.accTGR);
         }
     }
 
@@ -56,17 +56,17 @@ public class DTGRA extends Product {
         hoa.setAcceptanceCondition(acc);
 
         //split transitions according to accepting Sets:
-        for(GRabinPair<TranSet<ProductState>> pair: acc){
-            Table<Product.ProductState,ValuationSet,Product.ProductState> toAdd = HashBasedTable.create();
-            Table<Product.ProductState,ValuationSet,Product.ProductState> toRemove = HashBasedTable.create();
+        for (GeneralizedRabinPair<ProductState> pair : acc) {
+            Table<Product.ProductState, ValuationSet, Product.ProductState> toAdd = HashBasedTable.create();
+            Table<Product.ProductState, ValuationSet, Product.ProductState> toRemove = HashBasedTable.create();
 
-            if (pair.left != null){
-                for(Table.Cell<Product.ProductState,ValuationSet,Product.ProductState> currTrans : transitions.cellSet()){
-                    if (pair.left.asMap().containsKey(currTrans.getRowKey())){
+            if (pair.left != null) {
+                for (Table.Cell<Product.ProductState, ValuationSet, Product.ProductState> currTrans : transitions.cellSet()) {
+                    if (pair.left.asMap().containsKey(currTrans.getRowKey())) {
                         ValuationSet valu = pair.left.asMap().get(currTrans.getRowKey()).clone();
                         valu.retainAll(currTrans.getColumnKey());
-                        if(!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())){
-                            toRemove.put(currTrans.getRowKey(),currTrans.getColumnKey(),currTrans.getValue());
+                        if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
+                            toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
                             toAdd.put(currTrans.getRowKey(), valu, currTrans.getValue());
                             ValuationSet valu2 = this.valuationSetFactory.createUniverseValuationSet();
                             valu2.retainAll(currTrans.getColumnKey());
@@ -83,21 +83,19 @@ public class DTGRA extends Product {
 
             if (pair.right != null) {
                 for (TranSet<Product.ProductState> currAccSet : pair.right) {
-                    for (Table.Cell<Product.ProductState, ValuationSet, Product.ProductState> currTrans : transitions
-                            .cellSet()) {
-                        if (currAccSet.asMap().containsKey(currTrans.getRowKey())) {
-                            ValuationSet valu = currAccSet.asMap().get(currTrans.getRowKey()).clone();
-                            valu.retainAll(currTrans.getColumnKey());
-                            if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
-                                toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
-                                toAdd.put(currTrans.getRowKey(), valu, currTrans.getValue());
-                                ValuationSet valu2 = this.valuationSetFactory.createUniverseValuationSet();
-                                valu2.retainAll(currTrans.getColumnKey());
-                                valu2.retainAll(valu.complement());
-                                toAdd.put(currTrans.getRowKey(), valu2, currTrans.getValue());
-                            }
+                    transitions.cellSet().stream().filter(currTrans -> currAccSet.asMap().containsKey(currTrans.getRowKey())).forEach(currTrans -> {
+                        ValuationSet valu = currAccSet.asMap().get(currTrans.getRowKey()).clone();
+                        valu.retainAll(currTrans.getColumnKey());
+                        if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
+                            toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
+                            toAdd.put(currTrans.getRowKey(), valu, currTrans.getValue());
+                            ValuationSet valu2 = this.valuationSetFactory.createUniverseValuationSet();
+                            valu2.retainAll(currTrans.getColumnKey());
+                            valu2.retainAll(valu.complement());
+                            toAdd.put(currTrans.getRowKey(), valu2, currTrans.getValue());
                         }
-                    }
+                    });
+
                     toRemove.cellSet().stream()
                             .forEach(cell -> transitions.remove(cell.getRowKey(), cell.getColumnKey()));
                     transitions.putAll(toAdd);
@@ -112,10 +110,10 @@ public class DTGRA extends Product {
 
             for (Map.Entry<ValuationSet, ProductState> trans : transitions.row(s).entrySet()) {
                 List<Integer> accSets = acc.stream()
-                    .filter(pair -> pair.left != null && pair.left.containsAll(s, trans.getKey()))
-                    .map(p -> hoa.getNumber(p.left)).collect(Collectors.toList());
+                        .filter(pair -> pair.left != null && pair.left.containsAll(s, trans.getKey()))
+                        .map(p -> hoa.getNumber(p.left)).collect(Collectors.toList());
 
-                for (GRabinPair<TranSet<ProductState>> pair : acc) {
+                for (GeneralizedRabinPair<ProductState> pair : acc) {
                     pair.right.stream()
                             .filter(inf -> inf != null && inf.containsAll(s, trans.getKey()))
                             .map(hoa::getNumber)
@@ -130,5 +128,4 @@ public class DTGRA extends Product {
 
         hoa.done();
     }
-
 }

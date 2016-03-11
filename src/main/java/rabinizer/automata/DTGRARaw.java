@@ -17,14 +17,14 @@
 
 package rabinizer.automata;
 
-import java.util.*;
-
 import rabinizer.automata.Product.ProductState;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.Main;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.GOperator;
-import rabinizer.collections.valuationset.ValuationSetFactory;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
+
+import java.util.*;
 
 public class DTGRARaw {
 
@@ -41,7 +41,7 @@ public class DTGRARaw {
         Main.nonsilent("Generating primaryAutomaton");
         Master master;
 
-        master = new SuspendedMaster(phi, equivalenceClassFactory, valuationSetFactory, opts, true);
+        master = new SuspendedMaster(phi, equivalenceClassFactory, valuationSetFactory, opts);
         master.generate();
 
         Main.verboseln("========================================");
@@ -116,13 +116,13 @@ public class DTGRARaw {
         automaton.makeComplete();
 
         if (automaton.states.contains(automaton.trapState)) {
-            for (GRabinPairRaw<ProductState> rabPair : accTGR) {
+            for (GeneralizedRabinPair<ProductState> rabPair : accTGR) {
                 rabPair.left.addAll(automaton.trapState, valuationSetFactory.createUniverseValuationSet());
             }
         }
     }
 
-    public static class AccTGRRaw<S extends IState<S>> extends HashSet<GRabinPairRaw<S>> {
+    public static class AccTGRRaw<S extends IState<S>> extends HashSet<GeneralizedRabinPair<S>> {
 
         private static final long serialVersionUID = 245172601429256815L;
         protected final ValuationSetFactory valuationSetFactory;
@@ -162,7 +162,7 @@ public class DTGRARaw {
                     Infs.add((fPair.right).clone());
                 }
 
-                GRabinPairRaw<ProductState> pair = new GRabinPairRaw<>(Fin, Infs);
+                GeneralizedRabinPair<ProductState> pair = new GeneralizedRabinPair<>(Fin, Infs);
                 Main.verboseln(pair.toString());
                 accTGRRaw.add(pair);
             }
@@ -182,7 +182,7 @@ public class DTGRARaw {
 
             Main.verboseln(phase + ". Removing (F, {I1,...,In}) with complete F\n");
             removalPairs = new AccTGRRaw<>(null, valuationSetFactory);
-            for (GRabinPairRaw<S> pair : this) {
+            for (GeneralizedRabinPair<S> pair : this) {
                 if (pair.left.equals(allTrans)) {
                     removalPairs.add(pair);
                 }
@@ -192,7 +192,7 @@ public class DTGRARaw {
 
             Main.verboseln(phase + ". Removing complete Ii in (F, {I1,...,In}), i.e. Ii U F = Q \n");
             temp = new AccTGRRaw<>(null, valuationSetFactory);
-            for (GRabinPairRaw<S> pair : this) {
+            for (GeneralizedRabinPair<S> pair : this) {
                 copy = new ArrayList<>(pair.right);
                 for (TranSet<S> i : pair.right) {
                     TranSet<S> iUf = new TranSet<>(valuationSetFactory);
@@ -203,7 +203,7 @@ public class DTGRARaw {
                         break;
                     }
                 }
-                temp.add(new GRabinPairRaw<>(pair.left, copy));
+                temp.add(new GeneralizedRabinPair<>(pair.left, copy));
             }
             this.clear();
             this.addAll(temp);
@@ -211,7 +211,7 @@ public class DTGRARaw {
 
             Main.verboseln(phase + ". Removing F from each Ii: (F, {I1,...,In}) |-> (F, {I1\\F,...,In\\F})\n");
             temp = new AccTGRRaw<>(null, valuationSetFactory);
-            for (GRabinPairRaw<S> pair : this) {
+            for (GeneralizedRabinPair<S> pair : this) {
                 copy = new ArrayList<>(pair.right);
                 for (TranSet<S> i : pair.right) {
                     copy.remove(i); // System.out.println("101:::::::"+i);
@@ -220,7 +220,7 @@ public class DTGRARaw {
                     inew.removeAll(pair.left); // System.out.println("105TEMP-BETWEEN"+temp+"\n=====");
                     copy.add(inew); // System.out.println("103TEMP-AFTER"+temp);
                 }
-                temp.add(new GRabinPairRaw<>(pair.left, copy));// System.out.println("105TEMP-AFTER"+temp+"\n=====");
+                temp.add(new GeneralizedRabinPair<>(pair.left, copy));// System.out.println("105TEMP-AFTER"+temp+"\n=====");
             }
             this.clear();
             this.addAll(temp);
@@ -229,7 +229,7 @@ public class DTGRARaw {
 
             Main.verboseln(phase + ". Removing (F, {..., \\emptyset, ...} )\n");
             removalPairs = new AccTGRRaw<>(null, valuationSetFactory);
-            for (GRabinPairRaw<S> pair : this) {
+            for (GeneralizedRabinPair<S> pair : this) {
                 for (TranSet<S> i : pair.right) {
                     if (i.isEmpty()) {
                         removalPairs.add(pair);
@@ -243,7 +243,7 @@ public class DTGRARaw {
 
             Main.verboseln(
                     phase + ". Removing redundant Ii: (F, I) |-> (F, { i | i in I and !\\exists j in I : Ij <= Ii })\n");
-            for (GRabinPairRaw<S> pair : this) {
+            for (GeneralizedRabinPair<S> pair : this) {
                 copy = new ArrayList<>(pair.right);
                 for (TranSet<S> i : pair.right) {
                     for (TranSet<S> j : pair.right) {
@@ -253,7 +253,7 @@ public class DTGRARaw {
                         }
                     }
                 }
-                temp.add(new GRabinPairRaw<>(pair.left, copy));
+                temp.add(new GeneralizedRabinPair<>(pair.left, copy));
             }
             this.clear();
             this.addAll(temp);
@@ -264,8 +264,8 @@ public class DTGRARaw {
             Main.verboseln(phase + ". Removing (F, I) for which there is a less restrictive (G, J) \n");
             removalPairs = new AccTGRRaw<>(null, valuationSetFactory);
 
-            for (GRabinPairRaw<S> pair1 : this) {
-                for (GRabinPairRaw<S> pair2 : this) {
+            for (GeneralizedRabinPair<S> pair1 : this) {
+                for (GeneralizedRabinPair<S> pair2 : this) {
                     if (pair1 == pair2) {
                         continue;
                     }
@@ -291,7 +291,7 @@ public class DTGRARaw {
         public String toString() {
             String result = "Gen. Rabin acceptance condition";
             int i = 1;
-            for (GRabinPairRaw<S> pair : this) {
+            for (GeneralizedRabinPair<S> pair : this) {
                 result += "\nPair " + i + "\n" + pair;
                 i++;
             }
@@ -301,7 +301,7 @@ public class DTGRARaw {
         /**
          * True if pair1 is more restrictive than pair2
          */
-        private boolean pairSubsumed(GRabinPairRaw<S> pair1, GRabinPairRaw<S> pair2) {
+        private boolean pairSubsumed(GeneralizedRabinPair<S> pair1, GeneralizedRabinPair<S> pair2) {
             if (!pair1.left.containsAll(pair2.left)) {
                 return false;
             }

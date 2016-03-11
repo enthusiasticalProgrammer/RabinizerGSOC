@@ -23,7 +23,9 @@ import org.jetbrains.annotations.Nullable;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public interface IState<S> {
@@ -35,7 +37,7 @@ public interface IState<S> {
     @Nullable S getSuccessor(@NotNull Set<String> valuation);
 
     default @NotNull Map<ValuationSet, S> getSuccessors() {
-        Map<ValuationSet,S> successors = new HashMap<>();
+        Map<ValuationSet, S> successors = new HashMap<>();
 
         for (ValuationSet valuationSet : partitionSuccessors()) {
             S successor = getSuccessor(valuationSet.pickAny());

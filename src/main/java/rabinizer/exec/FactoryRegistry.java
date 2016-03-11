@@ -17,13 +17,13 @@
 
 package rabinizer.exec;
 
+import rabinizer.collections.valuationset.BDDValuationSetFactory;
+import rabinizer.collections.valuationset.ValuationSetFactory;
+import rabinizer.collections.valuationset.Z3ValuationSetFactory;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.equivalence.BDDEquivalenceClassFactory;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
-import rabinizer.collections.valuationset.BDDValuationSetFactory;
 import rabinizer.ltl.equivalence.Z3EquivalenceClassFactory;
-import rabinizer.collections.valuationset.Z3ValuationSetFactory;
-import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.Set;
 

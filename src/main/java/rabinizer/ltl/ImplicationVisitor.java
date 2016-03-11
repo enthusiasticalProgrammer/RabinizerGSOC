@@ -26,7 +26,7 @@ import rabinizer.ltl.simplifier.Simplifier;
  */
 public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
 
-    private static ImplicationVisitor instance = new ImplicationVisitor();
+    private static final ImplicationVisitor instance = new ImplicationVisitor();
 
     private ImplicationVisitor() {
     }

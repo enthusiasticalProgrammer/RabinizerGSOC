@@ -17,25 +17,29 @@
 
 package rabinizer.automata;
 
+import rabinizer.collections.Tuple;
+
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
-public class AccTGR extends ArrayList<GRabinPair<TranSet<Product.ProductState>>> {
+public class GeneralizedRabinPair<S> extends Tuple<TranSet<S>, List<TranSet<S>>> {
 
-    private static final long serialVersionUID = 2472964991141498843L;
-
-    public AccTGR(DTGRARaw.AccTGRRaw<Product.ProductState> accTGR) {
-        for (GRabinPairRaw<Product.ProductState> grp : accTGR) {
-            add(grp.order());
-        }
+    public GeneralizedRabinPair(TranSet<S> l, List<TranSet<S>> r) {
+        super(l, r);
     }
 
     @Override
     public String toString() {
-        String result = "Gen. Rabin acceptance condition";
-        int i = 1;
-        for (GRabinPair<TranSet<Product.ProductState>> pair : this) {
-            result += "\nPair " + i + "\n" + pair;
-            i++;
+        String result = "Fin:\n" + (left == null ? "trivial" : left) + "\nInf: ";
+        if (right == null || right.isEmpty()) {
+            result += "0\ntrivial";
+        } else {
+            result += right.size();
+            for (TranSet<S> inf : right) {
+                result += "\n" + inf;
+            }
         }
         return result;
     }

@@ -36,7 +36,7 @@ public class SCCAnalyser<S extends IState<S>> {
     private int n = 0;
 
     private SCCAnalyser(Automaton<S> a) {
-        this(a, a.states, new TranSet<S>(a.valuationSetFactory));
+        this(a, a.states, new TranSet<>(a.valuationSetFactory));
     }
 
     private SCCAnalyser(Automaton<S> a, Set<S> s, TranSet<S> forbiddenEdges) {

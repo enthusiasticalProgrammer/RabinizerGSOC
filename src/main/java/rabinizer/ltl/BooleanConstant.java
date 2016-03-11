@@ -21,7 +21,6 @@ import com.google.common.collect.Sets;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 public final class BooleanConstant extends ImmutableObject implements Formula {

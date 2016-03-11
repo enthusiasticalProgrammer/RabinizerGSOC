@@ -2,39 +2,30 @@ package rabinizer.automata;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-
-import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.RelevantGFormulaeWithSlaveSuspension;
 import rabinizer.ltl.equivalence.EquivalenceClass;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
-import rabinizer.ltl.simplifier.Simplifier;
 
 public class SuspendedMaster extends Master {
 
     final boolean slaveSuspension;
 
-
-    public SuspendedMaster(@Nullable EquivalenceClass clazz, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
-        super(clazz, valuationSetFactory, optimisations, mergingEnabled);
+    public SuspendedMaster(@Nullable EquivalenceClass clazz, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
+        super(clazz, valuationSetFactory, optimisations, true);
         slaveSuspension = optimisations.contains(Optimisation.SLAVE_SUSPENSION);
     }
 
     public SuspendedMaster(@NotNull Formula formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory,
-            Collection<Optimisation> optimisations, boolean mergingEnabled) {
-        this(equivalenceClassFactory.createEquivalenceClass(formula), valuationSetFactory, optimisations, mergingEnabled);
+                           Collection<Optimisation> optimisations) {
+        this(equivalenceClassFactory.createEquivalenceClass(formula), valuationSetFactory, optimisations);
     }
 
     @Override

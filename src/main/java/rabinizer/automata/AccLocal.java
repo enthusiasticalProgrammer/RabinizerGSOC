@@ -19,13 +19,15 @@ package rabinizer.automata;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-
-import rabinizer.ltl.equivalence.EquivalenceClass;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
-import rabinizer.exec.Main;
-import rabinizer.ltl.*;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
+import rabinizer.exec.Main;
+import rabinizer.ltl.Conjunction;
+import rabinizer.ltl.Formula;
+import rabinizer.ltl.GOperator;
+import rabinizer.ltl.SkeletonVisitor;
+import rabinizer.ltl.equivalence.EquivalenceClass;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.*;
 
@@ -39,13 +41,12 @@ public class AccLocal {
     protected final Map<GOperator, Integer> maxRank = new HashMap<>();
     protected final Map<GOperator, Set<GOperator>> topmostGs = new HashMap<>();
     protected final TranSet<Product.ProductState> allTrans;
-    private final boolean gSkeleton;
-    private final boolean eager;
-
     // separate automata acceptance projected to the whole product
     final Map<GOperator, Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>>> accSlavesOptions = new HashMap<>();
     // actually just coBuchi
     final Map<Map<GOperator, Integer>, RabinPair<Product.ProductState>> accMasterOptions;
+    private final boolean gSkeleton;
+    private final boolean eager;
 
     public AccLocal(Product product, ValuationSetFactory factory, EquivalenceClassFactory factory2, Collection<Optimisation> opts) {
         this.product = product;

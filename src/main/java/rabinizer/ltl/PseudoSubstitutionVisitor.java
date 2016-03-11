@@ -23,15 +23,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 
  * this method tries to substitute the subformula b in the first argument by the
  * boolean constant specified by c, s.t. the returned formula is made up by
  * assuming the subformula b has the value c.
- *
  */
 public class PseudoSubstitutionVisitor implements TripleVisitor<Formula, Formula, Boolean> {
 
-    private static PseudoSubstitutionVisitor instance = new PseudoSubstitutionVisitor();
+    private static final PseudoSubstitutionVisitor instance = new PseudoSubstitutionVisitor();
 
     private PseudoSubstitutionVisitor() {
     }

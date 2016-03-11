@@ -101,8 +101,8 @@ public class CLIParser {
             simplification = Simplifier.Strategy.AGGRESSIVELY;
         }
 
-        if(cmd.hasOption('p')){
-            switch(cmd.getOptionValue('p')){
+        if (cmd.hasOption('p')) {
+            switch (cmd.getOptionValue('p')) {
                 case "off":
                     optimisations.clear();
                     break;

@@ -136,10 +136,6 @@ public abstract class PropositionalFormula extends ImmutableObject implements Fo
         return create(children.stream().map(c -> c.temporalStep(valuation)));
     }
 
-    protected abstract PropositionalFormula create(Stream<? extends Formula> formulaStream);
-
-    protected abstract char getOperator();
-
     public <E> @NotNull Set<E> union(@NotNull Function<Formula, Collection<E>> f) {
         Set<E> set = new HashSet<>(children.size());
         children.forEach(c -> set.addAll(f.apply(c)));
@@ -167,4 +163,8 @@ public abstract class PropositionalFormula extends ImmutableObject implements Fo
     public boolean anyMatch(Predicate<Formula> p) {
         return children.stream().anyMatch(p);
     }
+
+    protected abstract PropositionalFormula create(Stream<? extends Formula> formulaStream);
+
+    protected abstract char getOperator();
 }

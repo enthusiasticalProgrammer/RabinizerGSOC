@@ -20,7 +20,6 @@ package rabinizer.ltl;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 public abstract class ModalOperator extends ImmutableObject implements Formula {

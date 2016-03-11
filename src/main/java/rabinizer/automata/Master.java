@@ -19,12 +19,11 @@ package rabinizer.automata;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import rabinizer.ltl.equivalence.EquivalenceClass;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
-import rabinizer.ltl.*;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
+import rabinizer.ltl.Formula;
+import rabinizer.ltl.equivalence.EquivalenceClass;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.Collection;
 import java.util.Set;
@@ -45,8 +44,16 @@ public class Master extends Automaton<Master.State> {
     }
 
     public Master(@NotNull Formula formula, EquivalenceClassFactory equivalenceClassFactory,
-            ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
+                  ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
         this(equivalenceClassFactory.createEquivalenceClass(formula), valuationSetFactory, optimisations, mergingEnabled);
+    }
+
+    public State generateInitialState(@NotNull EquivalenceClass clazz) {
+        if (eager) {
+            return new State(clazz.unfold(true));
+        } else {
+            return new State(clazz);
+        }
     }
 
     @Override
@@ -56,14 +63,6 @@ public class Master extends Automaton<Master.State> {
         }
 
         return generateInitialState(initialState);
-    }
-
-    public State generateInitialState(@NotNull EquivalenceClass clazz) {
-        if (eager) {
-            return new State(clazz.unfold(true));
-        } else {
-            return new State(clazz);
-        }
     }
 
     protected EquivalenceClass step(EquivalenceClass clazz, Set<String> valuation) {
@@ -110,6 +109,11 @@ public class Master extends Automaton<Master.State> {
         }
 
         @Override
+        public @NotNull ValuationSetFactory getFactory() {
+            return valuationSetFactory;
+        }
+
+        @Override
         protected Object getOuter() {
             return Master.this;
         }
@@ -117,11 +121,6 @@ public class Master extends Automaton<Master.State> {
         @Override
         protected ValuationSet createUniverseValuationSet() {
             return valuationSetFactory.createUniverseValuationSet();
-        }
-
-        @Override
-        public @NotNull ValuationSetFactory getFactory() {
-            return valuationSetFactory;
         }
     }
 }

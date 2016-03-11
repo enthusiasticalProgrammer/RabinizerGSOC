@@ -19,7 +19,6 @@ package rabinizer.ltl;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Optional;
 import java.util.Set;
 
 public interface Formula {

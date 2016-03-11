@@ -28,7 +28,6 @@ import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
-import java.io.PrintStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,31 +36,31 @@ import java.util.stream.Collectors;
  */
 public class DTRA extends Automaton<DTRA.ProductDegenState> {
 
-    DTGRARaw dtgra;
-    AccTGR accTGR;
-    List<RabinPair<ProductDegenState>> accTR;
+    final DTGRARaw dtgra;
+    final List<GeneralizedRabinPair<Product.ProductState>> accTGR;
+    final List<RabinPair<ProductDegenState>> accTR;
 
     public DTRA(DTGRARaw dtgra) {
         super(dtgra.valuationSetFactory);
         this.dtgra = dtgra;
         trapState = new ProductDegenState(dtgra.automaton.trapState, new HashMap<>());
-        accTGR = new AccTGR(dtgra.accTGR);
+        accTGR = new ArrayList<>(dtgra.accTGR);
         generate();
         accTR = createAccTR(accTGR, this, valuationSetFactory);
     }
 
     @Override
     public void toHOA(HOAConsumer ho) throws HOAConsumerException {
-        HOAConsumerExtended<ProductDegenState> hoa = new HOAConsumerExtended(ho, HOAConsumerExtended.AutomatonType.TRANSITION);
+        HOAConsumerExtended<ProductDegenState> hoa = new HOAConsumerExtended<>(ho, HOAConsumerExtended.AutomatonType.TRANSITION);
         hoa.setHeader(null, valuationSetFactory.getAlphabet());
         hoa.setInitialState(this.initialState);
         hoa.setAcceptanceCondition2(accTR);
 
-        List<GRabinPair<TranSet<ProductDegenState>>> acc = new ArrayList<>();
-        accTR.stream().forEach(p -> acc.add(new GRabinPair<>(p.left, Collections.singletonList(p.right))));
+        List<GeneralizedRabinPair<ProductDegenState>> acc = new ArrayList<>();
+        accTR.stream().forEach(p -> acc.add(new GeneralizedRabinPair<>(p.left, Collections.singletonList(p.right))));
 
         // split transitions according to accepting Sets:
-        for (GRabinPair<TranSet<ProductDegenState>> pair : acc) {
+        for (GeneralizedRabinPair<ProductDegenState> pair : acc) {
             Table<ProductDegenState, ValuationSet, ProductDegenState> toAdd = HashBasedTable.create();
             Table<ProductDegenState, ValuationSet, ProductDegenState> toRemove = HashBasedTable.create();
             if (pair.left != null) {
@@ -119,7 +118,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
                         .map(p -> hoa.getNumber(p.left))
                         .collect(Collectors.toList());
 
-                for (GRabinPair<TranSet<ProductDegenState>> pair : acc) {
+                for (GeneralizedRabinPair<ProductDegenState> pair : acc) {
                     pair.right.stream()
                             .filter(inf -> inf != null && inf.containsAll(s, trans.getKey()))
                             .map(hoa::getNumber)
@@ -135,11 +134,11 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
         hoa.done();
     }
 
-    public List<RabinPair<ProductDegenState>> createAccTR(AccTGR accTGR, DTRA dtra, ValuationSetFactory valuationSetFactory) {
+    public List<RabinPair<ProductDegenState>> createAccTR(List<GeneralizedRabinPair<Product.ProductState>> accTGR, DTRA dtra, ValuationSetFactory valuationSetFactory) {
         List<RabinPair<ProductDegenState>> list = new ArrayList<>();
 
         for (int i = 0; i < accTGR.size(); i++) {
-            GRabinPair<TranSet<Product.ProductState>> grp = accTGR.get(i);
+            GeneralizedRabinPair<Product.ProductState> grp = accTGR.get(i);
             TranSet<ProductDegenState> fin = new TranSet<>(valuationSetFactory);
             TranSet<ProductDegenState> inf = new TranSet<>(valuationSetFactory);
             for (ProductDegenState s : dtra.getStates()) {
@@ -183,7 +182,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
         public @Nullable ProductDegenState getSuccessor(@NotNull Set<String> valuation) {
             Map<Integer, Integer> awaitedIndices = new HashMap<>();
             for (int i = 0; i < accTGR.size(); i++) {
-                GRabinPair<TranSet<Product.ProductState>> grp = accTGR.get(i);
+                GeneralizedRabinPair<Product.ProductState> grp = accTGR.get(i);
                 int awaited = right.get(i);
 
                 if (awaited == grp.right.size()) {

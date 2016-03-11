@@ -20,7 +20,9 @@ package rabinizer.ltl;
 import com.google.common.collect.Sets;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 public final class Literal extends ImmutableObject implements Formula {
 
