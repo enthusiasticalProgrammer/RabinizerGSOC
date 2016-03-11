@@ -72,9 +72,6 @@ public class Main {
         silent = arguments.outputLevel == 0;
         verbose = arguments.outputLevel == 2;
 
-        if (arguments.autType != CLIParser.AutomatonType.TGR) {
-            arguments.optimisations.add(Optimisation.COMPUTE_ACC_CONDITION);
-        }
 
         nonsilent("\n******************************************************************************\n"
                 + "* Rabinizer 3.1.0 by Jan Kretinsky                                           *\n"
