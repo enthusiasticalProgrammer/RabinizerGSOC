@@ -31,20 +31,17 @@ import rabinizer.collections.valuationset.ValuationSetFactory;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * TODO: decouple DTRA from DTGRARaw
- */
 public class DTRA extends Automaton<DTRA.ProductDegenState> {
 
-    final DTGRARaw dtgra;
+    final DTGRA dtgra;
     final List<GeneralizedRabinPair<Product.ProductState>> accTGR;
     final List<RabinPair<ProductDegenState>> accTR;
 
-    public DTRA(DTGRARaw dtgra) {
+    public DTRA(DTGRA dtgra) {
         super(dtgra.valuationSetFactory);
         this.dtgra = dtgra;
-        trapState = new ProductDegenState(dtgra.automaton.trapState, new HashMap<>());
-        accTGR = new ArrayList<>(dtgra.accTGR);
+        trapState = new ProductDegenState(dtgra.trapState, new HashMap<>());
+        accTGR = new ArrayList<>(dtgra.acc);
         generate();
         accTR = createAccTR(accTGR, this, valuationSetFactory);
     }
@@ -162,7 +159,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
             awaitedIndices.put(i, 0);
         }
 
-        return new ProductDegenState(dtgra.automaton.initialState, awaitedIndices);
+        return new ProductDegenState(dtgra.initialState, awaitedIndices);
     }
 
     public class ProductDegenState extends Tuple<Product.ProductState, Map<Integer, Integer>> implements IState<ProductDegenState> {
@@ -193,11 +190,11 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
 
                 awaitedIndices.put(i, awaited);
             }
-            if (dtgra.automaton.getSuccessor(left, valuation) == null) {
+            if (dtgra.getSuccessor(left, valuation) == null) {
                 return null;
             }
 
-            return new ProductDegenState(dtgra.automaton.getSuccessor(left, valuation), awaitedIndices);
+            return new ProductDegenState(dtgra.getSuccessor(left, valuation), awaitedIndices);
         }
 
         @Override

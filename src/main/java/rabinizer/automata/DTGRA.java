@@ -21,30 +21,26 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
+import org.jetbrains.annotations.NotNull;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.valuationset.ValuationSet;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class DTGRA extends Product {
+public class DTGRA extends Automaton<Product.ProductState> {
 
-    private List<GeneralizedRabinPair<ProductState>> acc;
+    @NotNull List<GeneralizedRabinPair<Product.ProductState>> acc;
 
-    public DTGRA(DTGRARaw raw) {
-        super(raw.automaton.primaryAutomaton, raw.automaton.secondaryAutomata, raw.automaton.valuationSetFactory, Collections.emptySet());
-        this.states.addAll(raw.automaton.states);
-        this.initialState = raw.automaton.initialState;
-        this.transitions.putAll(raw.automaton.transitions);
-        this.edgeBetween.putAll(raw.automaton.edgeBetween);
-        if (raw.accTGR != null) { // for computing the state space only (with no
-            // acc. condition)
-            final DTGRARaw.AccTGRRaw<ProductState> accTGR = raw.accTGR;
-            this.acc = new ArrayList<>();
-            this.acc.addAll(raw.accTGR);
+    public DTGRA(Product product, List<GeneralizedRabinPair<Product.ProductState>> acc) {
+        super(product);
+
+        if (acc != null) {
+            this.acc = acc;
+        } else {
+            this.acc = Collections.emptyList();
         }
     }
 
@@ -56,11 +52,11 @@ public class DTGRA extends Product {
         hoa.setAcceptanceCondition(acc);
 
         //split transitions according to accepting Sets:
-        for (GeneralizedRabinPair<ProductState> pair : acc) {
+        for (GeneralizedRabinPair<Product.ProductState> pair : acc) {
             Table<Product.ProductState, ValuationSet, Product.ProductState> toAdd = HashBasedTable.create();
             Table<Product.ProductState, ValuationSet, Product.ProductState> toRemove = HashBasedTable.create();
 
-            for (Table.Cell<ProductState, ValuationSet, ProductState> currTrans : transitions.cellSet()) {
+            for (Table.Cell<Product.ProductState, ValuationSet, Product.ProductState> currTrans : transitions.cellSet()) {
                 if (pair.fin.asMap().containsKey(currTrans.getRowKey())) {
                     ValuationSet valu = pair.fin.asMap().get(currTrans.getRowKey()).clone();
                     valu.retainAll(currTrans.getColumnKey());
@@ -79,7 +75,7 @@ public class DTGRA extends Product {
             toRemove.clear();
             toAdd.clear();
 
-            for (TranSet<ProductState> currAccSet : pair.infs) {
+            for (TranSet<Product.ProductState> currAccSet : pair.infs) {
                 transitions.cellSet().stream().filter(currTrans -> currAccSet.asMap().containsKey(currTrans.getRowKey())).forEach(currTrans -> {
                     ValuationSet valu = currAccSet.asMap().get(currTrans.getRowKey()).clone();
                     valu.retainAll(currTrans.getColumnKey());
@@ -101,15 +97,15 @@ public class DTGRA extends Product {
             }
         }
 
-        for (ProductState s : states) {
+        for (Product.ProductState s : states) {
             hoa.addState(s);
 
-            for (Map.Entry<ValuationSet, ProductState> trans : transitions.row(s).entrySet()) {
+            for (Map.Entry<ValuationSet, Product.ProductState> trans : transitions.row(s).entrySet()) {
                 List<Integer> accSets = acc.stream()
                         .filter(pair -> pair.fin.containsAll(s, trans.getKey()))
                         .map(p -> hoa.getNumber(p.fin)).collect(Collectors.toList());
 
-                for (GeneralizedRabinPair<ProductState> pair : acc) {
+                for (GeneralizedRabinPair<Product.ProductState> pair : acc) {
                     pair.infs.stream()
                             .filter(inf -> inf != null && inf.containsAll(s, trans.getKey()))
                             .map(hoa::getNumber)

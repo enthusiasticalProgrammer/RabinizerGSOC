@@ -46,6 +46,16 @@ public abstract class Automaton<S extends IState<S>> {
         this(valuationSetFactory, true);
     }
 
+    protected Automaton(Automaton<S> a) {
+        valuationSetFactory = a.valuationSetFactory;
+        mergingEnabled = a.mergingEnabled;
+        states = a.states;
+        transitions = a.transitions;
+        edgeBetween = a.edgeBetween;
+        initialState = a.initialState;
+        trapState = a.trapState;
+    }
+
     protected Automaton(ValuationSetFactory valuationSetFactory, boolean mergingEnabled) {
         this.valuationSetFactory = valuationSetFactory;
         this.mergingEnabled = mergingEnabled;
@@ -255,7 +265,9 @@ public abstract class Automaton<S extends IState<S>> {
         return partitioning;
     }
 
-    protected abstract @NotNull S generateInitialState();
+    protected @NotNull S generateInitialState() {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * This method has no side effects

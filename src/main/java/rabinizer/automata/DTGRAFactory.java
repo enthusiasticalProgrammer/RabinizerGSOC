@@ -26,17 +26,13 @@ import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.*;
 
-public class DTGRARaw {
+public class DTGRAFactory {
 
-    final ValuationSetFactory valuationSetFactory;
-    final Product automaton;
-    final AccTGRRaw<ProductState> accTGR;
-    final AccLocal accLocal;
+    private DTGRAFactory() {
 
-    public DTGRARaw(Formula phi, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> opts) {
-        this.valuationSetFactory = valuationSetFactory;
+    }
 
-        // phi assumed in NNF
+    public static DTGRA constructDTGRA(Formula phi, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> opts) {
         Main.verboseln("========================================");
         Main.nonsilent("Generating primaryAutomaton");
         Master master;
@@ -73,14 +69,16 @@ public class DTGRARaw {
         Main.verboseln("========================================");
         Main.nonsilent("Generating product");
 
-        automaton = new Product(master, slaves, valuationSetFactory, opts);
+        Product automaton = new Product(master, slaves, valuationSetFactory, opts);
         automaton.generate();
+
+        AccTGRRaw<ProductState> accTGR = null;
 
         if (opts.contains(Optimisation.COMPUTE_ACC_CONDITION)) {
             Main.verboseln("========================================");
             Main.nonsilent("Generating local acceptance conditions");
 
-            accLocal = new AccLocal(automaton, valuationSetFactory, equivalenceClassFactory, opts);
+            AccLocal accLocal = new AccLocal(automaton, valuationSetFactory, equivalenceClassFactory, opts);
 
             Main.verboseln("========================================");
             Main.nonsilent("Generating global acceptance condition");
@@ -90,43 +88,34 @@ public class DTGRARaw {
             accTGR.removeRedundancy();
             Main.verboseln("========================================");
 
+            /**
+             * Side effect: empty sink-SCCs get deleted, acceptance condition gets
+             * reduced when possible
+             *
+             * @return true if automaton together witch acceptance condition is empty
+             */
             if (opts.contains(Optimisation.EMPTINESS_CHECK)) {
                 // if it is empty, we have to complete it
-                if (checkIfEmptyAndRemoveEmptySCCs()) {
+                if (EmptinessCheck.checkEmptiness(automaton, accTGR)) {
                     opts.add(Optimisation.COMPLETE);
                 }
             }
 
             if (opts.contains(Optimisation.COMPLETE)) {
-                completeAutomaton();
-            }
-        } else {
-            accLocal = null;
-            accTGR = null;
-        }
-    }
+                automaton.makeComplete();
 
-    /**
-     * Side effect: empty sink-SCCs get deleted, acceptance condition gets
-     * reduced when possible
-     *
-     * @return true if automaton together witch acceptance condition is empty
-     */
-    public boolean checkIfEmptyAndRemoveEmptySCCs() {
-        return EmptinessCheck.checkEmptiness(automaton, accTGR);
-    }
-
-    public void completeAutomaton() {
-        automaton.makeComplete();
-
-        if (automaton.states.contains(automaton.trapState)) {
-            for (GeneralizedRabinPair<ProductState> rabPair : accTGR) {
-                rabPair.fin.addAll(automaton.trapState, valuationSetFactory.createUniverseValuationSet());
+                if (automaton.states.contains(automaton.trapState)) {
+                    for (GeneralizedRabinPair<ProductState> rabPair : accTGR) {
+                        rabPair.fin.addAll(automaton.trapState, automaton.valuationSetFactory.createUniverseValuationSet());
+                    }
+                }
             }
         }
+
+        return new DTGRA(automaton, accTGR);
     }
 
-    public static class AccTGRRaw<S extends IState<S>> extends HashSet<GeneralizedRabinPair<S>> {
+    public static class AccTGRRaw<S extends IState<S>> extends LinkedList<GeneralizedRabinPair<S>> {
 
         private static final long serialVersionUID = 245172601429256815L;
         protected final ValuationSetFactory valuationSetFactory;

@@ -32,7 +32,6 @@ import rabinizer.ltl.simplifier.Simplifier;
 
 import java.io.IOException;
 import java.util.Set;
-import java.util.logging.Logger;
 
 public class Main {
 
@@ -109,7 +108,7 @@ public class Main {
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(backend, inputFormula.getPropositions());
         ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(backend, inputFormula.getAtoms());
 
-        DTGRARaw dtgra = new DTGRARaw(inputFormula, factory, valuationSetFactory, opts);
+        DTGRA dtgra = DTGRAFactory.constructDTGRA(inputFormula, factory, valuationSetFactory, opts);
 
         switch (type) {
             case SR:
@@ -119,7 +118,7 @@ public class Main {
             case SGR:
             case TGR:
             default:
-                return new DTGRA(dtgra);
+                return dtgra;
         }
     }
 }

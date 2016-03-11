@@ -103,7 +103,6 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
                 }
             }
 
-
             int[] tokens = new int[succ.keySet().size()];
             int i = 0;
             for (Entry<MojmirSlave.State, Integer> stateIntegerEntry : succ.entrySet()) {
