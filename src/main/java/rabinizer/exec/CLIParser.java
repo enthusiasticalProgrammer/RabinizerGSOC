@@ -65,7 +65,7 @@ public class CLIParser {
                 "The input formula in spot-syntax. We can recognize the modal operators F,G,U,V,W,R, and propositional negations, ands, and ors. Either use the formula option or the input-file option");
         result.addOption("b", "backend", true,
                 "The backend for computing state-space, and transition labels. Possible values are bdd, which is default, and z3, which is to a great extend not recommended, since it uses way too much memory (even for formulae with a syntax tree of size around 20, it can use around 50Gib!). If you want to use z3, please make sure, that you can forcefully restart your PC without losing some of your work in progress (no open files for example).");
-
+        result.addOption("c", "acc-condition", false, "This flag prohibits computing the acceptance condition. It can be used for benchmarking.");
         return result;
     }
 
@@ -79,7 +79,6 @@ public class CLIParser {
 
         Set<Optimisation> optimisations = EnumSet.allOf(Optimisation.class);
         optimisations.remove(Optimisation.COMPLETE);
-        optimisations.remove(Optimisation.COMPUTE_ACC_CONDITION);
         optimisations.remove(Optimisation.SLAVE_SUSPENSION);
 
         Simplifier.Strategy simplification;
@@ -289,6 +288,12 @@ public class CLIParser {
             } else if (cmd.getOptionValue('b').equals("bdd")) {
                 backend = FactoryRegistry.Backend.BDD;
             }
+        }
+
+        if (cmd.hasOption('c')) {
+            optimisations.remove(Optimisation.COMPUTE_ACC_CONDITION);
+        } else {
+            optimisations.add(Optimisation.COMPUTE_ACC_CONDITION);
         }
 
         return new CmdArguments(outputLevel, autType, format, optimisations, simplification, writer, inputFormula, backend);
