@@ -44,7 +44,7 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
 
         int size = Math.max(alphabet.size(), 1);
 
-        factory = BDDFactory.init("java", 64 * size, 1000);
+        factory = BDDFactory.init("micro", 64 * size, 1000);
         factory.setVarNum(size);
 
         // Silence library, TODO: move to logging util class
@@ -246,7 +246,7 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         @Override
         public boolean add(Set<String> v) {
             BDDValuationSet vs = createValuationSet(v);
-            return update(valuations.orWith(vs.valuations));
+            return update(vs.valuations.or(valuations));
         }
 
         @Override

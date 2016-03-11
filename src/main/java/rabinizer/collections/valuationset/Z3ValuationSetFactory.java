@@ -36,7 +36,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
     protected final BiMap<Literal, BoolExpr> mapping;
     private final Z3Visitor visitor;
     private final Context ctx;
-    Set<String> alphabet;
+    final Set<String> alphabet;
 
     public Z3ValuationSetFactory(Set<String> alphabet) {
         visitor = new Z3Visitor();
@@ -87,8 +87,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
 
     @Override
     public ValuationSet createValuationSet(Set<String> valuation, Set<String> base) {
-        // TODO: Implement Method.
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -139,7 +138,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
         return result;
     }
 
-    protected Set<BoolExpr> getPropositionsOutOfBoolExpr(BoolExpr bool) {
+    protected static Set<BoolExpr> getPropositionsOutOfBoolExpr(BoolExpr bool) {
         Set<BoolExpr> result = new HashSet<>();
 
         if (bool.isConst()) {
