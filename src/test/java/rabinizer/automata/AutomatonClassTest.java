@@ -103,7 +103,7 @@ public class AutomatonClassTest {
 
         DTGRA dtgra = DTGRAFactory.constructDTGRA(formula, factory, val, standardWithEmpty);
         List<TranSet<Product.ProductState>> SCC = dtgra.SCCs();
-        assertTrue(SCC.get(2).asMap().keySet().isEmpty());
+        assertTrue(SCC.get(1).asMap().keySet().isEmpty());
     }
 
     @Test
@@ -118,7 +118,7 @@ public class AutomatonClassTest {
 
         DTGRA dtgra2 = DTGRAFactory.constructDTGRA(formula, factory, val, standardWithEmpty);
 
-        assertTrue(SCC.get(6).asMap().keySet().stream()
+        assertTrue(SCC.get(5).asMap().keySet().stream()
                 .allMatch(s -> s.primaryState.clazz.equals(dtgra2.initialState.primaryState.clazz)));
 
         Formula f2 = Util.createFormula("(X a) & (X X a) & (X X X a) & a");

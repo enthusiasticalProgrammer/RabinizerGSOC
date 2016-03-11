@@ -164,7 +164,7 @@ public class DTGRAFactory {
         }
 
         public void removeRedundancy() { // (TranSet<ProductState> allTrans) {
-            AccTGRRaw<S> removalPairs;
+            List<GeneralizedRabinPair<S>> removalPairs;
             AccTGRRaw<S> temp;
             List<TranSet<S>> copy;
             int phase = 0;
@@ -174,7 +174,7 @@ public class DTGRAFactory {
             printProgress(phase++);
 
             Main.verboseln(phase + ". Removing (F, {I1,...,In}) with complete F\n");
-            removalPairs = new AccTGRRaw<>(null, valuationSetFactory);
+            removalPairs = new ArrayList<>();
             for (GeneralizedRabinPair<S> pair : this) {
                 if (pair.fin.equals(allTrans)) {
                     removalPairs.add(pair);
@@ -257,7 +257,7 @@ public class DTGRAFactory {
             printProgress(phase++);
 
             Main.verboseln(phase + ". Removing (F, I) for which there is a less restrictive (G, J) \n");
-            removalPairs = new AccTGRRaw<>(null, valuationSetFactory);
+            removalPairs = new ArrayList<>();
 
             for (GeneralizedRabinPair<S> pair1 : this) {
                 for (GeneralizedRabinPair<S> pair2 : this) {
@@ -265,7 +265,7 @@ public class DTGRAFactory {
                         continue;
                     }
 
-                    if (pairSubsumed(pair1, pair2) && !removalPairs.contains(pair2) && !removalPairs.contains(pair1)) {
+                    if (pair2.implies(pair1) && !removalPairs.contains(pair2)) {
                         removalPairs.add(pair1);
                         break;
                     }
@@ -291,29 +291,6 @@ public class DTGRAFactory {
                 i++;
             }
             return result;
-        }
-
-        /**
-         * True if pair1 is more restrictive than pair2
-         */
-        private boolean pairSubsumed(GeneralizedRabinPair<S> pair1, GeneralizedRabinPair<S> pair2) {
-            if (!pair1.fin.containsAll(pair2.fin)) {
-                return false;
-            }
-
-            for (TranSet<S> i2 : pair2.infs) {
-                boolean i2CanBeMatched = false;
-                for (TranSet<S> i1 : pair1.infs) {
-                    if (i2.containsAll(i1)) {
-                        i2CanBeMatched = true;
-                        break;
-                    }
-                }
-                if (!i2CanBeMatched) {
-                    return false;
-                }
-            }
-            return true;
         }
 
     }
