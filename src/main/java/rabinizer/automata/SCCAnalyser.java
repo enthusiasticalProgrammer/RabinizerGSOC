@@ -150,6 +150,7 @@ public class SCCAnalyser<S extends IState<S>> {
                 for (Map.Entry<ValuationSet, S> entry : a.transitions.row(s).entrySet()) {
                     if (set.contains(entry.getValue()) && !forbiddenEdges.containsAll(s, entry.getKey())) {
                         tranSet.addAll(s, entry.getKey());
+                        tranSet.removeAll(s, forbiddenEdges.asMap().get(s));
                     }
                 }
             }
