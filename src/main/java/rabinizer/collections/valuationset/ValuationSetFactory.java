@@ -20,8 +20,6 @@ package rabinizer.collections.valuationset;
 import java.util.Set;
 
 public interface ValuationSetFactory {
-    @Deprecated
-    Set<ValuationSet> createAllValuationSets();
 
     ValuationSet createEmptyValuationSet();
 
@@ -30,9 +28,6 @@ public interface ValuationSetFactory {
     ValuationSet createValuationSet(Set<String> valuation);
 
     ValuationSet createValuationSet(Set<String> valuation, Set<String> smallerAlphabet);
-
-    @Deprecated
-    ValuationSet createValuationSetSet(Set<Set<String>> valuation);
 
     Set<String> getAlphabet();
 }

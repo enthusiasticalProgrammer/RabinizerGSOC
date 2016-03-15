@@ -10,7 +10,6 @@ import rabinizer.collections.valuationset.ValuationSetFactory;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -36,8 +35,7 @@ public abstract class ValuationSetTest {
         universe = factory.createUniverseValuationSet();
         abcd = factory.createValuationSet(ImmutableSet.of("a", "b", "c", "d"));
 
-        Set<Set<String>> setContainsA = Sets.powerSet(alphabet).stream().filter(set -> set.contains("a")).collect(Collectors.toSet());
-        containsA = factory.createValuationSetSet(setContainsA);
+        containsA = factory.createValuationSet(ImmutableSet.of("a"), ImmutableSet.of("a"));
     }
 
     @Test

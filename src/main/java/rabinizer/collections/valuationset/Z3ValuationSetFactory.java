@@ -78,21 +78,9 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
     }
 
     @Override
-    public Z3ValuationSet createValuationSetSet(Set<Set<String>> set) {
-        Z3ValuationSet vs = createEmptyValuationSet();
-        vs.addAll(set);
-        return vs;
-    }
-
-    @Override
     public Z3ValuationSet createValuationSet(Set<String> valuation, Set<String> base) {
         Formula f = new Conjunction(base.stream().map(s -> new Literal(s, !valuation.contains(s))));
         return new Z3ValuationSet(createZ3(f));
-    }
-
-    @Override
-    public Set<ValuationSet> createAllValuationSets() {
-        return Sets.powerSet(alphabet).stream().map(this::createValuationSet).collect(Collectors.toSet());
     }
 
     protected Formula createRepresentative(BoolExpr expression) {

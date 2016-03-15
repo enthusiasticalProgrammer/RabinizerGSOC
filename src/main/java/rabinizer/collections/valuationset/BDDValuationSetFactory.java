@@ -28,7 +28,6 @@ import rabinizer.ltl.simplifier.Simplifier.Strategy;
 
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class BDDValuationSetFactory implements ValuationSetFactory {
 
@@ -82,18 +81,6 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
     public BDDValuationSet createValuationSet(Set<String> valuation, Set<String> base) {
         BDD bdd = createBDD(valuation, base);
         return new BDDValuationSet(bdd);
-    }
-
-    @Override
-    public BDDValuationSet createValuationSetSet(Set<Set<String>> set) {
-        BDDValuationSet vs = createEmptyValuationSet();
-        vs.addAll(set);
-        return vs;
-    }
-
-    @Override
-    public Set<ValuationSet> createAllValuationSets() {
-        return Sets.powerSet(alphabet).stream().map(this::createValuationSet).collect(Collectors.toSet());
     }
 
     public void callback(int x, Object stats) {

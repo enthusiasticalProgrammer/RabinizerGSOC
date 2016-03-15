@@ -36,9 +36,4 @@ public class BDDValuationSetFactoryTest {
     public void testCreateUniverseValuationSet() throws Exception {
         assertEquals(Sets.powerSet(alphabet), factory.createUniverseValuationSet());
     }
-
-    @Test
-    public void testCreateAllValuationSets() throws Exception {
-        assertEquals(Sets.powerSet(alphabet).stream().map(factory::createValuationSet).collect(Collectors.toSet()), factory.createAllValuationSets());
-    }
 }
