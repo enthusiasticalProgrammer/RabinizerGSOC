@@ -26,7 +26,6 @@ import rabinizer.collections.valuationset.ValuationSetFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public interface IState<S> {
 
@@ -39,21 +38,18 @@ public interface IState<S> {
     default @NotNull Map<ValuationSet, S> getSuccessors() {
         Map<ValuationSet, S> successors = new HashMap<>();
 
-        for (ValuationSet valuationSet : partitionSuccessors()) {
-            S successor = getSuccessor(valuationSet.pickAny());
+        Set<String> sensitiveAlphabet = getSensitiveAlphabet();
+        ValuationSetFactory factory = getFactory();
+
+        for (Set<String> valuation : Sets.powerSet(sensitiveAlphabet)) {
+            S successor = getSuccessor(valuation);
 
             if (successor != null) {
-                successors.put(valuationSet, successor);
+                successors.put(factory.createValuationSet(valuation, sensitiveAlphabet), successor);
             }
         }
 
         return successors;
-    }
-
-    default @NotNull Set<ValuationSet> partitionSuccessors() {
-        Set<String> sensitiveAlphabet = getSensitiveAlphabet();
-        ValuationSetFactory factory = getFactory();
-        return Sets.powerSet(sensitiveAlphabet).stream().map(subset -> factory.createValuationSet(subset, sensitiveAlphabet)).collect(Collectors.toSet());
     }
 
     @NotNull Set<String> getSensitiveAlphabet();

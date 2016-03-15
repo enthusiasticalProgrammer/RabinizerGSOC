@@ -67,18 +67,10 @@ public class SCCAnalyser<S extends IState<S>> {
         return s.SCCsRecursively();
     }
 
-    /**
-     * This method refines the SCC in order to have the sub-SCCs if
-     * forbiddenEdges are not allowed to use
-     *
-     * @param SCC:            the SCC that will be processed
-     * @param forbiddenEdges: the edges that are forbidden
-     * @return the sub-SCCs of the SCC as list in topologic ordering
-     * @param a: Automaton, for which the SCC-Analysis has to be made
-     */
-    public static <S extends IState<S>> List<TranSet<S>> subSCCs(Automaton<S> a, Set<S> SCC, TranSet<S> forbiddenEdges) {
-        SCCAnalyser<S> s = new SCCAnalyser<>(a, SCC, forbiddenEdges);
-        return s.subSCCs();
+    public static <S extends IState<S>> List<Set<S>> SCCsStates(Automaton<S> a, S initialState) {
+        SCCAnalyser<S> s = new SCCAnalyser<>(a);
+        s.stack.push(initialState);
+        return s.SCCsStatesRecursively();
     }
 
     /**
@@ -113,6 +105,43 @@ public class SCCAnalyser<S extends IState<S>> {
 
         return result;
     }
+
+    private List<Set<S>> SCCsStatesRecursively() {
+        n++;
+        S v = stack.peek();
+        lowlink.put(v, n);
+        number.put(v, n);
+        List<Set<S>> result = new ArrayList<>();
+
+        for (Map.Entry<ValuationSet, S> entry : a.transitions.row(v).entrySet()) {
+            // edge not forbidden
+            if (!forbiddenEdges.containsAll(v, entry.getKey())) {
+                S w = entry.getValue();
+
+                if (allowedStates.contains(w) && !number.containsKey(w)) {
+                    stack.push(w);
+                    result.addAll(SCCsStatesRecursively());
+                    lowlink.put(v, Math.min(lowlink.get(v), lowlink.get(w)));
+                } else if (allowedStates.contains(w) && number.get(w) < number.get(v) && stack.contains(w)) {
+                    lowlink.put(v, Math.min(lowlink.get(v), number.get(w)));
+                }
+            }
+        }
+
+        if (lowlink.get(v).equals(number.get(v))) {
+            Set<S> set = new HashSet<>();
+
+            while (!stack.isEmpty() && number.get(stack.peek()) >= number.get(v)) {
+                S w = stack.pop();
+                set.add(w);
+            }
+
+            result.add(set);
+        }
+
+        return result;
+    }
+
 
     private List<TranSet<S>> SCCsRecursively() {
         n++;

@@ -28,12 +28,19 @@ public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
 
     private final SkeletonApproximation strategy;
 
-    public SkeletonVisitor() {
-        this(SkeletonApproximation.BOTH);
+    private static final SkeletonVisitor INSTANCE_BOTH = new SkeletonVisitor(SkeletonApproximation.BOTH);
+    private static final SkeletonVisitor INSTANCE_LOWER = new SkeletonVisitor(SkeletonApproximation.LOWER_BOUND);
+
+    private SkeletonVisitor(SkeletonApproximation appr) {
+        strategy = appr;
     }
 
-    public SkeletonVisitor(SkeletonApproximation appr) {
-        strategy = appr;
+    public static @NotNull SkeletonVisitor getInstance(SkeletonApproximation strategy) {
+        if (strategy == SkeletonApproximation.LOWER_BOUND) {
+            return INSTANCE_LOWER;
+        }
+
+        return INSTANCE_BOTH;
     }
 
     @Override

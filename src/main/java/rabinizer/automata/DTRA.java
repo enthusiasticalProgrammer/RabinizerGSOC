@@ -24,7 +24,6 @@ import jhoafparser.consumer.HOAConsumerException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rabinizer.automata.output.HOAConsumerExtended;
-import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
@@ -33,17 +32,35 @@ import java.util.stream.Collectors;
 
 public class DTRA extends Automaton<DTRA.ProductDegenState> {
 
-    final DTGRA dtgra;
-    final List<GeneralizedRabinPair<Product.ProductState>> accTGR;
+    private final DTGRA dtgra;
     final List<RabinPair<ProductDegenState>> accTR;
 
     public DTRA(DTGRA dtgra) {
         super(dtgra.valuationSetFactory);
         this.dtgra = dtgra;
-        trapState = new ProductDegenState(dtgra.trapState, new HashMap<>());
-        accTGR = new ArrayList<>(dtgra.acc);
+        trapState = new ProductDegenState(dtgra.trapState, new int[dtgra.acc.size()]);
         generate();
-        accTR = createAccTR(accTGR, this, valuationSetFactory);
+
+        accTR = new ArrayList<>();
+
+        for (int i = 0; i < dtgra.acc.size(); i++) {
+            GeneralizedRabinPair<Product.ProductState> grp = dtgra.acc.get(i);
+            TranSet<ProductDegenState> fin = new TranSet<>(valuationSetFactory);
+            TranSet<ProductDegenState> inf = new TranSet<>(valuationSetFactory);
+
+            for (ProductDegenState s : getStates()) {
+                ValuationSet vsFin = grp.fin.asMap().get(s.productState);
+                if (vsFin != null) {
+                    fin.addAll(s, vsFin);
+                }
+
+                if (s.awaitedIndices[i] == grp.infs.size()) {
+                    inf.addAll(s, valuationSetFactory.createUniverseValuationSet());
+                }
+            }
+
+            accTR.add(new RabinPair<>(fin, inf));
+        }
     }
 
     @Override
@@ -127,90 +144,78 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
         hoa.done();
     }
 
-    public List<RabinPair<ProductDegenState>> createAccTR(List<GeneralizedRabinPair<Product.ProductState>> accTGR, DTRA dtra, ValuationSetFactory valuationSetFactory) {
-        List<RabinPair<ProductDegenState>> list = new ArrayList<>();
-
-        for (int i = 0; i < accTGR.size(); i++) {
-            GeneralizedRabinPair<Product.ProductState> grp = accTGR.get(i);
-            TranSet<ProductDegenState> fin = new TranSet<>(valuationSetFactory);
-            TranSet<ProductDegenState> inf = new TranSet<>(valuationSetFactory);
-
-            for (ProductDegenState s : dtra.getStates()) {
-                ValuationSet vsFin = grp.fin.asMap().get(s.left);
-                if (vsFin != null) {
-                    fin.addAll(s, vsFin);
-                }
-                if (s.right.get(i) == grp.infs.size()) {
-                    inf.addAll(s, valuationSetFactory.createUniverseValuationSet());
-                }
-            }
-
-            list.add(new RabinPair<>(fin, inf));
-        }
-
-        return list;
-    }
-
     @Override
     protected @NotNull ProductDegenState generateInitialState() {
-        Map<Integer, Integer> awaitedIndices = new HashMap<>();
-
-        for (int i = 0; i < accTGR.size(); i++) {
-            awaitedIndices.put(i, 0);
-        }
-
-        return new ProductDegenState(dtgra.initialState, awaitedIndices);
+        return new ProductDegenState(dtgra.getInitialState(), new int[dtgra.acc.size()]);
     }
 
-    public class ProductDegenState extends Tuple<Product.ProductState, Map<Integer, Integer>> implements IState<ProductDegenState> {
+    public class ProductDegenState implements IState<ProductDegenState> {
 
-        public ProductDegenState(@NotNull Product.ProductState ps, @NotNull Map<Integer, Integer> awaitedIndices) {
-            super(ps, awaitedIndices);
+        public final @NotNull Product.ProductState productState;
+        public final int[] awaitedIndices;
+
+        public ProductDegenState(@NotNull Product.ProductState ps, int... awaitedIndices) {
+            this.productState = ps;
+            this.awaitedIndices = awaitedIndices;
         }
 
         @Override
         public String toString() {
-            return left + " " + right;
+            return productState + " " + awaitedIndices;
         }
 
         @Override
         public @Nullable ProductDegenState getSuccessor(@NotNull Set<String> valuation) {
-            Map<Integer, Integer> awaitedIndices = new HashMap<>();
-            for (int i = 0; i < accTGR.size(); i++) {
-                GeneralizedRabinPair<Product.ProductState> grp = accTGR.get(i);
-                int awaited = right.get(i);
+            Product.ProductState successor = dtgra.getSuccessor(productState, valuation);
+
+            if (successor == null) {
+                return null;
+            }
+
+            int[] awaitedIndices = new int[dtgra.acc.size()];
+
+            // TODO: Use listIterator
+            for (int i = 0; i < dtgra.acc.size(); i++) {
+                GeneralizedRabinPair<Product.ProductState> grp = dtgra.acc.get(i);
+
+                int awaited = this.awaitedIndices[i];
 
                 if (awaited == grp.infs.size()) {
                     awaited = 0;
                 }
 
-                while (awaited < grp.infs.size() && grp.infs.get(awaited).contains(left, valuation)) {
+                while (awaited < grp.infs.size() && grp.infs.get(awaited).contains(productState, valuation)) {
                     awaited++;
                 }
 
-                awaitedIndices.put(i, awaited);
-            }
-            if (dtgra.getSuccessor(left, valuation) == null) {
-                return null;
+                awaitedIndices[i] = awaited;
             }
 
-            return new ProductDegenState(dtgra.getSuccessor(left, valuation), awaitedIndices);
-        }
-
-        @Override
-        public @NotNull Set<ValuationSet> partitionSuccessors() {
-            return valuationSetFactory.createAllValuationSets(); // TODO symbolic
+            return new ProductDegenState(successor, awaitedIndices);
         }
 
         @Override
         public @NotNull Set<String> getSensitiveAlphabet() {
-            return valuationSetFactory.getAlphabet();
+            return productState.getSensitiveAlphabet();
         }
 
         @Override
         public @NotNull ValuationSetFactory getFactory() {
             return valuationSetFactory;
         }
-    }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ProductDegenState state = (ProductDegenState) o;
+            return Objects.equals(productState, state.productState) &&
+                    Arrays.equals(awaitedIndices, state.awaitedIndices);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(productState, awaitedIndices);
+        }
+    }
 }

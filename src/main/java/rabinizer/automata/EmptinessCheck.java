@@ -17,16 +17,13 @@
 
 package rabinizer.automata;
 
+import com.google.common.collect.Table.Cell;
+import rabinizer.collections.Collections3;
+import rabinizer.collections.valuationset.ValuationSet;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-
-import com.google.common.collect.Sets;
-import com.google.common.collect.Table.Cell;
-
-import rabinizer.collections.Collections3;
-import rabinizer.collections.Tuple;
-import rabinizer.collections.valuationset.ValuationSet;
 
 /**
  * @author Christopher Ziegler

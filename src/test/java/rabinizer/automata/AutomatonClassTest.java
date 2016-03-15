@@ -78,7 +78,7 @@ public class AutomatonClassTest {
 
         DTGRA dtgra = DTGRAFactory.constructDTGRA(formula, factory, val, standardWithEmpty);
         List<TranSet<Product.ProductState>> SCC = dtgra.SCCs();
-        assertEquals(SCC.size(), 3);
+        assertEquals(3, SCC.size());
     }
 
     @Test
@@ -90,7 +90,7 @@ public class AutomatonClassTest {
 
         DTGRA dtgra = DTGRAFactory.constructDTGRA(formula, factory, val, standardWithEmpty);
         List<TranSet<Product.ProductState>> SCC = dtgra.SCCs();
-        assertEquals(SCC.size(), 7);
+        assertEquals(7, SCC.size());
 
     }
 
@@ -103,7 +103,7 @@ public class AutomatonClassTest {
 
         DTGRA dtgra = DTGRAFactory.constructDTGRA(formula, factory, val, standardWithEmpty);
         List<TranSet<Product.ProductState>> SCC = dtgra.SCCs();
-        assertTrue(SCC.get(1).asMap().keySet().isEmpty());
+        assertTrue(SCC.get(1).isEmpty());
     }
 
     @Test

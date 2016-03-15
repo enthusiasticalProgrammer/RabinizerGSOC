@@ -19,13 +19,19 @@ package rabinizer.ltl.equivalence;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.microsoft.z3.*;
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.Expr;
+import com.microsoft.z3.Solver;
 import org.jetbrains.annotations.NotNull;
 import rabinizer.ltl.*;
 import rabinizer.ltl.simplifier.Simplifier;
 import rabinizer.ltl.simplifier.Simplifier.Strategy;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
 
 public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
 

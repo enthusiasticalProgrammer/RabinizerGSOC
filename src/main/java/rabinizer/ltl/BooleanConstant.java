@@ -54,11 +54,6 @@ public final class BooleanConstant extends ImmutableObject implements Formula {
     }
 
     @Override
-    public Literal getAnUnguardedLiteral() {
-        return null;
-    }
-
-    @Override
     public @NotNull Formula temporalStep(@NotNull Set<String> valuation) {
         return this;
     }

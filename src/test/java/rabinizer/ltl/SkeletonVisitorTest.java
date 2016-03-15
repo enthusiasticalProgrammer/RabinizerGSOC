@@ -12,12 +12,7 @@ import static org.junit.Assert.assertEquals;
 
 public class SkeletonVisitorTest {
 
-    SkeletonVisitor visitor;
-
-    @Before
-    public void setUp() throws Exception {
-        visitor = new SkeletonVisitor();
-    }
+    SkeletonVisitor visitor = SkeletonVisitor.getInstance(SkeletonVisitor.SkeletonApproximation.BOTH);
 
     @Test
     public void testSimple() {

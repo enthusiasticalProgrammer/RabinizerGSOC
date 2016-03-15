@@ -73,7 +73,7 @@ public class Master extends Automaton<Master.State> {
         }
     }
 
-    protected boolean suppressEdge(EquivalenceClass current, Set<String> valuation, EquivalenceClass successor) {
+    protected boolean suppressEdge(EquivalenceClass current, EquivalenceClass successor) {
         return successor.isFalse();
     }
 
@@ -87,20 +87,11 @@ public class Master extends Automaton<Master.State> {
         public @Nullable State getSuccessor(@NotNull Set<String> valuation) {
             EquivalenceClass successor = step(clazz, valuation);
 
-            if (suppressEdge(clazz, valuation, successor)) {
+            if (suppressEdge(clazz, successor)) {
                 return null;
             }
 
             return new State(successor);
-        }
-
-        @Override
-        public @NotNull Set<ValuationSet> partitionSuccessors() {
-            if (eager) {
-                return generatePartitioning(clazz.getRepresentative());
-            } else {
-                return generatePartitioning(clazz.unfold(true).getRepresentative());
-            }
         }
 
         @Override
@@ -116,11 +107,6 @@ public class Master extends Automaton<Master.State> {
         @Override
         protected Object getOuter() {
             return Master.this;
-        }
-
-        @Override
-        protected ValuationSet createUniverseValuationSet() {
-            return valuationSetFactory.createUniverseValuationSet();
         }
     }
 }

@@ -29,6 +29,7 @@ import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public abstract class Automaton<S extends IState<S>> {
@@ -89,6 +90,10 @@ public abstract class Automaton<S extends IState<S>> {
         }
     }
 
+    public boolean hasSuccessors(S state) {
+        return transitions.row(state).values().stream().anyMatch(s -> !s.equals(state));
+    }
+
     public boolean isSink(S state) {
         ValuationSet valuationSet = edgeBetween.get(state, state);
         return valuationSet != null && valuationSet.isUniverse();
@@ -120,7 +125,7 @@ public abstract class Automaton<S extends IState<S>> {
 
     public @NotNull Map<ValuationSet, S> getSuccessors(@NotNull S state) {
         generateSingleState(state);
-        return Collections.unmodifiableMap(transitions.row(state));
+        return transitions.row(state);
     }
 
     public int size() {
@@ -143,15 +148,41 @@ public abstract class Automaton<S extends IState<S>> {
         return initialState;
     }
 
+    public Set<S> getReachableStates() {
+        HashSet<S> reach = new HashSet<>();
+        reach.add(getInitialState());
+        getReachableStates(reach);
+        return reach;
+    }
+
+    public void getReachableStates(Set<S> states) {
+        Deque<S> workList = new ArrayDeque<>(states);
+
+        while (!workList.isEmpty()) {
+            S state = workList.remove();
+
+            transitions.row(state).forEach((vs, successor) -> {
+                if (states.add(successor)) {
+                    workList.add(successor);
+                }
+            });
+        }
+    }
+
+    public void removeUnreachableStates() {
+        removeUnreachableStates(getReachableStates());
+    }
+
+    public void removeUnreachableStates(Set<S> reach) {
+        getReachableStates(reach);
+        removeStatesIf(s -> !reach.contains(s));
+    }
+
     public List<TranSet<S>> SCCs() {
         return SCCAnalyser.SCCs(this, initialState);
     }
 
     public List<TranSet<S>> subSCCs(TranSet<S> SCC, TranSet<S> forbiddenEdges) {
-        return SCCAnalyser.subSCCs(this, SCC, forbiddenEdges);
-    }
-
-    public List<TranSet<S>> subSCCs(Set<S> SCC, TranSet<S> forbiddenEdges) {
         return SCCAnalyser.subSCCs(this, SCC, forbiddenEdges);
     }
 
@@ -176,21 +207,35 @@ public abstract class Automaton<S extends IState<S>> {
             initialState = null;
             edgeBetween.clear();
         } else {
-            states.removeAll(statess);
-
-            for (S state : statess) {
-                transitions.row(state).clear();
-                edgeBetween.row(state).clear();
-                edgeBetween.column(state).clear();
-            }
-
-            Iterator<Table.Cell<S, ValuationSet, S>> it = transitions.cellSet().iterator();
-            while (it.hasNext()) {
-                if (statess.contains(it.next().getValue())) {
-                    it.remove();
-                }
-            }
+            removeStatesIf(statess::contains);
         }
+    }
+
+    public void removeStatesIf(@NotNull Predicate<S> predicate) {
+        Iterator<S> iterator = states.iterator();
+
+        while (iterator.hasNext()) {
+            S state = iterator.next();
+
+            if (!predicate.test(state)) {
+                continue;
+            }
+
+            iterator.remove();
+            transitions.row(state).clear();
+            edgeBetween.row(state).clear();
+            edgeBetween.column(state).clear();
+        }
+
+        if (predicate.test(initialState)) {
+            initialState = null;
+        }
+
+        transitions.values().removeIf(predicate);
+    }
+
+    public @NotNull Set<String> getAlphabet() {
+        return valuationSetFactory.getAlphabet();
     }
 
     /**
@@ -240,29 +285,6 @@ public abstract class Automaton<S extends IState<S>> {
         } else {
             states.remove(trapState);
         }
-    }
-
-    // TODO to abstract ProductAutomaton ?
-    protected @NotNull Set<ValuationSet> generatePartitioning(@NotNull Set<Set<ValuationSet>> product) {
-        Set<ValuationSet> partitioning = new HashSet<>();
-        partitioning.add(valuationSetFactory.createUniverseValuationSet());
-
-        for (Set<ValuationSet> vSets : product) {
-            Set<ValuationSet> partitioningNew = new HashSet<>();
-
-            for (ValuationSet vSet : vSets) {
-                for (ValuationSet vSetOld : partitioning) {
-                    ValuationSet vs = vSetOld.clone();
-                    vs.retainAll(vSet);
-                    partitioningNew.add(vs);
-                }
-            }
-
-            partitioning = partitioningNew;
-        }
-
-        partitioning.remove(valuationSetFactory.createEmptyValuationSet());
-        return partitioning;
     }
 
     protected @NotNull S generateInitialState() {

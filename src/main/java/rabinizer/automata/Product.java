@@ -17,6 +17,7 @@
 
 package rabinizer.automata;
 
+import com.google.common.collect.ImmutableMap;
 import org.jetbrains.annotations.NotNull;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
@@ -41,15 +42,37 @@ public class Product extends Automaton<Product.ProductState> {
         this.primaryAutomaton = primaryAutomaton;
         this.secondaryAutomata = slaves;
         this.allSlaves = !optimisations.contains(Optimisation.ONLY_RELEVANT_SLAVES);
-        this.trapState = new ProductState(primaryAutomaton.trapState, Collections.emptyMap());
+        this.trapState = new ProductState(primaryAutomaton.trapState, ImmutableMap.of());
+    }
+
+    private @NotNull Set<ValuationSet> generatePartitioning(@NotNull Set<Set<ValuationSet>> product) {
+        Set<ValuationSet> partitioning = new HashSet<>();
+        partitioning.add(valuationSetFactory.createUniverseValuationSet());
+
+        for (Set<ValuationSet> vSets : product) {
+            Set<ValuationSet> partitioningNew = new HashSet<>();
+
+            for (ValuationSet vSet : vSets) {
+                for (ValuationSet vSetOld : partitioning) {
+                    ValuationSet vs = vSetOld.clone();
+                    vs.retainAll(vSet);
+                    partitioningNew.add(vs);
+                }
+            }
+
+            partitioning = partitioningNew;
+        }
+
+        partitioning.remove(valuationSetFactory.createEmptyValuationSet());
+        return partitioning;
     }
 
     Set<ValuationSet> generateSuccTransitionsReflectingSinks(ProductState s) {
         Set<Set<ValuationSet>> product = new HashSet<>();
 
-        product.add(primaryAutomaton.transitions.row(s.getPrimaryState()).keySet());
+        product.add(primaryAutomaton.transitions.row(s.primaryState).keySet());
 
-        for (GOperator slaveFormula : s.getSecondaryMap().keySet()) {
+        for (GOperator slaveFormula : s.secondaryStates.keySet()) {
             Automaton<RabinSlave.State> m = secondaryAutomata.get(slaveFormula);
             for (RabinSlave.State fs : m.getStates()) {
                 product.add(m.transitions.row(fs).keySet());
@@ -85,7 +108,7 @@ public class Product extends Automaton<Product.ProductState> {
 
     public class ProductState extends AbstractProductState<Master.State, GOperator, RabinSlave.State, ProductState> implements IState<ProductState> {
 
-        private ProductState(Master.State primaryState, Map<GOperator, RabinSlave.State> secondaryStates) {
+        private ProductState(Master.State primaryState, ImmutableMap<GOperator, RabinSlave.State> secondaryStates) {
             super(primaryState, secondaryStates);
         }
 
@@ -114,7 +137,7 @@ public class Product extends Automaton<Product.ProductState> {
         }
 
         @Override
-        protected ProductState constructState(Master.State primaryState, Map<GOperator, RabinSlave.State> secondaryStates) {
+        protected ProductState constructState(Master.State primaryState, ImmutableMap<GOperator, RabinSlave.State> secondaryStates) {
             return new ProductState(primaryState, secondaryStates);
         }
 

@@ -15,24 +15,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package rabinizer.collections.valuationset;
+package rabinizer.automata.output;
 
-import java.util.Set;
+import jhoafparser.ast.AtomLabel;
+import jhoafparser.ast.BooleanExpression;
+import jhoafparser.consumer.HOAConsumer;
+import jhoafparser.consumer.HOAConsumerException;
+import jhoafparser.consumer.HOAIntermediate;
 
-public interface ValuationSetFactory {
-    @Deprecated
-    Set<ValuationSet> createAllValuationSets();
+import java.util.List;
 
-    ValuationSet createEmptyValuationSet();
+public class RemoveComments extends HOAIntermediate {
+    public RemoveComments(HOAConsumer consumer) {
+        super(consumer);
+    }
 
-    ValuationSet createUniverseValuationSet();
+    @Override
+    public void setName(String s) {
 
-    ValuationSet createValuationSet(Set<String> valuation);
+    }
 
-    ValuationSet createValuationSet(Set<String> valuation, Set<String> smallerAlphabet);
-
-    @Deprecated
-    ValuationSet createValuationSetSet(Set<Set<String>> valuation);
-
-    Set<String> getAlphabet();
+    @Override
+    public void addState(int var1, String var2, BooleanExpression<AtomLabel> var3, List<Integer> var4) throws HOAConsumerException {
+        super.addState(var1, null, var3, var4);
+    }
 }

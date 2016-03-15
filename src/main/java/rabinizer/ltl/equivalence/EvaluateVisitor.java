@@ -19,21 +19,38 @@ package rabinizer.ltl.equivalence;
 
 import org.jetbrains.annotations.NotNull;
 import rabinizer.ltl.*;
+import rabinizer.ltl.simplifier.Simplifier;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class EvaluateVisitor implements Visitor<Formula> {
 
     private final EquivalenceClassFactory factory;
     private final EquivalenceClass environment;
+    private final EquivalenceClass falseEnvironment;
 
-    public EvaluateVisitor(EquivalenceClassFactory factory, Formula environment) {
+    public EvaluateVisitor(EquivalenceClassFactory factory, Conjunction environment) {
         this.factory = factory;
         this.environment = factory.createEquivalenceClass(environment);
+        this.falseEnvironment = factory.createEquivalenceClass(environment.not());
+    }
+
+    @Override
+    public Formula visit(@NotNull BooleanConstant c) {
+        return c;
     }
 
     @Override
     public Formula defaultAction(@NotNull Formula f) {
-        if (environment.implies(factory.createEquivalenceClass(f))) {
+        EquivalenceClass clazz = factory.createEquivalenceClass(f);
+
+        if (environment.implies(clazz)) {
             return BooleanConstant.TRUE;
+        }
+
+        if (clazz.implies(falseEnvironment)) {
+            return BooleanConstant.FALSE;
         }
 
         return f;
@@ -41,7 +58,7 @@ public class EvaluateVisitor implements Visitor<Formula> {
 
     @Override
     public Formula visit(@NotNull Conjunction c) {
-        return new Conjunction(c.children.stream().map(e -> e.accept(this)));
+        return Simplifier.simplify(new Conjunction(c.children.stream().map(e -> e.accept(this))), Simplifier.Strategy.PROPOSITIONAL);
     }
 
     @Override
@@ -52,6 +69,50 @@ public class EvaluateVisitor implements Visitor<Formula> {
             return defaultAction;
         }
 
-        return new Disjunction(d.children.stream().map(e -> e.accept(this)));
+        return Simplifier.simplify(new Disjunction(d.children.stream().map(e -> e.accept(this))), Simplifier.Strategy.PROPOSITIONAL);
+    }
+
+    @Override
+    public Formula visit(@NotNull FOperator fOperator) {
+        Formula defaultAction = defaultAction(fOperator);
+
+        if (defaultAction instanceof BooleanConstant) {
+            return defaultAction;
+        }
+
+        return (new FOperator(fOperator.operand.accept(this)));
+    }
+
+    @Override
+    public Formula visit(@NotNull GOperator gOperator) {
+        Formula defaultAction = defaultAction(gOperator);
+
+        if (defaultAction instanceof BooleanConstant) {
+            return defaultAction;
+        }
+
+        return (new GOperator(gOperator.operand.accept(this)));
+    }
+
+    @Override
+    public Formula visit(@NotNull UOperator uOperator) {
+        Formula defaultAction = defaultAction(uOperator);
+
+        if (defaultAction instanceof BooleanConstant) {
+            return defaultAction;
+        }
+
+        return (new UOperator(uOperator.left.accept(this), uOperator.right.accept(this)));
+    }
+
+    @Override
+    public Formula visit(@NotNull XOperator xOperator) {
+        Formula defaultAction = defaultAction(xOperator);
+
+        if (defaultAction instanceof BooleanConstant) {
+            return defaultAction;
+        }
+
+        return (new XOperator(xOperator.operand.accept(this)));
     }
 }

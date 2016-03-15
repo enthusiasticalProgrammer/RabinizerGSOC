@@ -21,8 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import rabinizer.ltl.*;
 
 import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

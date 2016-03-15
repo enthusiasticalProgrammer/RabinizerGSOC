@@ -22,6 +22,7 @@ import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.valuationset.ValuationSet;
 
@@ -32,9 +33,9 @@ import java.util.stream.Collectors;
 
 public class DTGRA extends Automaton<Product.ProductState> {
 
-    @NotNull List<GeneralizedRabinPair<Product.ProductState>> acc;
+    final @NotNull List<GeneralizedRabinPair<Product.ProductState>> acc;
 
-    public DTGRA(Product product, List<GeneralizedRabinPair<Product.ProductState>> acc) {
+    public DTGRA(@NotNull Product product, @Nullable List<GeneralizedRabinPair<Product.ProductState>> acc) {
         super(product);
 
         if (acc != null) {

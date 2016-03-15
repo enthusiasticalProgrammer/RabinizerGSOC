@@ -17,13 +17,13 @@
 
 package rabinizer.automata;
 
-import rabinizer.ltl.equivalence.EquivalenceClass;
-import rabinizer.ltl.*;
 import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.ltl.Formula;
+import rabinizer.ltl.Literal;
+import rabinizer.ltl.equivalence.EquivalenceClass;
 
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 public abstract class AbstractFormulaState {
@@ -60,8 +60,6 @@ public abstract class AbstractFormulaState {
 
     protected abstract Object getOuter();
 
-    protected abstract ValuationSet createUniverseValuationSet();
-
     protected Set<String> getSensitive(boolean unfoldG) {
         Set<String> letters = new HashSet<>();
 
@@ -72,27 +70,5 @@ public abstract class AbstractFormulaState {
         }
 
         return letters;
-    }
-
-    protected Set<ValuationSet> generatePartitioning(Formula f) {
-        Set<ValuationSet> result = new HashSet<>();
-        Literal literal = f.getAnUnguardedLiteral();
-
-        if (literal == null) {
-            result.add(createUniverseValuationSet());
-            return result;
-        }
-
-        for (ValuationSet vs : generatePartitioning(f.evaluate(literal))) {
-            vs.restrictWith(literal);
-            result.add(vs);
-        }
-
-        for (ValuationSet vs : generatePartitioning(f.evaluate(literal.not()))) {
-            vs.restrictWith(literal.not());
-            result.add(vs);
-        }
-
-        return result;
     }
 }

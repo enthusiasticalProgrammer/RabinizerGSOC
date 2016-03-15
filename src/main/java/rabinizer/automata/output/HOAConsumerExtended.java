@@ -17,16 +17,18 @@
 
 package rabinizer.automata.output;
 
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import jhoafparser.ast.AtomAcceptance;
 import jhoafparser.ast.AtomLabel;
 import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import rabinizer.automata.*;
+import rabinizer.automata.GeneralizedRabinPair;
+import rabinizer.automata.RabinPair;
+import rabinizer.automata.TranSet;
 import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.exec.Main;
 import rabinizer.ltl.Conjunction;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.Literal;
@@ -155,16 +157,9 @@ public class HOAConsumerExtended<T> {
         }
     }
 
-    public void addEdges2(T begin, T successor) throws HOAConsumerException {
+    public void addEpsilonEdge(T begin, T successor) throws HOAConsumerException {
+        Main.nonsilent("Warning: HOA does not support epsilon-transitions. (" + begin + " -> " + successor + ")");
         hoa.addEdgeWithLabel(getStateId(begin), null, Collections.singletonList(getStateId(successor)), null);
-    }
-
-    public void addEdges2(T begin, Map<ValuationSet, Set<?>> successors) throws HOAConsumerException {
-        for (Map.Entry<ValuationSet, Set<?>> entry : successors.entrySet()) {
-            for (Object successor : entry.getValue()) {
-                hoa.addEdgeWithLabel(stateNumbers.get(begin), Simplifier.simplify(entry.getKey().toFormula()).accept(new FormulaConverter()), Collections.singletonList(getStateId((T) successor)), null);
-            }
-        }
     }
 
     public void addEdge(T begin, Formula label, T end, List<Integer> accSets) throws HOAConsumerException {
@@ -220,6 +215,9 @@ public class HOAConsumerExtended<T> {
         currentState = null;
     }
 
+    public void addEdge(T state, ValuationSet key, T accState) throws HOAConsumerException {
+        addEdge(state, key.toFormula(), accState);
+    }
 
     private void setAccCond(Collection<GeneralizedRabinPair<T>> acc) throws HOAConsumerException {
         BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);

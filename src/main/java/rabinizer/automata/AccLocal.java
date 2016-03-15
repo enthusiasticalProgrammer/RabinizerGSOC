@@ -31,16 +31,16 @@ import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.*;
 
-public class AccLocal {
+class AccLocal {
 
-    protected final ValuationSetFactory valuationSetFactory;
-    protected final EquivalenceClassFactory equivalenceClassFactory;
+    private final ValuationSetFactory valuationSetFactory;
+    private final EquivalenceClassFactory equivalenceClassFactory;
 
-    protected final Product product;
-    protected final Formula formula;
-    protected final Map<GOperator, Integer> maxRank = new HashMap<>();
-    protected final Map<GOperator, Set<GOperator>> topmostGs = new HashMap<>();
-    protected final TranSet<Product.ProductState> allTrans;
+    private final Product product;
+    private final Formula formula;
+    private final Map<GOperator, Integer> maxRank = new HashMap<>();
+    final Map<GOperator, Set<GOperator>> topmostGs = new HashMap<>();
+    final TranSet<Product.ProductState> allTrans;
     // separate automata acceptance projected to the whole product
     final Map<GOperator, Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>>> accSlavesOptions = new HashMap<>();
     // actually just coBuchi
@@ -79,20 +79,23 @@ public class AccLocal {
         Main.verboseln("Acceptance for primaryAutomaton:\n" + this.accMasterOptions);
     }
 
-    protected boolean slavesEntail(Product.ProductState ps, Map<GOperator, Integer> ranking, Set<String> v, EquivalenceClass consequent) {
+    private boolean slavesEntail(Product.ProductState ps, Map<GOperator, Integer> ranking, Set<String> v, EquivalenceClass consequent) {
         Set<GOperator> gSet = ranking.keySet();
 
         Collection<Formula> conjunction = new ArrayList<>(3 * gSet.size());
 
         if (eager) {
-            for (GOperator f : gSet) {
-                conjunction.add(f);
-                conjunction.add(f.operand.evaluate(gSet));
-                RabinSlave.State rs = ps.getSecondaryState(f);
+            for (Map.Entry<GOperator, Integer> entry : ranking.entrySet()) {
+                GOperator G = entry.getKey();
+                int rank = entry.getValue();
+
+                conjunction.add(G);
+                conjunction.add(G.operand.evaluate(gSet));
+                RabinSlave.State rs = ps.secondaryStates.get(G);
                 if (rs != null) {
-                    for (Map.Entry<MojmirSlave.State, Integer> entry : rs.entrySet()) {
-                        if (entry.getValue() >= ranking.get(f)) {
-                            conjunction.add(entry.getKey().getClazz().getRepresentative().temporalStep(v).evaluate(gSet));
+                    for (Map.Entry<MojmirSlave.State, Integer> stateEntry : rs.entrySet()) {
+                        if (stateEntry.getValue() >= rank) {
+                            conjunction.add(stateEntry.getKey().getClazz().getRepresentative().temporalStep(v).evaluate(gSet));
                         }
                     }
                 }
@@ -100,13 +103,16 @@ public class AccLocal {
 
             consequent = consequent.temporalStep(v);
         } else {
-            for (GOperator f : gSet) {
-                conjunction.add(f);
-                RabinSlave.State rs = ps.getSecondaryState(f);
+            for (Map.Entry<GOperator, Integer> entry : ranking.entrySet()) {
+                GOperator G = entry.getKey();
+                int rank = entry.getValue();
+
+                conjunction.add(G);
+                RabinSlave.State rs = ps.secondaryStates.get(G);
                 if (rs != null) {
-                    for (Map.Entry<MojmirSlave.State, Integer> entry : rs.entrySet()) {
-                        if (entry.getValue() >= ranking.get(f)) {
-                            conjunction.add(entry.getKey().getClazz().getRepresentative().evaluate(gSet));
+                    for (Map.Entry<MojmirSlave.State, Integer> stateEntry : rs.entrySet()) {
+                        if (stateEntry.getValue() >= rank) {
+                            conjunction.add(stateEntry.getKey().getClazz().getRepresentative().evaluate(gSet));
                         }
                     }
                 }
@@ -117,13 +123,13 @@ public class AccLocal {
         return antecedent.implies(consequent);
     }
 
-    protected Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> computeAccSlavesOptions(GOperator g, boolean forceAllSlaves) {
+    Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> computeAccSlavesOptions(GOperator g, boolean forceAllSlaves) {
         Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> result = new HashMap<>();
 
         RabinSlave rSlave = product.secondaryAutomata.get(g);
         Set<Set<GOperator>> gSets;
         if (gSkeleton && !forceAllSlaves) {
-            gSets = g.operand.accept(new SkeletonVisitor(SkeletonVisitor.SkeletonApproximation.LOWER_BOUND));
+            gSets = g.operand.accept(SkeletonVisitor.getInstance(SkeletonVisitor.SkeletonApproximation.LOWER_BOUND));
             gSets.retainAll(Sets.powerSet(topmostGs.get(g)));
         } else {
             gSets = Sets.powerSet(topmostGs.get(g));
@@ -148,8 +154,8 @@ public class AccLocal {
         return result;
     }
 
-    public static RabinPair<Product.ProductState> createRabinPair(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank, Product product,
-                                                                  ValuationSetFactory valuationSetFactory) {
+    private static RabinPair<Product.ProductState> createRabinPair(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank, Product product,
+                                                                   ValuationSetFactory valuationSetFactory) {
         // Set fail
         // Mojmir
         TranSet<MojmirSlave.State> failM = new TranSet<>(valuationSetFactory);
@@ -164,7 +170,7 @@ public class AccLocal {
         // Product
         TranSet<Product.ProductState> failP = new TranSet<>(valuationSetFactory);
         for (Product.ProductState ps : product.states) {
-            RabinSlave.State rs = ps.getSecondaryState(slave.mojmir.label);
+            RabinSlave.State rs = ps.secondaryStates.get(slave.mojmir.label);
             if (rs != null) { // relevant slave
                 for (MojmirSlave.State fs : rs.keySet()) {
                     failP.addAll(ps, failM.asMap().get(fs));
@@ -197,7 +203,7 @@ public class AccLocal {
         // Product
         TranSet<Product.ProductState> succeedP = new TranSet<>(valuationSetFactory);
         for (Product.ProductState ps : product.states) {
-            RabinSlave.State rs = ps.getSecondaryState(slave.mojmir.label);
+            RabinSlave.State rs = ps.secondaryStates.get(slave.mojmir.label);
             if (rs != null) { // relevant slave
                 for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : rs.entrySet()) {
                     if (stateIntegerEntry.getValue() != rank) {
@@ -237,7 +243,7 @@ public class AccLocal {
         // Product
         TranSet<Product.ProductState> buyP = new TranSet<>(valuationSetFactory);
         for (Product.ProductState ps : product.states) {
-            RabinSlave.State rs = ps.getSecondaryState(slave.mojmir.label);
+            RabinSlave.State rs = ps.secondaryStates.get(slave.mojmir.label);
             if (rs != null) { // relevant slave
                 buyP.addAll(ps, buyR.asMap().get(rs));
             }
@@ -248,12 +254,12 @@ public class AccLocal {
         return new RabinPair<>(failP, succeedP);
     }
 
-    protected Map<Map<GOperator, Integer>, TranSet<Product.ProductState>> computeAccMasterOptions() {
+    private Map<Map<GOperator, Integer>, TranSet<Product.ProductState>> computeAccMasterOptions() {
         ImmutableMap.Builder<Map<GOperator, Integer>, TranSet<Product.ProductState>> builder = ImmutableMap.builder();
 
         Set<Set<GOperator>> gSets;
         if (gSkeleton) {
-            gSets = formula.accept(new SkeletonVisitor(SkeletonVisitor.SkeletonApproximation.LOWER_BOUND));
+            gSets = formula.accept(SkeletonVisitor.getInstance(SkeletonVisitor.SkeletonApproximation.LOWER_BOUND));
         } else {
             gSets = Sets.powerSet(formula.gSubformulas());
         }
@@ -285,7 +291,7 @@ public class AccLocal {
     }
 
 
-    protected Collection<Map<GOperator, Integer>> powersetRanks(Collection<GOperator> gSet) {
+    private Collection<Map<GOperator, Integer>> powersetRanks(Collection<GOperator> gSet) {
         if (gSet.isEmpty()) {
             return Collections.singleton(Collections.emptyMap());
         }
@@ -306,18 +312,18 @@ public class AccLocal {
         return result;
     }
 
-    protected TranSet<Product.ProductState> computeAccMasterForState(Map<GOperator, Integer> ranking, Product.ProductState ps) {
+    private TranSet<Product.ProductState> computeAccMasterForState(Map<GOperator, Integer> ranking, Product.ProductState ps) {
         TranSet<Product.ProductState> result = new TranSet<>(valuationSetFactory);
 
         if (eager) {
             Set<ValuationSet> fineSuccVs = product.generateSuccTransitionsReflectingSinks(ps);
             for (ValuationSet vs : fineSuccVs) {
-                if (!slavesEntail(ps, ranking, vs.pickAny(), ps.getPrimaryState().getClazz())) {
+                if (!slavesEntail(ps, ranking, vs.pickAny(), ps.primaryState.getClazz())) {
                     result.addAll(ps, vs);
                 }
             }
         } else {
-            if (!slavesEntail(ps, ranking, null, ps.getPrimaryState().getClazz())) {
+            if (!slavesEntail(ps, ranking, null, ps.primaryState.getClazz())) {
                 result.addAll(ps, valuationSetFactory.createUniverseValuationSet());
             }
         }

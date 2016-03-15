@@ -18,9 +18,8 @@
 package rabinizer.automata;
 
 import org.jetbrains.annotations.NotNull;
-import rabinizer.exec.Main;
-import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
+import rabinizer.exec.Main;
 
 import java.util.*;
 
@@ -71,17 +70,10 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
         }
 
         @Override
-        public @NotNull Set<ValuationSet> partitionSuccessors() {
-            Set<Set<ValuationSet>> product = new HashSet<>();
-            for (MojmirSlave.State fs : keySet()) {
-                product.add(mojmir.transitions.row(fs).keySet());
-            }
-            return generatePartitioning(product);
-        }
-
-        @Override
         public @NotNull Set<String> getSensitiveAlphabet() {
-            return valuationSetFactory.getAlphabet();
+            Set<String> alphabet = new HashSet<>();
+            this.forEach((state, rank) -> alphabet.addAll(state.getSensitiveAlphabet()));
+            return alphabet;
         }
 
         @Override

@@ -85,7 +85,7 @@ public class DTGRAFactory {
             accTGR = AccTGRRaw.createAccTGRRaw(accLocal, valuationSetFactory);
 
             Main.nonsilent("Generating optimized acceptance condition");
-            accTGR.removeRedundancy();
+            AccTGRRaw.removeRedundancy(accTGR);
             Main.verboseln("========================================");
 
             /**
@@ -118,16 +118,15 @@ public class DTGRAFactory {
     public static class AccTGRRaw<S extends IState<S>> extends LinkedList<GeneralizedRabinPair<S>> {
 
         private static final long serialVersionUID = 245172601429256815L;
-        protected final ValuationSetFactory valuationSetFactory;
+
         private final TranSet<S> allTrans;
 
-        private AccTGRRaw(TranSet<S> allTrans, ValuationSetFactory factory) {
+        private AccTGRRaw(TranSet<S> allTrans) {
             this.allTrans = allTrans;
-            this.valuationSetFactory = factory;
         }
 
         public static AccTGRRaw<ProductState> createAccTGRRaw(AccLocal accLocal, ValuationSetFactory factory) {
-            AccTGRRaw<ProductState> accTGRRaw = new AccTGRRaw<>(accLocal.allTrans, factory);
+            AccTGRRaw<ProductState> accTGRRaw = new AccTGRRaw<>(accLocal.allTrans);
 
             for (Map.Entry<Map<GOperator, Integer>, TranSet<ProductState>> entry : accLocal.accMasterOptions.entrySet()) {
                 Map<GOperator, Integer> ranking = entry.getKey();
@@ -152,7 +151,7 @@ public class DTGRAFactory {
                     }
 
                     Fin.addAll(fPair.fin);
-                    Infs.add((fPair.inf).clone());
+                    Infs.add(fPair.inf.clone());
                 }
 
                 GeneralizedRabinPair<ProductState> pair = new GeneralizedRabinPair<>(Fin, Infs);
@@ -163,82 +162,42 @@ public class DTGRAFactory {
             return accTGRRaw;
         }
 
-        public void removeRedundancy() { // (TranSet<ProductState> allTrans) {
+        public static <S extends IState<S>> void removeRedundancy(AccTGRRaw<S> this2) {
             List<GeneralizedRabinPair<S>> removalPairs;
-            AccTGRRaw<S> temp;
+            List<GeneralizedRabinPair<S>> temp;
             List<TranSet<S>> copy;
             int phase = 0;
             Main.stopwatchLocal();
 
             Main.verboseln(phase + ". Raw Generalized Rabin Acceptance Condition\n");
-            printProgress(phase++);
+            printProgress(phase++, this2);
 
+            // This rule is subsumed by the following two rules.
             Main.verboseln(phase + ". Removing (F, {I1,...,In}) with complete F\n");
-            removalPairs = new ArrayList<>();
-            for (GeneralizedRabinPair<S> pair : this) {
-                if (pair.fin.equals(allTrans)) {
-                    removalPairs.add(pair);
-                }
-            }
-            this.removeAll(removalPairs);
-            printProgress(phase++);
-
-            Main.verboseln(phase + ". Removing complete Ii in (F, {I1,...,In}), i.e. Ii U F = Q \n");
-            temp = new AccTGRRaw<>(null, valuationSetFactory);
-            for (GeneralizedRabinPair<S> pair : this) {
-                copy = new ArrayList<>(pair.infs);
-
-                for (TranSet<S> i : pair.infs) {
-                    TranSet<S> iUf = new TranSet<>(valuationSetFactory);
-                    iUf.addAll(i);
-                    iUf.addAll(pair.fin);
-                    if (iUf.equals(allTrans)) {
-                        copy.remove(i);
-                        break;
-                    }
-                }
-
-                temp.add(new GeneralizedRabinPair<>(pair.fin, copy));
-            }
-            this.clear();
-            this.addAll(temp);
-            printProgress(phase++);
+            this2.removeIf(pair -> pair.fin.equals(this2.allTrans));
+            printProgress(phase++, this2);
 
             Main.verboseln(phase + ". Removing F from each Ii: (F, {I1,...,In}) |-> (F, {I1\\F,...,In\\F})\n");
-            temp = new AccTGRRaw<>(null, valuationSetFactory);
-            for (GeneralizedRabinPair<S> pair : this) {
-                copy = new ArrayList<>(pair.infs);
-                for (TranSet<S> i : pair.infs) {
-                    copy.remove(i); // System.out.println("101:::::::"+i);
-                    TranSet<S> inew = new TranSet<>(valuationSetFactory);
-                    inew.addAll(i); // System.out.println("105TEMP-BEFORE"+temp+"\n=====");
-                    inew.removeAll(pair.fin); // System.out.println("105TEMP-BETWEEN"+temp+"\n=====");
-                    copy.add(inew); // System.out.println("103TEMP-AFTER"+temp);
-                }
-                temp.add(new GeneralizedRabinPair<>(pair.fin, copy));// System.out.println("105TEMP-AFTER"+temp+"\n=====");
-            }
-            this.clear();
-            this.addAll(temp);
+            this2.forEach(pair -> pair.infs.forEach(inf -> inf.removeAll(pair.fin)));
             // Main.verboseln(this.toString());
-            printProgress(phase++);
+            printProgress(phase++, this2);
 
             Main.verboseln(phase + ". Removing (F, {..., \\emptyset, ...} )\n");
-            removalPairs = new AccTGRRaw<>(null, valuationSetFactory);
-            for (GeneralizedRabinPair<S> pair : this) {
-                for (TranSet<S> i : pair.infs) {
-                    if (i.isEmpty()) {
-                        removalPairs.add(pair);
-                        break;
-                    }
-                }
-            }
-            this.removeAll(removalPairs);
+            this2.removeIf(pair -> pair.infs.stream().anyMatch(TranSet::isEmpty));
             // Main.verboseln(this.toString());
-            printProgress(phase++);
+            printProgress(phase++, this2);
 
-            Main.verboseln(
-                    phase + ". Removing redundant Ii: (F, I) |-> (F, { i | i in I and !\\exists j in I : Ij <= Ii })\n");
-            for (GeneralizedRabinPair<S> pair : this) {
+            Main.verboseln(phase + ". Removing complete Ii in (F, {I1,...,In}), i.e. Ii U F = Q \n");
+            this2.forEach(pair -> {
+                TranSet<S> allTrans = this2.allTrans.clone();
+                allTrans.removeAll(pair.fin);
+                pair.infs.removeIf(allTrans::containsAll);
+            });
+            printProgress(phase++, this2);
+
+            Main.verboseln(phase + ". Removing redundant Ii: (F, I) |-> (F, { i | i in I and !\\exists j in I : Ij <= Ii })\n");
+            temp = new ArrayList<>();
+            for (GeneralizedRabinPair<S> pair : this2) {
                 copy = new ArrayList<>(pair.infs);
                 for (TranSet<S> i : pair.infs) {
                     for (TranSet<S> j : pair.infs) {
@@ -250,17 +209,17 @@ public class DTGRAFactory {
                 }
                 temp.add(new GeneralizedRabinPair<>(pair.fin, copy));
             }
-            this.clear();
-            this.addAll(temp);
+            this2.clear();
+            this2.addAll(temp);
 
             // Main.verboseln(this.toString());
-            printProgress(phase++);
+            printProgress(phase++, this2);
 
             Main.verboseln(phase + ". Removing (F, I) for which there is a less restrictive (G, J) \n");
             removalPairs = new ArrayList<>();
 
-            for (GeneralizedRabinPair<S> pair1 : this) {
-                for (GeneralizedRabinPair<S> pair2 : this) {
+            for (GeneralizedRabinPair<S> pair1 : this2) {
+                for (GeneralizedRabinPair<S> pair2 : this2) {
                     if (pair1 == pair2) {
                         continue;
                     }
@@ -272,14 +231,14 @@ public class DTGRAFactory {
                 }
             }
 
-            removeAll(removalPairs);
+            this2.removeAll(removalPairs);
 
             // Main.verboseln(this.toString());
-            printProgress(phase);
+            printProgress(phase, this2);
         }
 
-        public void printProgress(int phase) {
-            Main.nonsilent("Phase " + phase + ": " + Main.stopwatchLocal() + " s " + this.size() + " pairs");
+        public static void printProgress(int phase, Collection<?> this2) {
+            Main.nonsilent("Phase " + phase + ": " + Main.stopwatchLocal() + " s " + this2.size() + " pairs");
         }
 
         @Override

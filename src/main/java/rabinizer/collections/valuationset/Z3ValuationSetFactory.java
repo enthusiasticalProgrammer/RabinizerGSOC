@@ -19,9 +19,9 @@ package rabinizer.collections.valuationset;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap.Builder;
-import com.google.common.math.IntMath;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.google.common.math.IntMath;
 import com.microsoft.z3.*;
 import org.jetbrains.annotations.NotNull;
 import rabinizer.ltl.*;
@@ -74,8 +74,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
 
     @Override
     public Z3ValuationSet createValuationSet(Set<String> valuation) {
-        Formula f = new Conjunction(alphabet.stream().map(s -> new Literal(s, !valuation.contains(s))));
-        return new Z3ValuationSet(createZ3(f));
+        return createValuationSet(valuation, alphabet);
     }
 
     @Override
@@ -86,8 +85,9 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
     }
 
     @Override
-    public ValuationSet createValuationSet(Set<String> valuation, Set<String> base) {
-        throw new UnsupportedOperationException();
+    public Z3ValuationSet createValuationSet(Set<String> valuation, Set<String> base) {
+        Formula f = new Conjunction(base.stream().map(s -> new Literal(s, !valuation.contains(s))));
+        return new Z3ValuationSet(createZ3(f));
     }
 
     @Override
@@ -226,6 +226,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
                 Z3ValuationSet vs = createValuationSet((Set<String>) o);
                 return update(ctx.mkAnd(valuation, ctx.mkNot(vs.valuation)));
             }
+
             return false;
         }
 
@@ -284,6 +285,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
                 valuation = or;
                 return true;
             }
+
             return false;
         }
 
@@ -293,6 +295,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
                 BoolExpr otherZ3 = ((Z3ValuationSet) o).valuation;
                 return testUnsatisfiability(ctx.mkNot(ctx.mkEq(otherZ3, valuation)));
             }
+
             return false;
         }
 

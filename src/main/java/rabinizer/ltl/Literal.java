@@ -54,11 +54,6 @@ public final class Literal extends ImmutableObject implements Formula {
     }
 
     @Override
-    public Literal getAnUnguardedLiteral() {
-        return this;
-    }
-
-    @Override
     public @NotNull Formula temporalStep(@NotNull Set<String> valuation) {
         return BooleanConstant.get(valuation.contains(atom) ^ negated);
     }

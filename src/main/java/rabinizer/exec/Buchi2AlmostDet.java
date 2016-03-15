@@ -23,7 +23,6 @@ import jhoafparser.parser.generated.ParseException;
 import rabinizer.automata.buchi.AlmostDeterminization;
 import rabinizer.automata.buchi.BuchiAutomaton;
 import rabinizer.automata.buchi.BuchiAutomatonBuilder;
-import rabinizer.automata.buchi.SemiDeterminization;
 
 public class Buchi2AlmostDet {
 

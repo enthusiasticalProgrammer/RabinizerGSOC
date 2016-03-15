@@ -82,11 +82,6 @@ public abstract class ModalOperator extends ImmutableObject implements Formula {
         return build(operand.evaluate(Gs, s));
     }
 
-    @Override
-    public Literal getAnUnguardedLiteral() {
-        return null;
-    }
-
     protected abstract char getOperator();
 
     protected abstract ModalOperator build(Formula operand);

@@ -1,18 +1,17 @@
 package rabinizer.automata;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.RelevantGFormulaeWithSlaveSuspension;
 import rabinizer.ltl.equivalence.EquivalenceClass;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public class SuspendedMaster extends Master {
 
@@ -89,7 +88,7 @@ public class SuspendedMaster extends Master {
             EquivalenceClass successor = step(clazz, valuation);
             EquivalenceClass folded = stepTest(this.folded, valuation);
 
-            if (suppressEdge(clazz, valuation, successor)) {
+            if (suppressEdge(clazz, successor)) {
                 return null;
             }
 

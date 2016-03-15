@@ -17,7 +17,7 @@
 
 package rabinizer.automata;
 
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rabinizer.collections.valuationset.ValuationSet;
@@ -29,9 +29,9 @@ import java.util.function.Function;
 public abstract class AbstractProductState<P extends IState<P>, K, S extends IState<S>, T> {
 
     protected final P primaryState;
-    protected final Map<K, S> secondaryStates;
+    protected final ImmutableMap<K, S> secondaryStates;
 
-    protected AbstractProductState(P primaryState, Map<K, S> secondaryStates) {
+    protected AbstractProductState(P primaryState, ImmutableMap<K, S> secondaryStates) {
         this.primaryState = primaryState;
         this.secondaryStates = secondaryStates;
     }
@@ -42,19 +42,6 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
         ImmutableMap.Builder<K, S> builder = ImmutableMap.builder();
         keys.forEach(k -> builder.put(k, constructor.apply(k)));
         this.secondaryStates = builder.build();
-    }
-
-    // TODO: Drop getters?
-    public P getPrimaryState() {
-        return primaryState;
-    }
-
-    public S getSecondaryState(K key) {
-        return secondaryStates.get(key);
-    }
-
-    public Map<K, S> getSecondaryMap() {
-        return secondaryStates;
     }
 
     @Override
@@ -136,7 +123,7 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
                         secondaryStates = secondaryStates2;
                     }
 
-                    builder.put(set, constructState(entry1.getValue(), secondaryStates));
+                    builder.put(set, constructState(entry1.getValue(), ImmutableMap.copyOf(secondaryStates)));
                 }
             }
         }
@@ -164,7 +151,6 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
                     if (!set.isEmpty()) {
                         Map<K, S> states = new HashMap<>(entry1.getValue());
                         states.put(key, entry2.getValue());
-
                         next.put(set, states);
                     }
                 }
@@ -190,7 +176,7 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
         return null;
     }
 
-    protected abstract T constructState(P primaryState, Map<K, S> secondaryStates);
+    protected abstract T constructState(P primaryState, ImmutableMap<K, S> secondaryStates);
 
     protected abstract @NotNull ValuationSetFactory getFactory();
 }

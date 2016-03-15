@@ -89,11 +89,6 @@ public final class UOperator extends ImmutableObject implements Formula {
     }
 
     @Override
-    public Literal getAnUnguardedLiteral() {
-        return null;
-    }
-
-    @Override
     public @NotNull Set<Formula> getPropositions() {
         Set<Formula> propositions = left.getPropositions();
         propositions.addAll(right.getPropositions());

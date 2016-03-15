@@ -54,8 +54,6 @@ public interface Formula {
 
     @NotNull Formula evaluate(@NotNull Set<GOperator> Gs, @NotNull EvaluationStrategy s);
 
-    Literal getAnUnguardedLiteral();
-
     /**
      * For the propositional view on LTL modal operators (F, G, U, X) and
      * literals (a, !a) are treated as propositions.

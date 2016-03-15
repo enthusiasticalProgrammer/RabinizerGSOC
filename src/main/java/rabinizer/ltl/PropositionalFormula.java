@@ -57,19 +57,6 @@ public abstract class PropositionalFormula extends ImmutableObject implements Fo
     }
 
     @Override
-    public Literal getAnUnguardedLiteral() {
-        for (Formula child : children) {
-            Literal literal = child.getAnUnguardedLiteral();
-
-            if (literal != null) {
-                return literal;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
     public @NotNull Set<GOperator> topmostGs() {
         return union(Formula::topmostGs);
     }

@@ -25,10 +25,10 @@ import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.buchi.BuchiAutomaton.State;
 import rabinizer.automata.output.HOAConsumerExtended;
-import rabinizer.ltl.Literal;
+import rabinizer.collections.valuationset.BDDValuationSetFactory;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
-import rabinizer.collections.valuationset.BDDValuationSetFactory;
+import rabinizer.ltl.Literal;
 
 import java.util.*;
 

@@ -18,11 +18,11 @@
 package rabinizer.automata;
 
 import org.jetbrains.annotations.NotNull;
-import rabinizer.ltl.equivalence.EquivalenceClass;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
-import rabinizer.ltl.*;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
+import rabinizer.ltl.GOperator;
+import rabinizer.ltl.equivalence.EquivalenceClass;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.Collection;
 import java.util.Set;
@@ -65,15 +65,6 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
         }
 
         @Override
-        public @NotNull Set<ValuationSet> partitionSuccessors() {
-            if (eager) {
-                return generatePartitioning(clazz.getRepresentative());
-            } else {
-                return generatePartitioning(clazz.unfold(false).getRepresentative());
-            }
-        }
-
-        @Override
         public @NotNull Set<String> getSensitiveAlphabet() {
             return getSensitive(false);
         }
@@ -86,11 +77,6 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
         @Override
         protected Object getOuter() {
             return MojmirSlave.this;
-        }
-
-        @Override
-        protected ValuationSet createUniverseValuationSet() {
-            return valuationSetFactory.createUniverseValuationSet();
         }
     }
 }

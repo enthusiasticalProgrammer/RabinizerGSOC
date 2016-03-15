@@ -26,11 +26,12 @@ import org.jetbrains.annotations.Nullable;
 import rabinizer.automata.Automaton;
 import rabinizer.automata.IState;
 import rabinizer.automata.Optimisation;
-import rabinizer.ltl.equivalence.EquivalenceClass;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
-import rabinizer.ltl.*;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
+import rabinizer.ltl.Formula;
+import rabinizer.ltl.Literal;
+import rabinizer.ltl.equivalence.EquivalenceClass;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -46,11 +47,11 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
 
     private final LoadingCache<State, ValuationSet> acceptanceCache;
 
-    public DetLimitSlave(Formula formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
+    public DetLimitSlave(EquivalenceClass formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
         super(valuationSetFactory, false);
         eager = optimisations.contains(Optimisation.EAGER);
         removeCover = optimisations.contains(Optimisation.COVER);
-        initialFormula = eager ? equivalenceClassFactory.createEquivalenceClass(formula.unfold(true)) : equivalenceClassFactory.createEquivalenceClass(formula);
+        initialFormula = eager ? formula.unfold(true) : formula;
         True = equivalenceClassFactory.getTrue();
 
         CacheLoader<State, ValuationSet> acceptanceLoader = new AcceptanceCacheLoader();
@@ -64,6 +65,13 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
     @Override
     protected @NotNull State generateInitialState() {
         return new State(initialFormula, True);
+    }
+
+    private static class AcceptanceCacheLoader extends CacheLoader<State, ValuationSet> {
+        @Override
+        public ValuationSet load(State arg) {
+            return arg.getAcceptance();
+        }
     }
 
     public final class State implements IState<State> {
@@ -171,13 +179,6 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
             } else {
                 return clazz.unfold(true).temporalStep(valuation);
             }
-        }
-    }
-
-    private static class AcceptanceCacheLoader extends CacheLoader<State, ValuationSet> {
-        @Override
-        public ValuationSet load(State arg) {
-            return arg.getAcceptance();
         }
     }
 }
