@@ -17,7 +17,6 @@
 
 package rabinizer.automata;
 
-import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.Literal;
 import rabinizer.ltl.equivalence.EquivalenceClass;

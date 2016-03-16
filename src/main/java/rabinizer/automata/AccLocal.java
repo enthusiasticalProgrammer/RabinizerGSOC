@@ -19,6 +19,7 @@ package rabinizer.automata;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import org.jetbrains.annotations.NotNull;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.Main;
@@ -281,7 +282,6 @@ class AccLocal {
                     continue;
                 }
 
-
                 builder.put(ImmutableMap.copyOf(ranking), avoidP);
                 Main.verboseln("Avoid for " + gSet + ranking + "\n" + avoidP);
             }
@@ -316,10 +316,11 @@ class AccLocal {
         TranSet<Product.ProductState> result = new TranSet<>(valuationSetFactory);
 
         if (eager) {
-            Set<ValuationSet> fineSuccVs = product.generateSuccTransitionsReflectingSinks(ps);
-            for (ValuationSet vs : fineSuccVs) {
-                if (!slavesEntail(ps, ranking, vs.pickAny(), ps.primaryState.getClazz())) {
-                    result.addAll(ps, vs);
+            Set<String> sensitiveAlphabet = ps.getSensitiveAlphabet();
+
+            for (Set<String> valuation : Sets.powerSet(sensitiveAlphabet)) {
+                if (!slavesEntail(ps, ranking, valuation, ps.primaryState.getClazz())) {
+                    result.addAll(ps, valuationSetFactory.createValuationSet(valuation, sensitiveAlphabet));
                 }
             }
         } else {

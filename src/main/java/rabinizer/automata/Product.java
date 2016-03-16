@@ -26,7 +26,6 @@ import rabinizer.ltl.GOperator;
 import java.util.*;
 import java.util.function.Function;
 
-
 public class Product extends Automaton<Product.ProductState> {
 
     protected final Master primaryAutomaton;
@@ -45,43 +44,7 @@ public class Product extends Automaton<Product.ProductState> {
         this.trapState = new ProductState(primaryAutomaton.trapState, ImmutableMap.of());
     }
 
-    private @NotNull Set<ValuationSet> generatePartitioning(@NotNull Set<Set<ValuationSet>> product) {
-        Set<ValuationSet> partitioning = new HashSet<>();
-        partitioning.add(valuationSetFactory.createUniverseValuationSet());
 
-        for (Set<ValuationSet> vSets : product) {
-            Set<ValuationSet> partitioningNew = new HashSet<>();
-
-            for (ValuationSet vSet : vSets) {
-                for (ValuationSet vSetOld : partitioning) {
-                    ValuationSet vs = vSetOld.clone();
-                    vs.retainAll(vSet);
-                    partitioningNew.add(vs);
-                }
-            }
-
-            partitioning = partitioningNew;
-        }
-
-        partitioning.remove(valuationSetFactory.createEmptyValuationSet());
-        return partitioning;
-    }
-
-    Set<ValuationSet> generateSuccTransitionsReflectingSinks(ProductState s) {
-        Set<Set<ValuationSet>> product = new HashSet<>();
-
-        product.add(primaryAutomaton.transitions.row(s.primaryState).keySet());
-
-        for (GOperator slaveFormula : s.secondaryStates.keySet()) {
-            Automaton<RabinSlave.State> m = secondaryAutomata.get(slaveFormula);
-            for (RabinSlave.State fs : m.getStates()) {
-                product.add(m.transitions.row(fs).keySet());
-            }
-        }
-
-        product.removeIf(Set::isEmpty); // removing empty trans due to sinks
-        return generatePartitioning(product);
-    }
 
     @Override
     protected @NotNull Product.ProductState generateInitialState() {
