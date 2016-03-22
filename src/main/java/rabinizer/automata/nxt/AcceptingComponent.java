@@ -17,6 +17,9 @@
 
 package rabinizer.automata.nxt;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
@@ -45,6 +48,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
     private final Map<Set<GOperator>, Map<GOperator, DetLimitSlave>> secondaryAutomata;
     private final Collection<Optimisation> optimisations;
     private final Table<Set<GOperator>, GOperator, Integer> acceptanceIndexMapping;
+    private final LoadingCache<AcceptingComponent.State, Map<ValuationSet, List<Integer>>> acceptanceCache;
     int acceptanceConditionSize;
 
     AcceptingComponent(Master primaryAutomaton, EquivalenceClassFactory factory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
@@ -56,6 +60,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         acceptanceIndexMapping = HashBasedTable.create();
         equivalenceClassFactory = factory;
         acceptanceConditionSize = 1;
+        acceptanceCache = CacheBuilder.newBuilder().build(new AcceptanceCacheLoader());
     }
 
     void jumpInitial(EquivalenceClass master, Set<GOperator> keys) {
@@ -88,7 +93,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         for (State productState : states) {
             consumer.addState(productState);
 
-            Map<ValuationSet, List<Integer>> accSetMap = productState.getAcceptance();
+            Map<ValuationSet, List<Integer>> accSetMap = getAcceptance(productState);
 
             for (Map.Entry<ValuationSet, State> entry : transitions.row(productState).entrySet()) {
                 State successor = entry.getValue();
@@ -169,13 +174,19 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         return primaryAutomaton.generateInitialState(preClazz);
     }
 
+
+
+    public Map<ValuationSet, List<Integer>> getAcceptance(AcceptingComponent.State state) {
+        return acceptanceCache.getUnchecked(state);
+    }
+
     public class State extends AbstractProductState<Master.State, GOperator, DetLimitSlave.State, State> implements IState<State> {
 
         public State(@NotNull Master.State primaryState, @NotNull ImmutableMap<GOperator, DetLimitSlave.State> secondaryStates) {
             super(primaryState, secondaryStates);
         }
 
-        public Map<ValuationSet, List<Integer>> getAcceptance() {
+        Map<ValuationSet, List<Integer>> getAcceptance() {
             ValuationSet universe = valuationSetFactory.createUniverseValuationSet();
 
             // Don't generate acceptance condition, if we didn't reached true.
@@ -244,6 +255,13 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         @Override
         protected State constructState(Master.State primaryState, ImmutableMap<GOperator, DetLimitSlave.State> secondaryStates) {
             return new State(primaryState, secondaryStates);
+        }
+    }
+
+    private class AcceptanceCacheLoader extends CacheLoader<State, Map<ValuationSet, List<Integer>>> {
+        @Override
+        public Map<ValuationSet, List<Integer>> load(State key) throws Exception {
+            return key.getAcceptance();
         }
     }
 }
