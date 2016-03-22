@@ -18,11 +18,11 @@
 package rabinizer.collections;
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Collections3 {
 
@@ -78,5 +78,11 @@ public class Collections3 {
         E element = iter.next();
         iter.remove();
         return element;
+    }
+
+    public static @NotNull List<Integer> toList(@NotNull BitSet bs) {
+        List<Integer> list = new ArrayList<>(bs.length());
+        bs.stream().forEach(i -> list.add(i));
+        return list;
     }
 }

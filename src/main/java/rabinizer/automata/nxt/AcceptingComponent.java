@@ -48,7 +48,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
     private final Map<Set<GOperator>, Map<GOperator, DetLimitSlave>> secondaryAutomata;
     private final Collection<Optimisation> optimisations;
     private final Table<Set<GOperator>, GOperator, Integer> acceptanceIndexMapping;
-    private final LoadingCache<AcceptingComponent.State, Map<ValuationSet, List<Integer>>> acceptanceCache;
+    private final LoadingCache<AcceptingComponent.State, Map<ValuationSet, BitSet>> acceptanceCache;
     int acceptanceConditionSize;
 
     AcceptingComponent(Master primaryAutomaton, EquivalenceClassFactory factory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
@@ -93,17 +93,17 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         for (State productState : states) {
             consumer.addState(productState);
 
-            Map<ValuationSet, List<Integer>> accSetMap = getAcceptance(productState);
+            Map<ValuationSet, BitSet> accSetMap = getAcceptance(productState);
 
             for (Map.Entry<ValuationSet, State> entry : transitions.row(productState).entrySet()) {
                 State successor = entry.getValue();
                 ValuationSet valuationSet = entry.getKey();
 
-                List<Integer> accSet = null;
+                BitSet accSet = null;
 
-                for (Map.Entry<ValuationSet, List<Integer>> foo : accSetMap.entrySet()) {
+                for (Map.Entry<ValuationSet, BitSet> foo : accSetMap.entrySet()) {
                     if (foo.getKey().containsAll(valuationSet)) {
-                        accSet = new ArrayList<>(foo.getValue());
+                        accSet = foo.getValue();
                         break;
                     }
                 }
@@ -174,9 +174,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         return primaryAutomaton.generateInitialState(preClazz);
     }
 
-
-
-    public Map<ValuationSet, List<Integer>> getAcceptance(AcceptingComponent.State state) {
+    public Map<ValuationSet, BitSet> getAcceptance(AcceptingComponent.State state) {
         return acceptanceCache.getUnchecked(state);
     }
 
@@ -186,16 +184,16 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
             super(primaryState, secondaryStates);
         }
 
-        Map<ValuationSet, List<Integer>> getAcceptance() {
+        Map<ValuationSet, BitSet> getAcceptance() {
             ValuationSet universe = valuationSetFactory.createUniverseValuationSet();
 
             // Don't generate acceptance condition, if we didn't reached true.
             if (!primaryState.getClazz().isTrue()) {
-                return Collections.singletonMap(universe, Collections.emptyList());
+                return Collections.singletonMap(universe, new BitSet(acceptanceConditionSize));
             }
 
-            Map<ValuationSet, List<Integer>> current = new HashMap<>();
-            current.put(universe, new ArrayList<>());
+            Map<ValuationSet, BitSet> current = new HashMap<>();
+            current.put(universe, new BitSet(acceptanceConditionSize));
 
             Map<GOperator, DetLimitSlave> secondaryAuto = secondaryAutomata.get(secondaryStates.keySet());
             Map<GOperator, Integer> accMap = acceptanceIndexMapping.row(secondaryStates.keySet());
@@ -206,17 +204,17 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
 
                 ValuationSet acceptance = secondaryAuto.get(key).getAcceptance(state);
 
-                Map<ValuationSet, List<Integer>> next = new HashMap<>();
+                Map<ValuationSet, BitSet> next = new HashMap<>();
 
-                for (Map.Entry<ValuationSet, List<Integer>> entry1 : current.entrySet()) {
+                for (Map.Entry<ValuationSet, BitSet> entry1 : current.entrySet()) {
                     ValuationSet AandB = entry1.getKey().clone();
                     ValuationSet AandNotB = entry1.getKey().clone();
                     AandB.retainAll(acceptance);
                     AandNotB.removeAll(acceptance);
 
                     if (!AandB.isEmpty()) {
-                        List<Integer> accList = new ArrayList<>(entry1.getValue());
-                        accList.add(accMap.get(key));
+                        BitSet accList = (BitSet) entry1.getValue().clone();
+                        accList.set(accMap.get(key));
                         next.put(AandB, accList);
                     }
 
@@ -228,12 +226,8 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
                 current = next;
             }
 
-            for (List<Integer> value : current.values()) {
-                for (int i = secondaryStates.size(); i < acceptanceConditionSize; i++) {
-                    value.add(i);
-                }
-            }
-
+            final int size = secondaryStates.size();
+            current.forEach((k, v) -> v.set(size, acceptanceConditionSize));
             return current;
         }
 
@@ -258,9 +252,9 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         }
     }
 
-    private class AcceptanceCacheLoader extends CacheLoader<State, Map<ValuationSet, List<Integer>>> {
+    private class AcceptanceCacheLoader extends CacheLoader<State, Map<ValuationSet, BitSet>> {
         @Override
-        public Map<ValuationSet, List<Integer>> load(State key) throws Exception {
+        public Map<ValuationSet, BitSet> load(State key) throws Exception {
             return key.getAcceptance();
         }
     }

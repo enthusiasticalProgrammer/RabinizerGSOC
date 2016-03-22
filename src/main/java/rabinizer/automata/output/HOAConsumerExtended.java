@@ -170,12 +170,16 @@ public class HOAConsumerExtended<T> {
         hoa.addEdgeWithLabel(stateNumbers.get(begin), Simplifier.simplify(label).accept(new FormulaConverter()), Collections.singletonList(getStateId(end)), accSets);
     }
 
+    public void addEdge(T begin, Formula label, T end, BitSet accSets) throws HOAConsumerException {
+       addEdge(begin, label, end, Collections3.toList(accSets));
+    }
+
     public void addEdge(T begin, Formula label, T end) throws HOAConsumerException {
-        addEdge(begin, label, end, null);
+        addEdge(begin, label, end, (List<Integer>) null);
     }
 
     public void addEdge(T begin, Set<String> label, T end) throws HOAConsumerException {
-        addEdge(begin, new Conjunction(alphabet.stream().map(l -> new Literal(l, !label.contains(l)))), end, null);
+        addEdge(begin, new Conjunction(alphabet.stream().map(l -> new Literal(l, !label.contains(l)))), end, (List<Integer>) null);
     }
 
     public void addState(T s) throws HOAConsumerException {
