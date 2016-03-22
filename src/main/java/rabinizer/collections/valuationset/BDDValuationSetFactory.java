@@ -104,38 +104,23 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         return Simplifier.simplify(new Disjunction(new Conjunction(new Literal(letter, false), pos), new Conjunction(new Literal(letter, true), neg)), Strategy.PROPOSITIONAL);
     }
 
-    BDD createBDD(Literal letter) {
-        int i = Arrays.binarySearch(mapping, letter.atom);
-
-        if (i < 0) {
-            throw new IllegalArgumentException("The alphabet does not contain the following letter: " + letter);
-        }
-
-        if (letter.negated) {
-            return factory.nithVar(i);
-        }
-
-        return factory.ithVar(i);
-    }
-
-    BDD createBDD(String letter) {
+    BDD createBDD(String letter, boolean negate) {
         int i = Arrays.binarySearch(mapping, letter);
 
         if (i < 0) {
             throw new IllegalArgumentException("The alphabet does not contain the following letter: " + letter);
         }
 
+        if (negate) {
+            return factory.nithVar(i);
+        }
+
         return factory.ithVar(i);
     }
 
     BDD createBDD(Set<String> set, Set<String> base) {
-        BDD bdd = factory.one();
-
-        for (String letter : base) {
-            BDD letterBDD = set.contains(letter) ? createBDD(letter) : createBDD(letter).not();
-            bdd = bdd.andWith(letterBDD);
-        }
-
+        final BDD bdd = factory.one();
+        base.forEach(letter -> bdd.andWith(createBDD(letter, set.contains(letter))));
         return bdd;
     }
 
@@ -180,7 +165,7 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
 
         @Override
         public boolean restrictWith(Literal literal) {
-            return update(valuations.andWith(createBDD(literal)));
+            return update(valuations.andWith(createBDD(literal.atom, literal.negated)));
         }
 
         @Override
