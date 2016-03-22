@@ -145,6 +145,22 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         return result;
     }
 
+    boolean isSatAssignment(BDD valuations, Set<String> valuation) {
+        BDD current = valuations;
+
+        while (!current.isOne() && !current.isZero()) {
+            int var = current.var();
+
+            if (valuation.contains(mapping[var])) {
+                current = current.high();
+            } else {
+                current = current.low();
+            }
+        }
+
+        return current.isOne();
+    }
+
     public class BDDValuationSet extends AbstractSet<Set<String>> implements ValuationSet {
 
         private BDD valuations;
@@ -194,10 +210,7 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
                 return false;
             }
 
-            Set<String> valuation = (Set<String>) o;
-            BDDValuationSet set = createValuationSet(valuation);
-
-            return !valuations.and(set.valuations).isZero();
+            return isSatAssignment(valuations, (Set<String>) o);
         }
 
         @Override
