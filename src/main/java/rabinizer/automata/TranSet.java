@@ -77,7 +77,7 @@ public class TranSet<S> implements Iterable<Map.Entry<S, ValuationSet>> {
     }
 
     public boolean intersects(TranSet<S> other) {
-        return backingMap.entrySet().stream().anyMatch(e -> other.backingMap.getOrDefault(e.getKey(), empty).intersect(e.getValue()));
+        return backingMap.entrySet().stream().anyMatch(e -> other.backingMap.getOrDefault(e.getKey(), empty).intersects(e.getValue()));
     }
 
     public boolean isEmpty() {
