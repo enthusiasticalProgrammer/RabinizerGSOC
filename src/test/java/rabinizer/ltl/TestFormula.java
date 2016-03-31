@@ -217,37 +217,12 @@ public class TestFormula {
     }
 
     @Test
-    public void testAssertValuation2() {
-        Formula f0 = new Literal("p0", true);
-        Formula f1 = new Literal("p2", true);
-        Formula f2 = Simplifier.simplify(new Conjunction(f0, f1), Simplifier.Strategy.PROPOSITIONAL);
-        Formula f3 = new UOperator(f1, f2);
-        Formula f4 = new GOperator(f1);
-        Formula f5 = Simplifier.simplify(new Conjunction(f1, f4), Simplifier.Strategy.PROPOSITIONAL);
-        Formula f6 = Simplifier.simplify(new Conjunction(f1, f3), Simplifier.Strategy.PROPOSITIONAL);
-        Formula f7 = Simplifier.simplify(new Disjunction(f2, f5, f6), Simplifier.Strategy.PROPOSITIONAL);
-
-        assertEquals(Simplifier.simplify(f7.evaluate(new Literal("p0", false)).evaluate(new Literal("p2", false))),
-                BooleanConstant.get(false));
-    }
-
-    @Test
     public void testAssertValuation3() {
         Formula f1 = new Literal("p2", true);
         Formula f4 = new GOperator(f1);
         Formula f5 = f4.unfold(true);
         Formula f6 = Simplifier.simplify(f5.temporalStep(Collections.singleton("p2")));
         assertEquals(f6, BooleanConstant.get(false));
-    }
-
-    @Test
-    public void testAssertValuation4() {
-        Formula f1 = new Literal("p0", false);
-        Formula f2 = new Literal("p1", false);
-        Formula f3 = new Literal("p2", false);
-        Formula f4 = Simplifier.simplify(new Conjunction(f1, f2, f3), Simplifier.Strategy.PROPOSITIONAL);
-        Formula f6 = Simplifier.simplify(f4.evaluate((Literal) f1));
-        assertEquals(f6, Simplifier.simplify(new Conjunction(f2, f3), Simplifier.Strategy.PROPOSITIONAL));
     }
 
     @Test

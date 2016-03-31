@@ -28,6 +28,9 @@ import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.valuationset.BDDValuationSetFactory;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
+import rabinizer.ltl.BooleanConstant;
+import rabinizer.ltl.Conjunction;
+import rabinizer.ltl.Disjunction;
 import rabinizer.ltl.Literal;
 
 import java.util.*;
@@ -139,7 +142,7 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
     @Override
     public void notifyBodyStart() throws HOAConsumerException {
         if (valuationSetFactory == null) {
-            valuationSetFactory = new BDDValuationSetFactory(Collections.emptySet());
+            valuationSetFactory = new BDDValuationSetFactory(BooleanConstant.TRUE);
         }
 
         automaton = new BuchiAutomaton(valuationSetFactory);

@@ -225,6 +225,13 @@ public class DetLimitAutomatonTest {
         testOutput(ltl3, 6);
     }
 
+    @Test
+    public void testCasePrism() throws Exception {
+        String ltl = "(G F p1) & (F G ((p1) U (p3)))";
+        testOutput(ltl, 2);
+    }
+
+
     // @Test
     public void testBenchmarks() throws Exception {
         for (Map.Entry<File, List<Formula>> entry : FormulaStorage.formulaSets.entrySet()) {
