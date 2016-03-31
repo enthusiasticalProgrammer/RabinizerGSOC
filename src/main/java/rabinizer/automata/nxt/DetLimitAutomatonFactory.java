@@ -40,8 +40,8 @@ public class DetLimitAutomatonFactory {
     }
 
     public static DetLimitAutomaton createDetLimitAutomaton(Formula formula, Collection<Optimisation> optimisations) {
-        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(formula.getAtoms());
-        EquivalenceClassFactory equivalenceClassFactory = new BDDEquivalenceClassFactory(formula.getPropositions());
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(formula);
+        EquivalenceClassFactory equivalenceClassFactory = new BDDEquivalenceClassFactory(formula);
 
         formula = Simplifier.simplify(formula, Simplifier.Strategy.AGGRESSIVELY);
 

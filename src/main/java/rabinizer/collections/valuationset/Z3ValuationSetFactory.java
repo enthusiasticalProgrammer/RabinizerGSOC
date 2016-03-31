@@ -38,6 +38,10 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
     private final Context ctx;
     final Set<String> alphabet;
 
+    public Z3ValuationSetFactory(Formula formula) {
+        this(AlphabetVisitor.extractAlphabet(formula));
+    }
+
     public Z3ValuationSetFactory(Set<String> alphabet) {
         visitor = new Z3Visitor();
         ctx = new Context();
@@ -78,7 +82,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
     }
 
     @Override
-    public Z3ValuationSet createValuationSet(Set<String> valuation, Set<String> base) {
+    public Z3ValuationSet createValuationSet(Set<String> valuation, Collection<String> base) {
         Formula f = new Conjunction(base.stream().map(s -> new Literal(s, !valuation.contains(s))));
         return new Z3ValuationSet(createZ3(f));
     }
@@ -292,7 +296,8 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
          */
         @Override
         public int size() {
-            return IntMath.pow(2, this.toFormula().getAtoms().size());
+            // We cannot reasonable support this.
+            return Integer.MAX_VALUE;
         }
 
         @Override

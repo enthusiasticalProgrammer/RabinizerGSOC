@@ -65,7 +65,7 @@ public class AlmostDeterminization {
             Set<BuchiAutomaton.State> states = cMapping.inverse().get(current);
 
             if (states != null) {
-                for (Set<String> valuation : Sets.powerSet(automaton.valuationSetFactory.getAlphabet())) {
+                for (Set<String> valuation : Sets.powerSet(new HashSet<>(automaton.valuationSetFactory.getAlphabet()))) {
                     BuchiAutomaton.State successor = getCSuccessor(states, valuation);
 
                     if (successor != null) {
@@ -76,7 +76,7 @@ public class AlmostDeterminization {
             }
 
             for (BuchiAutomaton.State state : Sets.intersection(states != null ? states : Collections.emptySet(), automaton.acceptingStates)) {
-                for (Set<String> valuation : Sets.powerSet(automaton.valuationSetFactory.getAlphabet())) {
+                for (Set<String> valuation : Sets.powerSet(new HashSet<>(automaton.valuationSetFactory.getAlphabet()))) {
                     BuchiAutomaton.State successor = getDSuccessor(new Tuple<>(Collections.singleton(state), Collections.singleton(state)), valuation);
 
                     if (successor != null) {
@@ -115,7 +115,7 @@ public class AlmostDeterminization {
         return semi;
     }
 
-    private @Nullable BuchiAutomaton.State getCSuccessor(@NotNull Set<BuchiAutomaton.State> states, @NotNull Set<String> valuation) {
+    private @Nullable BuchiAutomaton.State getCSuccessor(Set<BuchiAutomaton.State> states, Set<String> valuation) {
         Set<BuchiAutomaton.State> successors = new HashSet<>(states.size());
 
         for (BuchiAutomaton.State state : states) {

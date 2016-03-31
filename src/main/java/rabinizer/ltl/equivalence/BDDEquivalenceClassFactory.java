@@ -31,22 +31,24 @@ import rabinizer.ltl.simplifier.Simplifier;
 import rabinizer.ltl.simplifier.Simplifier.Strategy;
 
 import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
 
     final BDDFactory factory;
-    final BiMap<Formula, BDD> mapping;
+    final Map<Formula, Integer> mapping;
+    final List<Formula> reverseMapping;
     final Visitor<BDD> visitor;
 
     final LoadingCache<EquivalenceClass, EquivalenceClass> unfoldCache;
     final LoadingCache<EquivalenceClass, EquivalenceClass> unfoldGCache;
     final LoadingCache<Tuple<EquivalenceClass, Set<String>>, EquivalenceClass> temporalStepCache;
 
-    public BDDEquivalenceClassFactory(Set<Formula> domain) {
-        int size = domain.isEmpty() ? 1 : domain.size();
+    public BDDEquivalenceClassFactory(Formula formula) {
+        mapping = PropositionVisitor.extractPropositions(formula);
+        reverseMapping = new ArrayList<>(mapping.size());
+
+        int size = mapping.isEmpty() ? 1 : mapping.size();
 
         factory = BDDFactory.init("micro", 64 * size, 1000);
         factory.setVarNum(size);
@@ -61,14 +63,12 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
             System.err.println("Failed to silence BDD library: " + e);
         }
 
-        mapping = HashBiMap.create(size);
         visitor = new BDDVisitor();
-
         int var = 0;
 
-        for (Formula proposition : domain) {
-            BDD pos = factory.ithVar(var);
-            mapping.put(proposition, pos);
+        for (Map.Entry<Formula, Integer> entry : mapping.entrySet()) {
+            reverseMapping.add(entry.getKey());
+            entry.setValue(var);
             var++;
         }
 
@@ -147,15 +147,16 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public BDD defaultAction(@NotNull Formula formula) {
-            BDD value = mapping.get(formula);
+        public BDD defaultAction(Formula formula) {
+            Integer value = mapping.get(formula);
 
             if (value == null) {
-                value = factory.ithVar(factory.extVarNum(1));
+                value = factory.extVarNum(1);
+                reverseMapping.add(formula);
                 mapping.put(formula, value);
             }
 
-            return value.id();
+            return factory.ithVar(value);
         }
     }
 
@@ -259,9 +260,7 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
                 return;
             }
 
-            BDD var = factory.ithVar(bdd.level());
-            support.add(mapping.inverse().get(var));
-
+            support.add(reverseMapping.get(bdd.level()));
             getSupport(bdd.high(), support);
             getSupport(bdd.low(), support);
         }

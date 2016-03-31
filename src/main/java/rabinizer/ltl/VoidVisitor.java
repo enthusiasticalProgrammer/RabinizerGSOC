@@ -15,31 +15,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package rabinizer.collections.valuationset;
+package rabinizer.ltl;
 
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.Literal;
+public interface VoidVisitor {
 
-import java.util.Set;
+    default void visit(BooleanConstant booleanConstant) {
+    }
 
-public interface ValuationSet extends Set<Set<String>>, Cloneable {
-    ValuationSet complement();
+    default void visit(Conjunction conjunction) {
 
-    boolean isUniverse();
+    }
 
-    @Deprecated
-    boolean restrictWith(Literal literal);
+    default void visit(Disjunction disjunction) {
 
-    @Deprecated
-    Set<String> pickAny();
+    }
 
-    Formula toFormula();
+    default void visit(FOperator fOperator) {
 
-    ValuationSet clone();
+    }
 
-    default boolean intersects(ValuationSet other) {
-        ValuationSet thisClone = this.clone();
-        thisClone.retainAll(other);
-        return !thisClone.isEmpty();
+    default void visit(GOperator gOperator) {
+
+    }
+
+    default void visit(Literal literal) {
+
+    }
+
+    default void visit(UOperator uOperator) {
+
+    }
+
+    default void visit(XOperator xOperator) {
+
     }
 }

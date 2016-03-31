@@ -17,7 +17,6 @@
 
 package rabinizer.collections.valuationset;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -33,10 +32,12 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
 
     final BDDFactory factory;
     final String[] mapping;
-    final ImmutableSet<String> alphabet;
 
-    public BDDValuationSetFactory(Collection<String> a) {
-        alphabet = ImmutableSet.copyOf(a);
+    public BDDValuationSetFactory(Formula formula) {
+        this(AlphabetVisitor.extractAlphabet(formula));
+    }
+
+    public BDDValuationSetFactory(Set<String> alphabet) {
         mapping = new String[alphabet.size()];
         alphabet.toArray(mapping);
         Arrays.sort(mapping);
@@ -58,8 +59,8 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
     }
 
     @Override
-    public Set<String> getAlphabet() {
-        return alphabet;
+    public Collection<String> getAlphabet() {
+        return Collections.unmodifiableCollection(Arrays.asList(mapping));
     }
 
     @Override
@@ -74,13 +75,12 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
 
     @Override
     public BDDValuationSet createValuationSet(Set<String> valuation) {
-        return createValuationSet(valuation, alphabet);
+        return createValuationSet(valuation, getAlphabet());
     }
 
     @Override
-    public BDDValuationSet createValuationSet(Set<String> valuation, Set<String> base) {
-        BDD bdd = createBDD(valuation, base);
-        return new BDDValuationSet(bdd);
+    public BDDValuationSet createValuationSet(Set<String> valuation, Collection<String> base) {
+        return new BDDValuationSet(createBDD(valuation, base));
     }
 
     public void callback(int x, Object stats) {
@@ -118,9 +118,9 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         return factory.ithVar(i);
     }
 
-    BDD createBDD(Set<String> set, Set<String> base) {
+    BDD createBDD(Set<String> set, Collection<String> base) {
         final BDD bdd = factory.one();
-        base.forEach(letter -> bdd.andWith(createBDD(letter, set.contains(letter))));
+        base.forEach(letter -> bdd.andWith(createBDD(letter, !set.contains(letter))));
         return bdd;
     }
 
@@ -216,6 +216,7 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         @Override
         public @NotNull Iterator<Set<String>> iterator() {
             return Sets.powerSet(alphabet).stream().filter(this::contains).iterator();
+            return Sets.powerSet(new HashSet<>(getAlphabet())).stream().filter(this::contains).iterator();
         }
 
         @Override

@@ -28,8 +28,8 @@ public class DetLimitSlaveTest {
     @Before
     public void setUp() {
         formula = new Disjunction(new FOperator(new Literal("a", false)), new XOperator(new Literal("b", false)));
-        valuationSetFactory = new BDDValuationSetFactory(formula.getAtoms());
-        equivalenceClassFactory = new BDDEquivalenceClassFactory(formula.getPropositions());
+        valuationSetFactory = new BDDValuationSetFactory(formula);
+        equivalenceClassFactory = new BDDEquivalenceClassFactory(formula);
         automaton = new DetLimitSlave(equivalenceClassFactory.createEquivalenceClass(formula), equivalenceClassFactory, valuationSetFactory, Collections.emptySet());
         automatonImp = new DetLimitSlave(equivalenceClassFactory.createEquivalenceClass(formula), equivalenceClassFactory, valuationSetFactory,
                 EnumSet.allOf(Optimisation.class));

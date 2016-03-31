@@ -105,8 +105,8 @@ public class Main {
         inputFormula = Simplifier.simplify(inputFormula, simplify);
         nonsilent("Formula simplified:" + inputFormula);
 
-        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(backend, inputFormula.getPropositions());
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(backend, inputFormula.getAtoms());
+        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(backend, inputFormula);
+        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(backend, inputFormula);
 
         DTGRA dtgra = DTGRAFactory.constructDTGRA(inputFormula, factory, valuationSetFactory, opts);
 

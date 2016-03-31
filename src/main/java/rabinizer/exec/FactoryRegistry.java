@@ -31,43 +31,43 @@ public class FactoryRegistry {
 
     public static final Backend defaultBackend = Backend.BDD;
 
-    public static EquivalenceClassFactory createEquivalenceClassFactory(Set<Formula> domain) {
-        return createEquivalenceClassFactory(defaultBackend, domain);
+    public static EquivalenceClassFactory createEquivalenceClassFactory(Formula formula) {
+        return createEquivalenceClassFactory(defaultBackend, formula);
     }
 
-    public static EquivalenceClassFactory createEquivalenceClassFactory(Backend backend, Set<Formula> domain) {
+    public static EquivalenceClassFactory createEquivalenceClassFactory(Backend backend, Formula formula) {
         try {
             switch (backend) {
                 case Z3:
-                    return new Z3EquivalenceClassFactory(domain);
+                    return new Z3EquivalenceClassFactory(formula);
 
                 case BDD:
                 default:
-                    return new BDDEquivalenceClassFactory(domain);
+                    return new BDDEquivalenceClassFactory(formula);
             }
         } catch (Exception e) {
             System.err.println("Unable to instantiate factory with " + backend + " backend. Falling back to the BDD backend. (" + e + ")");
-            return new BDDEquivalenceClassFactory(domain);
+            return new BDDEquivalenceClassFactory(formula);
         }
     }
 
-    public static ValuationSetFactory createValuationSetFactory(Set<String> domain) {
-        return createValuationSetFactory(defaultBackend, domain);
+    public static ValuationSetFactory createValuationSetFactory(Formula formula) {
+        return createValuationSetFactory(defaultBackend, formula);
     }
 
-    public static ValuationSetFactory createValuationSetFactory(Backend backend, Set<String> domain) {
+    public static ValuationSetFactory createValuationSetFactory(Backend backend, Formula formula) {
         try {
             switch (backend) {
                 case Z3:
-                    return new Z3ValuationSetFactory(domain);
+                    return new Z3ValuationSetFactory(formula);
 
                 case BDD:
                 default:
-                    return new BDDValuationSetFactory(domain);
+                    return new BDDValuationSetFactory(formula);
             }
         } catch (Exception e) {
             System.err.println("Unable to instantiate factory with " + backend + " backend. Falling back to the BDD backend. (" + e + ")");
-            return new BDDValuationSetFactory(domain);
+            return new BDDValuationSetFactory(formula);
         }
     }
 

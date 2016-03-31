@@ -20,7 +20,7 @@ public abstract class EquivalenceClassTest {
     private Formula tautology;
     private Formula literal;
 
-    public abstract EquivalenceClassFactory setUpFactory(Set<Formula> domain);
+    public abstract EquivalenceClassFactory setUpFactory(Formula domain);
 
     @Before
     public void setUp() {
@@ -28,7 +28,7 @@ public abstract class EquivalenceClassTest {
         tautology = BooleanConstant.TRUE;
         literal = new Literal("c", false);
 
-        factory = setUpFactory(new Conjunction(contradiction, tautology, literal).getPropositions());
+        factory = setUpFactory(new Conjunction(contradiction, tautology, literal));
     }
 
     @Test
@@ -85,14 +85,14 @@ public abstract class EquivalenceClassTest {
 
     @Test
     public void testEmptyDomain() {
-        EquivalenceClassFactory factory = setUpFactory(Collections.emptySet());
+        EquivalenceClassFactory factory = setUpFactory(BooleanConstant.TRUE);
         assertNotEquals(factory, null);
     }
 
     @Test
     public void testUnfoldUnfold() {
         for (Formula formula : FormulaStorage.formulae) {
-            EquivalenceClassFactory factory = setUpFactory(formula.getPropositions());
+            EquivalenceClassFactory factory = setUpFactory(formula);
             EquivalenceClass clazz = factory.createEquivalenceClass(formula).unfold(true);
             assertEquals(clazz, clazz.unfold(true));
         }
@@ -101,7 +101,7 @@ public abstract class EquivalenceClassTest {
     @Test
     public void testGetSupport() throws Exception {
         Formula f = Util.createFormula("(F p1) & (!p2 | F p1)");
-        EquivalenceClassFactory factory = setUpFactory(f.getPropositions());
+        EquivalenceClassFactory factory = setUpFactory(f);
         EquivalenceClass clazz = factory.createEquivalenceClass(f);
         assertEquals(Collections.singleton(Util.createFormula("F p1")), clazz.getSupport());
     }

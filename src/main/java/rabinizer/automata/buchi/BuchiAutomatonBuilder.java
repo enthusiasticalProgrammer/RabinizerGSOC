@@ -80,7 +80,7 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
     public void setAPs(List<String> list) throws HOAConsumerException {
         integerToLetter = new String[list.size()];
         list.toArray(integerToLetter);
-        valuationSetFactory = new BDDValuationSetFactory(list);
+        valuationSetFactory = new BDDValuationSetFactory(new HashSet<>(list));
     }
 
     @Override
@@ -145,7 +145,7 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
         automaton = new BuchiAutomaton(valuationSetFactory);
 
         if (accType == HOAConsumerExtended.AccType.ALL || accType == HOAConsumerExtended.AccType.NONE) {
-            for (Set<String> valuation : Sets.powerSet(valuationSetFactory.getAlphabet())) {
+            for (Set<String> valuation : Sets.powerSet(new HashSet<>(valuationSetFactory.getAlphabet()))) {
                 automaton.addTransition(automaton.getInitialState(), valuation, automaton.getInitialState());
             }
         }

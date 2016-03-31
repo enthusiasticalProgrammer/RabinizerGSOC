@@ -42,16 +42,18 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
     final Context ctx;
     final Collection<Z3EquivalenceClass> alreadyUsed;
 
-    public Z3EquivalenceClassFactory(Set<Formula> domain) {
+    public Z3EquivalenceClassFactory(Formula formula) {
+        Set<Formula> propositions = PropositionVisitor.extractPropositions(formula).keySet();
+
         visitor = new Z3Visitor();
         ctx = new Context();
         TRUE = ctx.mkTrue();
         FALSE = ctx.mkFalse();
 
-        mapping = HashBiMap.create(domain.size());
-        alreadyUsed = new ArrayList<>(domain.size());
+        mapping = HashBiMap.create(propositions.size());
+        alreadyUsed = new ArrayList<>(propositions.size());
 
-        for (Formula proposition : domain) {
+        for (Formula proposition : propositions) {
             mapping.put(proposition, mkConst(proposition.toString()));
         }
     }
@@ -208,7 +210,7 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
 
         @Override
         public @NotNull Set<Formula> getSupport() {
-            return this.getRepresentative().getPropositions();
+            return PropositionVisitor.extractPropositions(representative).keySet();
         }
     }
 

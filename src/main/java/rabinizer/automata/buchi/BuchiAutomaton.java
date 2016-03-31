@@ -137,7 +137,7 @@ public class BuchiAutomaton {
             State current = workList.remove();
             visited.add(current);
 
-            for (Set<String> valuation : Sets.powerSet(valuationSetFactory.getAlphabet())) {
+            for (Set<String> valuation : Sets.powerSet(new HashSet<>(valuationSetFactory.getAlphabet()))) {
                 Collection<State> nexts = getTransitions(current, valuation);
 
                 if (nexts.size() > 1) {
@@ -163,7 +163,7 @@ public class BuchiAutomaton {
             State current = workList.remove();
             visited.add(current);
 
-            for (Set<String> valuation : Sets.powerSet(valuationSetFactory.getAlphabet())) {
+            for (Set<String> valuation : Sets.powerSet(new HashSet<>(valuationSetFactory.getAlphabet()))) {
                 Collection<State> nexts = getTransitions(current, valuation);
 
                 if (nexts.size() > 1) {

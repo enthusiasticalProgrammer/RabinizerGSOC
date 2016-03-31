@@ -90,7 +90,7 @@ public abstract class ValuationSetTest {
         }
 
         for (Set<String> valuation : containsA) {
-            assertTrue(valuation.contains("a"));
+            assertTrue(valuation.toString(), valuation.contains("a"));
         }
 
         for (Set<String> valuation : abcd) {

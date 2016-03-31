@@ -17,6 +17,7 @@
 
 package rabinizer.collections.valuationset;
 
+import java.util.Collection;
 import java.util.Set;
 
 public interface ValuationSetFactory {
@@ -27,7 +28,7 @@ public interface ValuationSetFactory {
 
     ValuationSet createValuationSet(Set<String> valuation);
 
-    ValuationSet createValuationSet(Set<String> valuation, Set<String> smallerAlphabet);
+    ValuationSet createValuationSet(Set<String> valuation, Collection<String> smallerAlphabet);
 
-    Set<String> getAlphabet();
+    Collection<String> getAlphabet();
 }
