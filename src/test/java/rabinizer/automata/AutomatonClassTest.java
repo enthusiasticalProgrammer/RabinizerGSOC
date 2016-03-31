@@ -21,22 +21,13 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 public class AutomatonClassTest {
-    private boolean silent;
 
-    private Set<Optimisation> standard = EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION, Optimisation.COMPLETE);
-
-    private Set<Optimisation> standardWithEmpty = EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION, Optimisation.COMPLETE,
-            Optimisation.EMPTINESS_CHECK);
+    private Set<Optimisation> standard = EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION);
+    private Set<Optimisation> standardWithEmpty = EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION, Optimisation.EMPTINESS_CHECK);
 
     @Before
     public final void setUp() {
-        silent = Main.silent;
         Main.silent = true;
-    }
-
-    @After
-    public final void tearDown() {
-        Main.silent = silent;
     }
 
     @Test
@@ -78,7 +69,7 @@ public class AutomatonClassTest {
 
         DTGRA dtgra = DTGRAFactory.constructDTGRA(formula, factory, val, standardWithEmpty);
         List<TranSet<Product.ProductState>> SCC = dtgra.SCCs();
-        assertEquals(3, SCC.size());
+        assertEquals(2, SCC.size());
     }
 
     @Test
@@ -90,7 +81,7 @@ public class AutomatonClassTest {
 
         DTGRA dtgra = DTGRAFactory.constructDTGRA(formula, factory, val, standardWithEmpty);
         List<TranSet<Product.ProductState>> SCC = dtgra.SCCs();
-        assertEquals(7, SCC.size());
+        assertEquals(6, SCC.size());
 
     }
 
@@ -176,7 +167,7 @@ public class AutomatonClassTest {
         assertFalse(dtgra.states.isEmpty());
 
         dtgra = DTGRAFactory.constructDTGRA(f, factory, val, standard);
-        assertEquals(dtgra.states.size(), 3);
+        assertEquals(2, dtgra.states.size());
     }
 
     @Test
@@ -194,7 +185,7 @@ public class AutomatonClassTest {
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(f.getPropositions());
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f.getAtoms());
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, standard);
-        assertTrue(dtgra.states.size() == 3);
+        assertEquals(2, dtgra.states.size());
     }
 
     @Test
