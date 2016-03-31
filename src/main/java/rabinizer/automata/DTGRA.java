@@ -47,6 +47,16 @@ public class DTGRA extends Automaton<Product.ProductState> {
 
     @Override
     public void toHOA(HOAConsumer ho) throws HOAConsumerException {
+        if (states.isEmpty()) {
+            ho.notifyHeaderStart("v1");
+            ho.setNumberOfStates(0);
+            ho.setAPs(Collections.emptyList());
+            ho.setAcceptanceCondition(0, new BooleanExpression<>(false));
+            ho.notifyBodyStart();
+            ho.notifyEnd();
+            return;
+        }
+
         HOAConsumerExtended<Product.ProductState> hoa = new HOAConsumerExtended<>(ho, HOAConsumerExtended.AutomatonType.TRANSITION);
         hoa.setHeader(null, valuationSetFactory.getAlphabet());
         hoa.setInitialState(this.initialState);

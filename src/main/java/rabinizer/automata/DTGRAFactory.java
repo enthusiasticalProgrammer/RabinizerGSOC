@@ -96,19 +96,7 @@ public class DTGRAFactory {
              */
             if (opts.contains(Optimisation.EMPTINESS_CHECK)) {
                 // if it is empty, we have to complete it
-                if (EmptinessCheck.checkEmptiness(automaton, accTGR)) {
-                    opts.add(Optimisation.COMPLETE);
-                }
-            }
-
-            if (opts.contains(Optimisation.COMPLETE)) {
-                automaton.makeComplete();
-
-                if (automaton.states.contains(automaton.trapState)) {
-                    for (GeneralizedRabinPair<ProductState> rabPair : accTGR) {
-                        rabPair.fin.addAll(automaton.trapState, automaton.valuationSetFactory.createUniverseValuationSet());
-                    }
-                }
+                EmptinessCheck.checkEmptiness(automaton, accTGR);
             }
         }
 

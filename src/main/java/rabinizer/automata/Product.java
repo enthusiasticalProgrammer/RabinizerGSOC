@@ -41,10 +41,7 @@ public class Product extends Automaton<Product.ProductState> {
         this.primaryAutomaton = primaryAutomaton;
         this.secondaryAutomata = slaves;
         this.allSlaves = !optimisations.contains(Optimisation.ONLY_RELEVANT_SLAVES);
-        this.trapState = new ProductState(primaryAutomaton.trapState, ImmutableMap.of());
     }
-
-
 
     @Override
     protected @NotNull Product.ProductState generateInitialState() {

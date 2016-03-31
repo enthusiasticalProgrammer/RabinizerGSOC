@@ -55,8 +55,6 @@ public class CLIParser {
                 "This option defines, if at the end of the construction, and emptiness-check is done and all nonaccepting SCCs are removed, and some acceptance conditions are diminished. Per default it is enabled if the optimisation flag is set to on.");
         result.addOption("l", "slave-suspension", false,
                 "This option defines, if the slaves can wait until they are useful. This feature is yet experimental and may produce errors (in around 1 out of 1000 formulae).Per default it is on if the optimisation flag is experimental. This requires a simplify-formula level of 2.");
-        result.addOption("c", "complete", false,
-                "Return a complete automaton (it is made complete by adding a trapState). Per default the resulting automaton is in general not complete");
         result.addOption("y", "simplify-formula", true,
                 "This defines the level of simplification which is used on the formula. Possible values are 0 for only propositional simplification, 1 for modal simplification, and 2 for aggressive simplification. The default is 0, if optimisation is off , and 2 if optimisation is on.");
         result.addOption("u", "output-file", true, "The name of the file, in which the automaton has to be printed. Per default the automaton gets printed on the terminal");
@@ -78,7 +76,6 @@ public class CLIParser {
         Format format = Format.HOA;
 
         Set<Optimisation> optimisations = EnumSet.allOf(Optimisation.class);
-        optimisations.remove(Optimisation.COMPLETE);
         optimisations.remove(Optimisation.SLAVE_SUSPENSION);
 
         Simplifier.Strategy simplification;
@@ -172,7 +169,6 @@ public class CLIParser {
             }
         }
 
-
         if (cmd.hasOption('e')) {
             optimisations.add(Optimisation.EAGER);
         }
@@ -195,10 +191,6 @@ public class CLIParser {
 
         if (cmd.hasOption('t')) {
             optimisations.add(Optimisation.EMPTINESS_CHECK);
-        }
-
-        if (cmd.hasOption('c')) {
-            optimisations.add(Optimisation.COMPLETE);
         }
 
         if (cmd.hasOption('y')) {

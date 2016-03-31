@@ -30,11 +30,6 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
     public RabinSlave(MojmirSlave mojmir, ValuationSetFactory factory) {
         super(factory, false);
         this.mojmir = mojmir;
-
-        MojmirSlave.State f = mojmir.trapState;
-        State trap = new State();
-        trap.put(f, 1);
-        trapState = trap;
     }
 
     public void optimizeInitialState() {

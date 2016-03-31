@@ -41,7 +41,6 @@ public abstract class Automaton<S extends IState<S>> {
     protected final Table<@NotNull S, @NotNull ValuationSet, @NotNull S> transitions;
     protected final Table<S, S, ValuationSet> edgeBetween;
     protected @Nullable S initialState;
-    protected S trapState;
 
     protected Automaton(ValuationSetFactory valuationSetFactory) {
         this(valuationSetFactory, true);
@@ -54,7 +53,6 @@ public abstract class Automaton<S extends IState<S>> {
         transitions = a.transitions;
         edgeBetween = a.edgeBetween;
         initialState = a.initialState;
-        trapState = a.trapState;
     }
 
     protected Automaton(ValuationSetFactory valuationSetFactory, boolean mergingEnabled) {
@@ -238,55 +236,6 @@ public abstract class Automaton<S extends IState<S>> {
         return valuationSetFactory.getAlphabet();
     }
 
-    /**
-     * if the automaton is not complete anymore (e.g. because of optimization),
-     * this method makes it complete by adding a trap state. If you use it after
-     * the generation of the Acceptance-condition, either update the
-     * Acceptance-condition or make sure, every generalized RabinPair is not a
-     * Tautology (like Fin(emptySet)&Inf(allTransitions))
-     */
-    void makeComplete() {
-        boolean usedTrapState = false;
-        states.add(trapState);
-
-        if (initialState == null) {
-            initialState = trapState;
-            usedTrapState = true;
-        }
-
-        Map<S, Map<ValuationSet, S>> trans = transitions.rowMap();
-
-        for (S s : states) {
-            ValuationSet vs = valuationSetFactory.createEmptyValuationSet();
-            Set<Entry<ValuationSet, S>> transOfS;
-            if (trans.get(s) != null) {
-                transOfS = trans.get(s).entrySet();
-            } else {
-                transOfS = Collections.emptySet();
-            }
-
-            transOfS.stream().forEach(edge -> vs.addAll(edge.getKey()));
-            ValuationSet vs2 = vs.complement(); // because vs has to be
-            // final or effectively
-            // final acc. to compiler
-            if (!vs2.isEmpty()) {
-                transitions.put(s, vs2, trapState);
-                edgeBetween.put(s, trapState, vs2);
-                if (s != trapState) {
-                    usedTrapState = true;
-                }
-            }
-        }
-
-        if (usedTrapState) {
-            transitions.put(trapState, valuationSetFactory.createUniverseValuationSet(), trapState);
-            edgeBetween.put(trapState, trapState, valuationSetFactory.createUniverseValuationSet());
-            states.add(trapState);
-        } else {
-            states.remove(trapState);
-        }
-    }
-
     protected @NotNull S generateInitialState() {
         throw new UnsupportedOperationException();
     }
@@ -347,10 +296,6 @@ public abstract class Automaton<S extends IState<S>> {
         }
 
         edgeBetween.putAll(toAdd2);
-
-        if (antecessor.equals(trapState)) {
-            trapState = replacement;
-        }
 
         if (antecessor.equals(initialState)) {
             initialState = replacement;

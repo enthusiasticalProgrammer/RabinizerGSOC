@@ -38,7 +38,6 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
     public DTRA(DTGRA dtgra) {
         super(dtgra.valuationSetFactory);
         this.dtgra = dtgra;
-        trapState = new ProductDegenState(dtgra.trapState, new int[dtgra.acc.size()]);
         generate();
 
         accTR = new ArrayList<>();
