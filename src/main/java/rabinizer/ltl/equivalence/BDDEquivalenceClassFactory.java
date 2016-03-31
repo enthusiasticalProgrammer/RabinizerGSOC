@@ -24,7 +24,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import org.jetbrains.annotations.NotNull;
+
 import rabinizer.collections.Tuple;
 import rabinizer.ltl.*;
 import rabinizer.ltl.simplifier.Simplifier;
@@ -99,17 +99,17 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
     }
 
     @Override
-    public @NotNull EquivalenceClass getTrue() {
+    public EquivalenceClass getTrue() {
         return new BDDEquivalenceClass(BooleanConstant.TRUE, factory.one());
     }
 
     @Override
-    public @NotNull EquivalenceClass getFalse() {
+    public EquivalenceClass getFalse() {
         return new BDDEquivalenceClass(BooleanConstant.FALSE, factory.zero());
     }
 
     @Override
-    public @NotNull BDDEquivalenceClass createEquivalenceClass(@NotNull Formula formula) {
+    public BDDEquivalenceClass createEquivalenceClass(Formula formula) {
         Formula simplifiedFormula = Simplifier.simplify(formula, Strategy.PROPOSITIONAL);
         return new BDDEquivalenceClass(simplifiedFormula, createBDD(simplifiedFormula));
     }
@@ -124,12 +124,12 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
 
     private class BDDVisitor implements Visitor<BDD> {
         @Override
-        public BDD visit(@NotNull BooleanConstant b) {
+        public BDD visit(BooleanConstant b) {
             return b.value ? factory.one() : factory.zero();
         }
 
         @Override
-        public BDD visit(@NotNull Conjunction c) {
+        public BDD visit(Conjunction c) {
             if (c.children.contains(BooleanConstant.FALSE)) {
                 return factory.zero();
             }
@@ -138,7 +138,7 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public BDD visit(@NotNull Disjunction d) {
+        public BDD visit(Disjunction d) {
             if (d.children.contains(BooleanConstant.TRUE)) {
                 return factory.one();
             }
@@ -162,21 +162,21 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
 
     public class BDDEquivalenceClass implements EquivalenceClass {
 
-        private final @NotNull BDD bdd;
-        private final @NotNull Formula representative;
+        private final BDD bdd;
+        private final Formula representative;
 
-        BDDEquivalenceClass(@NotNull Formula representative, @NotNull BDD bdd) {
+        BDDEquivalenceClass(Formula representative, BDD bdd) {
             this.representative = representative;
             this.bdd = bdd;
         }
 
         @Override
-        public @NotNull Formula getRepresentative() {
+        public Formula getRepresentative() {
             return representative;
         }
 
         @Override
-        public boolean implies(@NotNull EquivalenceClass equivalenceClass) {
+        public boolean implies(EquivalenceClass equivalenceClass) {
             if (!(equivalenceClass instanceof BDDEquivalenceClass)) {
                 return false;
             }
@@ -196,18 +196,18 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public @NotNull EquivalenceClass unfold(boolean unfoldG) {
+        public EquivalenceClass unfold(boolean unfoldG) {
             LoadingCache<EquivalenceClass, EquivalenceClass> cache = unfoldG ? unfoldGCache : unfoldCache;
             return cache.getUnchecked(this);
         }
 
         @Override
-        public @NotNull EquivalenceClass temporalStep(Set<String> valuation) {
+        public EquivalenceClass temporalStep(Set<String> valuation) {
             return temporalStepCache.getUnchecked(new Tuple<>(this, valuation));
         }
 
         @Override
-        public @NotNull EquivalenceClass and(@NotNull EquivalenceClass eq) {
+        public EquivalenceClass and(EquivalenceClass eq) {
             if (eq instanceof BDDEquivalenceClass) {
                 return new BDDEquivalenceClass(Simplifier.simplify(new Conjunction(representative, eq.getRepresentative()), Strategy.PROPOSITIONAL), bdd.and(((BDDEquivalenceClassFactory.BDDEquivalenceClass) eq).bdd));
             }
@@ -216,7 +216,7 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public @NotNull EquivalenceClass or(@NotNull EquivalenceClass eq) {
+        public EquivalenceClass or(EquivalenceClass eq) {
             if (eq instanceof BDDEquivalenceClass) {
                 return new BDDEquivalenceClass(Simplifier.simplify(new Disjunction(representative, eq.getRepresentative()), Strategy.PROPOSITIONAL), bdd.or(((BDDEquivalenceClassFactory.BDDEquivalenceClass) eq).bdd));
             }
@@ -235,7 +235,7 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public @NotNull Set<Formula> getSupport() {
+        public Set<Formula> getSupport() {
             Set<Formula> support = new HashSet<>();
             getSupport(bdd, support);
             return support;

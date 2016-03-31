@@ -17,7 +17,7 @@
 
 package rabinizer.ltl.equivalence;
 
-import org.jetbrains.annotations.NotNull;
+
 import rabinizer.ltl.Formula;
 
 import java.util.Set;
@@ -31,9 +31,9 @@ import java.util.Set;
  */
 public interface EquivalenceClass {
 
-    @NotNull Formula getRepresentative();
+    Formula getRepresentative();
 
-    boolean implies(@NotNull EquivalenceClass equivalenceClass);
+    boolean implies(EquivalenceClass equivalenceClass);
 
     /**
      * Check if two classes are equivalent. Implementing classes are expected to
@@ -45,17 +45,17 @@ public interface EquivalenceClass {
      */
     boolean equivalent(EquivalenceClass equivalenceClass);
 
-    @NotNull EquivalenceClass unfold(boolean unfoldG);
+    EquivalenceClass unfold(boolean unfoldG);
 
-    @NotNull EquivalenceClass temporalStep(Set<String> valuation);
+    EquivalenceClass temporalStep(Set<String> valuation);
 
-    @NotNull EquivalenceClass and(@NotNull EquivalenceClass eq);
+    EquivalenceClass and(EquivalenceClass eq);
 
-    @NotNull EquivalenceClass or(@NotNull EquivalenceClass eq);
+    EquivalenceClass or(EquivalenceClass eq);
 
     boolean isTrue();
 
     boolean isFalse();
 
-    @NotNull Set<Formula> getSupport();
+    Set<Formula> getSupport();
 }

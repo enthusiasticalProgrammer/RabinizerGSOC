@@ -20,32 +20,34 @@ package rabinizer.automata.nxt;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import jhoafparser.consumer.HOAConsumerPrint;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+
 import rabinizer.automata.IState;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.automata.output.RemoveComments;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collection;
 import java.util.Set;
 
 public class DetLimitAutomaton {
 
     public final @Nullable InitialComponent initialComponent;
-    public final @NotNull AcceptingComponent acceptingComponent;
+    public final AcceptingComponent acceptingComponent;
 
-    DetLimitAutomaton(@Nullable InitialComponent initialComponent, @NotNull AcceptingComponent acceptingComponent) {
+    DetLimitAutomaton(@Nullable InitialComponent initialComponent, AcceptingComponent acceptingComponent) {
         this.initialComponent = initialComponent;
         this.acceptingComponent = acceptingComponent;
     }
 
-    public @NotNull Set<String> getAlphabet() {
+    public Collection<String> getAlphabet() {
         return acceptingComponent.getAlphabet();
     }
 
-    public @NotNull IState<?> getInitialState() {
+    public IState<?> getInitialState() {
         if (initialComponent != null) {
             return initialComponent.getInitialState();
         }

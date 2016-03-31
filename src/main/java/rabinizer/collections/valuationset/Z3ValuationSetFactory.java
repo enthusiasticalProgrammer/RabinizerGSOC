@@ -23,7 +23,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.math.IntMath;
 import com.microsoft.z3.*;
-import org.jetbrains.annotations.NotNull;
+
 import rabinizer.ltl.*;
 
 import java.util.*;
@@ -177,7 +177,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
-        public boolean addAll(@NotNull Collection<? extends Set<String>> c) {
+        public boolean addAll(Collection<? extends Set<String>> c) {
             if (c instanceof Z3ValuationSet) {
                 return update(ctx.mkOr(((Z3ValuationSet) c).valuation, valuation));
             }
@@ -198,7 +198,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
-        public boolean containsAll(@NotNull Collection<?> c) {
+        public boolean containsAll(Collection<?> c) {
             return c.stream().allMatch(this::contains);
         }
 
@@ -208,7 +208,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
-        public @NotNull Iterator<Set<String>> iterator() {
+        public Iterator<Set<String>> iterator() {
             return Sets.powerSet(alphabet).stream().filter(this::contains).iterator();
         }
 
@@ -223,12 +223,12 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
-        public boolean removeAll(@NotNull Collection<?> c) {
+        public boolean removeAll(Collection<?> c) {
             return c.stream().anyMatch(this::remove);
         }
 
         @Override
-        public boolean retainAll(@NotNull Collection<?> c) {
+        public boolean retainAll(Collection<?> c) {
 
             if (c instanceof Z3ValuationSet) {
                 BoolExpr otherValuations = ((Z3ValuationSet) c).valuation;
@@ -310,12 +310,12 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
     private class Z3Visitor implements Visitor<BoolExpr> {
 
         @Override
-        public BoolExpr visit(@NotNull BooleanConstant b) {
+        public BoolExpr visit(BooleanConstant b) {
             return b.value ? TRUE : FALSE;
         }
 
         @Override
-        public BoolExpr visit(@NotNull Conjunction c) {
+        public BoolExpr visit(Conjunction c) {
             if (c.children.contains(BooleanConstant.FALSE)) {
                 return FALSE;
             }
@@ -329,7 +329,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
-        public BoolExpr visit(@NotNull Disjunction d) {
+        public BoolExpr visit(Disjunction d) {
             if (d.children.contains(BooleanConstant.TRUE)) {
                 return TRUE;
             }
@@ -344,12 +344,12 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
-        public BoolExpr visit(@NotNull Literal l) {
+        public BoolExpr visit(Literal l) {
             return mapping.get(l);
         }
 
         @Override
-        public BoolExpr defaultAction(@NotNull Formula f) {
+        public BoolExpr defaultAction(Formula f) {
             throw new UnsupportedOperationException();
         }
     }

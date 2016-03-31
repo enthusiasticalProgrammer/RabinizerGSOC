@@ -21,10 +21,11 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+
 import rabinizer.collections.Tuple;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class AlmostDeterminization {

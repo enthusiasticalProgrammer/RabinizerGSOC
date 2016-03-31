@@ -21,12 +21,13 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -144,16 +145,16 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
     }
 
     @Override
-    protected @NotNull ProductDegenState generateInitialState() {
+    protected ProductDegenState generateInitialState() {
         return new ProductDegenState(dtgra.getInitialState(), new int[dtgra.acc.size()]);
     }
 
     public class ProductDegenState implements IState<ProductDegenState> {
 
-        public final @NotNull Product.ProductState productState;
+        public final Product.ProductState productState;
         public final int[] awaitedIndices;
 
-        public ProductDegenState(@NotNull Product.ProductState ps, int... awaitedIndices) {
+        public ProductDegenState(Product.ProductState ps, int... awaitedIndices) {
             this.productState = ps;
             this.awaitedIndices = awaitedIndices;
         }
@@ -164,7 +165,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
         }
 
         @Override
-        public @Nullable ProductDegenState getSuccessor(@NotNull Set<String> valuation) {
+        public @Nullable ProductDegenState getSuccessor(Set<String> valuation) {
             Product.ProductState successor = dtgra.getSuccessor(productState, valuation);
 
             if (successor == null) {
@@ -194,12 +195,12 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
         }
 
         @Override
-        public @NotNull Set<String> getSensitiveAlphabet() {
+        public Set<String> getSensitiveAlphabet() {
             return productState.getSensitiveAlphabet();
         }
 
         @Override
-        public @NotNull ValuationSetFactory getFactory() {
+        public ValuationSetFactory getFactory() {
             return valuationSetFactory;
         }
 

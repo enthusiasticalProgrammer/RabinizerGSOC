@@ -17,7 +17,7 @@
 
 package rabinizer.automata;
 
-import org.jetbrains.annotations.NotNull;
+
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
@@ -40,7 +40,7 @@ public class TranSet<S> implements Iterable<Map.Entry<S, ValuationSet>> {
         return Collections.unmodifiableMap(backingMap);
     }
 
-    public void addAll(@NotNull S state, ValuationSet vs) {
+    public void addAll(S state, ValuationSet vs) {
         if (vs == null || vs.isEmpty()) {
             return;
         }
@@ -59,19 +59,19 @@ public class TranSet<S> implements Iterable<Map.Entry<S, ValuationSet>> {
         other.backingMap.forEach(this::addAll);
     }
 
-    public boolean contains(@NotNull S state) {
+    public boolean contains(S state) {
         return backingMap.containsKey(state);
     }
 
-    public boolean contains(@NotNull S state, Set<String> valuation) {
+    public boolean contains(S state, Set<String> valuation) {
         return backingMap.getOrDefault(state, empty).contains(valuation);
     }
 
-    public boolean containsAll(@NotNull S state, @NotNull ValuationSet vs) {
+    public boolean containsAll(S state, ValuationSet vs) {
         return backingMap.getOrDefault(state, empty).containsAll(vs);
     }
 
-    public boolean containsAll(@NotNull TranSet<S> other) {
+    public boolean containsAll(TranSet<S> other) {
         return other.backingMap.entrySet().stream()
                 .allMatch(e -> containsAll(e.getKey(), e.getValue()));
     }
@@ -106,7 +106,7 @@ public class TranSet<S> implements Iterable<Map.Entry<S, ValuationSet>> {
         }
     }
 
-    public void removeAll(@NotNull TranSet<S> other) {
+    public void removeAll(TranSet<S> other) {
         other.backingMap.forEach(this::removeAll);
     }
 

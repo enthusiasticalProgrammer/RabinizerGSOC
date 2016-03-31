@@ -17,7 +17,7 @@
 
 package rabinizer.collections;
 
-import org.jetbrains.annotations.NotNull;
+
 
 import java.util.*;
 
@@ -180,7 +180,7 @@ public class TarjanStack<E> extends AbstractCollection<E> implements Deque<E> {
     }
 
     @Override
-    public @NotNull Iterator<E> descendingIterator() {
+    public Iterator<E> descendingIterator() {
         return stack.descendingIterator();
     }
 
@@ -200,7 +200,7 @@ public class TarjanStack<E> extends AbstractCollection<E> implements Deque<E> {
     }
 
     @Override
-    public @NotNull Iterator<E> iterator() {
+    public Iterator<E> iterator() {
         return stack.iterator();
     }
 
@@ -225,12 +225,12 @@ public class TarjanStack<E> extends AbstractCollection<E> implements Deque<E> {
     }
 
     @Override
-    public @NotNull Object[] toArray() {
+    public Object[] toArray() {
         return stack.toArray();
     }
 
     @Override
-    public @NotNull <T> T[] toArray(@NotNull T[] a) {
+    public <T> T[] toArray(T[] a) {
         return stack.toArray(a);
     }
 }

@@ -18,7 +18,7 @@
 package rabinizer.automata;
 
 import com.google.common.collect.ImmutableMap;
-import org.jetbrains.annotations.NotNull;
+
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.GOperator;
@@ -44,13 +44,12 @@ public class Product extends Automaton<Product.ProductState> {
     }
 
     @Override
-    protected @NotNull Product.ProductState generateInitialState() {
+    protected Product.ProductState generateInitialState() {
         return new ProductState(primaryAutomaton.getInitialState(), relevantSecondarySlaves(primaryAutomaton.getInitialState()),
                 k -> secondaryAutomata.get(k).getInitialState());
     }
 
-
-    private Set<GOperator> relevantSecondarySlaves(@NotNull Master.State primaryState) {
+    private Set<GOperator> relevantSecondarySlaves(Master.State primaryState) {
         Set<GOperator> keys;
         if (allSlaves) {
             keys = secondaryAutomata.keySet();
@@ -77,7 +76,7 @@ public class Product extends Automaton<Product.ProductState> {
         }
 
         @Override
-        public @NotNull ValuationSetFactory getFactory() {
+        public ValuationSetFactory getFactory() {
             return valuationSetFactory;
         }
 

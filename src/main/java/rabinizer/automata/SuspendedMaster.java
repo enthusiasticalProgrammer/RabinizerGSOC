@@ -1,13 +1,13 @@
 package rabinizer.automata;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.RelevantGFormulaeWithSlaveSuspension;
 import rabinizer.ltl.equivalence.EquivalenceClass;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -22,13 +22,13 @@ public class SuspendedMaster extends Master {
         slaveSuspension = optimisations.contains(Optimisation.SLAVE_SUSPENSION);
     }
 
-    public SuspendedMaster(@NotNull Formula formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory,
+    public SuspendedMaster(Formula formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory,
                            Collection<Optimisation> optimisations) {
         this(equivalenceClassFactory.createEquivalenceClass(formula), valuationSetFactory, optimisations);
     }
 
     @Override
-    public State generateInitialState(@NotNull EquivalenceClass clazz) {
+    public State generateInitialState(EquivalenceClass clazz) {
         boolean suspendable = slaveSuspension && !clazz.getRepresentative().accept(RelevantGFormulaeWithSlaveSuspension.RELEVANT_G_FORMULAE_PRESENT);
         if (eager) {
             return new State(clazz.unfold(true), suspendable, clazz.unfold(false));
@@ -84,7 +84,7 @@ public class SuspendedMaster extends Master {
         }
 
         @Override
-        public @Nullable State getSuccessor(@NotNull Set<String> valuation) {
+        public @Nullable State getSuccessor(Set<String> valuation) {
             EquivalenceClass successor = step(clazz, valuation);
             EquivalenceClass folded = stepTest(this.folded, valuation);
 

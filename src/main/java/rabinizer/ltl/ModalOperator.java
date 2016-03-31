@@ -17,7 +17,7 @@
 
 package rabinizer.ltl;
 
-import org.jetbrains.annotations.NotNull;
+
 
 import java.util.Objects;
 import java.util.Set;
@@ -36,12 +36,12 @@ public abstract class ModalOperator extends ImmutableObject implements Formula {
     }
 
     @Override // to be overridden by GOperator
-    public @NotNull Set<GOperator> gSubformulas() {
+    public Set<GOperator> gSubformulas() {
         return operand.gSubformulas();
     }
 
     @Override // to be overridden by GOperator
-    public @NotNull Set<GOperator> topmostGs() {
+    public Set<GOperator> topmostGs() {
         return operand.topmostGs();
     }
 
@@ -52,29 +52,12 @@ public abstract class ModalOperator extends ImmutableObject implements Formula {
     }
 
     @Override
-    public @NotNull Formula temporalStep(@NotNull Set<String> valuation) {
+    public Formula temporalStep(Set<String> valuation) {
         return this;
     }
 
     @Override
-    public @NotNull Set<Formula> getPropositions() {
-        Set<Formula> propositions = operand.getPropositions();
-        propositions.add(this);
-        return propositions;
-    }
-
-    @Override
-    public @NotNull Set<String> getAtoms() {
-        return operand.getAtoms();
-    }
-
-    @Override
-    public @NotNull Formula evaluate(Literal literal) {
-        return this;
-    }
-
-    @Override
-    public @NotNull Formula evaluate(@NotNull Set<GOperator> Gs, @NotNull EvaluationStrategy s) {
+    public Formula evaluate(Set<GOperator> Gs, EvaluationStrategy s) {
         if (s == EvaluationStrategy.PROPOSITIONAL) {
             return this;
         }

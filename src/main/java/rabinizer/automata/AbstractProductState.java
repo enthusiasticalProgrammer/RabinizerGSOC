@@ -18,11 +18,11 @@
 package rabinizer.automata;
 
 import com.google.common.collect.ImmutableMap;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
@@ -63,7 +63,7 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
         return "(" + primaryState + "::" + secondaryStates + ')';
     }
 
-    public @Nullable T getSuccessor(@NotNull Set<String> valuation) {
+    public @Nullable T getSuccessor(Set<String> valuation) {
         P primarySuccessor = primaryState.getSuccessor(valuation);
 
         if (primarySuccessor == null) {
@@ -98,7 +98,7 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
     protected abstract Automaton<P> getPrimaryAutomaton();
     protected abstract Map<K, ? extends Automaton<S>> getSecondaryAutomata();
 
-    public @NotNull Map<ValuationSet, T> getSuccessors() {
+    public Map<ValuationSet, T> getSuccessors() {
         ImmutableMap.Builder<ValuationSet, T> builder = ImmutableMap.builder();
 
         Map<ValuationSet, P> primarySuccessors = getPrimaryAutomaton().getSuccessors(primaryState);
@@ -162,7 +162,7 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
         return current;
     }
 
-    public @NotNull Set<String> getSensitiveAlphabet() {
+    public Set<String> getSensitiveAlphabet() {
         Set<String> sensitiveLetters = new HashSet<>(primaryState.getSensitiveAlphabet());
 
         for (S secondaryState : secondaryStates.values()) {
@@ -178,5 +178,5 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
 
     protected abstract T constructState(P primaryState, ImmutableMap<K, S> secondaryStates);
 
-    protected abstract @NotNull ValuationSetFactory getFactory();
+    protected abstract ValuationSetFactory getFactory();
 }

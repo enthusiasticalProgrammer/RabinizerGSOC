@@ -19,13 +19,15 @@ package rabinizer.automata;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import jhoafparser.ast.AtomAcceptance;
+import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.valuationset.ValuationSet;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -33,9 +35,9 @@ import java.util.stream.Collectors;
 
 public class DTGRA extends Automaton<Product.ProductState> {
 
-    final @NotNull List<GeneralizedRabinPair<Product.ProductState>> acc;
+    final List<GeneralizedRabinPair<Product.ProductState>> acc;
 
-    public DTGRA(@NotNull Product product, @Nullable List<GeneralizedRabinPair<Product.ProductState>> acc) {
+    public DTGRA(Product product, @Nullable List<GeneralizedRabinPair<Product.ProductState>> acc) {
         super(product);
 
         if (acc != null) {

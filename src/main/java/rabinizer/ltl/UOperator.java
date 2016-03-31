@@ -17,7 +17,7 @@
 
 package rabinizer.ltl;
 
-import org.jetbrains.annotations.NotNull;
+
 
 import java.util.Objects;
 import java.util.Set;
@@ -38,14 +38,14 @@ public final class UOperator extends ImmutableObject implements Formula {
     }
 
     @Override
-    public @NotNull Set<GOperator> gSubformulas() {
+    public Set<GOperator> gSubformulas() {
         Set<GOperator> r = left.gSubformulas();
         r.addAll(right.gSubformulas());
         return r;
     }
 
     @Override
-    public @NotNull Set<GOperator> topmostGs() {
+    public Set<GOperator> topmostGs() {
         Set<GOperator> result = left.topmostGs();
         result.addAll(right.topmostGs());
         return result;
@@ -58,29 +58,24 @@ public final class UOperator extends ImmutableObject implements Formula {
     }
 
     @Override
-    public @NotNull Formula unfold(boolean unfoldG) {
+    public Formula unfold(boolean unfoldG) {
         // unfold(a U b) = unfold(b) v (unfold(a) ^ X (a U b))
         return new Disjunction(right.unfold(unfoldG), new Conjunction(left.unfold(unfoldG), this));
     }
 
     @Override
-    public @NotNull Formula temporalStep(@NotNull Set<String> valuation) {
+    public Formula temporalStep(Set<String> valuation) {
         return this;
     }
 
     @Override
-    public @NotNull Formula not() {
+    public Formula not() {
         return new Disjunction(new GOperator(right.not()),
                 new UOperator(right.not(), new Conjunction(left.not(), right.not())));
     }
 
     @Override
-    public @NotNull Formula evaluate(Literal literal) {
-        return this;
-    }
-
-    @Override
-    public @NotNull Formula evaluate(@NotNull Set<GOperator> Gs, @NotNull EvaluationStrategy s) {
+    public Formula evaluate(Set<GOperator> Gs, EvaluationStrategy s) {
         if (s == EvaluationStrategy.PROPOSITIONAL) {
             return this;
         }
@@ -89,18 +84,8 @@ public final class UOperator extends ImmutableObject implements Formula {
     }
 
     @Override
-    public @NotNull Set<Formula> getPropositions() {
-        Set<Formula> propositions = left.getPropositions();
-        propositions.addAll(right.getPropositions());
-        propositions.add(this);
-        return propositions;
-    }
-
-    @Override
-    public @NotNull Set<String> getAtoms() {
-        Set<String> atoms = left.getAtoms();
-        atoms.addAll(right.getAtoms());
-        return atoms;
+    public void accept(VoidVisitor v) {
+        v.visit(this);
     }
 
     @Override

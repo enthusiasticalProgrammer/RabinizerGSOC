@@ -17,7 +17,7 @@
 
 package rabinizer.ltl;
 
-import org.jetbrains.annotations.NotNull;
+
 
 import java.util.HashSet;
 import java.util.Set;
@@ -32,27 +32,27 @@ public class RelevantGFormulaeWithSlaveSuspension implements Visitor<Boolean> {
     }
 
     @Override
-    public Boolean defaultAction(@NotNull Formula formula) {
+    public Boolean defaultAction(Formula formula) {
         return false;
     }
 
     @Override
-    public Boolean visit(@NotNull GOperator g) {
+    public Boolean visit(GOperator g) {
         return true;
     }
 
     @Override
-    public Boolean visit(@NotNull FOperator f) {
+    public Boolean visit(FOperator f) {
         return f.operand.accept(this);
     }
 
     @Override
-    public Boolean visit(@NotNull UOperator u) {
+    public Boolean visit(UOperator u) {
         return u.left.accept(this) || u.right.accept(this);
     }
 
     @Override
-    public Boolean visit(@NotNull Conjunction c) {
+    public Boolean visit(Conjunction c) {
         Set<Formula> canBeWaited = c.children.stream().filter(child -> !child.accept(new ContainsVisitor(GOperator.class))).collect(Collectors.toSet());
         c.children.stream().filter(child -> child.accept(new PatientSlaveVisitor())).forEach(canBeWaited::add);
         Set<Formula> relevantChildren = new HashSet<>(c.children);
@@ -67,7 +67,7 @@ public class RelevantGFormulaeWithSlaveSuspension implements Visitor<Boolean> {
     }
 
     @Override
-    public Boolean visit(@NotNull Disjunction d) {
+    public Boolean visit(Disjunction d) {
         Set<Formula> patientFormulae = d.children.stream().filter(child -> child.accept(new PatientSlaveVisitor()))
                 .collect(Collectors.toSet());
 

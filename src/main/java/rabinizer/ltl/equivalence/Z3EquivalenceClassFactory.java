@@ -23,7 +23,7 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.Solver;
-import org.jetbrains.annotations.NotNull;
+
 import rabinizer.ltl.*;
 import rabinizer.ltl.simplifier.Simplifier;
 import rabinizer.ltl.simplifier.Simplifier.Strategy;
@@ -59,17 +59,17 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
     }
 
     @Override
-    public @NotNull EquivalenceClass getTrue() {
+    public EquivalenceClass getTrue() {
         return createEquivalenceClass(BooleanConstant.TRUE);
     }
 
     @Override
-    public @NotNull EquivalenceClass getFalse() {
+    public EquivalenceClass getFalse() {
         return createEquivalenceClass(BooleanConstant.FALSE);
     }
 
     @Override
-    public @NotNull EquivalenceClass createEquivalenceClass(@NotNull Formula formula) {
+    public EquivalenceClass createEquivalenceClass(Formula formula) {
         Formula simplifiedFormula = Simplifier.simplify(formula, Strategy.PROPOSITIONAL);
         return probe(new Z3EquivalenceClass(simplifiedFormula, createZ3(simplifiedFormula)));
     }
@@ -155,7 +155,7 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public @NotNull Formula getRepresentative() {
+        public Formula getRepresentative() {
             if (representative == null) {
                 representative = createRepresentative((BoolExpr) expression.simplify());
             }
@@ -164,7 +164,7 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public boolean implies(@NotNull EquivalenceClass equivalenceClass) {
+        public boolean implies(EquivalenceClass equivalenceClass) {
             if (!(equivalenceClass instanceof Z3EquivalenceClass)) {
                 return false;
             }
@@ -179,22 +179,22 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public @NotNull EquivalenceClass unfold(boolean unfoldG) {
+        public EquivalenceClass unfold(boolean unfoldG) {
             return createEquivalenceClass(getRepresentative().unfold(unfoldG));
         }
 
         @Override
-        public @NotNull EquivalenceClass temporalStep(Set<String> valuation) {
+        public EquivalenceClass temporalStep(Set<String> valuation) {
             return createEquivalenceClass(getRepresentative().temporalStep(valuation));
         }
 
         @Override
-        public @NotNull EquivalenceClass and(@NotNull EquivalenceClass eq) {
+        public EquivalenceClass and(EquivalenceClass eq) {
             return createEquivalenceClass(new Conjunction(getRepresentative(), eq.getRepresentative()));
         }
 
         @Override
-        public @NotNull EquivalenceClass or(@NotNull EquivalenceClass eq) {
+        public EquivalenceClass or(EquivalenceClass eq) {
             return createEquivalenceClass(new Disjunction(getRepresentative(), eq.getRepresentative()));
         }
 
@@ -209,7 +209,7 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public @NotNull Set<Formula> getSupport() {
+        public Set<Formula> getSupport() {
             return PropositionVisitor.extractPropositions(representative).keySet();
         }
     }
@@ -217,12 +217,12 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
     private class Z3Visitor implements Visitor<BoolExpr> {
 
         @Override
-        public BoolExpr visit(@NotNull BooleanConstant b) {
+        public BoolExpr visit(BooleanConstant b) {
             return b.value ? TRUE : FALSE;
         }
 
         @Override
-        public BoolExpr visit(@NotNull Conjunction c) {
+        public BoolExpr visit(Conjunction c) {
             if (c.children.contains(BooleanConstant.FALSE)) {
                 return FALSE;
             }
@@ -236,7 +236,7 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public BoolExpr visit(@NotNull Disjunction d) {
+        public BoolExpr visit(Disjunction d) {
             if (d.children.contains(BooleanConstant.TRUE)) {
                 return TRUE;
             }
@@ -251,7 +251,7 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public BoolExpr defaultAction(@NotNull Formula f) {
+        public BoolExpr defaultAction(Formula f) {
             return mapping.get(f);
         }
     }

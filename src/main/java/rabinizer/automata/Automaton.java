@@ -22,11 +22,10 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
@@ -38,7 +37,7 @@ public abstract class Automaton<S extends IState<S>> {
     protected final boolean mergingEnabled;
 
     protected final Set<S> states;
-    protected final Table<@NotNull S, @NotNull ValuationSet, @NotNull S> transitions;
+    protected final Table<S, ValuationSet, S> transitions;
     protected final Table<S, S, ValuationSet> edgeBetween;
     protected @Nullable S initialState;
 
@@ -111,7 +110,7 @@ public abstract class Automaton<S extends IState<S>> {
         }
     }
 
-    public @Nullable S getSuccessor(@NotNull S s, @NotNull Set<String> v) {
+    public @Nullable S getSuccessor(S s, Set<String> v) {
         for (Entry<ValuationSet, S> entry : getSuccessors(s).entrySet()) {
             if (entry.getKey().contains(v)) {
                 return entry.getValue();
@@ -121,7 +120,7 @@ public abstract class Automaton<S extends IState<S>> {
         return null;
     }
 
-    public @NotNull Map<ValuationSet, S> getSuccessors(@NotNull S state) {
+    public Map<ValuationSet, S> getSuccessors(S state) {
         generateSingleState(state);
         return transitions.row(state);
     }
@@ -130,7 +129,7 @@ public abstract class Automaton<S extends IState<S>> {
         return states.size();
     }
 
-    public @NotNull Set<S> getStates() {
+    public Set<S> getStates() {
         return Collections.unmodifiableSet(states);
     }
 
@@ -138,7 +137,7 @@ public abstract class Automaton<S extends IState<S>> {
         return transitions;
     }
 
-    public @NotNull S getInitialState() {
+    public S getInitialState() {
         if (initialState == null) {
             initialState = generateInitialState();
         }
@@ -198,7 +197,7 @@ public abstract class Automaton<S extends IState<S>> {
      *
      * @param statess: Set of states that is to be removed
      */
-    public void removeStates(@NotNull Collection<S> statess) {
+    public void removeStates(Collection<S> statess) {
         if (statess.contains(initialState)) {
             states.clear();
             transitions.clear();
@@ -209,7 +208,7 @@ public abstract class Automaton<S extends IState<S>> {
         }
     }
 
-    public void removeStatesIf(@NotNull Predicate<S> predicate) {
+    public void removeStatesIf(Predicate<S> predicate) {
         Iterator<S> iterator = states.iterator();
 
         while (iterator.hasNext()) {
@@ -232,11 +231,11 @@ public abstract class Automaton<S extends IState<S>> {
         transitions.values().removeIf(predicate);
     }
 
-    public @NotNull Set<String> getAlphabet() {
+    public Collection<String> getAlphabet() {
         return valuationSetFactory.getAlphabet();
     }
 
-    protected @NotNull S generateInitialState() {
+    protected S generateInitialState() {
         throw new UnsupportedOperationException();
     }
 
@@ -247,7 +246,7 @@ public abstract class Automaton<S extends IState<S>> {
      * @return true if the only transitions from scc go to scc again and false
      * otherwise
      */
-    protected boolean isSink(@NotNull Set<S> scc) {
+    protected boolean isSink(Set<S> scc) {
         Set<S> nonSCCStates = Sets.difference(states, scc);
         return scc.stream().filter(s -> transitions.row(s) != null)
                 .allMatch(s -> (Collections.disjoint(transitions.row(s).values(), nonSCCStates)));
@@ -262,7 +261,7 @@ public abstract class Automaton<S extends IState<S>> {
      * The method throws an IllegalArgumentException, when one of the parameters
      * is not in the states-set
      */
-    protected void replaceBy(@NotNull S antecessor, @NotNull S replacement) {
+    protected void replaceBy(S antecessor, S replacement) {
         if (!(states.contains(antecessor) && states.contains(replacement))) {
             throw new IllegalArgumentException();
         }
@@ -302,7 +301,7 @@ public abstract class Automaton<S extends IState<S>> {
         }
     }
 
-    private @NotNull Collection<S> generateSingleState(@NotNull S state) {
+    private Collection<S> generateSingleState(S state) {
         if (states.add(state)) {
             Map<ValuationSet, S> successors = state.getSuccessors();
             Map<S, ValuationSet> reverseMap = edgeBetween.row(state);

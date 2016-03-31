@@ -17,7 +17,7 @@
 
 package rabinizer.automata.nxt;
 
-import org.jetbrains.annotations.NotNull;
+
 import rabinizer.automata.Master;
 import rabinizer.ltl.*;
 import rabinizer.ltl.equivalence.EquivalenceClass;
@@ -55,22 +55,22 @@ class ImpatientStateAnalysis {
         }
 
         @Override
-        public Set<GOperator> defaultAction(@NotNull Formula formula) {
+        public Set<GOperator> defaultAction(Formula formula) {
             return new HashSet<>();
         }
 
         @Override
-        public Set<GOperator> visit(@NotNull Conjunction conjunction) {
+        public Set<GOperator> visit(Conjunction conjunction) {
             return conjunction.union(e -> e.accept(this));
         }
 
         @Override
-        public Set<GOperator> visit(@NotNull Disjunction conjunction) {
+        public Set<GOperator> visit(Disjunction conjunction) {
             return conjunction.intersection(e -> e.accept(this));
         }
 
         @Override
-        public Set<GOperator> visit(@NotNull GOperator gOperator) {
+        public Set<GOperator> visit(GOperator gOperator) {
             Set<GOperator> impatientGs = gOperator.operand.accept(this);
             impatientGs.add(gOperator);
             return impatientGs;

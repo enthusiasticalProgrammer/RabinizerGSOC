@@ -17,16 +17,16 @@
 
 package rabinizer.automata;
 
-import org.jetbrains.annotations.NotNull;
+
 
 import java.util.Objects;
 
 public class RabinPair<S> {
 
-    public final @NotNull TranSet<S> fin;
-    public final @NotNull TranSet<S> inf;
+    public final TranSet<S> fin;
+    public final TranSet<S> inf;
 
-    public RabinPair(@NotNull TranSet<S> fin, @NotNull TranSet<S> inf) {
+    public RabinPair(TranSet<S> fin, TranSet<S> inf) {
         this.fin = fin;
         this.inf = inf;
     }

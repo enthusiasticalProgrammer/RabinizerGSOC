@@ -17,7 +17,7 @@
 
 package rabinizer.ltl.equivalence;
 
-import org.jetbrains.annotations.NotNull;
+
 import rabinizer.ltl.*;
 import rabinizer.ltl.simplifier.Simplifier;
 
@@ -37,12 +37,12 @@ public class EvaluateVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula visit(@NotNull BooleanConstant c) {
+    public Formula visit(BooleanConstant c) {
         return c;
     }
 
     @Override
-    public Formula defaultAction(@NotNull Formula f) {
+    public Formula defaultAction(Formula f) {
         EquivalenceClass clazz = factory.createEquivalenceClass(f);
 
         if (environment.implies(clazz)) {
@@ -57,12 +57,12 @@ public class EvaluateVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula visit(@NotNull Conjunction c) {
+    public Formula visit(Conjunction c) {
         return Simplifier.simplify(new Conjunction(c.children.stream().map(e -> e.accept(this))), Simplifier.Strategy.PROPOSITIONAL);
     }
 
     @Override
-    public Formula visit(@NotNull Disjunction d) {
+    public Formula visit(Disjunction d) {
         Formula defaultAction = defaultAction(d);
 
         if (defaultAction instanceof BooleanConstant) {
@@ -73,7 +73,7 @@ public class EvaluateVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula visit(@NotNull FOperator fOperator) {
+    public Formula visit(FOperator fOperator) {
         Formula defaultAction = defaultAction(fOperator);
 
         if (defaultAction instanceof BooleanConstant) {
@@ -84,7 +84,7 @@ public class EvaluateVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula visit(@NotNull GOperator gOperator) {
+    public Formula visit(GOperator gOperator) {
         Formula defaultAction = defaultAction(gOperator);
 
         if (defaultAction instanceof BooleanConstant) {
@@ -95,7 +95,7 @@ public class EvaluateVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula visit(@NotNull UOperator uOperator) {
+    public Formula visit(UOperator uOperator) {
         Formula defaultAction = defaultAction(uOperator);
 
         if (defaultAction instanceof BooleanConstant) {
@@ -106,7 +106,7 @@ public class EvaluateVisitor implements Visitor<Formula> {
     }
 
     @Override
-    public Formula visit(@NotNull XOperator xOperator) {
+    public Formula visit(XOperator xOperator) {
         Formula defaultAction = defaultAction(xOperator);
 
         if (defaultAction instanceof BooleanConstant) {

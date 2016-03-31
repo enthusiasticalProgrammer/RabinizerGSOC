@@ -18,9 +18,8 @@
 package rabinizer.ltl;
 
 import com.google.common.collect.Sets;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
+
 import java.util.Objects;
 import java.util.Set;
 
@@ -40,36 +39,18 @@ public final class Literal extends ImmutableObject implements Formula {
     }
 
     @Override
-    public @NotNull Formula evaluate(Literal literal) {
-        if (literal.atom.equals(this.atom)) {
-            return BooleanConstant.get(literal.negated == this.negated);
-        }
-
-        return this;
-    }
-
-    @Override
-    public @NotNull Literal not() {
+    public Literal not() {
         return new Literal(atom, !negated);
     }
 
     @Override
-    public @NotNull Formula temporalStep(@NotNull Set<String> valuation) {
+    public Formula temporalStep(Set<String> valuation) {
         return BooleanConstant.get(valuation.contains(atom) ^ negated);
     }
 
     @Override
-    public @NotNull Set<Formula> getPropositions() {
-        Set<Formula> propositions = new HashSet<>();
-        propositions.add(this);
-        return propositions;
-    }
-
-    @Override
-    public @NotNull Set<String> getAtoms() {
-        Set<String> atoms = new HashSet<>();
-        atoms.add(this.atom);
-        return atoms;
+    public void accept(VoidVisitor v) {
+        v.visit(this);
     }
 
     @Override
@@ -109,22 +90,22 @@ public final class Literal extends ImmutableObject implements Formula {
     }
 
     @Override
-    public @NotNull Formula unfold(boolean unfoldG) {
+    public Formula unfold(boolean unfoldG) {
         return this;
     }
 
     @Override
-    public @NotNull Literal evaluate(@NotNull Set<GOperator> Gs, @NotNull EvaluationStrategy s) {
+    public Literal evaluate(Set<GOperator> Gs, EvaluationStrategy s) {
         return this;
     }
 
     @Override
-    public @NotNull Set<GOperator> gSubformulas() {
+    public Set<GOperator> gSubformulas() {
         return Sets.newHashSet();
     }
 
     @Override
-    public @NotNull Set<GOperator> topmostGs() {
+    public Set<GOperator> topmostGs() {
         return Sets.newHashSet();
     }
 

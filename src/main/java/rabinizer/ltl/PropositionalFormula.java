@@ -18,7 +18,7 @@
 package rabinizer.ltl;
 
 import com.google.common.collect.ImmutableSet;
-import org.jetbrains.annotations.NotNull;
+
 
 import java.util.*;
 import java.util.function.Function;
@@ -42,32 +42,22 @@ public abstract class PropositionalFormula extends ImmutableObject implements Fo
     }
 
     @Override
-    public @NotNull Formula unfold(boolean unfoldG) {
+    public Formula unfold(boolean unfoldG) {
         return create(children.stream().map(c -> c.unfold(unfoldG)));
     }
 
     @Override
-    public @NotNull Formula evaluate(Literal literal) {
-        return create(children.stream().map(c -> c.evaluate(literal)));
-    }
-
-    @Override
-    public @NotNull Formula evaluate(@NotNull Set<GOperator> Gs, @NotNull EvaluationStrategy s) {
+    public Formula evaluate(Set<GOperator> Gs, EvaluationStrategy s) {
         return create(children.stream().map(c -> c.evaluate(Gs, s)));
     }
 
     @Override
-    public @NotNull Set<GOperator> topmostGs() {
+    public Set<GOperator> topmostGs() {
         return union(Formula::topmostGs);
     }
 
     @Override
-    public @NotNull Set<Formula> getPropositions() {
-        return union(Formula::getPropositions);
-    }
-
-    @Override
-    public @NotNull Set<GOperator> gSubformulas() {
+    public Set<GOperator> gSubformulas() {
         return union(Formula::gSubformulas);
     }
 
@@ -99,11 +89,6 @@ public abstract class PropositionalFormula extends ImmutableObject implements Fo
     }
 
     @Override
-    public @NotNull Set<String> getAtoms() {
-        return union(Formula::getAtoms);
-    }
-
-    @Override
     public boolean isPureEventual() {
         return allMatch(Formula::isPureEventual);
     }
@@ -119,17 +104,17 @@ public abstract class PropositionalFormula extends ImmutableObject implements Fo
     }
 
     @Override
-    public @NotNull Formula temporalStep(@NotNull Set<String> valuation) {
+    public Formula temporalStep(Set<String> valuation) {
         return create(children.stream().map(c -> c.temporalStep(valuation)));
     }
 
-    public <E> @NotNull Set<E> union(@NotNull Function<Formula, Collection<E>> f) {
+    public <E> Set<E> union(Function<Formula, Collection<E>> f) {
         Set<E> set = new HashSet<>(children.size());
         children.forEach(c -> set.addAll(f.apply(c)));
         return set;
     }
 
-    public <E> @NotNull Set<E> intersection(@NotNull Function<Formula, Collection<E>> f) {
+    public <E> Set<E> intersection(Function<Formula, Collection<E>> f) {
         Set<E> set = new HashSet<>(children.size());
 
         if (children.isEmpty()) {

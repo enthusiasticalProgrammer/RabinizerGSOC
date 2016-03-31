@@ -19,7 +19,7 @@ package rabinizer.automata;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import org.jetbrains.annotations.NotNull;
+
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.Main;

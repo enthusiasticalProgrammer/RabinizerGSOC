@@ -17,7 +17,7 @@
 
 package rabinizer.ltl;
 
-import org.jetbrains.annotations.NotNull;
+
 
 import java.util.Collection;
 import java.util.Objects;
@@ -25,21 +25,26 @@ import java.util.stream.Stream;
 
 public final class Disjunction extends PropositionalFormula {
 
-    public Disjunction(@NotNull Collection<? extends Formula> disjuncts) {
+    public Disjunction(Collection<? extends Formula> disjuncts) {
         super(disjuncts);
     }
 
-    public Disjunction(@NotNull Formula... disjuncts) {
+    public Disjunction(Formula... disjuncts) {
         super(disjuncts);
     }
 
-    public Disjunction(@NotNull Stream<? extends Formula> formulaStream) {
+    public Disjunction(Stream<? extends Formula> formulaStream) {
         super(formulaStream);
     }
 
     @Override
-    public @NotNull Formula not() {
+    public Formula not() {
         return new Conjunction(children.stream().map(Formula::not));
+    }
+
+    @Override
+    public void accept(VoidVisitor v) {
+        v.visit(this);
     }
 
     @Override
@@ -63,7 +68,7 @@ public final class Disjunction extends PropositionalFormula {
     }
 
     @Override
-    protected PropositionalFormula create(@NotNull Stream<? extends Formula> formulaStream) {
+    protected PropositionalFormula create(Stream<? extends Formula> formulaStream) {
         return new Disjunction(formulaStream);
     }
 

@@ -17,14 +17,12 @@
 
 package rabinizer.automata;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.equivalence.EquivalenceClass;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Set;
 
@@ -43,12 +41,12 @@ public class Master extends Automaton<Master.State> {
         this(null, valuationSetFactory, optimisations, true);
     }
 
-    public Master(@NotNull Formula formula, EquivalenceClassFactory equivalenceClassFactory,
+    public Master(Formula formula, EquivalenceClassFactory equivalenceClassFactory,
                   ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
         this(equivalenceClassFactory.createEquivalenceClass(formula), valuationSetFactory, optimisations, mergingEnabled);
     }
 
-    public State generateInitialState(@NotNull EquivalenceClass clazz) {
+    public State generateInitialState(EquivalenceClass clazz) {
         if (eager) {
             return new State(clazz.unfold(true));
         } else {
@@ -57,7 +55,7 @@ public class Master extends Automaton<Master.State> {
     }
 
     @Override
-    protected @NotNull State generateInitialState() {
+    protected State generateInitialState() {
         if (initialState == null) {
             throw new IllegalStateException("There is no initial state!");
         }
@@ -84,7 +82,7 @@ public class Master extends Automaton<Master.State> {
         }
 
         @Override
-        public @Nullable State getSuccessor(@NotNull Set<String> valuation) {
+        public @Nullable State getSuccessor(Set<String> valuation) {
             EquivalenceClass successor = step(clazz, valuation);
 
             if (suppressEdge(clazz, successor)) {
@@ -95,12 +93,12 @@ public class Master extends Automaton<Master.State> {
         }
 
         @Override
-        public @NotNull Set<String> getSensitiveAlphabet() {
+        public Set<String> getSensitiveAlphabet() {
             return getSensitive(true);
         }
 
         @Override
-        public @NotNull ValuationSetFactory getFactory() {
+        public ValuationSetFactory getFactory() {
             return valuationSetFactory;
         }
 

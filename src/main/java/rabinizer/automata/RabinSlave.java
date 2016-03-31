@@ -17,7 +17,7 @@
 
 package rabinizer.automata;
 
-import org.jetbrains.annotations.NotNull;
+
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.Main;
 
@@ -46,7 +46,7 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
     }
 
     @Override
-    protected @NotNull State generateInitialState() {
+    protected State generateInitialState() {
         State init = new State();
         init.put(mojmir.getInitialState(), 1);
         return init;
@@ -65,19 +65,19 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
         }
 
         @Override
-        public @NotNull Set<String> getSensitiveAlphabet() {
+        public Set<String> getSensitiveAlphabet() {
             Set<String> alphabet = new HashSet<>();
             this.forEach((state, rank) -> alphabet.addAll(state.getSensitiveAlphabet()));
             return alphabet;
         }
 
         @Override
-        public @NotNull ValuationSetFactory getFactory() {
+        public ValuationSetFactory getFactory() {
             return valuationSetFactory;
         }
 
         @Override
-        public State getSuccessor(@NotNull Set<String> valuation) {
+        public State getSuccessor(Set<String> valuation) {
             State succ = new State();
 
             // move tokens, keeping the lowest only

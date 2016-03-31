@@ -18,9 +18,8 @@
 package rabinizer.ltl;
 
 import com.google.common.collect.Sets;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
+import javax.annotation.Nonnull;
 import java.util.Set;
 
 public final class BooleanConstant extends ImmutableObject implements Formula {
@@ -44,28 +43,18 @@ public final class BooleanConstant extends ImmutableObject implements Formula {
     }
 
     @Override
-    public @NotNull BooleanConstant not() {
+    public @Nonnull BooleanConstant not() {
         return value ? FALSE : TRUE;
     }
 
     @Override
-    public @NotNull Formula evaluate(Literal literal) {
+    public Formula temporalStep(Set<String> valuation) {
         return this;
     }
 
     @Override
-    public @NotNull Formula temporalStep(@NotNull Set<String> valuation) {
-        return this;
-    }
-
-    @Override
-    public @NotNull Set<Formula> getPropositions() {
-        return new HashSet<>();
-    }
-
-    @Override
-    public @NotNull Set<String> getAtoms() {
-        return new HashSet<>();
+    public void accept(VoidVisitor v) {
+        v.visit(this);
     }
 
     @Override
@@ -105,22 +94,22 @@ public final class BooleanConstant extends ImmutableObject implements Formula {
     }
 
     @Override
-    public @NotNull Formula unfold(boolean unfoldG) {
+    public Formula unfold(boolean unfoldG) {
         return this;
     }
 
     @Override
-    public @NotNull BooleanConstant evaluate(@NotNull Set<GOperator> Gs, @NotNull EvaluationStrategy s) {
+    public BooleanConstant evaluate(Set<GOperator> Gs, EvaluationStrategy s) {
         return this;
     }
 
     @Override
-    public @NotNull Set<GOperator> gSubformulas() {
+    public Set<GOperator> gSubformulas() {
         return Sets.newHashSet();
     }
 
     @Override
-    public @NotNull Set<GOperator> topmostGs() {
+    public Set<GOperator> topmostGs() {
         return Sets.newHashSet();
     }
 

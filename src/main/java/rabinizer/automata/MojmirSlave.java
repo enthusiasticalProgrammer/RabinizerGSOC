@@ -17,7 +17,7 @@
 
 package rabinizer.automata;
 
-import org.jetbrains.annotations.NotNull;
+
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.GOperator;
@@ -42,7 +42,7 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
     }
 
     @Override
-    protected @NotNull State generateInitialState() {
+    protected State generateInitialState() {
         if (eager) {
             return new State(initialState.unfold(false));
         } else {
@@ -56,7 +56,7 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
         }
 
         @Override
-        public State getSuccessor(@NotNull Set<String> valuation) {
+        public State getSuccessor(Set<String> valuation) {
             if (eager) {
                 return new State(clazz.temporalStep(valuation).unfold(false));
             } else {
@@ -65,12 +65,12 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
         }
 
         @Override
-        public @NotNull Set<String> getSensitiveAlphabet() {
+        public Set<String> getSensitiveAlphabet() {
             return getSensitive(false);
         }
 
         @Override
-        public @NotNull ValuationSetFactory getFactory() {
+        public ValuationSetFactory getFactory() {
             return valuationSetFactory;
         }
 

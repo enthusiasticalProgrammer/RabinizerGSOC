@@ -20,7 +20,7 @@ package rabinizer.collections.valuationset;
 import com.google.common.collect.Sets;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import org.jetbrains.annotations.NotNull;
+
 import rabinizer.ltl.*;
 import rabinizer.ltl.simplifier.Simplifier;
 import rabinizer.ltl.simplifier.Simplifier.Strategy;
@@ -214,8 +214,7 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
-        public @NotNull Iterator<Set<String>> iterator() {
-            return Sets.powerSet(alphabet).stream().filter(this::contains).iterator();
+        public Iterator<Set<String>> iterator() {
             return Sets.powerSet(new HashSet<>(getAlphabet())).stream().filter(this::contains).iterator();
         }
 
@@ -236,7 +235,7 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
-        public boolean addAll(@NotNull Collection<? extends Set<String>> c) {
+        public boolean addAll(Collection<? extends Set<String>> c) {
             if (c instanceof BDDValuationSet) {
                 BDD otherValuations = ((BDDValuationSet) c).valuations;
                 BDD newValuations = valuations.or(otherValuations);
@@ -247,7 +246,7 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
-        public boolean retainAll(@NotNull Collection<?> c) {
+        public boolean retainAll(Collection<?> c) {
             if (c instanceof BDDValuationSet) {
                 BDD otherValuations = ((BDDValuationSet) c).valuations;
                 BDD newValuations = valuations.and(otherValuations);
@@ -258,7 +257,7 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
-        public boolean removeAll(@NotNull Collection<?> c) {
+        public boolean removeAll(Collection<?> c) {
             if (c instanceof BDDValuationSet) {
                 BDD otherValuations = ((BDDValuationSet) c).valuations;
                 BDD newValuations = valuations.and(otherValuations.not());

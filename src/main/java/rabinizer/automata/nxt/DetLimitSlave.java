@@ -21,8 +21,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Sets;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+
 import rabinizer.automata.Automaton;
 import rabinizer.automata.IState;
 import rabinizer.automata.Optimisation;
@@ -33,6 +33,7 @@ import rabinizer.ltl.Literal;
 import rabinizer.ltl.equivalence.EquivalenceClass;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -63,7 +64,7 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
     }
 
     @Override
-    protected @NotNull State generateInitialState() {
+    protected State generateInitialState() {
         return new State(initialFormula, True);
     }
 
@@ -105,7 +106,7 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
         }
 
         @Override
-        public @Nullable State getSuccessor(@NotNull Set<String> valuation) {
+        public @Nullable State getSuccessor(Set<String> valuation) {
             EquivalenceClass successor = step(current, valuation);
             EquivalenceClass nextSuccessor = step(next, valuation);
 
@@ -152,7 +153,7 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
         }
 
         @Override
-        public @NotNull Set<String> getSensitiveAlphabet() {
+        public Set<String> getSensitiveAlphabet() {
             Set<String> sensitiveLetters = new HashSet<>();
 
             for (Formula literal : Sets.union(current.unfold(true).getSupport(), next.unfold(true).getSupport())) {
@@ -165,7 +166,7 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
         }
 
         @Override
-        public @NotNull ValuationSetFactory getFactory() {
+        public ValuationSetFactory getFactory() {
             return valuationSetFactory;
         }
 

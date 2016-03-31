@@ -17,41 +17,41 @@
 
 package rabinizer.ltl;
 
-import org.jetbrains.annotations.NotNull;
+
 
 public interface Visitor<R> {
 
-    R defaultAction(@NotNull Formula formula);
+    R defaultAction(Formula formula);
 
-    default R visit(@NotNull BooleanConstant booleanConstant) {
+    default R visit(BooleanConstant booleanConstant) {
         return defaultAction(booleanConstant);
     }
 
-    default R visit(@NotNull Conjunction conjunction) {
+    default R visit(Conjunction conjunction) {
         return defaultAction(conjunction);
     }
 
-    default R visit(@NotNull Disjunction disjunction) {
+    default R visit(Disjunction disjunction) {
         return defaultAction(disjunction);
     }
 
-    default R visit(@NotNull FOperator fOperator) {
+    default R visit(FOperator fOperator) {
         return defaultAction(fOperator);
     }
 
-    default R visit(@NotNull GOperator gOperator) {
+    default R visit(GOperator gOperator) {
         return defaultAction(gOperator);
     }
 
-    default R visit(@NotNull Literal literal) {
+    default R visit(Literal literal) {
         return defaultAction(literal);
     }
 
-    default R visit(@NotNull UOperator uOperator) {
+    default R visit(UOperator uOperator) {
         return defaultAction(uOperator);
     }
 
-    default R visit(@NotNull XOperator xOperator) {
+    default R visit(XOperator xOperator) {
         return defaultAction(xOperator);
     }
 }

@@ -17,12 +17,8 @@
 
 package rabinizer.collections;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
+import javax.annotation.Nullable;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Collections3 {
 
@@ -36,7 +32,6 @@ public class Collections3 {
      * @param set The set to be checked.
      * @return false if the the set is null or has not exactly one element.
      */
-    @Contract("null -> false")
     public static <E> boolean isSingleton(@Nullable Set<E> set) {
         return set != null && set.size() == 1;
     }
@@ -50,7 +45,6 @@ public class Collections3 {
      * @throws NoSuchElementException The methods throws an {@code NoSuchElementException} if iterable is either null
      *      or cannot provide an element.
      */
-    @Contract("null -> fail")
     public static <E> E getElement(@Nullable Iterable<E> iterable) {
         if (iterable == null) {
             throw new NoSuchElementException();
@@ -68,7 +62,6 @@ public class Collections3 {
      * @throws NoSuchElementException The methods throws an {@code NoSuchElementException} if iterable is either null
      *      or cannot provide an element.
      */
-    @Contract("null -> fail")
     public static <E> E removeElement(@Nullable Iterable<E> iterable) {
         if (iterable == null) {
             throw new NoSuchElementException();
@@ -80,7 +73,7 @@ public class Collections3 {
         return element;
     }
 
-    public static @NotNull List<Integer> toList(@NotNull BitSet bs) {
+    public static List<Integer> toList(BitSet bs) {
         List<Integer> list = new ArrayList<>(bs.length());
         bs.stream().forEach(i -> list.add(i));
         return list;

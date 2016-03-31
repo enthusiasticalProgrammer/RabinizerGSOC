@@ -18,7 +18,7 @@
 package rabinizer.ltl;
 
 import com.google.common.collect.Sets;
-import org.jetbrains.annotations.NotNull;
+
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,7 +35,7 @@ public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
         strategy = appr;
     }
 
-    public static @NotNull SkeletonVisitor getInstance(SkeletonApproximation strategy) {
+    public static SkeletonVisitor getInstance(SkeletonApproximation strategy) {
         if (strategy == SkeletonApproximation.LOWER_BOUND) {
             return INSTANCE_LOWER;
         }
@@ -44,12 +44,12 @@ public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
     }
 
     @Override
-    public Set<Set<GOperator>> defaultAction(@NotNull Formula formula) {
+    public Set<Set<GOperator>> defaultAction(Formula formula) {
         return Collections.singleton(new HashSet<>());
     }
 
     @Override
-    public Set<Set<GOperator>> visit(@NotNull Conjunction conjunction) {
+    public Set<Set<GOperator>> visit(Conjunction conjunction) {
         Set<Set<GOperator>> skeleton = Collections.singleton(new HashSet<>());
 
         for (Formula child : conjunction.children) {
@@ -70,7 +70,7 @@ public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
     }
 
     @Override
-    public Set<Set<GOperator>> visit(@NotNull Disjunction disjunction) {
+    public Set<Set<GOperator>> visit(Disjunction disjunction) {
         Set<Set<GOperator>> skeleton = new HashSet<>();
         disjunction.children.forEach(e -> skeleton.addAll(e.accept(this)));
         if (strategy == SkeletonApproximation.LOWER_BOUND) {
@@ -93,12 +93,12 @@ public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
     }
 
     @Override
-    public Set<Set<GOperator>> visit(@NotNull FOperator fOperator) {
+    public Set<Set<GOperator>> visit(FOperator fOperator) {
         return fOperator.operand.accept(this);
     }
 
     @Override
-    public Set<Set<GOperator>> visit(@NotNull GOperator gOperator) {
+    public Set<Set<GOperator>> visit(GOperator gOperator) {
         Set<Set<GOperator>> skeleton = new HashSet<>();
 
         for (Set<GOperator> element : gOperator.operand.accept(this)) {
@@ -110,12 +110,12 @@ public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
     }
 
     @Override
-    public Set<Set<GOperator>> visit(@NotNull UOperator uOperator) {
+    public Set<Set<GOperator>> visit(UOperator uOperator) {
         return new Disjunction(uOperator.right, new Conjunction(uOperator.right, uOperator.left)).accept(this);
     }
 
     @Override
-    public Set<Set<GOperator>> visit(@NotNull XOperator xOperator) {
+    public Set<Set<GOperator>> visit(XOperator xOperator) {
         return xOperator.operand.accept(this);
     }
 

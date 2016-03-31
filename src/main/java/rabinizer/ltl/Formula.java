@@ -17,14 +17,12 @@
 
 package rabinizer.ltl;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Set;
 
 public interface Formula {
-    @NotNull Set<GOperator> gSubformulas();
+    Set<GOperator> gSubformulas();
 
-    @NotNull Set<GOperator> topmostGs();
+    Set<GOperator> topmostGs();
 
     /**
      * Unfold temporal operators. This is also called LTL ImmutableObject expansion.
@@ -33,7 +31,7 @@ public interface Formula {
      *                This is used in for the master transition system.
      * @return The unfolded formula
      */
-    @NotNull Formula unfold(boolean unfoldG);
+    Formula unfold(boolean unfoldG);
 
     /**
      * Do a single temporal step. This means that one layer of X-operators is
@@ -42,27 +40,17 @@ public interface Formula {
      * @param valuation
      * @return
      */
-    @NotNull Formula temporalStep(@NotNull Set<String> valuation);
+    Formula temporalStep(Set<String> valuation);
 
-    @NotNull Formula not();
+    Formula not();
 
-    @NotNull Formula evaluate(Literal literal);
-
-    default @NotNull Formula evaluate(@NotNull Set<GOperator> Gs) {
+    default Formula evaluate(Set<GOperator> Gs) {
         return evaluate(Gs, EvaluationStrategy.PROPOSITIONAL);
     }
 
-    @NotNull Formula evaluate(@NotNull Set<GOperator> Gs, @NotNull EvaluationStrategy s);
+    Formula evaluate(Set<GOperator> Gs, EvaluationStrategy s);
 
-    /**
-     * For the propositional view on LTL modal operators (F, G, U, X) and
-     * literals (a, !a) are treated as propositions.
-     *
-     * @return
-     */
-    @NotNull Set<Formula> getPropositions();
-
-    @NotNull Set<String> getAtoms();
+    void accept(VoidVisitor v);
 
     <R> R accept(Visitor<R> v);
 

@@ -17,7 +17,7 @@
 
 package rabinizer.automata;
 
-import org.jetbrains.annotations.NotNull;
+
 
 import java.util.Collections;
 import java.util.List;
@@ -25,10 +25,10 @@ import java.util.Objects;
 
 public class GeneralizedRabinPair<S> {
 
-    public final @NotNull TranSet<S> fin;
-    public final @NotNull List<@NotNull TranSet<S>> infs;
+    public final TranSet<S> fin;
+    public final List<TranSet<S>> infs;
 
-    public GeneralizedRabinPair(@NotNull TranSet<S> l, @NotNull List<@NotNull TranSet<S>> r) {
+    public GeneralizedRabinPair(TranSet<S> l, List<TranSet<S>> r) {
         this.fin = l;
         this.infs = r;
     }
