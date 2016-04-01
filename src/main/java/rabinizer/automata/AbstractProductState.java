@@ -21,12 +21,13 @@ import com.google.common.collect.ImmutableMap;
 
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
+import rabinizer.ltl.ImmutableObject;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
-public abstract class AbstractProductState<P extends IState<P>, K, S extends IState<S>, T> {
+public abstract class AbstractProductState<P extends IState<P>, K, S extends IState<S>, T> extends ImmutableObject {
 
     protected final P primaryState;
     protected final ImmutableMap<K, S> secondaryStates;
@@ -45,17 +46,15 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AbstractProductState<?, ?, ?, ?> that = (AbstractProductState<?, ?, ?, ?>) o;
-        return Objects.equals(primaryState, that.primaryState) &&
-                Objects.equals(secondaryStates, that.secondaryStates);
+    protected int hashCodeOnce() {
+        return Objects.hash(primaryState, secondaryStates);
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(primaryState, secondaryStates);
+    protected boolean equals2(ImmutableObject o) {
+        AbstractProductState<?, ?, ?, ?> that = (AbstractProductState<?, ?, ?, ?>) o;
+        return Objects.equals(primaryState, that.primaryState) &&
+                Objects.equals(secondaryStates, that.secondaryStates);
     }
 
     @Override
