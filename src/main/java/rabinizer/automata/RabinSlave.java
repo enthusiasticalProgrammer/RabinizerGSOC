@@ -28,20 +28,18 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
     public final MojmirSlave mojmir;
 
     public RabinSlave(MojmirSlave mojmir, ValuationSetFactory factory) {
-        super(factory, false);
+        super(factory);
         this.mojmir = mojmir;
     }
 
     public void optimizeInitialState() {
-        // TODO: SCC-Analysis
-        while (!transitions.values().contains(initialState) && !transitions.row(initialState).isEmpty()) {
+        while (hasSuccessors(initialState) && transitions.values().stream().allMatch(map -> !map.containsKey(initialState))) {
             Main.verboseln("Optimizing initial states");
             State oldInit = initialState;
             initialState = getSuccessor(oldInit, Collections.emptySet());
 
-            edgeBetween.row(oldInit).clear();
-            transitions.row(oldInit).clear();
             states.remove(oldInit);
+            transitions.remove(oldInit);
         }
     }
 

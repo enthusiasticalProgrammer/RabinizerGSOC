@@ -19,10 +19,12 @@ package rabinizer.automata;
 
 import com.google.common.collect.Table.Cell;
 import rabinizer.collections.Collections3;
+import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -47,15 +49,18 @@ public class EmptinessCheck {
 
         for (TranSet<S> tranSCC : automaton.SCCs()) {
             // remove inter-SCC-transitions
-            for (Cell<S, ValuationSet, S> entry : automaton.transitions.cellSet()) {
-                S soure = entry.getRowKey();
-                ValuationSet label = entry.getColumnKey();
-                S target = entry.getValue();
+            for (Map.Entry<S, Map<S, ValuationSet>> entry : automaton.transitions.entrySet()) {
+                S soure = entry.getKey();
 
-                if (tranSCC.contains(soure) && !tranSCC.contains(target)) {
-                    for (GeneralizedRabinPair<S> pair : accTGR) {
-                        pair.infs.forEach(inf -> inf.removeAll(soure, label));
-                        pair.fin.removeAll(soure, label);
+                for (Map.Entry<S, ValuationSet> transition : entry.getValue().entrySet()) {
+                    ValuationSet label = transition.getValue();
+                    S target = transition.getKey();
+
+                    if (tranSCC.contains(soure) && !tranSCC.contains(target)) {
+                        for (GeneralizedRabinPair<S> pair : accTGR) {
+                            pair.infs.forEach(inf -> inf.removeAll(soure, label));
+                            pair.fin.removeAll(soure, label);
+                        }
                     }
                 }
             }

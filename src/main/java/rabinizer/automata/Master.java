@@ -31,19 +31,19 @@ public class Master extends Automaton<Master.State> {
     final boolean eager;
     final @Nullable EquivalenceClass initialState;
 
-    public Master(@Nullable EquivalenceClass clazz, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
-        super(valuationSetFactory, mergingEnabled);
+    public Master(@Nullable EquivalenceClass clazz, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
+        super(valuationSetFactory);
         initialState = clazz;
         eager = optimisations.contains(Optimisation.EAGER);
     }
 
     public Master(ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
-        this(null, valuationSetFactory, optimisations, true);
+        this(null, valuationSetFactory, optimisations);
     }
 
     public Master(Formula formula, EquivalenceClassFactory equivalenceClassFactory,
-                  ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations, boolean mergingEnabled) {
-        this(equivalenceClassFactory.createEquivalenceClass(formula), valuationSetFactory, optimisations, mergingEnabled);
+                  ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
+        this(equivalenceClassFactory.createEquivalenceClass(formula), valuationSetFactory, optimisations);
     }
 
     public State generateInitialState(EquivalenceClass clazz) {

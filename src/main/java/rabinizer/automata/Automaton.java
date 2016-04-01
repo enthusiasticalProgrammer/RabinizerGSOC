@@ -17,49 +17,35 @@
 
 package rabinizer.automata;
 
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public abstract class Automaton<S extends IState<S>> {
 
     protected final ValuationSetFactory valuationSetFactory;
-    protected final boolean mergingEnabled;
-
     protected final Set<S> states;
-    protected final Table<S, ValuationSet, S> transitions;
-    protected final Table<S, S, ValuationSet> edgeBetween;
-    protected @Nullable S initialState;
-
-    protected Automaton(ValuationSetFactory valuationSetFactory) {
-        this(valuationSetFactory, true);
-    }
+    protected final Map<S, Map<S, ValuationSet>> transitions;
+    @Nullable protected S initialState;
 
     protected Automaton(Automaton<S> a) {
         valuationSetFactory = a.valuationSetFactory;
-        mergingEnabled = a.mergingEnabled;
         states = a.states;
         transitions = a.transitions;
-        edgeBetween = a.edgeBetween;
         initialState = a.initialState;
     }
 
-    protected Automaton(ValuationSetFactory valuationSetFactory, boolean mergingEnabled) {
+    protected Automaton(ValuationSetFactory valuationSetFactory) {
         this.valuationSetFactory = valuationSetFactory;
-        this.mergingEnabled = mergingEnabled;
         states = new HashSet<>();
-        transitions = HashBasedTable.create();
-        edgeBetween = HashBasedTable.create();
+        transitions = new HashMap<>();
     }
 
     public void generate() {
@@ -88,41 +74,33 @@ public abstract class Automaton<S extends IState<S>> {
     }
 
     public boolean hasSuccessors(S state) {
-        return transitions.row(state).values().stream().anyMatch(s -> !s.equals(state));
+        return !row(transitions, state).isEmpty();
     }
 
     public boolean isSink(S state) {
-        ValuationSet valuationSet = edgeBetween.get(state, state);
+        ValuationSet valuationSet = get(transitions, state, state);
         return valuationSet != null && valuationSet.isUniverse();
     }
 
     public boolean isLooping(S state) {
-        ValuationSet valuationSet = edgeBetween.get(state, state);
+        ValuationSet valuationSet = get(transitions, state, state);
         return valuationSet != null && !valuationSet.isEmpty();
     }
 
-    public void removeSinks() {
-        List<S> sinks = states.stream().filter(this::isSink).collect(Collectors.toList());
-
-        for (S s : sinks) {
-            transitions.row(s).clear();
-            edgeBetween.row(s).clear();
-        }
-    }
-
-    public @Nullable S getSuccessor(S s, Set<String> v) {
-        for (Entry<ValuationSet, S> entry : getSuccessors(s).entrySet()) {
-            if (entry.getKey().contains(v)) {
-                return entry.getValue();
+    @Nullable
+    public S getSuccessor(S state, Set<String> valuation) {
+        for (Map.Entry<S, ValuationSet> transition : getSuccessors(state).entrySet()) {
+            if (transition.getValue().contains(valuation)) {
+                return transition.getKey();
             }
         }
 
         return null;
     }
 
-    public Map<ValuationSet, S> getSuccessors(S state) {
+    public Map<S, ValuationSet> getSuccessors(S state) {
         generateSingleState(state);
-        return transitions.row(state);
+        return transitions.get(state);
     }
 
     public int size() {
@@ -131,10 +109,6 @@ public abstract class Automaton<S extends IState<S>> {
 
     public Set<S> getStates() {
         return Collections.unmodifiableSet(states);
-    }
-
-    public Table<S, ValuationSet, S> getTransitions() {
-        return transitions;
     }
 
     public S getInitialState() {
@@ -158,9 +132,9 @@ public abstract class Automaton<S extends IState<S>> {
         while (!workList.isEmpty()) {
             S state = workList.remove();
 
-            transitions.row(state).forEach((vs, successor) -> {
-                if (states.add(successor)) {
-                    workList.add(successor);
+            transitions.get(state).forEach((suc, v) -> {
+                if (states.add(suc)) {
+                    workList.add(suc);
                 }
             });
         }
@@ -202,7 +176,6 @@ public abstract class Automaton<S extends IState<S>> {
             states.clear();
             transitions.clear();
             initialState = null;
-            edgeBetween.clear();
         } else {
             removeStatesIf(statess::contains);
         }
@@ -219,16 +192,13 @@ public abstract class Automaton<S extends IState<S>> {
             }
 
             iterator.remove();
-            transitions.row(state).clear();
-            edgeBetween.row(state).clear();
-            edgeBetween.column(state).clear();
+            transitions.remove(state);
+            transitions.forEach((k, v) -> v.remove(state));
         }
 
         if (predicate.test(initialState)) {
             initialState = null;
         }
-
-        transitions.values().removeIf(predicate);
     }
 
     public Collection<String> getAlphabet() {
@@ -248,8 +218,7 @@ public abstract class Automaton<S extends IState<S>> {
      */
     protected boolean isSink(Set<S> scc) {
         Set<S> nonSCCStates = Sets.difference(states, scc);
-        return scc.stream().filter(s -> transitions.row(s) != null)
-                .allMatch(s -> (Collections.disjoint(transitions.row(s).values(), nonSCCStates)));
+        return scc.stream().allMatch(s -> (Collections.disjoint(row(transitions, s).keySet(), nonSCCStates)));
     }
 
     /**
@@ -267,68 +236,72 @@ public abstract class Automaton<S extends IState<S>> {
         }
 
         states.remove(antecessor);
-        transitions.row(antecessor).clear();
+        transitions.get(antecessor).clear();
 
-        Iterator<Table.Cell<S, ValuationSet, S>> it = transitions.cellSet().iterator();
+        for (Map<S, ValuationSet> edges : transitions.values()) {
+            ValuationSet vs = edges.get(antecessor);
 
-        Table<S, ValuationSet, S> toAdd = HashBasedTable.create();
-        while (it.hasNext()) {
-            Table.Cell<S, ValuationSet, S> elem = it.next();
-            if (antecessor.equals(elem.getValue())) {
-                toAdd.put(elem.getRowKey(), elem.getColumnKey(), replacement);
-                it.remove();
+            if (vs == null) {
+                continue;
+            }
+
+            ValuationSet vs2 = edges.get(replacement);
+
+            if (vs2 == null) {
+                edges.put(replacement, vs);
+            } else {
+                vs2.addAll(vs);
             }
         }
-        transitions.putAll(toAdd);
-
-        edgeBetween.row(antecessor).clear();
-
-        Iterator<Table.Cell<S, S, ValuationSet>> it2 = edgeBetween.cellSet().iterator();
-
-        Table<S, S, ValuationSet> toAdd2 = HashBasedTable.create();
-        while (it2.hasNext()) {
-            Table.Cell<S, S, ValuationSet> elem = it2.next();
-            if (antecessor.equals(elem.getColumnKey())) {
-                toAdd2.put(elem.getRowKey(), replacement, elem.getValue());
-                it2.remove();
-            }
-        }
-
-        edgeBetween.putAll(toAdd2);
 
         if (antecessor.equals(initialState)) {
             initialState = replacement;
         }
     }
 
-    private Collection<S> generateSingleState(S state) {
+    @Nonnull
+    private Set<S> generateSingleState(S state) {
         if (states.add(state)) {
             Map<ValuationSet, S> successors = state.getSuccessors();
-            Map<S, ValuationSet> reverseMap = edgeBetween.row(state);
+            Map<S, ValuationSet> row = row(transitions, state);
 
-            // Insert all successors and construct reverse map.
-            for (Entry<ValuationSet, S> transition : successors.entrySet()) {
-                ValuationSet edge = transition.getKey();
-                S successor = transition.getValue();
-
-                ValuationSet vs = reverseMap.remove(successor);
+            // Insert all successors into row.
+            successors.forEach((valuation, successor) -> {
+                ValuationSet vs = row.get(successor);
 
                 if (vs == null) {
-                    vs = edge.clone();
-                    transitions.put(state, edge, successor);
-                } else if (mergingEnabled) {
-                    transitions.remove(state, vs);
-                    vs.addAll(edge);
-                    transitions.put(state, vs, successor);
+                    row.put(successor, valuation.clone());
                 } else {
-                    transitions.put(state, edge, successor);
-                    vs.addAll(edge);
+                    vs.addAll(valuation);
                 }
+            });
 
-                reverseMap.put(successor, vs);
-            }
+            return row.keySet();
         }
 
-        return transitions.row(state).values();
+        return Collections.emptySet();
+    }
+
+    @Nonnull
+    private static <R, C, V> Map<C, V> row(Map<R, Map<C, V>> table, R rowKey) {
+        Map<C, V> row = table.get(rowKey);
+
+        if (row == null) {
+            row = new LinkedHashMap<>();
+            table.put(rowKey, row);
+        }
+
+        return row;
+    }
+
+    @Nullable
+    private static <R, C, V> V get(Map<R, Map<C, V>> table, R rowKey, C columnKey) {
+        Map<C, V> row = table.get(rowKey);
+
+        if (row == null) {
+            return null;
+        }
+
+        return row.get(columnKey);
     }
 }

@@ -40,7 +40,7 @@ public class AutomatonClassTest {
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(f4);
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f4);
 
-        Master m = new Master(f4, factory, val, Collections.emptySet(), true);
+        Master m = new Master(f4, factory, val, Collections.emptySet());
         assertEquals(f4, m.generateInitialState().getClazz().getRepresentative());
     }
 
@@ -204,7 +204,6 @@ public class AutomatonClassTest {
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
         MojmirSlave mSlave = new MojmirSlave((GOperator) f, factory, val, EnumSet.of(Optimisation.EAGER));
         mSlave.generate();
-        mSlave.removeSinks();
 
         RabinSlave rSlave = new RabinSlave(mSlave, val);
         assertFalse(rSlave.getInitialState().getSuccessors().keySet().isEmpty());

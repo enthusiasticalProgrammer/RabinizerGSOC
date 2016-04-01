@@ -40,7 +40,7 @@ public class DTGRAFactory {
         if (opts.contains(Optimisation.SLAVE_SUSPENSION)) {
             master = new SuspendedMaster(phi, equivalenceClassFactory, valuationSetFactory, opts);
         } else {
-            master = new Master(phi, equivalenceClassFactory, valuationSetFactory, opts, true);
+            master = new Master(phi, equivalenceClassFactory, valuationSetFactory, opts);
         }
         master.generate();
 

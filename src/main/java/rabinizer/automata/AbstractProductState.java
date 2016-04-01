@@ -100,16 +100,16 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
     public Map<ValuationSet, T> getSuccessors() {
         ImmutableMap.Builder<ValuationSet, T> builder = ImmutableMap.builder();
 
-        Map<ValuationSet, P> primarySuccessors = getPrimaryAutomaton().getSuccessors(primaryState);
+        Map<P, ValuationSet> primarySuccessors = getPrimaryAutomaton().getSuccessors(primaryState);
         Map<ValuationSet, Map<K, S>> secondarySuccessors = secondaryJointMove();
 
-        for (Map.Entry<ValuationSet, P> entry1 : primarySuccessors.entrySet()) {
+        for (Map.Entry<P, ValuationSet> entry1 : primarySuccessors.entrySet()) {
             for (Map.Entry<ValuationSet, Map<K, S>> entry2 : secondarySuccessors.entrySet()) {
-                ValuationSet set = entry1.getKey().clone();
+                ValuationSet set = entry1.getValue().clone();
                 set.retainAll(entry2.getKey());
 
                 if (!set.isEmpty()) {
-                    Set<K> keys = relevantSecondary(entry1.getValue());
+                    Set<K> keys = relevantSecondary(entry1.getKey());
                     Map<K, S> secondaryStates = entry2.getValue();
 
                     if (keys != null) {
@@ -122,7 +122,7 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
                         secondaryStates = secondaryStates2;
                     }
 
-                    builder.put(set, constructState(entry1.getValue(), ImmutableMap.copyOf(secondaryStates)));
+                    builder.put(set, constructState(entry1.getKey(), ImmutableMap.copyOf(secondaryStates)));
                 }
             }
         }
@@ -139,17 +139,17 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
             K key = entry.getKey();
             S state = entry.getValue();
 
-            Map<ValuationSet, S> successors = secondary.get(key).getSuccessors(state);
+            Map<S, ValuationSet> successors = secondary.get(key).getSuccessors(state);
             Map<ValuationSet, Map<K, S>> next = new HashMap<>();
 
             for (Map.Entry<ValuationSet, Map<K, S>> entry1 : current.entrySet()) {
-                for (Map.Entry<ValuationSet, S> entry2 : successors.entrySet()) {
+                for (Map.Entry<S, ValuationSet> entry2 : successors.entrySet()) {
                     ValuationSet set = entry1.getKey().clone();
-                    set.retainAll(entry2.getKey());
+                    set.retainAll(entry2.getValue());
 
                     if (!set.isEmpty()) {
                         Map<K, S> states = new HashMap<>(entry1.getValue());
-                        states.put(key, entry2.getValue());
+                        states.put(key, entry2.getKey());
                         next.put(set, states);
                     }
                 }

@@ -73,10 +73,10 @@ public class DetLimitAutomatonFactory {
         Set<AcceptingComponent.State> accReach = new HashSet<>();
 
         for (Master.State state : initialComponent.getStates()) {
-            Map<ValuationSet, Master.State> successors = initialComponent.getSuccessors(state);
+            Map<Master.State, ValuationSet> successors = initialComponent.getSuccessors(state);
             Map<ValuationSet, List<AcceptingComponent.State>> successorJumps = initialComponent.valuationSetJumps.row(state);
 
-            successors.forEach((vs, successor) -> {
+            successors.forEach((successor, vs) -> {
                 // Copy successors to a new collection, since clear() will also empty these collections.
                 List<AcceptingComponent.State> targets = new ArrayList<>(initialComponent.epsilonJumps.get(successor));
                 accReach.addAll(targets);
@@ -84,7 +84,7 @@ public class DetLimitAutomatonFactory {
             });
 
             if (optimisations.contains(Optimisation.IMPATIENT)) {
-                successors.values().removeIf(ImpatientStateAnalysis::isImpatientState);
+                successors.keySet().removeIf(ImpatientStateAnalysis::isImpatientState);
             }
         }
 

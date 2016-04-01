@@ -38,8 +38,12 @@ public interface ValuationSet extends Set<Set<String>>, Cloneable {
     ValuationSet clone();
 
     default boolean intersects(ValuationSet other) {
+        return !intersect(other).isEmpty();
+    }
+
+    default ValuationSet intersect(ValuationSet other) {
         ValuationSet thisClone = this.clone();
         thisClone.retainAll(other);
-        return !thisClone.isEmpty();
+        return thisClone;
     }
 }

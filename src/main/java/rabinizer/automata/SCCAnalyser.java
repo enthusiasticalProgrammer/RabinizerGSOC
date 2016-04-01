@@ -113,10 +113,10 @@ public class SCCAnalyser<S extends IState<S>> {
         number.put(v, n);
         List<Set<S>> result = new ArrayList<>();
 
-        for (Map.Entry<ValuationSet, S> entry : a.transitions.row(v).entrySet()) {
+        for (Map.Entry<S, ValuationSet> entry : a.getSuccessors(v).entrySet()) {
             // edge not forbidden
-            if (!forbiddenEdges.containsAll(v, entry.getKey())) {
-                S w = entry.getValue();
+            if (!forbiddenEdges.containsAll(v, entry.getValue())) {
+                S w = entry.getKey();
 
                 if (allowedStates.contains(w) && !number.containsKey(w)) {
                     stack.push(w);
@@ -150,10 +150,10 @@ public class SCCAnalyser<S extends IState<S>> {
         number.put(v, n);
         List<TranSet<S>> result = new ArrayList<>();
 
-        for (Map.Entry<ValuationSet, S> entry : a.transitions.row(v).entrySet()) {
+        for (Map.Entry<S, ValuationSet> entry : a.getSuccessors(v).entrySet()) {
             // edge not forbidden
-            if (!forbiddenEdges.containsAll(v, entry.getKey())) {
-                S w = entry.getValue();
+            if (!forbiddenEdges.containsAll(v, entry.getValue())) {
+                S w = entry.getKey();
 
                 if (allowedStates.contains(w) && !number.containsKey(w)) {
                     stack.push(w);
@@ -176,9 +176,9 @@ public class SCCAnalyser<S extends IState<S>> {
             TranSet<S> tranSet = new TranSet<>(a.valuationSetFactory);
 
             for (S s : set) {
-                for (Map.Entry<ValuationSet, S> entry : a.transitions.row(s).entrySet()) {
-                    if (set.contains(entry.getValue()) && !forbiddenEdges.containsAll(s, entry.getKey())) {
-                        tranSet.addAll(s, entry.getKey());
+                for (Map.Entry<S, ValuationSet> entry : a.getSuccessors(v).entrySet()) {
+                    if (set.contains(entry.getKey()) && !forbiddenEdges.containsAll(s, entry.getValue())) {
+                        tranSet.addAll(s, entry.getValue());
                         tranSet.removeAll(s, forbiddenEdges.asMap().get(s));
                     }
                 }

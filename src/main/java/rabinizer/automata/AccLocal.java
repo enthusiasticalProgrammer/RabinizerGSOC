@@ -161,9 +161,9 @@ class AccLocal {
         // Mojmir
         TranSet<MojmirSlave.State> failM = new TranSet<>(valuationSetFactory);
         for (MojmirSlave.State fs : slave.mojmir.states) {
-            for (Map.Entry<ValuationSet, MojmirSlave.State> vsfs : slave.mojmir.transitions.row(fs).entrySet()) {
-                if (slave.mojmir.isSink(vsfs.getValue()) && !finalStates.contains(vsfs.getValue())) {
-                    failM.addAll(fs, vsfs.getKey());
+            for (Map.Entry<MojmirSlave.State, ValuationSet> vsfs : slave.mojmir.getSuccessors(fs).entrySet()) {
+                if (slave.mojmir.isSink(vsfs.getKey()) && !finalStates.contains(vsfs.getValue())) {
+                    failM.addAll(fs, vsfs.getValue());
                 }
             }
         }
@@ -184,18 +184,16 @@ class AccLocal {
         TranSet<MojmirSlave.State> succeedM = new TranSet<>(valuationSetFactory);
         if (finalStates.contains(slave.mojmir.getInitialState())) {
             for (MojmirSlave.State fs : slave.mojmir.states) {
-                for (Map.Entry<ValuationSet, MojmirSlave.State> vsfs : slave.mojmir.transitions.row(fs)
-                        .entrySet()) {
-                    succeedM.addAll(fs, vsfs.getKey());
+                for (Map.Entry<MojmirSlave.State, ValuationSet> vsfs : slave.mojmir.getSuccessors(fs).entrySet()) {
+                    succeedM.addAll(fs, vsfs.getValue());
                 }
             }
         } else {
             for (MojmirSlave.State fs : slave.mojmir.states) {
                 if (!finalStates.contains(fs)) {
-                    for (Map.Entry<ValuationSet, MojmirSlave.State> vsfs : slave.mojmir.transitions.row(fs)
-                            .entrySet()) {
-                        if (finalStates.contains(vsfs.getValue())) {
-                            succeedM.addAll(fs, vsfs.getKey());
+                    for (Map.Entry<MojmirSlave.State, ValuationSet> vsfs : slave.mojmir.getSuccessors(fs).entrySet()) {
+                        if (finalStates.contains(vsfs.getKey())) {
+                            succeedM.addAll(fs, vsfs.getValue());
                         }
                     }
                 }
@@ -225,8 +223,8 @@ class AccLocal {
                     for (MojmirSlave.State fs2 : rs.keySet()) {
                         for (MojmirSlave.State succ : slave.mojmir.states) {
                             ValuationSet vs1, vs2;
-                            if (!finalStates.contains(succ) && (vs1 = slave.mojmir.edgeBetween.get(stateIntegerEntry.getKey(), succ)) != null
-                                    && (vs2 = slave.mojmir.edgeBetween.get(fs2, succ)) != null) {
+                            if (!finalStates.contains(succ) && (vs1 = slave.mojmir.transitions.get(stateIntegerEntry.getKey()).get(succ)) != null
+                                    && (vs2 = slave.mojmir.transitions.get(fs2).get(succ)) != null) {
                                 if (!stateIntegerEntry.getKey().equals(fs2)) {
                                     ValuationSet vs1copy = vs1.clone();
                                     vs1copy.retainAll(vs2);

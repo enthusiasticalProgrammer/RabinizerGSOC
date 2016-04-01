@@ -17,8 +17,6 @@
 
 package rabinizer.automata;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 
@@ -29,7 +27,6 @@ import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class DTRA extends Automaton<DTRA.ProductDegenState> {
 
@@ -70,72 +67,25 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
         hoa.setInitialState(this.initialState);
         hoa.setAcceptanceCondition2(accTR);
 
-        List<GeneralizedRabinPair<ProductDegenState>> acc = new ArrayList<>();
-        accTR.stream().forEach(p -> acc.add(new GeneralizedRabinPair<>(p)));
-
-        // split transitions according to accepting Sets:
-        for (GeneralizedRabinPair<ProductDegenState> pair : acc) {
-            Table<ProductDegenState, ValuationSet, ProductDegenState> toAdd = HashBasedTable.create();
-            Table<ProductDegenState, ValuationSet, ProductDegenState> toRemove = HashBasedTable.create();
-            for (Table.Cell<ProductDegenState, ValuationSet, ProductDegenState> currTrans : transitions.cellSet()) {
-                if (pair.fin.asMap().keySet().contains(currTrans.getRowKey())) {
-                    ValuationSet valu = pair.fin.asMap().get(currTrans.getRowKey()).clone();
-                    valu.retainAll(currTrans.getColumnKey());
-                    if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
-                        toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
-                        toAdd.put(currTrans.getRowKey(), valu, currTrans.getValue());
-                        ValuationSet valu2 = this.valuationSetFactory.createUniverseValuationSet();
-                        valu2.retainAll(currTrans.getColumnKey());
-                        valu2.retainAll(valu.complement());
-                        toAdd.put(currTrans.getRowKey(), valu2, currTrans.getValue());
-                    }
-                }
-            }
-
-            toRemove.cellSet().stream().forEach(cell -> transitions.remove(cell.getRowKey(), cell.getColumnKey()));
-            transitions.putAll(toAdd);
-            toRemove.clear();
-            toAdd.clear();
-            for (TranSet<ProductDegenState> currAccSet : pair.infs) {
-                for (Table.Cell<ProductDegenState, ValuationSet, ProductDegenState> currTrans : transitions
-                        .cellSet()) {
-                    if (currAccSet.asMap().keySet().contains(currTrans.getRowKey())) {
-                        ValuationSet valu = currAccSet.asMap().get(currTrans.getRowKey()).clone();
-                        valu.retainAll(currTrans.getColumnKey());
-                        if (!valu.isEmpty() && !valu.equals(currTrans.getColumnKey())) {
-                            toRemove.put(currTrans.getRowKey(), currTrans.getColumnKey(), currTrans.getValue());
-                            toAdd.put(currTrans.getRowKey(), valu, currTrans.getValue());
-                            ValuationSet valu2 = this.valuationSetFactory.createUniverseValuationSet();
-                            valu2.retainAll(currTrans.getColumnKey());
-                            valu2.retainAll(valu.complement());
-                            toAdd.put(currTrans.getRowKey(), valu2, currTrans.getValue());
-                        }
-                    }
-                }
-            }
-            toRemove.cellSet().stream().forEach(cell -> transitions.remove(cell.getRowKey(), cell.getColumnKey()));
-            transitions.putAll(toAdd);
-            toRemove.clear();
-            toAdd.clear();
-        }
-
         for (ProductDegenState s : states) {
             hoa.addState(s);
 
-            for (Map.Entry<ValuationSet, ProductDegenState> trans : transitions.row(s).entrySet()) {
-                List<Integer> accSets = acc.stream()
-                        .filter(pair -> pair.fin.containsAll(s, trans.getKey()))
-                        .map(p -> hoa.getNumber(p.fin))
-                        .collect(Collectors.toList());
+            for (Set<String> valuation : valuationSetFactory.createUniverseValuationSet()) {
+                ProductDegenState successor = getSuccessor(s, valuation);
 
-                for (GeneralizedRabinPair<ProductDegenState> pair : acc) {
-                    pair.infs.stream()
-                            .filter(inf -> inf != null && inf.containsAll(s, trans.getKey()))
-                            .map(hoa::getNumber)
-                            .forEach(accSets::add);
-                }
+                BitSet accSet = new BitSet();
 
-                hoa.addEdge(s, trans.getKey().toFormula(), trans.getValue(), accSets);
+                accTR.forEach(pair -> {
+                    if (pair.fin.contains(s, valuation)) {
+                        accSet.set(hoa.getNumber(pair.fin));
+                    }
+
+                    if (pair.inf.contains(s, valuation)) {
+                        accSet.set(hoa.getNumber(pair.inf));
+                    }
+                });
+
+                hoa.addEdge(s, valuation, successor, accSet);
             }
 
             hoa.stateDone();

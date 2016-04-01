@@ -25,6 +25,7 @@ import rabinizer.automata.Optimisation;
 import rabinizer.automata.SCCAnalyser;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.Collections3;
+import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.Formula;
@@ -44,7 +45,7 @@ public class InitialComponent extends Master {
     private final AcceptingComponent acceptingComponent;
 
     InitialComponent(EquivalenceClass initialClazz, AcceptingComponent acceptingComponent, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
-        super(initialClazz, valuationSetFactory, optimisations, true);
+        super(initialClazz, valuationSetFactory, optimisations);
 
         skeleton = optimisations.contains(Optimisation.SKELETON);
         scc = optimisations.contains(Optimisation.SCC);
@@ -95,7 +96,10 @@ public class InitialComponent extends Master {
     void toHOA(HOAConsumerExtended<IState<?>> consumer) throws HOAConsumerException {
         for (State state : states) {
             consumer.addState(state);
-            consumer.addEdges(state, getSuccessors(state));
+
+            for (Map.Entry<State, ValuationSet> edge : getSuccessors(state).entrySet()) {
+                consumer.addEdge(state, edge.getValue(), edge.getKey());
+            }
 
             for (AcceptingComponent.State accState : epsilonJumps.get(state)) {
                 consumer.addEpsilonEdge(state, accState);

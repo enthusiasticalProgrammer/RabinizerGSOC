@@ -24,6 +24,7 @@ import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,7 +37,7 @@ public interface IState<S> {
     @Nullable S getSuccessor(Set<String> valuation);
 
     default Map<ValuationSet, S> getSuccessors() {
-        Map<ValuationSet, S> successors = new HashMap<>();
+        Map<ValuationSet, S> successors = new LinkedHashMap<>();
 
         Set<String> sensitiveAlphabet = getSensitiveAlphabet();
         ValuationSetFactory factory = getFactory();

@@ -55,7 +55,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
     int acceptanceConditionSize;
 
     AcceptingComponent(Master primaryAutomaton, EquivalenceClassFactory factory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
-        super(valuationSetFactory, false);
+        super(valuationSetFactory);
         this.primaryAutomaton = primaryAutomaton;
         secondaryAutomata = new HashMap<>();
         secondaryAutomata.put(Collections.emptySet(), Collections.emptyMap());
@@ -102,25 +102,19 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
 
             Map<ValuationSet, BitSet> accSetMap = getAcceptance(productState);
 
-            for (Map.Entry<ValuationSet, State> entry : transitions.row(productState).entrySet()) {
-                State successor = entry.getValue();
-                ValuationSet valuationSet = entry.getKey();
+            transitions.get(productState).forEach((successor, valuationSet) -> {
+                for (Map.Entry<ValuationSet, BitSet> acceptance : accSetMap.entrySet()) {
+                    ValuationSet label = acceptance.getKey().intersect(valuationSet);
 
-                BitSet accSet = null;
-
-                for (Map.Entry<ValuationSet, BitSet> foo : accSetMap.entrySet()) {
-                    if (foo.getKey().containsAll(valuationSet)) {
-                        accSet = foo.getValue();
-                        break;
+                    if (!label.isEmpty()) {
+                        try {
+                            consumer.addEdge(productState, label.toFormula(), successor, acceptance.getValue());
+                        } catch (HOAConsumerException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
-
-                if (accSet == null) {
-                    throw new IllegalStateException();
-                }
-
-                consumer.addEdge(productState, valuationSet.toFormula(), successor, accSet);
-            }
+            });
 
             consumer.stateDone();
         }

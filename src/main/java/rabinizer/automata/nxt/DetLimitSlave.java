@@ -49,7 +49,7 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
     private final LoadingCache<State, ValuationSet> acceptanceCache;
 
     public DetLimitSlave(EquivalenceClass formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
-        super(valuationSetFactory, false);
+        super(valuationSetFactory);
         eager = optimisations.contains(Optimisation.EAGER);
         removeCover = optimisations.contains(Optimisation.COVER);
         initialFormula = eager ? formula.unfold(true) : formula;

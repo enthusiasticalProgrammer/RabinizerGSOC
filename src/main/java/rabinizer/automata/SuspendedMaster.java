@@ -18,7 +18,7 @@ public class SuspendedMaster extends Master {
     final boolean slaveSuspension;
 
     public SuspendedMaster(@Nullable EquivalenceClass clazz, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
-        super(clazz, valuationSetFactory, optimisations, true);
+        super(clazz, valuationSetFactory, optimisations);
         slaveSuspension = optimisations.contains(Optimisation.SLAVE_SUSPENSION);
     }
 

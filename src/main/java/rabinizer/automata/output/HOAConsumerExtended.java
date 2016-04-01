@@ -27,6 +27,7 @@ import rabinizer.automata.GeneralizedRabinPair;
 import rabinizer.automata.RabinPair;
 import rabinizer.automata.TranSet;
 import rabinizer.collections.Collections3;
+import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.exec.Main;
 import rabinizer.ltl.Conjunction;
@@ -150,13 +151,7 @@ public class HOAConsumerExtended<T> {
 
         return conjunction;
     }
-
-    public void addEdges(T begin, Map<ValuationSet, ? extends T> successors) throws HOAConsumerException {
-        for (Map.Entry<ValuationSet, ? extends T> entry : successors.entrySet()) {
-            hoa.addEdgeWithLabel(stateNumbers.get(begin), Simplifier.simplify(entry.getKey().toFormula()).accept(new FormulaConverter()), Collections.singletonList(getStateId(entry.getValue())), null);
-        }
-    }
-
+    
     public void addEpsilonEdge(T begin, T successor) throws HOAConsumerException {
         Main.nonsilent("Warning: HOA does not support epsilon-transitions. (" + begin + " -> " + successor + ")");
         hoa.addEdgeWithLabel(getStateId(begin), null, Collections.singletonList(getStateId(successor)), null);
@@ -180,6 +175,10 @@ public class HOAConsumerExtended<T> {
 
     public void addEdge(T begin, Set<String> label, T end) throws HOAConsumerException {
         addEdge(begin, new Conjunction(alphabet.stream().map(l -> new Literal(l, !label.contains(l)))), end, (List<Integer>) null);
+    }
+
+    public void addEdge(T begin, Set<String> label, T end, BitSet accSets) throws HOAConsumerException {
+        addEdge(begin, new Conjunction(alphabet.stream().map(l -> new Literal(l, !label.contains(l)))), end, accSets);
     }
 
     public void addState(T s) throws HOAConsumerException {
