@@ -37,8 +37,6 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
             Main.verboseln("Optimizing initial states");
             State oldInit = initialState;
             initialState = getSuccessor(oldInit, Collections.emptySet());
-
-            states.remove(oldInit);
             transitions.remove(oldInit);
         }
     }

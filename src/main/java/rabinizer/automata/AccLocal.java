@@ -61,7 +61,7 @@ class AccLocal {
 
         for (GOperator f : formula.gSubformulas()) {
             int maxRankF = 0;
-            for (RabinSlave.State rs : product.secondaryAutomata.get(f).states) {
+            for (RabinSlave.State rs : product.secondaryAutomata.get(f).getStates()) {
                 maxRankF = maxRankF >= rs.size() ? maxRankF : rs.size();
             }
             maxRank.put(f, maxRankF);
@@ -140,7 +140,7 @@ class AccLocal {
             Set<MojmirSlave.State> finalStates = new HashSet<>();
             EquivalenceClass gSetClazz = equivalenceClassFactory.createEquivalenceClass(new Conjunction(gSet));
 
-            for (MojmirSlave.State fs : rSlave.mojmir.states) {
+            for (MojmirSlave.State fs : rSlave.mojmir.getStates()) {
                 if (gSetClazz.implies(fs.getClazz())) {
                     finalStates.add(fs);
                 }
@@ -160,7 +160,7 @@ class AccLocal {
         // Set fail
         // Mojmir
         TranSet<MojmirSlave.State> failM = new TranSet<>(valuationSetFactory);
-        for (MojmirSlave.State fs : slave.mojmir.states) {
+        for (MojmirSlave.State fs : slave.mojmir.getStates()) {
             for (Map.Entry<MojmirSlave.State, ValuationSet> vsfs : slave.mojmir.getSuccessors(fs).entrySet()) {
                 if (slave.mojmir.isSink(vsfs.getKey()) && !finalStates.contains(vsfs.getValue())) {
                     failM.addAll(fs, vsfs.getValue());
@@ -170,7 +170,7 @@ class AccLocal {
 
         // Product
         TranSet<Product.ProductState> failP = new TranSet<>(valuationSetFactory);
-        for (Product.ProductState ps : product.states) {
+        for (Product.ProductState ps : product.getStates()) {
             RabinSlave.State rs = ps.secondaryStates.get(slave.mojmir.label);
             if (rs != null) { // relevant slave
                 for (MojmirSlave.State fs : rs.keySet()) {
@@ -183,13 +183,13 @@ class AccLocal {
         // Mojmir
         TranSet<MojmirSlave.State> succeedM = new TranSet<>(valuationSetFactory);
         if (finalStates.contains(slave.mojmir.getInitialState())) {
-            for (MojmirSlave.State fs : slave.mojmir.states) {
+            for (MojmirSlave.State fs : slave.mojmir.getStates()) {
                 for (Map.Entry<MojmirSlave.State, ValuationSet> vsfs : slave.mojmir.getSuccessors(fs).entrySet()) {
                     succeedM.addAll(fs, vsfs.getValue());
                 }
             }
         } else {
-            for (MojmirSlave.State fs : slave.mojmir.states) {
+            for (MojmirSlave.State fs : slave.mojmir.getStates()) {
                 if (!finalStates.contains(fs)) {
                     for (Map.Entry<MojmirSlave.State, ValuationSet> vsfs : slave.mojmir.getSuccessors(fs).entrySet()) {
                         if (finalStates.contains(vsfs.getKey())) {
@@ -201,7 +201,7 @@ class AccLocal {
         }
         // Product
         TranSet<Product.ProductState> succeedP = new TranSet<>(valuationSetFactory);
-        for (Product.ProductState ps : product.states) {
+        for (Product.ProductState ps : product.getStates()) {
             RabinSlave.State rs = ps.secondaryStates.get(slave.mojmir.label);
             if (rs != null) { // relevant slave
                 for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : rs.entrySet()) {
@@ -217,11 +217,11 @@ class AccLocal {
         // Set buy(pi)
         // Rabin
         TranSet<RabinSlave.State> buyR = new TranSet<>(valuationSetFactory);
-        for (RabinSlave.State rs : slave.states) {
+        for (RabinSlave.State rs : slave.getStates()) {
             for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : rs.entrySet()) {
                 if (stateIntegerEntry.getValue() < rank) {
                     for (MojmirSlave.State fs2 : rs.keySet()) {
-                        for (MojmirSlave.State succ : slave.mojmir.states) {
+                        for (MojmirSlave.State succ : slave.mojmir.getStates()) {
                             ValuationSet vs1, vs2;
                             if (!finalStates.contains(succ) && (vs1 = slave.mojmir.transitions.get(stateIntegerEntry.getKey()).get(succ)) != null
                                     && (vs2 = slave.mojmir.transitions.get(fs2).get(succ)) != null) {
@@ -241,7 +241,7 @@ class AccLocal {
         }
         // Product
         TranSet<Product.ProductState> buyP = new TranSet<>(valuationSetFactory);
-        for (Product.ProductState ps : product.states) {
+        for (Product.ProductState ps : product.getStates()) {
             RabinSlave.State rs = ps.secondaryStates.get(slave.mojmir.label);
             if (rs != null) { // relevant slave
                 buyP.addAll(ps, buyR.asMap().get(rs));
@@ -271,7 +271,7 @@ class AccLocal {
 
                 TranSet<Product.ProductState> avoidP = new TranSet<>(valuationSetFactory);
 
-                for (Product.ProductState ps : product.states) {
+                for (Product.ProductState ps : product.getStates()) {
                     avoidP.addAll(computeAccMasterForState(ranking, ps));
                 }
 

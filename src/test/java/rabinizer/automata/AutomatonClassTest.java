@@ -152,10 +152,10 @@ public class AutomatonClassTest {
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(f);
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, standard);
-        assertEquals(dtgra.states.size(), 1);
+        assertEquals(dtgra.size(), 1);
 
         dtgra = DTGRAFactory.constructDTGRA(f, factory, val, standard);
-        assertEquals(dtgra.states.size(), 1);
+        assertEquals(dtgra.size(), 1);
     }
 
     @Test
@@ -164,10 +164,7 @@ public class AutomatonClassTest {
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(f);
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, standard);
-        assertFalse(dtgra.states.isEmpty());
-
-        dtgra = DTGRAFactory.constructDTGRA(f, factory, val, standard);
-        assertEquals(2, dtgra.states.size());
+        assertEquals(2, dtgra.size());
     }
 
     @Test
@@ -185,7 +182,7 @@ public class AutomatonClassTest {
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(f);
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, standard);
-        assertEquals(2, dtgra.states.size());
+        assertEquals(2, dtgra.size());
     }
 
     @Test

@@ -19,10 +19,12 @@ package rabinizer.automata;
 
 import com.google.common.collect.ImmutableMap;
 
+import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.ImmutableObject;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
@@ -62,7 +64,8 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
         return "(" + primaryState + "::" + secondaryStates + ')';
     }
 
-    public @Nullable T getSuccessor(Set<String> valuation) {
+    @Nullable
+    public T getSuccessor(Set<String> valuation) {
         P primarySuccessor = primaryState.getSuccessor(valuation);
 
         if (primarySuccessor == null) {
@@ -97,65 +100,60 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
     protected abstract Automaton<P> getPrimaryAutomaton();
     protected abstract Map<K, ? extends Automaton<S>> getSecondaryAutomata();
 
-    public Map<ValuationSet, T> getSuccessors() {
-        ImmutableMap.Builder<ValuationSet, T> builder = ImmutableMap.builder();
-
+    @Nonnull
+    public Map<T, ValuationSet> getSuccessors() {
+        Map<T, ValuationSet> successors = new LinkedHashMap<>();
         Map<P, ValuationSet> primarySuccessors = getPrimaryAutomaton().getSuccessors(primaryState);
-        Map<ValuationSet, Map<K, S>> secondarySuccessors = secondaryJointMove();
 
         for (Map.Entry<P, ValuationSet> entry1 : primarySuccessors.entrySet()) {
-            for (Map.Entry<ValuationSet, Map<K, S>> entry2 : secondarySuccessors.entrySet()) {
-                ValuationSet set = entry1.getValue().clone();
-                set.retainAll(entry2.getKey());
+            Set<K> keys = relevantSecondary(entry1.getKey());
 
-                if (!set.isEmpty()) {
-                    Set<K> keys = relevantSecondary(entry1.getKey());
-                    Map<K, S> secondaryStates = entry2.getValue();
+            if (keys == null) {
+                keys = secondaryStates.keySet();
+            }
 
-                    if (keys != null) {
-                        Map<K, S> secondaryStates2 = new HashMap<>(secondaryStates.size());
-
-                        for (K key : keys) {
-                            secondaryStates2.put(key, secondaryStates.get(key));
-                        }
-
-                        secondaryStates = secondaryStates2;
-                    }
-
-                    builder.put(set, constructState(entry1.getKey(), ImmutableMap.copyOf(secondaryStates)));
-                }
+            for (Tuple<Map<K, S>, ValuationSet> entry2 : secondaryJointMove(keys, entry1.getValue())) {
+                successors.put(constructState(entry1.getKey(), ImmutableMap.copyOf(entry2.left)), entry2.right);
             }
         }
 
-        return builder.build();
+        return successors;
     }
 
-    protected Map<ValuationSet, Map<K, S>> secondaryJointMove() {
+    protected Iterable<Tuple<Map<K, S>, ValuationSet>> secondaryJointMove(Set<K> keys, ValuationSet maxVs) {
         Map<K, ? extends Automaton<S>> secondary = getSecondaryAutomata();
-        Map<ValuationSet, Map<K, S>> current = new HashMap<>();
-        current.put(getFactory().createUniverseValuationSet(), Collections.emptyMap());
 
-        for (Map.Entry<K, S> entry : secondaryStates.entrySet()) {
-            K key = entry.getKey();
-            S state = entry.getValue();
+        Deque<Tuple<Map<K, S>, ValuationSet>> current = new ArrayDeque<>();
+        Deque<Tuple<Map<K, S>, ValuationSet>> next = new ArrayDeque<>();
+
+        current.add(new Tuple<>(Collections.emptyMap(), maxVs));
+
+        for (K key : keys) {
+            S state = secondaryStates.get(key);
+
+            if (state == null) {
+                state = getSecondaryAutomata().get(key).getInitialState();
+            }
 
             Map<S, ValuationSet> successors = secondary.get(key).getSuccessors(state);
-            Map<ValuationSet, Map<K, S>> next = new HashMap<>();
 
-            for (Map.Entry<ValuationSet, Map<K, S>> entry1 : current.entrySet()) {
+            while (!current.isEmpty()) {
+                Tuple<Map<K, S>, ValuationSet> entry1 = current.remove();
+
                 for (Map.Entry<S, ValuationSet> entry2 : successors.entrySet()) {
-                    ValuationSet set = entry1.getKey().clone();
-                    set.retainAll(entry2.getValue());
+                    ValuationSet set = entry1.right.intersect(entry2.getValue());
 
                     if (!set.isEmpty()) {
-                        Map<K, S> states = new HashMap<>(entry1.getValue());
+                        Map<K, S> states = new HashMap<>(entry1.left);
                         states.put(key, entry2.getKey());
-                        next.put(set, states);
+                        next.add(new Tuple<>(states, set));
                     }
                 }
             }
 
+            Deque<Tuple<Map<K, S>, ValuationSet>> swap = current;
             current = next;
+            next = swap;
         }
 
         return current;
@@ -171,7 +169,8 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
         return sensitiveLetters;
     }
 
-    protected @Nullable Set<K> relevantSecondary(P primaryState) {
+    @Nullable
+    protected Set<K> relevantSecondary(P primaryState) {
         return null;
     }
 

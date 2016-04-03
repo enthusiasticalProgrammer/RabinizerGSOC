@@ -97,7 +97,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
     }
 
     void toHOA(HOAConsumerExtended<IState<?>> consumer) throws HOAConsumerException {
-        for (State productState : states) {
+        for (State productState : getStates()) {
             consumer.addState(productState);
 
             Map<ValuationSet, BitSet> accSetMap = getAcceptance(productState);

@@ -151,7 +151,7 @@ public class HOAConsumerExtended<T> {
 
         return conjunction;
     }
-    
+
     public void addEpsilonEdge(T begin, T successor) throws HOAConsumerException {
         Main.nonsilent("Warning: HOA does not support epsilon-transitions. (" + begin + " -> " + successor + ")");
         hoa.addEdgeWithLabel(getStateId(begin), null, Collections.singletonList(getStateId(successor)), null);

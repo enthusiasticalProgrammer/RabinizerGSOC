@@ -99,53 +99,5 @@ public class Product extends Automaton<Product.ProductState> {
         protected ProductState constructState(Master.State primaryState, ImmutableMap<GOperator, RabinSlave.State> secondaryStates) {
             return new ProductState(primaryState, secondaryStates);
         }
-
-        @Override
-        protected Map<ValuationSet, Map<GOperator, RabinSlave.State>> secondaryJointMove() {
-            Map<GOperator, RabinSlave> secondary = getSecondaryAutomata();
-            Map<ValuationSet, Map<GOperator, RabinSlave.State>> current = new HashMap<>();
-            current.put(getFactory().createUniverseValuationSet(), Collections.emptyMap());
-
-            Map<GOperator, RabinSlave.State> keys;
-            if (!secondaryStates.isEmpty()) {
-                keys = new HashMap<>(secondaryStates);
-            } else {
-                keys = new HashMap<>();
-                for (Map.Entry<GOperator, RabinSlave> secAut : secondaryAutomata.entrySet()) {
-                    keys.put(secAut.getKey(), secAut.getValue().getInitialState());
-                }
-            }
-
-            for (Map.Entry<GOperator, RabinSlave.State> entry : keys.entrySet()) {
-                GOperator key = entry.getKey();
-                RabinSlave.State state = entry.getValue();
-
-                Map<RabinSlave.State, ValuationSet> successors;
-                if (!secondary.isEmpty()) {
-                    successors = secondary.get(key).getSuccessors(state);
-                } else {
-                    successors = secondaryAutomata.get(key).getSuccessors(state);
-                }
-                Map<ValuationSet, Map<GOperator, RabinSlave.State>> next = new HashMap<>();
-
-                for (Map.Entry<ValuationSet, Map<GOperator, RabinSlave.State>> entry1 : current.entrySet()) {
-                    for (Map.Entry<RabinSlave.State, ValuationSet> entry2 : successors.entrySet()) {
-                        ValuationSet set = entry1.getKey().clone();
-                        set.retainAll(entry2.getValue());
-
-                        if (!set.isEmpty()) {
-                            Map<GOperator, RabinSlave.State> states = new HashMap<>(entry1.getValue());
-                            states.put(key, entry2.getKey());
-
-                            next.put(set, states);
-                        }
-                    }
-                }
-
-                current = next;
-            }
-
-            return current;
-        }
     }
 }

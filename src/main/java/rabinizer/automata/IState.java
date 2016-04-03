@@ -22,6 +22,7 @@ import com.google.common.collect.Sets;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -36,17 +37,26 @@ public interface IState<S> {
      */
     @Nullable S getSuccessor(Set<String> valuation);
 
-    default Map<ValuationSet, S> getSuccessors() {
-        Map<ValuationSet, S> successors = new LinkedHashMap<>();
-
-        Set<String> sensitiveAlphabet = getSensitiveAlphabet();
+    @Nonnull
+    default Map<S, ValuationSet> getSuccessors() {
         ValuationSetFactory factory = getFactory();
+        Set<String> sensitiveAlphabet = getSensitiveAlphabet();
+        Map<S, ValuationSet> successors = new LinkedHashMap<>();
 
         for (Set<String> valuation : Sets.powerSet(sensitiveAlphabet)) {
             S successor = getSuccessor(valuation);
 
-            if (successor != null) {
-                successors.put(factory.createValuationSet(valuation, sensitiveAlphabet), successor);
+            if (successor == null) {
+                continue;
+            }
+
+            ValuationSet oldVs = successors.get(successor);
+            ValuationSet newVs = factory.createValuationSet(valuation, sensitiveAlphabet);
+
+            if (oldVs == null) {
+                successors.put(successor, newVs);
+            } else {
+                oldVs.addAll(newVs);
             }
         }
 

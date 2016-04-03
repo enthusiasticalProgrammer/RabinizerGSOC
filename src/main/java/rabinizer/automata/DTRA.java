@@ -67,7 +67,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
         hoa.setInitialState(this.initialState);
         hoa.setAcceptanceCondition2(accTR);
 
-        for (ProductDegenState s : states) {
+        for (ProductDegenState s : getStates()) {
             hoa.addState(s);
 
             for (Set<String> valuation : valuationSetFactory.createUniverseValuationSet()) {

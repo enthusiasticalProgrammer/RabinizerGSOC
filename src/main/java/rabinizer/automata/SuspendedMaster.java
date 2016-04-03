@@ -60,8 +60,8 @@ public class SuspendedMaster extends Master {
     }
 
     private void mergeStates() {
-        List<State> worklist = (List<State>) (List<?>) new ArrayList<>(states);
-        List<State> worklist2 = (List<State>) (List<?>) new ArrayList<>(states);
+        List<State> worklist = (List<State>) (List<?>) new ArrayList<>(getStates());
+        List<State> worklist2 = (List<State>) (List<?>) new ArrayList<>(getStates());
 
         for (State s : worklist) {
             for (State s2 : worklist2) {
@@ -83,8 +83,9 @@ public class SuspendedMaster extends Master {
             this.folded = folded;
         }
 
+        @Nullable
         @Override
-        public @Nullable State getSuccessor(Set<String> valuation) {
+        public State getSuccessor(Set<String> valuation) {
             EquivalenceClass successor = step(clazz, valuation);
             EquivalenceClass folded = stepTest(this.folded, valuation);
 

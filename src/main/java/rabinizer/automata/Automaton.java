@@ -23,29 +23,26 @@ import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 
 public abstract class Automaton<S extends IState<S>> {
 
-    protected final ValuationSetFactory valuationSetFactory;
-    protected final Set<S> states;
+    @Nullable
+    protected S initialState;
     protected final Map<S, Map<S, ValuationSet>> transitions;
-    @Nullable protected S initialState;
+    protected final ValuationSetFactory valuationSetFactory;
 
     protected Automaton(Automaton<S> a) {
-        valuationSetFactory = a.valuationSetFactory;
-        states = a.states;
-        transitions = a.transitions;
         initialState = a.initialState;
+        transitions = a.transitions;
+        valuationSetFactory = a.valuationSetFactory;
     }
 
-    protected Automaton(ValuationSetFactory valuationSetFactory) {
-        this.valuationSetFactory = valuationSetFactory;
-        states = new HashSet<>();
+    protected Automaton(ValuationSetFactory factory) {
         transitions = new HashMap<>();
+        valuationSetFactory = factory;
     }
 
     public void generate() {
@@ -54,7 +51,7 @@ public abstract class Automaton<S extends IState<S>> {
 
     public void generate(S initialState) {
         // Return if already generated
-        if (states.contains(initialState)) {
+        if (transitions.containsKey(initialState)) {
             return;
         }
 
@@ -63,10 +60,10 @@ public abstract class Automaton<S extends IState<S>> {
 
         while (!workList.isEmpty()) {
             S current = workList.remove();
-            Collection<S> next = generateSingleState(current);
+            Collection<S> next = getSuccessors(current).keySet();
 
             for (S successor : next) {
-                if (!states.contains(successor)) {
+                if (!transitions.containsKey(successor)) {
                     workList.add(successor);
                 }
             }
@@ -74,16 +71,16 @@ public abstract class Automaton<S extends IState<S>> {
     }
 
     public boolean hasSuccessors(S state) {
-        return !row(transitions, state).isEmpty();
+        return !getSuccessors(state).isEmpty();
     }
 
     public boolean isSink(S state) {
-        ValuationSet valuationSet = get(transitions, state, state);
+        ValuationSet valuationSet = getSuccessors(state).get(state);
         return valuationSet != null && valuationSet.isUniverse();
     }
 
     public boolean isLooping(S state) {
-        ValuationSet valuationSet = get(transitions, state, state);
+        ValuationSet valuationSet = getSuccessors(state).get(state);
         return valuationSet != null && !valuationSet.isEmpty();
     }
 
@@ -99,16 +96,18 @@ public abstract class Automaton<S extends IState<S>> {
     }
 
     public Map<S, ValuationSet> getSuccessors(S state) {
-        generateSingleState(state);
-        return transitions.get(state);
+        Map<S, ValuationSet> row = transitions.get(state);
+
+        if (row == null) {
+            row = state.getSuccessors();
+            transitions.put(state, row);
+        }
+
+        return row;
     }
 
     public int size() {
-        return states.size();
-    }
-
-    public Set<S> getStates() {
-        return Collections.unmodifiableSet(states);
+        return transitions.size();
     }
 
     public S getInitialState() {
@@ -119,14 +118,11 @@ public abstract class Automaton<S extends IState<S>> {
         return initialState;
     }
 
-    public Set<S> getReachableStates() {
-        HashSet<S> reach = new HashSet<>();
-        reach.add(getInitialState());
-        getReachableStates(reach);
-        return reach;
+    public Set<S> getStates() {
+        return transitions.keySet();
     }
 
-    public void getReachableStates(Set<S> states) {
+    private void getReachableStates(Set<S> states) {
         Deque<S> workList = new ArrayDeque<>(states);
 
         while (!workList.isEmpty()) {
@@ -141,7 +137,7 @@ public abstract class Automaton<S extends IState<S>> {
     }
 
     public void removeUnreachableStates() {
-        removeUnreachableStates(getReachableStates());
+        removeUnreachableStates(Sets.newHashSet(getInitialState()));
     }
 
     public void removeUnreachableStates(Set<S> reach) {
@@ -169,32 +165,20 @@ public abstract class Automaton<S extends IState<S>> {
      * nonaccepting SCCs are deleted, and the idea is also that everything,
      * which is deleted will be replaced with a trap state (in makeComplete).
      *
-     * @param statess: Set of states that is to be removed
+     * @param states: Set of states that is to be removed
      */
-    public void removeStates(Collection<S> statess) {
-        if (statess.contains(initialState)) {
-            states.clear();
-            transitions.clear();
+    public void removeStates(Collection<S> states) {
+        if (states.contains(initialState)) {
             initialState = null;
+            transitions.clear();
         } else {
-            removeStatesIf(statess::contains);
+            removeStatesIf(states::contains);
         }
     }
 
     public void removeStatesIf(Predicate<S> predicate) {
-        Iterator<S> iterator = states.iterator();
-
-        while (iterator.hasNext()) {
-            S state = iterator.next();
-
-            if (!predicate.test(state)) {
-                continue;
-            }
-
-            iterator.remove();
-            transitions.remove(state);
-            transitions.forEach((k, v) -> v.remove(state));
-        }
+        transitions.keySet().removeIf(predicate);
+        transitions.forEach((k, v) -> v.keySet().removeIf(predicate));
 
         if (predicate.test(initialState)) {
             initialState = null;
@@ -217,8 +201,7 @@ public abstract class Automaton<S extends IState<S>> {
      * otherwise
      */
     protected boolean isSink(Set<S> scc) {
-        Set<S> nonSCCStates = Sets.difference(states, scc);
-        return scc.stream().allMatch(s -> (Collections.disjoint(row(transitions, s).keySet(), nonSCCStates)));
+        return scc.stream().allMatch(s -> scc.containsAll(getSuccessors(s).keySet()));
     }
 
     /**
@@ -231,12 +214,11 @@ public abstract class Automaton<S extends IState<S>> {
      * is not in the states-set
      */
     protected void replaceBy(S antecessor, S replacement) {
-        if (!(states.contains(antecessor) && states.contains(replacement))) {
+        if (!(transitions.containsKey(antecessor) && transitions.containsKey(replacement))) {
             throw new IllegalArgumentException();
         }
 
-        states.remove(antecessor);
-        transitions.get(antecessor).clear();
+        transitions.remove(antecessor).clear();
 
         for (Map<S, ValuationSet> edges : transitions.values()) {
             ValuationSet vs = edges.get(antecessor);
@@ -257,51 +239,5 @@ public abstract class Automaton<S extends IState<S>> {
         if (antecessor.equals(initialState)) {
             initialState = replacement;
         }
-    }
-
-    @Nonnull
-    private Set<S> generateSingleState(S state) {
-        if (states.add(state)) {
-            Map<ValuationSet, S> successors = state.getSuccessors();
-            Map<S, ValuationSet> row = row(transitions, state);
-
-            // Insert all successors into row.
-            successors.forEach((valuation, successor) -> {
-                ValuationSet vs = row.get(successor);
-
-                if (vs == null) {
-                    row.put(successor, valuation.clone());
-                } else {
-                    vs.addAll(valuation);
-                }
-            });
-
-            return row.keySet();
-        }
-
-        return Collections.emptySet();
-    }
-
-    @Nonnull
-    private static <R, C, V> Map<C, V> row(Map<R, Map<C, V>> table, R rowKey) {
-        Map<C, V> row = table.get(rowKey);
-
-        if (row == null) {
-            row = new LinkedHashMap<>();
-            table.put(rowKey, row);
-        }
-
-        return row;
-    }
-
-    @Nullable
-    private static <R, C, V> V get(Map<R, Map<C, V>> table, R rowKey, C columnKey) {
-        Map<C, V> row = table.get(rowKey);
-
-        if (row == null) {
-            return null;
-        }
-
-        return row.get(columnKey);
     }
 }

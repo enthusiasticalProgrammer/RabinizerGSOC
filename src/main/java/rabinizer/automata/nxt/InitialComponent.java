@@ -64,7 +64,7 @@ public class InitialComponent extends Master {
         SkeletonVisitor visitor = SkeletonVisitor.getInstance(SkeletonVisitor.SkeletonApproximation.BOTH);
 
         // Generate Jump Table
-        List<Set<State>> sccs = scc ? SCCAnalyser.SCCsStates(this, this.getInitialState()) : Collections.singletonList(states);
+        List<Set<State>> sccs = scc ? SCCAnalyser.SCCsStates(this, this.getInitialState()) : Collections.singletonList(getStates());
 
         for (Set<State> scc : sccs) {
             // Skip non-looping states with successors of a singleton SCC.
@@ -94,7 +94,7 @@ public class InitialComponent extends Master {
     }
 
     void toHOA(HOAConsumerExtended<IState<?>> consumer) throws HOAConsumerException {
-        for (State state : states) {
+        for (State state : getStates()) {
             consumer.addState(state);
 
             for (Map.Entry<State, ValuationSet> edge : getSuccessors(state).entrySet()) {
