@@ -253,7 +253,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         }
     }
 
-    private class AcceptanceCacheLoader extends CacheLoader<State, Map<ValuationSet, BitSet>> {
+    private static class AcceptanceCacheLoader extends CacheLoader<State, Map<ValuationSet, BitSet>> {
         @Override
         public Map<ValuationSet, BitSet> load(State key) throws Exception {
             return key.getAcceptance();
