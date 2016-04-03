@@ -17,9 +17,6 @@
 
 package rabinizer.automata;
 
-
-
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,16 +30,10 @@ public class GeneralizedRabinPair<S> {
         this.infs = r;
     }
 
-    public GeneralizedRabinPair(RabinPair<S> pair) {
-        this.fin = pair.fin;
-        this.infs = Collections.singletonList(pair.inf);
-    }
-
     /**
-     *
      * @param other
      * @return true if the this pair implies the other pair, meaning whenever this pair accepts,
-     *      also the other accepts.
+     * also the other accepts.
      */
     public boolean implies(GeneralizedRabinPair<S> other) {
         return fin.containsAll(other.fin) && other.infs.stream().allMatch(inf2 -> infs.stream().anyMatch(inf2::containsAll));
@@ -64,7 +55,7 @@ public class GeneralizedRabinPair<S> {
 
     @Override
     public String toString() {
-        String result = "Fin:\n" + (fin) + "\nInf: ";
+        String result = "Fin:\n" + fin + "\nInf: ";
         if (infs.isEmpty()) {
             result += "0\ntrivial";
         } else {

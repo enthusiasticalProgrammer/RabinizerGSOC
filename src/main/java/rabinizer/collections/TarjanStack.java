@@ -18,7 +18,6 @@
 package rabinizer.collections;
 
 
-
 import java.util.*;
 
 /**
@@ -27,11 +26,10 @@ import java.util.*;
  * elements is distributed reasonably well. However, as the TrivialTarjanStack,
  * some subclasses may take longer in theory, but they might be faster, because
  * we are using only rather small automata.
- *
+ * <p>
  * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Important!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  * This class always assumes the Objects to be unique, i.e. no Object can be in
  * the stack twice
- *
  */
 public class TarjanStack<E> extends AbstractCollection<E> implements Deque<E> {
 

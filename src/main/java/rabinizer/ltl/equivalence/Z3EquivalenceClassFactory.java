@@ -23,7 +23,6 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.Solver;
-
 import rabinizer.ltl.*;
 import rabinizer.ltl.simplifier.Simplifier;
 import rabinizer.ltl.simplifier.Simplifier.Strategy;

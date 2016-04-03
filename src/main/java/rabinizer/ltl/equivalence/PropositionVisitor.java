@@ -20,11 +20,8 @@ package rabinizer.ltl.equivalence;
 
 import rabinizer.ltl.*;
 
-import java.text.Normalizer;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * For the propositional view on LTL modal operators (F, G, U, X) and

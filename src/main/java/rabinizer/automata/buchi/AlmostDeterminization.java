@@ -21,8 +21,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-
-
 import rabinizer.collections.Tuple;
 
 import javax.annotation.Nullable;
@@ -116,7 +114,8 @@ public class AlmostDeterminization {
         return semi;
     }
 
-    private @Nullable BuchiAutomaton.State getCSuccessor(Set<BuchiAutomaton.State> states, Set<String> valuation) {
+    @Nullable
+    private BuchiAutomaton.State getCSuccessor(Set<BuchiAutomaton.State> states, Set<String> valuation) {
         Set<BuchiAutomaton.State> successors = new HashSet<>(states.size());
 
         for (BuchiAutomaton.State state : states) {
@@ -138,7 +137,8 @@ public class AlmostDeterminization {
         return succ;
     }
 
-    private @Nullable BuchiAutomaton.State getDSuccessor(Tuple<Set<BuchiAutomaton.State>, Set<BuchiAutomaton.State>> tuple, final Set<String> valuation) {
+    @Nullable
+    private BuchiAutomaton.State getDSuccessor(Tuple<Set<BuchiAutomaton.State>, Set<BuchiAutomaton.State>> tuple, final Set<String> valuation) {
         // Standard Subset Construction
         Set<BuchiAutomaton.State> rightSuccessor = new HashSet<>();
 

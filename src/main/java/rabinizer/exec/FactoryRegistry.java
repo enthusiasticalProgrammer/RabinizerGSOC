@@ -25,14 +25,12 @@ import rabinizer.ltl.equivalence.BDDEquivalenceClassFactory;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.ltl.equivalence.Z3EquivalenceClassFactory;
 
-import java.util.Set;
-
 public class FactoryRegistry {
 
-    public static final Backend defaultBackend = Backend.BDD;
+    public static final Backend DEFAULT_BACKEND = Backend.BDD;
 
     public static EquivalenceClassFactory createEquivalenceClassFactory(Formula formula) {
-        return createEquivalenceClassFactory(defaultBackend, formula);
+        return createEquivalenceClassFactory(DEFAULT_BACKEND, formula);
     }
 
     public static EquivalenceClassFactory createEquivalenceClassFactory(Backend backend, Formula formula) {
@@ -52,7 +50,7 @@ public class FactoryRegistry {
     }
 
     public static ValuationSetFactory createValuationSetFactory(Formula formula) {
-        return createValuationSetFactory(defaultBackend, formula);
+        return createValuationSetFactory(DEFAULT_BACKEND, formula);
     }
 
     public static ValuationSetFactory createValuationSetFactory(Backend backend, Formula formula) {

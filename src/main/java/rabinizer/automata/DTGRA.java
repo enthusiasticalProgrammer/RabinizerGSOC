@@ -17,22 +17,21 @@
 
 package rabinizer.automata;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-import jhoafparser.ast.AtomAcceptance;
 import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-
 import rabinizer.automata.output.HOAConsumerExtended;
-import rabinizer.collections.valuationset.ValuationSet;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 public class DTGRA extends Automaton<Product.ProductState> {
 
+    @Nonnull
     final List<GeneralizedRabinPair<Product.ProductState>> acc;
 
     public DTGRA(Product product, @Nullable List<GeneralizedRabinPair<Product.ProductState>> acc) {
@@ -75,7 +74,7 @@ public class DTGRA extends Automaton<Product.ProductState> {
                         accSet.set(hoa.getNumber(pair.fin));
                     }
 
-                    for(TranSet<Product.ProductState> inf : pair.infs) {
+                    for (TranSet<Product.ProductState> inf : pair.infs) {
                         if (inf.contains(s, valuation)) {
                             accSet.set(hoa.getNumber(inf));
                         }

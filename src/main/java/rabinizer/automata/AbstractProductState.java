@@ -18,10 +18,8 @@
 package rabinizer.automata;
 
 import com.google.common.collect.ImmutableMap;
-
 import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
-import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.ImmutableObject;
 
 import javax.annotation.Nonnull;
@@ -45,18 +43,6 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
         ImmutableMap.Builder<K, S> builder = ImmutableMap.builder();
         keys.forEach(k -> builder.put(k, constructor.apply(k)));
         this.secondaryStates = builder.build();
-    }
-
-    @Override
-    protected int hashCodeOnce() {
-        return Objects.hash(primaryState, secondaryStates);
-    }
-
-    @Override
-    protected boolean equals2(ImmutableObject o) {
-        AbstractProductState<?, ?, ?, ?> that = (AbstractProductState<?, ?, ?, ?>) o;
-        return Objects.equals(primaryState, that.primaryState) &&
-                Objects.equals(secondaryStates, that.secondaryStates);
     }
 
     @Override
@@ -97,9 +83,6 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
         return constructState(primarySuccessor, builder.build());
     }
 
-    protected abstract Automaton<P> getPrimaryAutomaton();
-    protected abstract Map<K, ? extends Automaton<S>> getSecondaryAutomata();
-
     @Nonnull
     public Map<T, ValuationSet> getSuccessors() {
         Map<T, ValuationSet> successors = new LinkedHashMap<>();
@@ -120,7 +103,40 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
         return successors;
     }
 
-    protected Iterable<Tuple<Map<K, S>, ValuationSet>> secondaryJointMove(Set<K> keys, ValuationSet maxVs) {
+    public Set<String> getSensitiveAlphabet() {
+        Set<String> sensitiveLetters = new HashSet<>(primaryState.getSensitiveAlphabet());
+
+        for (S secondaryState : secondaryStates.values()) {
+            sensitiveLetters.addAll(secondaryState.getSensitiveAlphabet());
+        }
+
+        return sensitiveLetters;
+    }
+
+    @Override
+    protected int hashCodeOnce() {
+        return Objects.hash(primaryState, secondaryStates);
+    }
+
+    @Override
+    protected boolean equals2(ImmutableObject o) {
+        AbstractProductState<?, ?, ?, ?> that = (AbstractProductState<?, ?, ?, ?>) o;
+        return Objects.equals(primaryState, that.primaryState) &&
+                Objects.equals(secondaryStates, that.secondaryStates);
+    }
+
+    protected abstract Automaton<P> getPrimaryAutomaton();
+
+    protected abstract Map<K, ? extends Automaton<S>> getSecondaryAutomata();
+
+    @Nullable
+    protected Set<K> relevantSecondary(P primaryState) {
+        return null;
+    }
+
+    protected abstract T constructState(P primaryState, ImmutableMap<K, S> secondaryStates);
+
+    private Iterable<Tuple<Map<K, S>, ValuationSet>> secondaryJointMove(Set<K> keys, ValuationSet maxVs) {
         Map<K, ? extends Automaton<S>> secondary = getSecondaryAutomata();
 
         Deque<Tuple<Map<K, S>, ValuationSet>> current = new ArrayDeque<>();
@@ -158,23 +174,4 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
 
         return current;
     }
-
-    public Set<String> getSensitiveAlphabet() {
-        Set<String> sensitiveLetters = new HashSet<>(primaryState.getSensitiveAlphabet());
-
-        for (S secondaryState : secondaryStates.values()) {
-            sensitiveLetters.addAll(secondaryState.getSensitiveAlphabet());
-        }
-
-        return sensitiveLetters;
-    }
-
-    @Nullable
-    protected Set<K> relevantSecondary(P primaryState) {
-        return null;
-    }
-
-    protected abstract T constructState(P primaryState, ImmutableMap<K, S> secondaryStates);
-
-    protected abstract ValuationSetFactory getFactory();
 }

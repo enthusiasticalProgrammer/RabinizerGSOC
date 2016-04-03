@@ -25,7 +25,6 @@ import rabinizer.automata.Optimisation;
 import rabinizer.automata.SCCAnalyser;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.Collections3;
-import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.Formula;
@@ -71,7 +70,7 @@ public class InitialComponent extends Master {
             if (scc.size() == 1) {
                 State state = Collections3.getElement(scc);
 
-                if (!isLooping(state) && hasSuccessors(state)) {
+                if (isTransient(state) && hasSuccessors(state)) {
                     continue;
                 }
             }

@@ -43,7 +43,7 @@ public class Collections3 {
      * @param <E>
      * @return
      * @throws NoSuchElementException The methods throws an {@code NoSuchElementException} if iterable is either null
-     *      or cannot provide an element.
+     *                                or cannot provide an element.
      */
     public static <E> E getElement(@Nullable Iterable<E> iterable) {
         if (iterable == null) {
@@ -60,7 +60,7 @@ public class Collections3 {
      * @param <E>
      * @return
      * @throws NoSuchElementException The methods throws an {@code NoSuchElementException} if iterable is either null
-     *      or cannot provide an element.
+     *                                or cannot provide an element.
      */
     public static <E> E removeElement(@Nullable Iterable<E> iterable) {
         if (iterable == null) {

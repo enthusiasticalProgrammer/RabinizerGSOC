@@ -37,19 +37,6 @@ public class SuspendedMaster extends Master {
         }
     }
 
-    /**
-     * This method is there to test, the output is used by
-     * relevantGFormulae-Visitor for testing if the successor can be suspended
-     *
-     */
-    private EquivalenceClass stepTest(EquivalenceClass clazz, Set<String> valuation) {
-        if (eager) {
-            return clazz.temporalStep(valuation).unfold(false);
-        } else {
-            return clazz.unfold(false).temporalStep(valuation);
-        }
-    }
-
     @Override
     public void generate(Master.State initialState) {
         if (!(initialState instanceof State)) {
@@ -57,6 +44,18 @@ public class SuspendedMaster extends Master {
         }
         super.generate(initialState);
         mergeStates();
+    }
+
+    /**
+     * This method is there to test, the output is used by
+     * relevantGFormulae-Visitor for testing if the successor can be suspended
+     */
+    private EquivalenceClass stepTest(EquivalenceClass clazz, Set<String> valuation) {
+        if (eager) {
+            return clazz.temporalStep(valuation).unfold(false);
+        } else {
+            return clazz.unfold(false).temporalStep(valuation);
+        }
     }
 
     private void mergeStates() {
@@ -100,17 +99,17 @@ public class SuspendedMaster extends Master {
         }
 
         @Override
-        protected Object getOuter() {
-            return SuspendedMaster.this;
-        }
-
-        @Override
         public boolean equals(Object o) {
             if (o == null)
                 return false;
             if (o.getClass() != this.getClass())
                 return false;
             return super.equals(o) && ((State) o).slavesSuspended == this.slavesSuspended;
+        }
+
+        @Override
+        protected Object getOuter() {
+            return SuspendedMaster.this;
         }
 
         /**

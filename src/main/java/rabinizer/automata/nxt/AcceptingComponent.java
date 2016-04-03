@@ -24,7 +24,6 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumerException;
-
 import rabinizer.automata.*;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.valuationset.ValuationSet;
@@ -70,6 +69,10 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         return acceptanceConditionSize;
     }
 
+    public Map<ValuationSet, BitSet> getAcceptance(AcceptingComponent.State state) {
+        return acceptanceCache.getUnchecked(state);
+    }
+
     void jumpInitial(EquivalenceClass master, Set<GOperator> keys) {
         initialState = jump(master, keys);
 
@@ -78,7 +81,8 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         }
     }
 
-    @Nullable State jump(EquivalenceClass master, Set<GOperator> keys) {
+    @Nullable
+    State jump(EquivalenceClass master, Set<GOperator> keys) {
         Master.State primaryState = getPrimaryState(master, keys);
         ImmutableMap<GOperator, DetLimitSlave.State> secondaryStateMap = getSecondaryStateMap(keys);
 
@@ -102,7 +106,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
 
             Map<ValuationSet, BitSet> accSetMap = getAcceptance(productState);
 
-            transitions.get(productState).forEach((successor, valuationSet) -> {
+            getSuccessors(productState).forEach((successor, valuationSet) -> {
                 for (Map.Entry<ValuationSet, BitSet> acceptance : accSetMap.entrySet()) {
                     ValuationSet label = acceptance.getKey().intersect(valuationSet);
 
@@ -120,7 +124,8 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         }
     }
 
-    private @Nullable Map<GOperator, DetLimitSlave> getSecondaryAutomatonMap(Set<GOperator> keys) {
+    @Nullable
+    private Map<GOperator, DetLimitSlave> getSecondaryAutomatonMap(Set<GOperator> keys) {
         Map<GOperator, DetLimitSlave> secondaryAutomatonMap = secondaryAutomata.get(keys);
 
         if (secondaryAutomatonMap == null) {
@@ -147,7 +152,8 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         return secondaryAutomatonMap;
     }
 
-    private @Nullable ImmutableMap<GOperator, DetLimitSlave.State> getSecondaryStateMap(Set<GOperator> keys) {
+    @Nullable
+    private ImmutableMap<GOperator, DetLimitSlave.State> getSecondaryStateMap(Set<GOperator> keys) {
         Map<GOperator, DetLimitSlave> secondaryAutomatonMap = getSecondaryAutomatonMap(keys);
 
         if (secondaryAutomatonMap == null) {
@@ -159,7 +165,8 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         return secondaryStateMap.build();
     }
 
-    private @Nullable Master.State getPrimaryState(EquivalenceClass master, Set<GOperator> keys) {
+    @Nullable
+    private Master.State getPrimaryState(EquivalenceClass master, Set<GOperator> keys) {
         // TODO: remove simple stuff
         Formula formula = Simplifier.simplify(master.getRepresentative().evaluate(keys, Formula.EvaluationStrategy.LTL), Simplifier.Strategy.MODAL);
         Conjunction facts = new Conjunction(keys.stream().map(key -> Simplifier.simplify(key.operand.evaluate(keys, Formula.EvaluationStrategy.LTL), Simplifier.Strategy.MODAL)));
@@ -175,14 +182,22 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         return primaryAutomaton.generateInitialState(preClazz);
     }
 
-    public Map<ValuationSet, BitSet> getAcceptance(AcceptingComponent.State state) {
-        return acceptanceCache.getUnchecked(state);
+    private static class AcceptanceCacheLoader extends CacheLoader<State, Map<ValuationSet, BitSet>> {
+        @Override
+        public Map<ValuationSet, BitSet> load(State key) throws Exception {
+            return key.getAcceptance();
+        }
     }
 
     public class State extends AbstractProductState<Master.State, GOperator, DetLimitSlave.State, State> implements IState<State> {
 
         public State(Master.State primaryState, ImmutableMap<GOperator, DetLimitSlave.State> secondaryStates) {
             super(primaryState, secondaryStates);
+        }
+
+        @Override
+        public ValuationSetFactory getFactory() {
+            return valuationSetFactory;
         }
 
         Map<ValuationSet, BitSet> getAcceptance() {
@@ -233,11 +248,6 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         }
 
         @Override
-        public ValuationSetFactory getFactory() {
-            return valuationSetFactory;
-        }
-
-        @Override
         protected Automaton<Master.State> getPrimaryAutomaton() {
             return primaryAutomaton;
         }
@@ -250,13 +260,6 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         @Override
         protected State constructState(Master.State primaryState, ImmutableMap<GOperator, DetLimitSlave.State> secondaryStates) {
             return new State(primaryState, secondaryStates);
-        }
-    }
-
-    private static class AcceptanceCacheLoader extends CacheLoader<State, Map<ValuationSet, BitSet>> {
-        @Override
-        public Map<ValuationSet, BitSet> load(State key) throws Exception {
-            return key.getAcceptance();
         }
     }
 }

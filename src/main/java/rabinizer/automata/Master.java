@@ -29,7 +29,8 @@ import java.util.Set;
 public class Master extends Automaton<Master.State> {
 
     final boolean eager;
-    final @Nullable EquivalenceClass initialState;
+    @Nullable
+    final EquivalenceClass initialState;
 
     public Master(@Nullable EquivalenceClass clazz, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
         super(valuationSetFactory);
@@ -81,8 +82,9 @@ public class Master extends Automaton<Master.State> {
             super(clazz);
         }
 
+        @Nullable
         @Override
-        public @Nullable State getSuccessor(Set<String> valuation) {
+        public State getSuccessor(Set<String> valuation) {
             EquivalenceClass successor = step(clazz, valuation);
 
             if (suppressEdge(clazz, successor)) {

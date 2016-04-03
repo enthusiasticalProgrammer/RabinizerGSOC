@@ -20,8 +20,6 @@ package rabinizer.automata.nxt;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import jhoafparser.consumer.HOAConsumerPrint;
-
-
 import rabinizer.automata.IState;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.automata.output.RemoveComments;
@@ -31,11 +29,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
-import java.util.Set;
 
 public class DetLimitAutomaton {
 
-    public final @Nullable InitialComponent initialComponent;
+    @Nullable
+    public final InitialComponent initialComponent;
     public final AcceptingComponent acceptingComponent;
 
     DetLimitAutomaton(@Nullable InitialComponent initialComponent, AcceptingComponent acceptingComponent) {

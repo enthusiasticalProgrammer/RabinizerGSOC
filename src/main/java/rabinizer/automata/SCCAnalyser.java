@@ -79,8 +79,8 @@ public class SCCAnalyser<S extends IState<S>> {
      *
      * @param SCC:            the SCC that will be processed
      * @param forbiddenEdges: the edges that are forbidden
+     * @param a:              Automaton, for which the SCC-Analysis has to be made
      * @return the sub-SCCs of the SCC as list in topologic ordering
-     * @param a: Automaton, for which the SCC-Analysis has to be made
      */
     public static <S extends IState<S>> List<TranSet<S>> subSCCs(Automaton<S> a, TranSet<S> SCC, TranSet<S> forbiddenEdges) {
         SCCAnalyser<S> s = new SCCAnalyser<>(a, SCC.asMap().keySet(), forbiddenEdges);

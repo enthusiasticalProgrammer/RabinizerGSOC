@@ -18,13 +18,11 @@
 package rabinizer.automata;
 
 import com.google.common.collect.Sets;
-
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -35,7 +33,8 @@ public interface IState<S> {
      * @param valuation
      * @return null is returned if the transition would move to a non-accepting BSCC.
      */
-    @Nullable S getSuccessor(Set<String> valuation);
+    @Nullable
+    S getSuccessor(Set<String> valuation);
 
     @Nonnull
     default Map<S, ValuationSet> getSuccessors() {

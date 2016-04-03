@@ -21,22 +21,22 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.google.common.math.IntMath;
-import com.microsoft.z3.*;
-
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.Expr;
+import com.microsoft.z3.Solver;
 import rabinizer.ltl.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Z3ValuationSetFactory implements ValuationSetFactory {
 
     public final BoolExpr TRUE;
     public final BoolExpr FALSE;
     protected final BiMap<Literal, BoolExpr> mapping;
+    final Set<String> alphabet;
     private final Z3Visitor visitor;
     private final Context ctx;
-    final Set<String> alphabet;
 
     public Z3ValuationSetFactory(Formula formula) {
         this(AlphabetVisitor.extractAlphabet(formula));
@@ -59,6 +59,23 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
         }
 
         mapping = builder.build();
+    }
+
+    protected static Set<BoolExpr> getPropositionsOutOfBoolExpr(BoolExpr bool) {
+        Set<BoolExpr> result = new HashSet<>();
+
+        if (bool.isConst()) {
+            if (!bool.isTrue() && !bool.isFalse()) {
+                result.add(bool);
+            }
+        } else {
+            for (Expr exp : bool.getArgs()) {
+                BoolExpr b = (BoolExpr) exp;
+                result.addAll(getPropositionsOutOfBoolExpr(b));
+            }
+        }
+
+        return result;
     }
 
     @Override
@@ -109,23 +126,6 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
 
     protected BoolExpr createZ3(Formula f) {
         return f.accept(visitor);
-    }
-
-    protected static Set<BoolExpr> getPropositionsOutOfBoolExpr(BoolExpr bool) {
-        Set<BoolExpr> result = new HashSet<>();
-
-        if (bool.isConst()) {
-            if (!bool.isTrue() && !bool.isFalse()) {
-                result.add(bool);
-            }
-        } else {
-            for (Expr exp : bool.getArgs()) {
-                BoolExpr b = (BoolExpr) exp;
-                result.addAll(getPropositionsOutOfBoolExpr(b));
-            }
-        }
-
-        return result;
     }
 
     private boolean testUnsatisfiability(BoolExpr b) {
@@ -241,15 +241,6 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
             return new Z3ValuationSet(valuation);
         }
 
-        private boolean update(BoolExpr or) {
-            if (!testUnsatisfiability(ctx.mkNot(ctx.mkEq(valuation, or)))) {
-                valuation = or;
-                return true;
-            }
-
-            return false;
-        }
-
         @Override
         public boolean equals(Object o) {
             if (o instanceof Z3ValuationSet) {
@@ -272,6 +263,15 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
         @Override
         public int hashCode() {
             return Objects.hashCode(valuation);
+        }
+
+        private boolean update(BoolExpr or) {
+            if (!testUnsatisfiability(ctx.mkNot(ctx.mkEq(valuation, or)))) {
+                valuation = or;
+                return true;
+            }
+
+            return false;
         }
 
     }

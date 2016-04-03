@@ -18,7 +18,6 @@
 package rabinizer.ltl;
 
 
-
 public class PatientSlaveVisitor implements Visitor<Boolean> {
 
     @Override

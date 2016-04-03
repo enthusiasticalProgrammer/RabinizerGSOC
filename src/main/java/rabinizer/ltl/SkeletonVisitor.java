@@ -19,17 +19,15 @@ package rabinizer.ltl;
 
 import com.google.common.collect.Sets;
 
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 public class SkeletonVisitor implements Visitor<Set<Set<GOperator>>> {
 
-    private final SkeletonApproximation strategy;
-
     private static final SkeletonVisitor INSTANCE_BOTH = new SkeletonVisitor(SkeletonApproximation.BOTH);
     private static final SkeletonVisitor INSTANCE_LOWER = new SkeletonVisitor(SkeletonApproximation.LOWER_BOUND);
+    private final SkeletonApproximation strategy;
 
     private SkeletonVisitor(SkeletonApproximation appr) {
         strategy = appr;

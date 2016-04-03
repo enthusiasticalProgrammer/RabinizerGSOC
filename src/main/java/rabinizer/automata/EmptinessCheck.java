@@ -17,9 +17,7 @@
 
 package rabinizer.automata;
 
-import com.google.common.collect.Table.Cell;
 import rabinizer.collections.Collections3;
-import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 
 import java.util.Collection;
@@ -100,7 +98,7 @@ public class EmptinessCheck {
     }
 
     /**
-     * @param scc:   SCC for which the function is applied
+     * @param scc: SCC for which the function is applied
      * @return true if for all inf-sets of the Rabin Pair, the SCC has a
      * transition in the inf-set
      */
@@ -112,14 +110,14 @@ public class EmptinessCheck {
      * Precondition: allInfSetsOfRabinPairPresentInSCC with the same arguments
      * has to be true
      *
-     * @param scc:   current SCC
-     * @param pair:  current Rabin Pair
+     * @param scc:  current SCC
+     * @param pair: current Rabin Pair
      * @return true if automaton accepts regarding this Rabin Pair & the current
      * SCC (i.e. if this Rabin Pair can accept a word, if the automaton
      * stays infinitely long in the current SCC)
      */
     private static <S extends IState<S>> boolean finAndInfAccepting(Automaton<S> automaton, TranSet<S> scc, GeneralizedRabinPair<S> pair) {
-        if (Collections3.isSingleton(scc.asMap().keySet()) && !automaton.isLooping(Collections3.getElement(scc.asMap().keySet()))) {
+        if (Collections3.isSingleton(scc.asMap().keySet()) && automaton.isTransient(Collections3.getElement(scc.asMap().keySet()))) {
             return false;
         }
 

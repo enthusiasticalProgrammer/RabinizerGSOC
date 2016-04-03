@@ -20,7 +20,6 @@ package rabinizer.collections.valuationset;
 import com.google.common.collect.Sets;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-
 import rabinizer.ltl.*;
 import rabinizer.ltl.simplifier.Simplifier;
 import rabinizer.ltl.simplifier.Simplifier.Strategy;

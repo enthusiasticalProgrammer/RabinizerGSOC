@@ -20,11 +20,8 @@ package rabinizer.ltl.equivalence;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-
 import rabinizer.collections.Tuple;
 import rabinizer.ltl.*;
 import rabinizer.ltl.simplifier.Simplifier;

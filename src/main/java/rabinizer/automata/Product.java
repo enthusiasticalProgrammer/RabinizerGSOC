@@ -18,8 +18,6 @@
 package rabinizer.automata;
 
 import com.google.common.collect.ImmutableMap;
-
-import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.GOperator;
 

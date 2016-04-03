@@ -19,7 +19,6 @@ package rabinizer.automata;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.Main;
@@ -34,18 +33,17 @@ import java.util.*;
 
 class AccLocal {
 
-    private final ValuationSetFactory valuationSetFactory;
-    private final EquivalenceClassFactory equivalenceClassFactory;
-
-    private final Product product;
-    private final Formula formula;
-    private final Map<GOperator, Integer> maxRank = new HashMap<>();
     final Map<GOperator, Set<GOperator>> topmostGs = new HashMap<>();
     final TranSet<Product.ProductState> allTrans;
     // separate automata acceptance projected to the whole product
     final Map<GOperator, Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>>> accSlavesOptions = new HashMap<>();
     // actually just coBuchi
     final Map<Map<GOperator, Integer>, TranSet<Product.ProductState>> accMasterOptions;
+    private final ValuationSetFactory valuationSetFactory;
+    private final EquivalenceClassFactory equivalenceClassFactory;
+    private final Product product;
+    private final Formula formula;
+    private final Map<GOperator, Integer> maxRank = new HashMap<>();
     private final boolean gSkeleton;
     private final boolean eager;
 
@@ -78,81 +76,6 @@ class AccLocal {
 
         accMasterOptions = computeAccMasterOptions();
         Main.verboseln("Acceptance for primaryAutomaton:\n" + this.accMasterOptions);
-    }
-
-    private boolean slavesEntail(Product.ProductState ps, Map<GOperator, Integer> ranking, Set<String> v, EquivalenceClass consequent) {
-        Set<GOperator> gSet = ranking.keySet();
-
-        Collection<Formula> conjunction = new ArrayList<>(3 * gSet.size());
-
-        if (eager) {
-            for (Map.Entry<GOperator, Integer> entry : ranking.entrySet()) {
-                GOperator G = entry.getKey();
-                int rank = entry.getValue();
-
-                conjunction.add(G);
-                conjunction.add(G.operand.evaluate(gSet));
-                RabinSlave.State rs = ps.secondaryStates.get(G);
-                if (rs != null) {
-                    for (Map.Entry<MojmirSlave.State, Integer> stateEntry : rs.entrySet()) {
-                        if (stateEntry.getValue() >= rank) {
-                            conjunction.add(stateEntry.getKey().getClazz().getRepresentative().temporalStep(v).evaluate(gSet));
-                        }
-                    }
-                }
-            }
-
-            consequent = consequent.temporalStep(v);
-        } else {
-            for (Map.Entry<GOperator, Integer> entry : ranking.entrySet()) {
-                GOperator G = entry.getKey();
-                int rank = entry.getValue();
-
-                conjunction.add(G);
-                RabinSlave.State rs = ps.secondaryStates.get(G);
-                if (rs != null) {
-                    for (Map.Entry<MojmirSlave.State, Integer> stateEntry : rs.entrySet()) {
-                        if (stateEntry.getValue() >= rank) {
-                            conjunction.add(stateEntry.getKey().getClazz().getRepresentative().evaluate(gSet));
-                        }
-                    }
-                }
-            }
-        }
-
-        EquivalenceClass antecedent = equivalenceClassFactory.createEquivalenceClass(new Conjunction(conjunction));
-        return antecedent.implies(consequent);
-    }
-
-    Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> computeAccSlavesOptions(GOperator g, boolean forceAllSlaves) {
-        Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> result = new HashMap<>();
-
-        RabinSlave rSlave = product.secondaryAutomata.get(g);
-        Set<Set<GOperator>> gSets;
-        if (gSkeleton && !forceAllSlaves) {
-            gSets = g.operand.accept(SkeletonVisitor.getInstance(SkeletonVisitor.SkeletonApproximation.LOWER_BOUND));
-            gSets.retainAll(Sets.powerSet(topmostGs.get(g)));
-        } else {
-            gSets = Sets.powerSet(topmostGs.get(g));
-        }
-
-        for (Set<GOperator> gSet : gSets) {
-            Set<MojmirSlave.State> finalStates = new HashSet<>();
-            EquivalenceClass gSetClazz = equivalenceClassFactory.createEquivalenceClass(new Conjunction(gSet));
-
-            for (MojmirSlave.State fs : rSlave.mojmir.getStates()) {
-                if (gSetClazz.implies(fs.getClazz())) {
-                    finalStates.add(fs);
-                }
-            }
-
-            result.put(gSet, new HashMap<>());
-            for (int rank = 1; rank <= maxRank.get(g); rank++) {
-                result.get(gSet).put(rank, createRabinPair(rSlave, finalStates, rank, product, valuationSetFactory));
-            }
-        }
-
-        return result;
     }
 
     private static RabinPair<Product.ProductState> createRabinPair(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank, Product product,
@@ -251,6 +174,81 @@ class AccLocal {
         Main.verboseln("\tAn acceptance pair for slave " + slave.mojmir.label + ":\n" + failP + buyP + succeedP);
         failP.addAll(buyP);
         return new RabinPair<>(failP, succeedP);
+    }
+
+    Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> computeAccSlavesOptions(GOperator g, boolean forceAllSlaves) {
+        Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> result = new HashMap<>();
+
+        RabinSlave rSlave = product.secondaryAutomata.get(g);
+        Set<Set<GOperator>> gSets;
+        if (gSkeleton && !forceAllSlaves) {
+            gSets = g.operand.accept(SkeletonVisitor.getInstance(SkeletonVisitor.SkeletonApproximation.LOWER_BOUND));
+            gSets.retainAll(Sets.powerSet(topmostGs.get(g)));
+        } else {
+            gSets = Sets.powerSet(topmostGs.get(g));
+        }
+
+        for (Set<GOperator> gSet : gSets) {
+            Set<MojmirSlave.State> finalStates = new HashSet<>();
+            EquivalenceClass gSetClazz = equivalenceClassFactory.createEquivalenceClass(new Conjunction(gSet));
+
+            for (MojmirSlave.State fs : rSlave.mojmir.getStates()) {
+                if (gSetClazz.implies(fs.getClazz())) {
+                    finalStates.add(fs);
+                }
+            }
+
+            result.put(gSet, new HashMap<>());
+            for (int rank = 1; rank <= maxRank.get(g); rank++) {
+                result.get(gSet).put(rank, createRabinPair(rSlave, finalStates, rank, product, valuationSetFactory));
+            }
+        }
+
+        return result;
+    }
+
+    private boolean slavesEntail(Product.ProductState ps, Map<GOperator, Integer> ranking, Set<String> v, EquivalenceClass consequent) {
+        Set<GOperator> gSet = ranking.keySet();
+
+        Collection<Formula> conjunction = new ArrayList<>(3 * gSet.size());
+
+        if (eager) {
+            for (Map.Entry<GOperator, Integer> entry : ranking.entrySet()) {
+                GOperator G = entry.getKey();
+                int rank = entry.getValue();
+
+                conjunction.add(G);
+                conjunction.add(G.operand.evaluate(gSet));
+                RabinSlave.State rs = ps.secondaryStates.get(G);
+                if (rs != null) {
+                    for (Map.Entry<MojmirSlave.State, Integer> stateEntry : rs.entrySet()) {
+                        if (stateEntry.getValue() >= rank) {
+                            conjunction.add(stateEntry.getKey().getClazz().getRepresentative().temporalStep(v).evaluate(gSet));
+                        }
+                    }
+                }
+            }
+
+            consequent = consequent.temporalStep(v);
+        } else {
+            for (Map.Entry<GOperator, Integer> entry : ranking.entrySet()) {
+                GOperator G = entry.getKey();
+                int rank = entry.getValue();
+
+                conjunction.add(G);
+                RabinSlave.State rs = ps.secondaryStates.get(G);
+                if (rs != null) {
+                    for (Map.Entry<MojmirSlave.State, Integer> stateEntry : rs.entrySet()) {
+                        if (stateEntry.getValue() >= rank) {
+                            conjunction.add(stateEntry.getKey().getClazz().getRepresentative().evaluate(gSet));
+                        }
+                    }
+                }
+            }
+        }
+
+        EquivalenceClass antecedent = equivalenceClassFactory.createEquivalenceClass(new Conjunction(conjunction));
+        return antecedent.implies(consequent);
     }
 
     private Map<Map<GOperator, Integer>, TranSet<Product.ProductState>> computeAccMasterOptions() {

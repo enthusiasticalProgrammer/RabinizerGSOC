@@ -19,7 +19,6 @@ package rabinizer.ltl;
 
 import com.google.common.collect.Sets;
 
-
 import java.util.Objects;
 import java.util.Set;
 

@@ -19,7 +19,6 @@ package rabinizer.automata.output;
 
 import jhoafparser.ast.AtomLabel;
 import jhoafparser.ast.BooleanExpression;
-
 import rabinizer.ltl.*;
 
 public class FormulaConverter implements rabinizer.ltl.Visitor<BooleanExpression<AtomLabel>> {

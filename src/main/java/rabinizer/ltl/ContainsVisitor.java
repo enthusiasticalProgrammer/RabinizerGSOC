@@ -18,7 +18,6 @@
 package rabinizer.ltl;
 
 
-
 public class ContainsVisitor implements Visitor<Boolean> {
     private final Class<? extends Formula> c;
 

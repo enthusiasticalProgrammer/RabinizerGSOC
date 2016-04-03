@@ -18,7 +18,6 @@
 package rabinizer.collections.valuationset;
 
 import rabinizer.ltl.Formula;
-import rabinizer.ltl.Literal;
 
 import java.util.Set;
 

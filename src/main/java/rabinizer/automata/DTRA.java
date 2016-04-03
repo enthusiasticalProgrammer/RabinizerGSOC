@@ -19,8 +19,6 @@ package rabinizer.automata;
 
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-
-
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
@@ -30,8 +28,8 @@ import java.util.*;
 
 public class DTRA extends Automaton<DTRA.ProductDegenState> {
 
-    private final DTGRA dtgra;
     final List<RabinPair<ProductDegenState>> accTR;
+    private final DTGRA dtgra;
 
     public DTRA(DTGRA dtgra) {
         super(dtgra.valuationSetFactory);
@@ -111,11 +109,12 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
 
         @Override
         public String toString() {
-            return productState + " " + awaitedIndices;
+            return productState + " " + Arrays.toString(awaitedIndices);
         }
 
+        @Nullable
         @Override
-        public @Nullable ProductDegenState getSuccessor(Set<String> valuation) {
+        public ProductDegenState getSuccessor(Set<String> valuation) {
             Product.ProductState successor = dtgra.getSuccessor(productState, valuation);
 
             if (successor == null) {

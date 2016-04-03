@@ -18,7 +18,6 @@
 package rabinizer.ltl;
 
 
-
 public interface Visitor<R> {
 
     R defaultAction(Formula formula);

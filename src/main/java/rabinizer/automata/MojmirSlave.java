@@ -18,7 +18,6 @@
 package rabinizer.automata;
 
 
-import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.GOperator;
 import rabinizer.ltl.equivalence.EquivalenceClass;

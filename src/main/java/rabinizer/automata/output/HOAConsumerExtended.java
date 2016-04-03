@@ -27,7 +27,6 @@ import rabinizer.automata.GeneralizedRabinPair;
 import rabinizer.automata.RabinPair;
 import rabinizer.automata.TranSet;
 import rabinizer.collections.Collections3;
-import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.exec.Main;
 import rabinizer.ltl.Conjunction;
@@ -47,6 +46,7 @@ public class HOAConsumerExtended<T> {
     private final Map<Object, Integer> acceptanceNumbers;
 
     private final AutomatonType accType;
+    T currentState;
     private boolean body;
     private List<String> alphabet;
 
@@ -83,6 +83,24 @@ public class HOAConsumerExtended<T> {
         }
 
         return AccType.GENRABIN;
+    }
+
+    private static BooleanExpression<AtomAcceptance> mkInfAnd(int j) {
+        BooleanExpression<AtomAcceptance> conjunction = new BooleanExpression<>(mkInf(0));
+
+        for (int i = 1; i < j; i++) {
+            conjunction = conjunction.and(new BooleanExpression<>(mkInf(i)));
+        }
+
+        return conjunction;
+    }
+
+    private static AtomAcceptance mkInf(int i) {
+        return new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_INF, i, false);
+    }
+
+    private static AtomAcceptance mkFin(int i) {
+        return new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_FIN, i, false);
     }
 
     /**
@@ -142,16 +160,6 @@ public class HOAConsumerExtended<T> {
         hoa.setAcceptanceCondition(i, mkInfAnd(i));
     }
 
-    private static BooleanExpression<AtomAcceptance> mkInfAnd(int j) {
-        BooleanExpression<AtomAcceptance> conjunction = new BooleanExpression<>(mkInf(0));
-
-        for (int i = 1; i < j; i++) {
-            conjunction = conjunction.and(new BooleanExpression<>(mkInf(i)));
-        }
-
-        return conjunction;
-    }
-
     public void addEpsilonEdge(T begin, T successor) throws HOAConsumerException {
         Main.nonsilent("Warning: HOA does not support epsilon-transitions. (" + begin + " -> " + successor + ")");
         hoa.addEdgeWithLabel(getStateId(begin), null, Collections.singletonList(getStateId(successor)), null);
@@ -166,7 +174,7 @@ public class HOAConsumerExtended<T> {
     }
 
     public void addEdge(T begin, Formula label, T end, BitSet accSets) throws HOAConsumerException {
-       addEdge(begin, label, end, Collections3.toList(accSets));
+        addEdge(begin, label, end, Collections3.toList(accSets));
     }
 
     public void addEdge(T begin, Formula label, T end) throws HOAConsumerException {
@@ -184,8 +192,6 @@ public class HOAConsumerExtended<T> {
     public void addState(T s) throws HOAConsumerException {
         addState(s, null);
     }
-
-    T currentState;
 
     public void addState(T s, List<Integer> accSets) throws HOAConsumerException {
         if (accSets != null && accType == AutomatonType.TRANSITION) {
@@ -254,14 +260,6 @@ public class HOAConsumerExtended<T> {
         }
 
         return stateNumbers.get(state);
-    }
-
-    private static AtomAcceptance mkInf(int i) {
-        return new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_INF, i, false);
-    }
-
-    private static AtomAcceptance mkFin(int i) {
-        return new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_FIN, i, false);
     }
 
     public enum AutomatonType {

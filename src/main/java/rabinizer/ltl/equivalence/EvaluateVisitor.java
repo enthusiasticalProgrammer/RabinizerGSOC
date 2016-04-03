@@ -21,9 +21,6 @@ package rabinizer.ltl.equivalence;
 import rabinizer.ltl.*;
 import rabinizer.ltl.simplifier.Simplifier;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
 public class EvaluateVisitor implements Visitor<Formula> {
 
     private final EquivalenceClassFactory factory;

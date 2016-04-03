@@ -18,7 +18,6 @@
 package rabinizer.automata;
 
 
-
 import java.util.Objects;
 
 public class RabinPair<S> {

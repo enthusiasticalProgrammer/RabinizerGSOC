@@ -17,7 +17,6 @@
 
 package rabinizer.automata;
 
-import com.google.common.collect.Sets;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.collections.valuationset.ValuationSet;
@@ -79,9 +78,9 @@ public abstract class Automaton<S extends IState<S>> {
         return valuationSet != null && valuationSet.isUniverse();
     }
 
-    public boolean isLooping(S state) {
+    public boolean isTransient(S state) {
         ValuationSet valuationSet = getSuccessors(state).get(state);
-        return valuationSet != null && !valuationSet.isEmpty();
+        return valuationSet == null || valuationSet.isEmpty();
     }
 
     @Nullable
@@ -122,22 +121,10 @@ public abstract class Automaton<S extends IState<S>> {
         return transitions.keySet();
     }
 
-    private void getReachableStates(Set<S> states) {
-        Deque<S> workList = new ArrayDeque<>(states);
-
-        while (!workList.isEmpty()) {
-            S state = workList.remove();
-
-            transitions.get(state).forEach((suc, v) -> {
-                if (states.add(suc)) {
-                    workList.add(suc);
-                }
-            });
-        }
-    }
-
     public void removeUnreachableStates() {
-        removeUnreachableStates(Sets.newHashSet(getInitialState()));
+        Set<S> states = new HashSet<>();
+        states.add(getInitialState());
+        removeUnreachableStates(states);
     }
 
     public void removeUnreachableStates(Set<S> reach) {
@@ -238,6 +225,20 @@ public abstract class Automaton<S extends IState<S>> {
 
         if (antecessor.equals(initialState)) {
             initialState = replacement;
+        }
+    }
+
+    private void getReachableStates(Set<S> states) {
+        Deque<S> workList = new ArrayDeque<>(states);
+
+        while (!workList.isEmpty()) {
+            S state = workList.remove();
+
+            transitions.get(state).forEach((suc, v) -> {
+                if (states.add(suc)) {
+                    workList.add(suc);
+                }
+            });
         }
     }
 }

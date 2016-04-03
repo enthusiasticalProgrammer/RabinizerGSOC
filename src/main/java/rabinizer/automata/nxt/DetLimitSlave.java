@@ -21,8 +21,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Sets;
-
-
 import rabinizer.automata.Automaton;
 import rabinizer.automata.IState;
 import rabinizer.automata.Optimisation;
@@ -105,8 +103,9 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
             return "{" + current.getRepresentative() + ", " + next.getRepresentative() + '}';
         }
 
+        @Nullable
         @Override
-        public @Nullable State getSuccessor(Set<String> valuation) {
+        public State getSuccessor(Set<String> valuation) {
             EquivalenceClass successor = step(current, valuation);
             EquivalenceClass nextSuccessor = step(next, valuation);
 

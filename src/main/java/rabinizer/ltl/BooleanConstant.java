@@ -42,8 +42,9 @@ public final class BooleanConstant extends ImmutableObject implements Formula {
         return value ? "true" : "false";
     }
 
+    @Nonnull
     @Override
-    public @Nonnull BooleanConstant not() {
+    public BooleanConstant not() {
         return value ? FALSE : TRUE;
     }
 

@@ -29,9 +29,6 @@ import rabinizer.collections.valuationset.BDDValuationSetFactory;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.BooleanConstant;
-import rabinizer.ltl.Conjunction;
-import rabinizer.ltl.Disjunction;
-import rabinizer.ltl.Literal;
 
 import java.util.*;
 
@@ -287,10 +284,8 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
         }
 
         if (label.isAtom()) {
-            Literal literal = new Literal(integerToLetter[label.getAtom().getAPIndex()], false);
-            ValuationSet valuationSet = valuationSetFactory.createUniverseValuationSet();
-            valuationSet.restrictWith(literal);
-            return valuationSet;
+            String letter = integerToLetter[label.getAtom().getAPIndex()];
+            return valuationSetFactory.createValuationSet(Collections.singleton(letter), Collections.singleton(letter));
         }
 
         if (label.isNOT()) {
