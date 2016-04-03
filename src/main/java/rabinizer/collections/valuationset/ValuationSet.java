@@ -27,9 +27,6 @@ public interface ValuationSet extends Set<Set<String>>, Cloneable {
 
     boolean isUniverse();
 
-    @Deprecated
-    boolean restrictWith(Literal literal);
-
     Formula toFormula();
 
     ValuationSet clone();

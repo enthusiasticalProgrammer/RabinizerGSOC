@@ -154,11 +154,6 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
-        public boolean restrictWith(Literal literal) {
-            return update(valuations.andWith(createBDD(literal.atom, literal.negated)));
-        }
-
-        @Override
         public boolean equals(Object o) {
             if (o instanceof BDDValuationSet) {
                 BDD otherBDD = ((BDDValuationSet) o).valuations;

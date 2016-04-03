@@ -110,7 +110,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
     protected BoolExpr createZ3(Formula f) {
         return f.accept(visitor);
     }
-    
+
     protected static Set<BoolExpr> getPropositionsOutOfBoolExpr(BoolExpr bool) {
         Set<BoolExpr> result = new HashSet<>();
 
@@ -229,11 +229,6 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
         @Override
         public boolean isUniverse() {
             return testUnsatisfiability(ctx.mkNot(valuation));
-        }
-
-        @Override
-        public boolean restrictWith(Literal literal) {
-            return update(ctx.mkAnd(valuation, createZ3(literal)));
         }
 
         @Override

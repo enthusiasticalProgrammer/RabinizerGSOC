@@ -56,17 +56,6 @@ public abstract class ValuationSetTest {
     }
 
     @Test
-    public void testRestrictWith() throws Exception {
-        ValuationSet universeCopy = universe.clone();
-        universeCopy.restrictWith(new Literal("a", false));
-        assertEquals(containsA, universeCopy);
-
-        universeCopy = universe.clone();
-        universeCopy.restrictWith(new Literal("a", true));
-        assertNotEquals(containsA, universeCopy);
-    }
-
-    @Test
     public void testIterator() {
         for (Set<String> valuation : universe) {
             assertTrue(Sets.powerSet(alphabet).contains(valuation));
