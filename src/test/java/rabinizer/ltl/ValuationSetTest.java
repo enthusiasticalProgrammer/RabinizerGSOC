@@ -67,23 +67,6 @@ public abstract class ValuationSetTest {
     }
 
     @Test
-    public void testPickAny() throws Exception {
-        assertTrue(alphabet.containsAll(universe.pickAny()));
-        assertTrue(containsA.pickAny().contains("a"));
-        assertEquals(abcd.pickAny(), ImmutableSet.of("a", "b", "c", "d"));
-    }
-
-    @Test(expected = NoSuchElementException.class)
-    public void testPickAnyNoSuchElement() throws Exception {
-        empty.pickAny();
-    }
-
-    @Test
-    public void testPickAny2() {
-        assertFalse(abcd.pickAny().isEmpty());
-    }
-
-    @Test
     public void testIterator() {
         for (Set<String> valuation : universe) {
             assertTrue(Sets.powerSet(alphabet).contains(valuation));

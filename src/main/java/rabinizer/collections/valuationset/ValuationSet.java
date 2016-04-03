@@ -30,9 +30,6 @@ public interface ValuationSet extends Set<Set<String>>, Cloneable {
     @Deprecated
     boolean restrictWith(Literal literal);
 
-    @Deprecated
-    Set<String> pickAny();
-
     Formula toFormula();
 
     ValuationSet clone();

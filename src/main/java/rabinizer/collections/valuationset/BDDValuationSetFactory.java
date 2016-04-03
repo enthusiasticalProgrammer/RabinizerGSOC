@@ -124,27 +124,6 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         return bdd;
     }
 
-    Set<String> getSatAssignment(BDD bdd) {
-        if (bdd.isZero()) {
-            throw new NoSuchElementException();
-        }
-
-        if (bdd.isOne()) {
-            return new HashSet<>();
-        }
-
-        Set<String> result;
-
-        if (bdd.high().isZero()) {
-            result = getSatAssignment(bdd.low());
-        } else {
-            result = getSatAssignment(bdd.high());
-            result.add(mapping[bdd.level()]);
-        }
-
-        return result;
-    }
-
     boolean isSatAssignment(BDD valuations, Set<String> valuation) {
         BDD current = valuations;
 
@@ -172,11 +151,6 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         @Override
         public Formula toFormula() {
             return createRepresentative(valuations);
-        }
-
-        @Override
-        public Set<String> pickAny() {
-            return getSatAssignment(valuations);
         }
 
         @Override

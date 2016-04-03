@@ -110,26 +110,7 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
     protected BoolExpr createZ3(Formula f) {
         return f.accept(visitor);
     }
-
-    protected Set<Literal> getSatAssignment(BoolExpr expression) {
-        Set<Literal> result = new HashSet<>();
-        Solver s = ctx.mkSolver();
-        s.add(expression);
-        if (s.check() != Status.SATISFIABLE) {
-            throw new NoSuchElementException();
-        }
-        Model m = s.getModel();
-        m.getConstDecls();
-        for (BoolExpr e : getPropositionsOutOfBoolExpr(expression)) {
-            if (m.getConstInterp(e).isTrue()) {
-                result.add(mapping.inverse().get(e));
-            } else if (m.getConstInterp(e).isFalse()) {
-                result.add(mapping.inverse().get(ctx.mkNot(e)));
-            }
-        }
-        return result;
-    }
-
+    
     protected static Set<BoolExpr> getPropositionsOutOfBoolExpr(BoolExpr bool) {
         Set<BoolExpr> result = new HashSet<>();
 
@@ -253,13 +234,6 @@ public class Z3ValuationSetFactory implements ValuationSetFactory {
         @Override
         public boolean restrictWith(Literal literal) {
             return update(ctx.mkAnd(valuation, createZ3(literal)));
-        }
-
-        @Override
-        public Set<String> pickAny() {
-            Set<Literal> satAssignment = getSatAssignment(valuation);
-            return satAssignment.stream().filter(literal -> !literal.negated).map(literal -> literal.atom)
-                    .collect(Collectors.toSet());
         }
 
         @Override
