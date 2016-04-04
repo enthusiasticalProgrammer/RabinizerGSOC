@@ -123,8 +123,8 @@ public final class UOperator extends ImmutableObject implements Formula {
             return FOperator.create(right);
         }
 
-        if (left == BooleanConstant.FALSE) {
-          return right;
+        if (left == BooleanConstant.FALSE || right instanceof BooleanConstant) {
+            return right;
         }
 
         return new UOperator(left, right);

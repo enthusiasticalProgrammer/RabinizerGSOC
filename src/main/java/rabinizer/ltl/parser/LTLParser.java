@@ -181,7 +181,7 @@ public class LTLParser implements LTLParserConstants {
             }
             jj_consume_token(UOP);
             r = release();
-            result = new UOperator(result, r);
+            result = UOperator.create(result, r);
         }
         {
             if ("" != null) return result;
@@ -201,7 +201,7 @@ public class LTLParser implements LTLParserConstants {
             }
             jj_consume_token(ROP);
             r = releasewithv();
-            result = (new UOperator(result.not(), r.not())).not();
+            result = (UOperator.create(result.not(), r.not())).not();
         }
         {
             if ("" != null) return result;
@@ -221,7 +221,7 @@ public class LTLParser implements LTLParserConstants {
             }
             jj_consume_token(VOP);
             r = weak();
-            result = (new UOperator(result.not(), r.not())).not();
+            result = (UOperator.create(result.not(), r.not())).not();
         }
         {
             if ("" != null) return result;
@@ -255,36 +255,35 @@ public class LTLParser implements LTLParserConstants {
             jj_consume_token(FOP);
             f = unaryOp();
             {
-                if ("" != null) return new FOperator(f);
+                return FOperator.create(f);
             }
         } else if (jj_2_8(2)) {
             jj_consume_token(GOP);
             f = unaryOp();
             {
-                if ("" != null) return new GOperator(f);
+                return GOperator.create(f);
             }
         } else if (jj_2_9(2)) {
             jj_consume_token(XOP);
             f = unaryOp();
             {
-                if ("" != null) return new XOperator(f);
+                return XOperator.create(f);
             }
         } else if (jj_2_10(2)) {
             jj_consume_token(NEG);
             f = unaryOp();
             {
-                if ("" != null) return f.not();
+                return f.not();
             }
         } else if (jj_2_11(2)) {
             f = atom();
             {
-                if ("" != null) return f;
+                return f;
             }
         } else {
             jj_consume_token(-1);
             throw new ParseException();
         }
-        throw new Error("Missing return statement in function");
     }
 
     public final Formula atom() throws ParseException {
