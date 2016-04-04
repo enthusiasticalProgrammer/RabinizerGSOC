@@ -35,10 +35,6 @@ public final class Simplifier {
     private Simplifier() {
     }
 
-    public static Formula simplify(Formula formula) {
-        return Simplifier.simplify(formula, Strategy.MODAL);
-    }
-
     public static Formula simplify(Formula formula, Strategy strategy) {
         switch (strategy) {
             case PULLUP_X:

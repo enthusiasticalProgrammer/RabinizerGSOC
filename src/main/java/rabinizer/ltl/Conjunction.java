@@ -75,7 +75,7 @@ public final class Conjunction extends PropositionalFormula {
     }
 
     @Override
-    public Formula temporalStep(Set<String> valuation) {
+    public Formula temporalStep(BitSet valuation) {
         return create(children.stream().map(c -> c.temporalStep(valuation)));
     }
 

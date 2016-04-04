@@ -23,6 +23,7 @@ import rabinizer.ltl.equivalence.EquivalenceClass;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
 import javax.annotation.Nullable;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Set;
 
@@ -64,7 +65,7 @@ public class Master extends Automaton<Master.State> {
         return generateInitialState(initialState);
     }
 
-    protected EquivalenceClass step(EquivalenceClass clazz, Set<String> valuation) {
+    protected EquivalenceClass step(EquivalenceClass clazz, BitSet valuation) {
         if (eager) {
             return clazz.temporalStep(valuation).unfold(true);
         } else {
@@ -84,7 +85,7 @@ public class Master extends Automaton<Master.State> {
 
         @Nullable
         @Override
-        public State getSuccessor(Set<String> valuation) {
+        public State getSuccessor(BitSet valuation) {
             EquivalenceClass successor = step(clazz, valuation);
 
             if (suppressEdge(clazz, successor)) {
@@ -95,7 +96,7 @@ public class Master extends Automaton<Master.State> {
         }
 
         @Override
-        public Set<String> getSensitiveAlphabet() {
+        public BitSet getSensitiveAlphabet() {
             return getSensitive(true);
         }
 

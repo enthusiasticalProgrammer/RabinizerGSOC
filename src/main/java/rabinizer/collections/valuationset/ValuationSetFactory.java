@@ -17,8 +17,9 @@
 
 package rabinizer.collections.valuationset;
 
-import java.util.Collection;
-import java.util.Set;
+import com.google.common.collect.BiMap;
+
+import java.util.BitSet;
 
 public interface ValuationSetFactory {
 
@@ -26,9 +27,11 @@ public interface ValuationSetFactory {
 
     ValuationSet createUniverseValuationSet();
 
-    ValuationSet createValuationSet(Set<String> valuation);
+    ValuationSet createValuationSet(BitSet valuation);
 
-    ValuationSet createValuationSet(Set<String> valuation, Collection<String> smallerAlphabet);
+    ValuationSet createValuationSet(BitSet valuation, BitSet restrictedAlphabet);
 
-    Collection<String> getAlphabet();
+    int getSize();
+
+    BiMap<String, Integer> getAliases();
 }

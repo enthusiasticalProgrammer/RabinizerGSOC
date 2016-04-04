@@ -27,10 +27,7 @@ import rabinizer.ltl.*;
 import rabinizer.ltl.simplifier.Simplifier;
 import rabinizer.ltl.simplifier.Simplifier.Strategy;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
 
@@ -182,7 +179,7 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public EquivalenceClass temporalStep(Set<String> valuation) {
+        public EquivalenceClass temporalStep(BitSet valuation) {
             return createEquivalenceClass(getRepresentative().temporalStep(valuation));
         }
 

@@ -17,16 +17,15 @@
 
 package rabinizer.automata;
 
-import com.google.common.collect.Sets;
+import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+// TODO: migrate to AbstractClass?
 public interface IState<S> {
 
     /**
@@ -34,15 +33,15 @@ public interface IState<S> {
      * @return null is returned if the transition would move to a non-accepting BSCC.
      */
     @Nullable
-    S getSuccessor(Set<String> valuation);
+    S getSuccessor(BitSet valuation);
 
     @Nonnull
     default Map<S, ValuationSet> getSuccessors() {
         ValuationSetFactory factory = getFactory();
-        Set<String> sensitiveAlphabet = getSensitiveAlphabet();
+        BitSet sensitiveAlphabet = getSensitiveAlphabet();
         Map<S, ValuationSet> successors = new LinkedHashMap<>();
 
-        for (Set<String> valuation : Sets.powerSet(sensitiveAlphabet)) {
+        for (BitSet valuation : Collections3.powerSet(sensitiveAlphabet)) {
             S successor = getSuccessor(valuation);
 
             if (successor == null) {
@@ -62,7 +61,7 @@ public interface IState<S> {
         return successors;
     }
 
-    Set<String> getSensitiveAlphabet();
+    BitSet getSensitiveAlphabet();
 
     ValuationSetFactory getFactory();
 }

@@ -36,7 +36,7 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
         while (hasSuccessors(initialState) && transitions.values().stream().allMatch(map -> !map.containsKey(initialState))) {
             Main.verboseln("Optimizing initial states");
             State oldInit = initialState;
-            initialState = getSuccessor(oldInit, Collections.emptySet());
+            initialState = getSuccessor(oldInit, new BitSet());
             transitions.remove(oldInit);
         }
     }
@@ -61,9 +61,9 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
         }
 
         @Override
-        public Set<String> getSensitiveAlphabet() {
-            Set<String> alphabet = new HashSet<>();
-            this.forEach((state, rank) -> alphabet.addAll(state.getSensitiveAlphabet()));
+        public BitSet getSensitiveAlphabet() {
+            BitSet alphabet = new BitSet();
+            this.forEach((state, rank) -> alphabet.or(state.getSensitiveAlphabet()));
             return alphabet;
         }
 
@@ -73,7 +73,7 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
         }
 
         @Override
-        public State getSuccessor(Set<String> valuation) {
+        public State getSuccessor(BitSet valuation) {
             State succ = new State();
 
             // move tokens, keeping the lowest only

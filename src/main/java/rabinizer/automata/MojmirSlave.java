@@ -23,6 +23,7 @@ import rabinizer.ltl.GOperator;
 import rabinizer.ltl.equivalence.EquivalenceClass;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Set;
 
@@ -55,7 +56,7 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
         }
 
         @Override
-        public State getSuccessor(Set<String> valuation) {
+        public State getSuccessor(BitSet valuation) {
             if (eager) {
                 return new State(clazz.temporalStep(valuation).unfold(false));
             } else {
@@ -64,7 +65,7 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
         }
 
         @Override
-        public Set<String> getSensitiveAlphabet() {
+        public BitSet getSensitiveAlphabet() {
             return getSensitive(false);
         }
 

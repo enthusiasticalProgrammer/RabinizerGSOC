@@ -17,7 +17,7 @@
 
 package rabinizer.ltl;
 
-
+import java.util.BitSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -63,7 +63,7 @@ public final class UOperator extends ImmutableObject implements Formula {
     }
 
     @Override
-    public Formula temporalStep(Set<String> valuation) {
+    public Formula temporalStep(BitSet valuation) {
         return this;
     }
 

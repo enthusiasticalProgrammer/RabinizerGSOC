@@ -17,34 +17,37 @@
 
 package rabinizer.collections.valuationset;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Sets;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import rabinizer.collections.Collections3;
 import rabinizer.ltl.*;
-import rabinizer.ltl.simplifier.Simplifier;
-import rabinizer.ltl.simplifier.Simplifier.Strategy;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.IntStream;
 
 public class BDDValuationSetFactory implements ValuationSetFactory {
 
+    final int alphabetSize;
+    final BiMap<String, Integer> aliases;
     final BDDFactory factory;
-    final String[] mapping;
 
     public BDDValuationSetFactory(Formula formula) {
-        this(AlphabetVisitor.extractAlphabet(formula));
+        this(formula, null);
     }
 
-    public BDDValuationSetFactory(Set<String> alphabet) {
-        mapping = new String[alphabet.size()];
-        alphabet.toArray(mapping);
-        Arrays.sort(mapping);
+    public BDDValuationSetFactory(Formula formula, BiMap<String, Integer> a) {
+        this(AlphabetVisitor.extractAlphabet(formula), a);
+    }
 
-        int size = Math.max(alphabet.size(), 1);
-
-        factory = BDDFactory.init("micro", 64 * size, 1000);
-        factory.setVarNum(size);
+    public BDDValuationSetFactory(int alphabet, BiMap<String, Integer> a) {
+        alphabetSize = alphabet;
+        aliases = a != null ? ImmutableBiMap.copyOf(a) : null;
+        factory = BDDFactory.init("micro", (32 * alphabetSize) + 32, 1000);
+        factory.setVarNum(Math.max(alphabetSize, 1));
 
         // Silence library, TODO: move to logging util class
         try {
@@ -58,11 +61,6 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
     }
 
     @Override
-    public Collection<String> getAlphabet() {
-        return Collections.unmodifiableCollection(Arrays.asList(mapping));
-    }
-
-    @Override
     public BDDValuationSet createEmptyValuationSet() {
         return new BDDValuationSet(factory.zero());
     }
@@ -73,20 +71,30 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
     }
 
     @Override
-    public BDDValuationSet createValuationSet(Set<String> valuation) {
-        return createValuationSet(valuation, getAlphabet());
+    public BDDValuationSet createValuationSet(BitSet valuation) {
+        return new BDDValuationSet(createBDD(valuation, IntStream.range(0, alphabetSize)));
     }
 
     @Override
-    public BDDValuationSet createValuationSet(Set<String> valuation, Collection<String> base) {
-        return new BDDValuationSet(createBDD(valuation, base));
+    public BDDValuationSet createValuationSet(BitSet valuation, BitSet restrictedAlphabet) {
+        return new BDDValuationSet(createBDD(valuation, restrictedAlphabet.stream()));
+    }
+
+    @Override
+    public int getSize() {
+        return alphabetSize;
+    }
+
+    @Override
+    public BiMap<String, Integer> getAliases() {
+        return aliases;
     }
 
     public void callback(int x, Object stats) {
 
     }
 
-    Formula createRepresentative(BDD bdd) {
+    static Formula createRepresentative(BDD bdd) {
         if (bdd.isOne()) {
             return BooleanConstant.TRUE;
         }
@@ -95,39 +103,35 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
             return BooleanConstant.FALSE;
         }
 
-        String letter = mapping[bdd.level()];
+        int letter = bdd.level();
         Formula pos = createRepresentative(bdd.high());
         Formula neg = createRepresentative(bdd.low());
-        return Disjunction.create(Conjunction.create(new Literal(letter, false), pos), Conjunction.create(new Literal(letter, true), neg));
+        return Disjunction.create(Conjunction.create(new Literal(letter), pos), Conjunction.create(new Literal(letter, true), neg));
     }
 
-    BDD createBDD(String letter, boolean negate) {
-        int i = Arrays.binarySearch(mapping, letter);
-
-        if (i < 0) {
+    BDD createBDD(int letter, boolean negate) {
+        if (letter < 0 || letter > alphabetSize) {
             throw new IllegalArgumentException("The alphabet does not contain the following letter: " + letter);
         }
 
         if (negate) {
-            return factory.nithVar(i);
+            return factory.nithVar(letter);
         }
 
-        return factory.ithVar(i);
+        return factory.ithVar(letter);
     }
 
-    BDD createBDD(Set<String> set, Collection<String> base) {
+    BDD createBDD(BitSet set, IntStream base) {
         final BDD bdd = factory.one();
-        base.forEach(letter -> bdd.andWith(createBDD(letter, !set.contains(letter))));
+        base.forEach(letter -> bdd.andWith(createBDD(letter, !set.get(letter))));
         return bdd;
     }
 
-    boolean isSatAssignment(BDD valuations, Set<String> valuation) {
+    static boolean isSatAssignment(BDD valuations, BitSet valuation) {
         BDD current = valuations;
 
         while (!current.isOne() && !current.isZero()) {
-            int var = current.var();
-
-            if (valuation.contains(mapping[var])) {
+            if (valuation.get(current.var())) {
                 current = current.high();
             } else {
                 current = current.low();
@@ -137,7 +141,7 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         return current.isOne();
     }
 
-    public class BDDValuationSet extends AbstractSet<Set<String>> implements ValuationSet {
+    public class BDDValuationSet extends AbstractSet<BitSet> implements ValuationSet {
 
         private BDD valuations;
 
@@ -172,16 +176,16 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
 
         @Override
         public boolean contains(Object o) {
-            if (!(o instanceof Set)) {
+            if (!(o instanceof BitSet)) {
                 return false;
             }
 
-            return isSatAssignment(valuations, (Set<String>) o);
+            return isSatAssignment(valuations, (BitSet) o);
         }
 
         @Override
-        public Iterator<Set<String>> iterator() {
-            return Sets.powerSet(new HashSet<>(getAlphabet())).stream().filter(this::contains).iterator();
+        public Iterator<BitSet> iterator() {
+            return Collections3.powerSet(alphabetSize).stream().filter(this::contains).iterator();
         }
 
         @Override
@@ -195,13 +199,13 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
-        public boolean add(Set<String> v) {
+        public boolean add(BitSet v) {
             BDDValuationSet vs = createValuationSet(v);
             return update(vs.valuations.or(valuations));
         }
 
         @Override
-        public boolean addAll(Collection<? extends Set<String>> c) {
+        public boolean addAll(Collection<? extends BitSet> c) {
             if (c instanceof BDDValuationSet) {
                 BDD otherValuations = ((BDDValuationSet) c).valuations;
                 BDD newValuations = valuations.or(otherValuations);

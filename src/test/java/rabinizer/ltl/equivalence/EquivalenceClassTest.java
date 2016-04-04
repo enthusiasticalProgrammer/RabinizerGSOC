@@ -26,7 +26,7 @@ public abstract class EquivalenceClassTest {
     public void setUp() {
         contradiction = BooleanConstant.FALSE;
         tautology = BooleanConstant.TRUE;
-        literal = new Literal("c", false);
+        literal = new Literal(0);
 
         factory = setUpFactory(new Conjunction(contradiction, tautology, literal));
     }
@@ -59,7 +59,7 @@ public abstract class EquivalenceClassTest {
         EquivalenceClass c = factory.createEquivalenceClass(contradiction);
 
         assertTrue(c.equivalent(c));
-        assertTrue(c.equivalent(factory.createEquivalenceClass(Simplifier.simplify(new Conjunction(literal, new Literal("c", true)), Simplifier.Strategy.MODAL_EXT))));
+        assertTrue(c.equivalent(factory.createEquivalenceClass(Simplifier.simplify(new Conjunction(literal, new Literal(0, true)), Simplifier.Strategy.MODAL_EXT))));
     }
 
     @Test

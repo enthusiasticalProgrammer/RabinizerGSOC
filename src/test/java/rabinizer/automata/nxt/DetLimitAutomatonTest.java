@@ -1,5 +1,7 @@
 package rabinizer.automata.nxt;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import jhoafparser.consumer.*;
 import org.junit.Test;
 import rabinizer.Util;
@@ -19,7 +21,8 @@ import static org.junit.Assert.assertEquals;
 public class DetLimitAutomatonTest {
 
     public static void testOutput(String ltl, Set<Optimisation> opts, int size, String expectedOutput) throws HOAConsumerException, IOException {
-        DetLimitAutomaton automaton = DetLimitAutomatonFactory.createDetLimitAutomaton(Util.createFormula(ltl), opts);
+        BiMap<String, Integer> mapping = HashBiMap.create();
+        DetLimitAutomaton automaton = DetLimitAutomatonFactory.createDetLimitAutomaton(Util.createFormula(ltl, mapping), mapping, opts);
 
         assertEquals(automaton.toString(), size, automaton.size());
 
@@ -196,17 +199,14 @@ public class DetLimitAutomatonTest {
         final String testSCCHOA = "HOA: v1\n" +
                 "tool: \"Rabinizer\" \"infty\"\n" +
                 "AP: 3 \"a\" \"b\" \"c\"\n" +
-                "Alias: @a 0\n" +
-                "Alias: @b 1\n" +
-                "Alias: @c 2\n" +
                 "acc-name: generalized-Buchi 1\n" +
                 "Acceptance: 1 Inf(0)\n" +
                 "Start: 0\n" +
                 "--BODY--\n" +
-                "State: 1\n[@b] 2\n" +
+                "State: 1\n[1] 2\n" +
                 "State: 0\n[t] 3\n" +
-                "State: 3\n[@a] 1\n" +
-                "State: 2\n[@c] 2 {0}\n" +
+                "State: 3\n[0] 1\n" +
+                "State: 2\n[2] 2 {0}\n" +
                 "--END--\n";
 
         String ltl = "X (a & (X (b & X G c)))";

@@ -32,8 +32,8 @@ public class AutomatonClassTest {
 
     @Test
     public void testMasterFoldedNew() {
-        Formula f1 = new Literal("p1", false);
-        Formula f2 = new Literal("p1", false);
+        Formula f1 = new Literal(0, false);
+        Formula f2 = new Literal(0, false);
         Formula f3 = new Disjunction(f1, f2);
         Formula f4 = new GOperator(f3);
 

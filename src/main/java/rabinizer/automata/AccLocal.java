@@ -19,6 +19,7 @@ package rabinizer.automata;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.Main;
@@ -85,7 +86,7 @@ class AccLocal {
         TranSet<MojmirSlave.State> failM = new TranSet<>(valuationSetFactory);
         for (MojmirSlave.State fs : slave.mojmir.getStates()) {
             for (Map.Entry<MojmirSlave.State, ValuationSet> vsfs : slave.mojmir.getSuccessors(fs).entrySet()) {
-                if (slave.mojmir.isSink(vsfs.getKey()) && !finalStates.contains(vsfs.getValue())) {
+                if (slave.mojmir.isSink(vsfs.getKey()) && !finalStates.contains(vsfs.getKey())) {
                     failM.addAll(fs, vsfs.getValue());
                 }
             }
@@ -207,7 +208,7 @@ class AccLocal {
         return result;
     }
 
-    private boolean slavesEntail(Product.ProductState ps, Map<GOperator, Integer> ranking, Set<String> v, EquivalenceClass consequent) {
+    private boolean slavesEntail(Product.ProductState ps, Map<GOperator, Integer> ranking, BitSet v, EquivalenceClass consequent) {
         Set<GOperator> gSet = ranking.keySet();
 
         Collection<Formula> conjunction = new ArrayList<>(3 * gSet.size());
@@ -312,9 +313,9 @@ class AccLocal {
         TranSet<Product.ProductState> result = new TranSet<>(valuationSetFactory);
 
         if (eager) {
-            Set<String> sensitiveAlphabet = ps.getSensitiveAlphabet();
+            BitSet sensitiveAlphabet = ps.getSensitiveAlphabet();
 
-            for (Set<String> valuation : Sets.powerSet(sensitiveAlphabet)) {
+            for (BitSet valuation : Collections3.powerSet(sensitiveAlphabet)) {
                 if (!slavesEntail(ps, ranking, valuation, ps.primaryState.getClazz())) {
                     result.addAll(ps, valuationSetFactory.createValuationSet(valuation, sensitiveAlphabet));
                 }

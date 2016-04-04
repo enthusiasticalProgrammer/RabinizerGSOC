@@ -51,7 +51,7 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
     }
 
     @Nullable
-    public T getSuccessor(Set<String> valuation) {
+    public T getSuccessor(BitSet valuation) {
         P primarySuccessor = primaryState.getSuccessor(valuation);
 
         if (primarySuccessor == null) {
@@ -103,11 +103,11 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
         return successors;
     }
 
-    public Set<String> getSensitiveAlphabet() {
-        Set<String> sensitiveLetters = new HashSet<>(primaryState.getSensitiveAlphabet());
+    public BitSet getSensitiveAlphabet() {
+        BitSet sensitiveLetters = primaryState.getSensitiveAlphabet();
 
         for (S secondaryState : secondaryStates.values()) {
-            sensitiveLetters.addAll(secondaryState.getSensitiveAlphabet());
+            sensitiveLetters.or(secondaryState.getSensitiveAlphabet());
         }
 
         return sensitiveLetters;

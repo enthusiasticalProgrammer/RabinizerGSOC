@@ -17,6 +17,7 @@
 
 package rabinizer.exec;
 
+import com.google.common.collect.BiMap;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import jhoafparser.consumer.HOAConsumerPrint;
@@ -83,7 +84,7 @@ public class Main {
                 + "* Version 3 by Zuzana Komarkova and Jan Kretinsky                            *\n"
                 + "******************************************************************************");
 
-        Automaton<?> automaton = computeAutomaton(arguments.inputFormula, arguments.autType, arguments.simplification, arguments.backend, arguments.optimisations);
+        Automaton<?> automaton = computeAutomaton(arguments.inputFormula, arguments.autType, arguments.simplification, arguments.backend, arguments.optimisations, arguments.mapping);
 
         nonsilent("Done!");
 
@@ -100,13 +101,13 @@ public class Main {
     }
 
     public static Automaton<?> computeAutomaton(Formula inputFormula, CLIParser.AutomatonType type, Simplifier.Strategy simplify, FactoryRegistry.Backend backend,
-                                                Set<Optimisation> opts) {
+                                                Set<Optimisation> opts, BiMap<String, Integer> mapping) {
         nonsilent("Formula unsimplified: " + inputFormula);
         inputFormula = Simplifier.simplify(inputFormula, simplify);
         nonsilent("Formula simplified:" + inputFormula);
 
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(backend, inputFormula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(backend, inputFormula);
+        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(backend, inputFormula, mapping);
 
         DTGRA dtgra = DTGRAFactory.constructDTGRA(inputFormula, factory, valuationSetFactory, opts);
 

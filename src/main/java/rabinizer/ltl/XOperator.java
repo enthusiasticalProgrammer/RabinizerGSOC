@@ -17,6 +17,7 @@
 
 package rabinizer.ltl;
 
+import java.util.BitSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -37,7 +38,7 @@ public final class XOperator extends ModalOperator {
     }
 
     @Override
-    public Formula temporalStep(Set<String> valuation) {
+    public Formula temporalStep(BitSet valuation) {
         return operand;
     }
 

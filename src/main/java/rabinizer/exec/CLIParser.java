@@ -17,6 +17,7 @@
 
 package rabinizer.exec;
 
+import com.google.common.collect.BiMap;
 import org.apache.commons.cli.*;
 import rabinizer.automata.Optimisation;
 import rabinizer.ltl.Formula;
@@ -144,7 +145,7 @@ public class CLIParser {
             } catch (NumberFormatException e) {
                 System.out.println("Wrong format for output-level option. Look at the help printed below.");
                 printHelp();
-                throw new ParseException("");
+                throw new ParseException();
             }
             if (outputLevel < 0 || outputLevel > 2) {
                 System.out.println("Wrong number for output-level option. Look at the help printed below.");
@@ -242,8 +243,9 @@ public class CLIParser {
             }
         }
 
+        LTLParser parser;
         if (cmd.hasOption('f') && !cmd.hasOption('n')) {
-            LTLParser parser = new LTLParser(new StringReader(cmd.getOptionValue('f')));
+            parser = new LTLParser(new StringReader(cmd.getOptionValue('f')));
 
             try {
                 inputFormula = parser.parse();
@@ -254,7 +256,7 @@ public class CLIParser {
         } else if (!cmd.hasOption('f') && cmd.hasOption('n')) {
             try (BufferedReader bReader = new BufferedReader(new FileReader(new File(cmd.getOptionValue('n'))))) {
                 String form = bReader.readLine();
-                LTLParser parser = new LTLParser(new StringReader(form));
+                parser = new LTLParser(new StringReader(form));
                 inputFormula = parser.parse();
             } catch (FileNotFoundException e) {
                 System.out.println("Error: The input file has not been found.");
@@ -287,7 +289,7 @@ public class CLIParser {
             optimisations.add(Optimisation.COMPUTE_ACC_CONDITION);
         }
 
-        return new CmdArguments(outputLevel, autType, format, optimisations, simplification, writer, inputFormula, backend);
+        return new CmdArguments(outputLevel, autType, format, optimisations, simplification, writer, inputFormula, backend, parser.map);
     }
 
     private static void printHelp() {
@@ -313,9 +315,10 @@ public class CLIParser {
         final OutputStream writer;
         final Formula inputFormula;
         final FactoryRegistry.Backend backend;
+        final BiMap<String, Integer> mapping;
 
         private CmdArguments(int outputLevel, AutomatonType autType, Format format, Set<Optimisation> optimisations, Simplifier.Strategy strat,
-                             OutputStream writer, Formula inputFormula, FactoryRegistry.Backend backend) {
+                             OutputStream writer, Formula inputFormula, FactoryRegistry.Backend backend, BiMap<String, Integer> mapping) {
             this.outputLevel = outputLevel;
             this.autType = autType;
             this.format = format;
@@ -324,6 +327,7 @@ public class CLIParser {
             this.writer = writer;
             this.inputFormula = inputFormula;
             this.backend = backend;
+            this.mapping = mapping;
         }
     }
 

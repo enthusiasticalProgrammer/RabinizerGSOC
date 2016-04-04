@@ -84,7 +84,7 @@ public abstract class Automaton<S extends IState<S>> {
     }
 
     @Nullable
-    public S getSuccessor(S state, Set<String> valuation) {
+    public S getSuccessor(S state, BitSet valuation) {
         for (Map.Entry<S, ValuationSet> transition : getSuccessors(state).entrySet()) {
             if (transition.getValue().contains(valuation)) {
                 return transition.getKey();
@@ -172,8 +172,8 @@ public abstract class Automaton<S extends IState<S>> {
         }
     }
 
-    public Collection<String> getAlphabet() {
-        return valuationSetFactory.getAlphabet();
+    public ValuationSetFactory getAlphabet() {
+        return valuationSetFactory;
     }
 
     protected S generateInitialState() {

@@ -57,14 +57,14 @@ public class DTGRA extends Automaton<Product.ProductState> {
         }
 
         HOAConsumerExtended<Product.ProductState> hoa = new HOAConsumerExtended<>(ho, HOAConsumerExtended.AutomatonType.TRANSITION);
-        hoa.setHeader(null, valuationSetFactory.getAlphabet());
+        hoa.setHeader(null, valuationSetFactory);
         hoa.setInitialState(this.initialState);
         hoa.setAcceptanceCondition(acc);
 
         for (Product.ProductState s : getStates()) {
             hoa.addState(s);
 
-            for (Set<String> valuation : valuationSetFactory.createUniverseValuationSet()) {
+            for (BitSet valuation : valuationSetFactory.createUniverseValuationSet()) {
                 Product.ProductState successor = getSuccessor(s, valuation);
 
                 BitSet accSet = new BitSet();

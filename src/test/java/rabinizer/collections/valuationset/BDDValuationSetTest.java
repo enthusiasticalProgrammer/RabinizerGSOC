@@ -17,27 +17,14 @@
 
 package rabinizer.collections.valuationset;
 
-import rabinizer.ltl.Formula;
+import com.google.common.collect.BiMap;
 
-import java.util.BitSet;
 import java.util.Set;
 
-public interface ValuationSet extends Set<BitSet>, Cloneable {
-    ValuationSet complement();
+public class BDDValuationSetTest extends ValuationSetTest {
 
-    boolean isUniverse();
-
-    Formula toFormula();
-
-    ValuationSet clone();
-
-    default boolean intersects(ValuationSet other) {
-        return !intersect(other).isEmpty();
-    }
-
-    default ValuationSet intersect(ValuationSet other) {
-        ValuationSet thisClone = this.clone();
-        thisClone.retainAll(other);
-        return thisClone;
+    @Override
+    public ValuationSetFactory setUpFactory(BiMap<String, Integer> aliases) {
+        return new BDDValuationSetFactory(aliases.size(), aliases);
     }
 }

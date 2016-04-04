@@ -20,6 +20,7 @@ package rabinizer.ltl;
 import com.google.common.collect.Sets;
 
 import javax.annotation.Nonnull;
+import java.util.BitSet;
 import java.util.Set;
 
 public final class BooleanConstant extends ImmutableObject implements Formula {
@@ -49,7 +50,7 @@ public final class BooleanConstant extends ImmutableObject implements Formula {
     }
 
     @Override
-    public Formula temporalStep(Set<String> valuation) {
+    public Formula temporalStep(BitSet valuation) {
         return this;
     }
 

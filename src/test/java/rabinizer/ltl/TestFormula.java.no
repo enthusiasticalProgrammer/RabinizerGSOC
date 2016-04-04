@@ -40,7 +40,7 @@ public class TestFormula {
     public void testFormulaFactory1() {
         Formula f1 = new Literal("p1", false);
         Formula f2 = new Literal("p1", false);
-        Formula f3 = Simplifier.simplify(new Disjunction(f1, f2), Simplifier.Strategy.PROPOSITIONAL);
+        Formula f3 = new Disjunction(f1, f2), Simplifier.Strategy.PROPOSITIONAL);
         assertEquals(f3, f2);
     }
 

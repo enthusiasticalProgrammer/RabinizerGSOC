@@ -17,6 +17,7 @@
 
 package rabinizer.ltl;
 
+import java.util.BitSet;
 import java.util.Set;
 
 public interface Formula {
@@ -40,7 +41,7 @@ public interface Formula {
      * @param valuation
      * @return
      */
-    Formula temporalStep(Set<String> valuation);
+    Formula temporalStep(BitSet valuation);
 
     Formula not();
 
