@@ -43,7 +43,7 @@ public class DetLimitAutomatonFactory {
         ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(formula);
         EquivalenceClassFactory equivalenceClassFactory = new BDDEquivalenceClassFactory(formula);
 
-        formula = Simplifier.simplify(formula, Simplifier.Strategy.AGGRESSIVELY);
+        formula = Simplifier.simplify(formula, Simplifier.Strategy.MODAL_EXT);
 
         Set<Set<GOperator>> keys = optimisations.contains(Optimisation.SKELETON) ? formula.accept(SkeletonVisitor.getInstance(SkeletonVisitor.SkeletonApproximation.BOTH)) : Sets.powerSet(formula.gSubformulas());
 
