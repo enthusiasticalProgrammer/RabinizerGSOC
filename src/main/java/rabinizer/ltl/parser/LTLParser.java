@@ -60,7 +60,7 @@ public class LTLParser implements LTLParserConstants {
       }
       jj_consume_token(OR);
       r = conjunction();
-        result = Simplifier.simplify(new Disjunction(result, r), Simplifier.Strategy.PROPOSITIONAL);
+        result = new Disjunction(result, r);
     }
 {if ("" != null) return result;}
     throw new Error("Missing return statement in function");
@@ -78,7 +78,7 @@ public class LTLParser implements LTLParserConstants {
       }
       jj_consume_token(AND);
       r = until();
-        result = Simplifier.simplify(new Conjunction(result, r), Simplifier.Strategy.PROPOSITIONAL);
+        result = new Conjunction(result, r);
     }
 {if ("" != null) return result;}
     throw new Error("Missing return statement in function");
@@ -150,7 +150,7 @@ public class LTLParser implements LTLParserConstants {
       }
       jj_consume_token(WOP);
       r = unaryOp();
-        result = Simplifier.simplify(new Disjunction(new UOperator(result, r), new GOperator(result)), Simplifier.Strategy.PROPOSITIONAL);
+        result = new Disjunction(new UOperator(result, r), new GOperator(result));
     }
 {if ("" != null) return result;}
     throw new Error("Missing return statement in function");

@@ -58,7 +58,7 @@ public interface Formula {
 
     <A, B, C> A accept(TripleVisitor<A, B, C> v, B f, C c);
 
-    // Temporal Properties of an LTL ImmutableObject
+    // Temporal Properties of an LTL Formula
     boolean isPureEventual();
 
     boolean isPureUniversal();

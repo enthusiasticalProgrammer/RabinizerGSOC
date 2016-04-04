@@ -33,7 +33,7 @@ public abstract class EquivalenceClassTest {
 
     @Test
     public void testGetRepresentative() throws Exception {
-        Assert.assertEquals(Simplifier.simplify(contradiction, Simplifier.Strategy.PROPOSITIONAL), factory.createEquivalenceClass(contradiction).getRepresentative());
+        Assert.assertEquals(contradiction, factory.createEquivalenceClass(contradiction).getRepresentative());
     }
 
     @Test

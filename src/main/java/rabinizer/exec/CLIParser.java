@@ -78,7 +78,7 @@ public class CLIParser {
         Set<Optimisation> optimisations = EnumSet.allOf(Optimisation.class);
         optimisations.remove(Optimisation.SLAVE_SUSPENSION);
 
-        Simplifier.Strategy simplification;
+        Simplifier.Strategy simplification = Simplifier.Strategy.NONE;
         OutputStream writer = System.out;
         Formula inputFormula;
         FactoryRegistry.Backend backend = FactoryRegistry.Backend.BDD;
@@ -92,7 +92,7 @@ public class CLIParser {
         }
 
         if (cmd.hasOption('p') && cmd.getOptionValue('p').equals("off")) {
-            simplification = Simplifier.Strategy.PROPOSITIONAL;
+
         } else {
             simplification = Simplifier.Strategy.AGGRESSIVELY;
         }
@@ -205,7 +205,6 @@ public class CLIParser {
                                     "It is rather bad to use skeleton together with a simplify-formula level below 1. You can continue, but don't be astonished if an exception is raised during the computation.");
                         }
 
-                        simplification = Simplifier.Strategy.PROPOSITIONAL;
                         break;
 
                     case 1:

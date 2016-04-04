@@ -107,8 +107,7 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
 
     @Override
     public BDDEquivalenceClass createEquivalenceClass(Formula formula) {
-        Formula simplifiedFormula = Simplifier.simplify(formula, Strategy.PROPOSITIONAL);
-        return new BDDEquivalenceClass(simplifiedFormula, createBDD(simplifiedFormula));
+        return new BDDEquivalenceClass(formula, createBDD(formula));
     }
 
     public void callback(int x, Object stats) {
@@ -206,7 +205,7 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
         @Override
         public EquivalenceClass and(EquivalenceClass eq) {
             if (eq instanceof BDDEquivalenceClass) {
-                return new BDDEquivalenceClass(Simplifier.simplify(new Conjunction(representative, eq.getRepresentative()), Strategy.PROPOSITIONAL), bdd.and(((BDDEquivalenceClassFactory.BDDEquivalenceClass) eq).bdd));
+                return new BDDEquivalenceClass(Conjunction.create(representative, eq.getRepresentative()), bdd.and(((BDDEquivalenceClassFactory.BDDEquivalenceClass) eq).bdd));
             }
 
             return createEquivalenceClass(new Conjunction(representative, eq.getRepresentative()));
@@ -215,7 +214,7 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
         @Override
         public EquivalenceClass or(EquivalenceClass eq) {
             if (eq instanceof BDDEquivalenceClass) {
-                return new BDDEquivalenceClass(Simplifier.simplify(new Disjunction(representative, eq.getRepresentative()), Strategy.PROPOSITIONAL), bdd.or(((BDDEquivalenceClassFactory.BDDEquivalenceClass) eq).bdd));
+                return new BDDEquivalenceClass(Disjunction.create(representative, eq.getRepresentative()), bdd.or(((BDDEquivalenceClassFactory.BDDEquivalenceClass) eq).bdd));
             }
 
             return createEquivalenceClass(new Disjunction(representative, eq.getRepresentative()));

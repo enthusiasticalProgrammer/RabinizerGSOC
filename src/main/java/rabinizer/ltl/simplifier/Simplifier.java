@@ -28,12 +28,8 @@ public final class Simplifier {
 
     public static final int ITERATIONS = 3;
 
-    private static final Visitor<Formula> PROPOSITIONAL_SIMPLIFIER = new PropositionalSimplifier();
     private static final Visitor<Formula> MODAL_SIMPLIFIER = new ModalSimplifier();
-
     private static final Visitor<XFormula> PULLUP_X = new PullupXVisitor();
-    private static final Visitor<Formula> PUSHDOWN_FG = new PushDownFGVisitor();
-
     private static final Visitor<Formula> AGGRESSIVE_SIMPLIFIER = new AggressiveSimplifier();
 
     private Simplifier() {
@@ -45,9 +41,6 @@ public final class Simplifier {
 
     public static Formula simplify(Formula formula, Strategy strategy) {
         switch (strategy) {
-            case PROPOSITIONAL:
-                return formula.accept(Simplifier.PROPOSITIONAL_SIMPLIFIER);
-
             case PULLUP_X:
                 return formula.accept(PULLUP_X).toFormula();
 
@@ -55,8 +48,7 @@ public final class Simplifier {
                 Formula step0 = formula;
 
                 for (int i = 0; i < ITERATIONS; i++) {
-                    Formula step1 = step0.accept(PUSHDOWN_FG);
-                    Formula step2 = step1.accept(PULLUP_X).toFormula();
+                    Formula step2 = step0.accept(PULLUP_X).toFormula();
                     Formula step3 = step2.accept(MODAL_SIMPLIFIER);
 
                     if (step0.equals(step3)) {
@@ -74,83 +66,28 @@ public final class Simplifier {
             case AGGRESSIVELY:
                 return formula.accept(Simplifier.AGGRESSIVE_SIMPLIFIER);
 
+            case NONE:
+                return formula;
+
             default:
                 throw new AssertionError();
         }
     }
 
     public enum Strategy {
-        PROPOSITIONAL, MODAL, PULLUP_X, MODAL_EXT, AGGRESSIVELY
+        NONE, MODAL, PULLUP_X, MODAL_EXT, AGGRESSIVELY
     }
 
-    static class PropositionalSimplifier implements Visitor<Formula> {
-        private static Set<Formula> flatten(Stream<Formula> workStream, Class<? extends PropositionalFormula> unfoldClass,
-                                            BooleanConstant breakC, BooleanConstant continueC) {
-            Set<Formula> flattSet = new HashSet<>();
-            Iterator<Formula> iterator = workStream.iterator();
+    /* Pushes down F,G in the syntax tree */
+    static class ModalSimplifier implements Visitor<Formula> {
 
-            while (iterator.hasNext()) {
-                Formula child = iterator.next();
-
-                if (breakC.equals(child)) {
-                    return Collections.singleton(breakC);
-                }
-
-                if (continueC.equals(child)) {
-                    continue;
-                }
-
-                if (unfoldClass.isInstance(child)) {
-                    flattSet.addAll(((PropositionalFormula) child).children);
-                } else {
-                    flattSet.add(child);
-                }
-            }
-
-            return flattSet;
-        }
-
-        @Override
-        public Formula visit(Conjunction conjunction) {
-            Stream<Formula> workStream = conjunction.children.stream().map(e -> e.accept(this));
-            Set<Formula> set = flatten(workStream, Conjunction.class, BooleanConstant.FALSE, BooleanConstant.TRUE);
-
-            if (set.isEmpty()) {
-                return BooleanConstant.TRUE;
-            }
-
-            if (set.size() == 1) {
-                return set.iterator().next();
-            }
-
-            return new Conjunction(set);
-        }
-
-        @Override
-        public Formula visit(Disjunction disjunction) {
-            Stream<Formula> workStream = disjunction.children.stream().map(e -> e.accept(this));
-            Set<Formula> set = flatten(workStream, Disjunction.class, BooleanConstant.TRUE, BooleanConstant.FALSE);
-
-            if (set.isEmpty()) {
-                return BooleanConstant.FALSE;
-            }
-
-            if (set.size() == 1) {
-                return set.iterator().next();
-            }
-
-            return new Disjunction(set);
-        }
-
-        @Override
-        public Formula defaultAction(Formula formula) {
-            return formula;
-        }
-    }
-
-    static class ModalSimplifier extends PropositionalSimplifier {
         @Override
         public Formula visit(FOperator fOperator) {
+            if (fOperator.operand instanceof Disjunction) {
+                Disjunction disjunction = (Disjunction) fOperator.operand;
+                return Disjunction.create(disjunction.children.stream().map(e -> new FOperator(e).accept(this)));
+            }
+
             Formula operand = fOperator.operand.accept(this);
 
             if (operand instanceof UOperator) {
@@ -161,15 +98,30 @@ public final class Simplifier {
                 return operand;
             }
 
+            // Only call constructor, when necessary.
+            if (operand == fOperator.operand) {
+                return fOperator;
+            }
+
             return new FOperator(operand);
         }
 
         @Override
         public Formula visit(GOperator gOperator) {
+            if (gOperator.operand instanceof Conjunction) {
+                Conjunction conjunction = (Conjunction) gOperator.operand;
+                return Conjunction.create(conjunction.children.stream().map(e -> new GOperator(e).accept(this)));
+            }
+
             Formula operand = gOperator.operand.accept(this);
 
             if (operand.isPureUniversal() || operand.isSuspendable()) {
                 return operand;
+            }
+
+            // Only call constructor, when necessary.
+            if (operand == gOperator.operand) {
+                return gOperator;
             }
 
             return new GOperator(operand);
@@ -184,20 +136,25 @@ public final class Simplifier {
                 return right;
             }
 
-            if (left.equals(BooleanConstant.TRUE)) {
+            if (left == BooleanConstant.TRUE) {
                 return new FOperator(right);
             }
 
-            if (left.equals(BooleanConstant.FALSE)) {
+            if (left == BooleanConstant.FALSE) {
                 return right;
             }
 
             if (left.isSuspendable() || left.isPureUniversal()) {
-                return new Disjunction(new Conjunction(left, new FOperator(right)), right);
+                return Disjunction.create(Conjunction.create(left, new FOperator(right)), right);
             }
 
             if (left.isPureEventual()) {
-                return new Disjunction(new FOperator(new Conjunction(left, new XOperator(right))), right);
+                return Disjunction.create(new FOperator(Conjunction.create(left, new XOperator(right))), right);
+            }
+
+            // Only call constructor, when necessary.
+            if (left == uOperator.left && right == uOperator.right) {
+                return uOperator;
             }
 
             return new UOperator(left, right);
@@ -211,12 +168,32 @@ public final class Simplifier {
                 return operand;
             }
 
+            // Only call constructor, when necessary.
+            if (operand == xOperator.operand) {
+                return xOperator;
+            }
+
             return new XOperator(operand);
         }
 
         @Override
         public Formula visit(Conjunction conjunction) {
-            Formula c = super.visit(conjunction);
+            boolean newElement = false;
+            List<Formula> newChildren = new ArrayList<>(conjunction.children.size());
+
+            for (Formula child : conjunction.children) {
+                Formula newChild = child.accept(this);
+
+                if (newChild == BooleanConstant.FALSE) {
+                    return BooleanConstant.FALSE;
+                }
+
+                newElement |= (child != newChild);
+                newChildren.add(newChild);
+            }
+
+            // Only call constructor, when necessary.
+            Formula c = newElement ? Conjunction.create(newChildren.stream()) : conjunction;
 
             if (c instanceof Conjunction) {
                 Conjunction c2 = (Conjunction) c;
@@ -231,7 +208,22 @@ public final class Simplifier {
 
         @Override
         public Formula visit(Disjunction disjunction) {
-            Formula d = super.visit(disjunction);
+            boolean newElement = false;
+            List<Formula> newChildren = new ArrayList<>(disjunction.children.size());
+
+            for (Formula child : disjunction.children) {
+                Formula newChild = child.accept(this);
+
+                if (newChild == BooleanConstant.TRUE) {
+                    return BooleanConstant.TRUE;
+                }
+
+                newElement |= (child != newChild);
+                newChildren.add(newChild);
+            }
+
+            // Only call constructor, when necessary.
+            Formula d = newElement ? Disjunction.create(newChildren.stream()) : disjunction;
 
             if (d instanceof Disjunction) {
                 Disjunction d2 = (Disjunction) d;
@@ -242,6 +234,11 @@ public final class Simplifier {
             }
 
             return d;
+        }
+
+        @Override
+        public Formula defaultAction(Formula formula) {
+            return formula;
         }
     }
 
@@ -317,67 +314,6 @@ public final class Simplifier {
             XFormula r = xOperator.operand.accept(this);
             r.depth++;
             return r;
-        }
-    }
-
-    static class PushDownFGVisitor implements Visitor<Formula> {
-
-        @Override
-        public Formula defaultAction(Formula formula) {
-            return formula;
-        }
-
-        @Override
-        public Formula visit(Conjunction conjunction) {
-            return new Conjunction(conjunction.children.stream().map(e -> e.accept(this)));
-        }
-
-        @Override
-        public Formula visit(Disjunction disjunction) {
-            return new Disjunction(disjunction.children.stream().map(e -> e.accept(this)));
-        }
-
-        @Override
-        public Formula visit(FOperator fOperator) {
-            if (fOperator.operand instanceof Disjunction) {
-                Disjunction disjunction = (Disjunction) fOperator.operand;
-                return new Disjunction(disjunction.children.stream().map(e -> new FOperator(e).accept(this)));
-            }
-
-            if (fOperator.operand instanceof UOperator) {
-                UOperator uOperator = (UOperator) fOperator.operand;
-                return new FOperator(uOperator.right).accept(this);
-            }
-
-            if (fOperator.operand instanceof FOperator) {
-                return fOperator.operand.accept(this);
-            }
-
-            return new FOperator(fOperator.operand.accept(this));
-        }
-
-        @Override
-        public Formula visit(GOperator gOperator) {
-            if (gOperator.operand instanceof Conjunction) {
-                Conjunction conjunction = (Conjunction) gOperator.operand;
-                return new Conjunction(conjunction.children.stream().map(e -> new GOperator(e).accept(this)));
-            }
-
-            if (gOperator.operand instanceof GOperator) {
-                return gOperator.operand.accept(this);
-            }
-
-            return new GOperator(gOperator.operand.accept(this));
-        }
-
-        @Override
-        public Formula visit(UOperator uOperator) {
-            return new UOperator(uOperator.left.accept(this), uOperator.right.accept(this));
-        }
-
-        @Override
-        public Formula visit(XOperator xOperator) {
-            return new XOperator(xOperator.operand.accept(this));
         }
     }
 

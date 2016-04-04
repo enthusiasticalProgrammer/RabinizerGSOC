@@ -96,11 +96,9 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         }
 
         String letter = mapping[bdd.level()];
-
         Formula pos = createRepresentative(bdd.high());
         Formula neg = createRepresentative(bdd.low());
-
-        return Simplifier.simplify(new Disjunction(new Conjunction(new Literal(letter, false), pos), new Conjunction(new Literal(letter, true), neg)), Strategy.PROPOSITIONAL);
+        return Disjunction.create(Conjunction.create(new Literal(letter, false), pos), Conjunction.create(new Literal(letter, true), neg));
     }
 
     BDD createBDD(String letter, boolean negate) {

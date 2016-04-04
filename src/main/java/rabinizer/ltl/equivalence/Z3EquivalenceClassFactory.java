@@ -69,8 +69,7 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
 
     @Override
     public EquivalenceClass createEquivalenceClass(Formula formula) {
-        Formula simplifiedFormula = Simplifier.simplify(formula, Strategy.PROPOSITIONAL);
-        return probe(new Z3EquivalenceClass(simplifiedFormula, createZ3(simplifiedFormula)));
+        return probe(new Z3EquivalenceClass(formula, createZ3(formula)));
     }
 
     protected Formula createRepresentative(BoolExpr expression) {
