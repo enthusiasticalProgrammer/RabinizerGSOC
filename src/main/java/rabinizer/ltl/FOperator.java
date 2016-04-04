@@ -18,6 +18,7 @@
 package rabinizer.ltl;
 
 import java.util.Objects;
+import java.util.Set;
 
 public final class FOperator extends ModalOperator {
 
@@ -72,12 +73,34 @@ public final class FOperator extends ModalOperator {
     }
 
     @Override
+    public Formula evaluate(Set<GOperator> Gs) {
+        Formula operand = this.operand.evaluate(Gs);
+
+        if (operand == this.operand) {
+            return this;
+        }
+
+        return create(operand.evaluate(Gs));
+    }
+
+    @Override
     protected char getOperator() {
         return 'F';
     }
 
-    @Override
-    protected ModalOperator build(Formula operand) {
+    public static Formula create(Formula operand) {
+        if (operand instanceof BooleanConstant) {
+            return operand;
+        }
+
+        if (operand instanceof FOperator) {
+            return operand;
+        }
+
+        if (operand instanceof UOperator) {
+            return create(((UOperator) operand).right);
+        }
+
         return new FOperator(operand);
     }
 

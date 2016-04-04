@@ -101,7 +101,7 @@ public final class BooleanConstant extends ImmutableObject implements Formula {
     }
 
     @Override
-    public BooleanConstant evaluate(Set<GOperator> Gs, EvaluationStrategy s) {
+    public BooleanConstant evaluate(Set<GOperator> Gs) {
         return this;
     }
 

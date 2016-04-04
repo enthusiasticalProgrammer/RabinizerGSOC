@@ -72,8 +72,8 @@ public final class Disjunction extends PropositionalFormula {
     }
 
     @Override
-    public Formula evaluate(Set<GOperator> Gs, EvaluationStrategy s) {
-        return create(children.stream().map(c -> c.evaluate(Gs, s)));
+    public Formula evaluate(Set<GOperator> Gs) {
+        return create(children.stream().map(c -> c.evaluate(Gs)));
     }
 
     @Override

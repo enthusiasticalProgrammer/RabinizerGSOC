@@ -69,17 +69,13 @@ public final class UOperator extends ImmutableObject implements Formula {
 
     @Override
     public Formula not() {
-        return new Disjunction(new GOperator(right.not()),
-                new UOperator(right.not(), new Conjunction(left.not(), right.not())));
+        return Disjunction.create(GOperator.create(right.not()),
+                UOperator.create(right.not(), Conjunction.create(left.not(), right.not())));
     }
 
     @Override
-    public Formula evaluate(Set<GOperator> Gs, EvaluationStrategy s) {
-        if (s == EvaluationStrategy.PROPOSITIONAL) {
-            return this;
-        }
-
-        return new UOperator(left.evaluate(Gs, s), right.evaluate(Gs, s));
+    public Formula evaluate(Set<GOperator> Gs) {
+        return create(left.evaluate(Gs), right.evaluate(Gs));
     }
 
     @Override
@@ -120,5 +116,17 @@ public final class UOperator extends ImmutableObject implements Formula {
     @Override
     protected int hashCodeOnce() {
         return Objects.hash(UOperator.class, left, right);
+    }
+
+    public static Formula create(Formula left, Formula right) {
+        if (left == BooleanConstant.TRUE) {
+            return FOperator.create(right);
+        }
+
+        if (left == BooleanConstant.FALSE) {
+          return right;
+        }
+
+        return new UOperator(left, right);
     }
 }

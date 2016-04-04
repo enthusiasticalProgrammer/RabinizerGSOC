@@ -48,7 +48,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
     private final Map<Set<GOperator>, Map<GOperator, DetLimitSlave>> secondaryAutomata;
     private final Collection<Optimisation> optimisations;
     private final Table<Set<GOperator>, GOperator, Integer> acceptanceIndexMapping;
-    private final LoadingCache<AcceptingComponent.State, Map<ValuationSet, BitSet>> acceptanceCache;
+    private final Map<AcceptingComponent.State, Map<ValuationSet, BitSet>> acceptanceCache;
 
     @Nonnegative
     int acceptanceConditionSize;
@@ -62,7 +62,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         acceptanceIndexMapping = HashBasedTable.create();
         equivalenceClassFactory = factory;
         acceptanceConditionSize = 1;
-        acceptanceCache = CacheBuilder.newBuilder().build(new AcceptanceCacheLoader());
+        acceptanceCache = new HashMap<>();
     }
 
     public int getAcceptanceSize() {
@@ -70,7 +70,14 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
     }
 
     public Map<ValuationSet, BitSet> getAcceptance(AcceptingComponent.State state) {
-        return acceptanceCache.getUnchecked(state);
+        Map<ValuationSet, BitSet> acceptance = acceptanceCache.get(state);
+
+        if (acceptance == null) {
+            acceptance = state.getAcceptance();
+            acceptanceCache.put(state, acceptance);
+        }
+
+        return acceptance;
     }
 
     void jumpInitial(EquivalenceClass master, Set<GOperator> keys) {
@@ -133,7 +140,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
             int i = 0;
 
             for (GOperator key : keys) {
-                Formula initialFormula = Simplifier.simplify(key.operand.evaluate(keys, Formula.EvaluationStrategy.LTL), Simplifier.Strategy.MODAL);
+                Formula initialFormula = Simplifier.simplify(key.operand.evaluate(keys), Simplifier.Strategy.MODAL_EXT);
                 EquivalenceClass initialClazz = equivalenceClassFactory.createEquivalenceClass(initialFormula);
 
                 if (initialClazz.isFalse()) {
@@ -167,11 +174,10 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
 
     @Nullable
     private Master.State getPrimaryState(EquivalenceClass master, Set<GOperator> keys) {
-        // TODO: remove simple stuff
-        Formula formula = Simplifier.simplify(master.getRepresentative().evaluate(keys, Formula.EvaluationStrategy.LTL), Simplifier.Strategy.MODAL);
-        Conjunction facts = new Conjunction(keys.stream().map(key -> Simplifier.simplify(key.operand.evaluate(keys, Formula.EvaluationStrategy.LTL), Simplifier.Strategy.MODAL)));
+        Formula formula = master.getRepresentative().evaluate(keys);
+        Conjunction facts = new Conjunction(keys.stream().map(key -> key.operand.evaluate(keys)));
         Visitor<Formula> evaluateVisitor = new EvaluateVisitor(equivalenceClassFactory, facts);
-        formula = Simplifier.simplify(formula.accept(evaluateVisitor), Simplifier.Strategy.MODAL);
+        formula = Simplifier.simplify(formula.accept(evaluateVisitor), Simplifier.Strategy.MODAL_EXT);
 
         EquivalenceClass preClazz = equivalenceClassFactory.createEquivalenceClass(formula);
 
@@ -180,13 +186,6 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         }
 
         return primaryAutomaton.generateInitialState(preClazz);
-    }
-
-    private static class AcceptanceCacheLoader extends CacheLoader<State, Map<ValuationSet, BitSet>> {
-        @Override
-        public Map<ValuationSet, BitSet> load(State key) throws Exception {
-            return key.getAcceptance();
-        }
     }
 
     public class State extends AbstractProductState<Master.State, GOperator, DetLimitSlave.State, State> implements IState<State> {

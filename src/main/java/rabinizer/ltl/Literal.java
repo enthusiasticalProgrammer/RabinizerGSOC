@@ -101,7 +101,7 @@ public final class Literal extends ImmutableObject implements Formula {
     }
 
     @Override
-    public Literal evaluate(Set<GOperator> Gs, EvaluationStrategy s) {
+    public Literal evaluate(Set<GOperator> Gs) {
         return this;
     }
 

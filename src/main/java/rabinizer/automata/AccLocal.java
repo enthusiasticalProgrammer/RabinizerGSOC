@@ -219,12 +219,12 @@ class AccLocal {
                 int rank = entry.getValue();
 
                 conjunction.add(G);
-                conjunction.add(G.operand.evaluate(gSet));
+                conjunction.add(G.operand);
                 RabinSlave.State rs = ps.secondaryStates.get(G);
                 if (rs != null) {
                     for (Map.Entry<MojmirSlave.State, Integer> stateEntry : rs.entrySet()) {
                         if (stateEntry.getValue() >= rank) {
-                            conjunction.add(stateEntry.getKey().getClazz().getRepresentative().temporalStep(v).evaluate(gSet));
+                            conjunction.add(stateEntry.getKey().getClazz().getRepresentative().temporalStep(v));
                         }
                     }
                 }
@@ -241,7 +241,7 @@ class AccLocal {
                 if (rs != null) {
                     for (Map.Entry<MojmirSlave.State, Integer> stateEntry : rs.entrySet()) {
                         if (stateEntry.getValue() >= rank) {
-                            conjunction.add(stateEntry.getKey().getClazz().getRepresentative().evaluate(gSet));
+                            conjunction.add(stateEntry.getKey().getClazz().getRepresentative());
                         }
                     }
                 }

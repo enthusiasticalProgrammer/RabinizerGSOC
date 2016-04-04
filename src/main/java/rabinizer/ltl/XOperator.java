@@ -78,12 +78,26 @@ public final class XOperator extends ModalOperator {
     }
 
     @Override
+    public Formula evaluate(Set<GOperator> Gs) {
+        Formula operand = this.operand.evaluate(Gs);
+
+        if (operand == this.operand) {
+            return this;
+        }
+
+        return create(operand.evaluate(Gs));
+    }
+
+    @Override
     protected char getOperator() {
         return 'X';
     }
 
-    @Override
-    protected ModalOperator build(Formula operand) {
+    public static Formula create(Formula operand) {
+        if (operand instanceof BooleanConstant) {
+            return operand;
+        }
+
         return new XOperator(operand);
     }
 

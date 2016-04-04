@@ -56,16 +56,5 @@ public abstract class ModalOperator extends ImmutableObject implements Formula {
         return this;
     }
 
-    @Override
-    public Formula evaluate(Set<GOperator> Gs, EvaluationStrategy s) {
-        if (s == EvaluationStrategy.PROPOSITIONAL) {
-            return this;
-        }
-
-        return build(operand.evaluate(Gs, s));
-    }
-
     protected abstract char getOperator();
-
-    protected abstract ModalOperator build(Formula operand);
 }

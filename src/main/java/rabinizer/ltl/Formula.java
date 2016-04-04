@@ -45,11 +45,7 @@ public interface Formula {
 
     Formula not();
 
-    default Formula evaluate(Set<GOperator> Gs) {
-        return evaluate(Gs, EvaluationStrategy.PROPOSITIONAL);
-    }
-
-    Formula evaluate(Set<GOperator> Gs, EvaluationStrategy s);
+    Formula evaluate(Set<GOperator> Gs);
 
     void accept(VoidVisitor v);
 
@@ -65,8 +61,4 @@ public interface Formula {
     boolean isPureUniversal();
 
     boolean isSuspendable();
-
-    enum EvaluationStrategy {
-        PROPOSITIONAL, LTL
-    }
 }

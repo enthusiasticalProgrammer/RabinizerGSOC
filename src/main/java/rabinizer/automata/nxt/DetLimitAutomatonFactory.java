@@ -54,7 +54,7 @@ public class DetLimitAutomatonFactory {
         if (optimisations.contains(Optimisation.IMPATIENT) && Collections3.isSingleton(keys) && ImpatientStateAnalysis.isImpatientFormula(formula)) {
             Set<GOperator> key = Collections3.getElement(keys);
 
-            EquivalenceClass initialClazz = equivalenceClassFactory.createEquivalenceClass(Simplifier.simplify(formula.evaluate(key, Formula.EvaluationStrategy.LTL), Simplifier.Strategy.MODAL_EXT));
+            EquivalenceClass initialClazz = equivalenceClassFactory.createEquivalenceClass(Simplifier.simplify(formula.evaluate(key), Simplifier.Strategy.MODAL_EXT));
             acceptingComponent.jumpInitial(initialClazz, key);
             acceptingComponent.generate();
         } else {

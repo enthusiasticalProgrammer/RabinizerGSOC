@@ -55,7 +55,7 @@ public final class GOperator extends ModalOperator {
     }
 
     @Override
-    public BooleanConstant evaluate(Set<GOperator> Gs, EvaluationStrategy s) {
+    public BooleanConstant evaluate(Set<GOperator> Gs) {
         return BooleanConstant.get(Gs.contains(this));
     }
 
@@ -99,8 +99,15 @@ public final class GOperator extends ModalOperator {
         return operand.isPureEventual() || operand.isSuspendable();
     }
 
-    @Override
-    protected ModalOperator build(Formula operand) {
+    public static Formula create(Formula operand) {
+        if (operand instanceof BooleanConstant) {
+            return operand;
+        }
+
+        if (operand instanceof GOperator) {
+            return operand;
+        }
+
         return new GOperator(operand);
     }
 
