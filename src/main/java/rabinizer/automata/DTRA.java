@@ -61,14 +61,14 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
     @Override
     public void toHOA(HOAConsumer ho) throws HOAConsumerException {
         HOAConsumerExtended<ProductDegenState> hoa = new HOAConsumerExtended<>(ho, HOAConsumerExtended.AutomatonType.TRANSITION);
-        hoa.setHeader(null, valuationSetFactory.getAlphabet());
+        hoa.setHeader(null, valuationSetFactory);
         hoa.setInitialState(this.initialState);
         hoa.setAcceptanceCondition2(accTR);
 
         for (ProductDegenState s : getStates()) {
             hoa.addState(s);
 
-            for (Set<String> valuation : valuationSetFactory.createUniverseValuationSet()) {
+            for (BitSet valuation : valuationSetFactory.createUniverseValuationSet()) {
                 ProductDegenState successor = getSuccessor(s, valuation);
 
                 BitSet accSet = new BitSet();
@@ -114,7 +114,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
 
         @Nullable
         @Override
-        public ProductDegenState getSuccessor(Set<String> valuation) {
+        public ProductDegenState getSuccessor(BitSet valuation) {
             Product.ProductState successor = dtgra.getSuccessor(productState, valuation);
 
             if (successor == null) {
@@ -144,7 +144,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
         }
 
         @Override
-        public Set<String> getSensitiveAlphabet() {
+        public BitSet getSensitiveAlphabet() {
             return productState.getSensitiveAlphabet();
         }
 

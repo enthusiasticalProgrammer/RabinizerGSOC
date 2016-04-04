@@ -28,6 +28,7 @@ import rabinizer.automata.RabinPair;
 import rabinizer.automata.TranSet;
 import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.Main;
 import rabinizer.ltl.Conjunction;
 import rabinizer.ltl.Formula;
@@ -36,19 +37,19 @@ import rabinizer.ltl.simplifier.Simplifier;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class HOAConsumerExtended<T> {
 
-    public static final BooleanExpression<AtomAcceptance> TRUE = new BooleanExpression<>(BooleanExpression.Type.EXP_TRUE, null, null);
+    private static final BooleanExpression<AtomAcceptance> TRUE = new BooleanExpression<>(BooleanExpression.Type.EXP_TRUE, null, null);
     private final HOAConsumer hoa;
 
     private final Map<T, Integer> stateNumbers;
     private final Map<Object, Integer> acceptanceNumbers;
-
     private final AutomatonType accType;
-    T currentState;
-    private boolean body;
-    private List<String> alphabet;
+
+    private T currentState;
+    private ValuationSetFactory valuationSetFactory;
 
     public HOAConsumerExtended(HOAConsumer hoa, AutomatonType type) {
         this.hoa = hoa;
@@ -108,16 +109,13 @@ public class HOAConsumerExtended<T> {
      *
      * @throws HOAConsumerException
      */
-    public void setHeader(String info, Collection<String> APs) throws HOAConsumerException {
+    public void setHeader(String info, ValuationSetFactory factory) throws HOAConsumerException {
         hoa.notifyHeaderStart("v1");
         hoa.setTool("Rabinizer", "infty");
         hoa.setName("Automaton for " + info);
 
-        alphabet = ImmutableList.copyOf(APs);
-        hoa.setAPs(alphabet);
-        for (String letter : APs) {
-            hoa.addAlias(letter, new BooleanExpression<>(AtomLabel.createAPIndex(alphabet.indexOf(letter))));
-        }
+        valuationSetFactory = factory;
+        hoa.setAPs(IntStream.range(0, factory.getSize()).mapToObj(i -> factory.getAliases().inverse().get(i)).collect(Collectors.toList()));
     }
 
     /**
@@ -170,7 +168,7 @@ public class HOAConsumerExtended<T> {
             throw new UnsupportedOperationException("For state-acceptance-based automata, please use the other addEdge method, where you also put accSets");
         }
 
-        hoa.addEdgeWithLabel(stateNumbers.get(begin), Simplifier.simplify(label).accept(new FormulaConverter()), Collections.singletonList(getStateId(end)), accSets);
+        hoa.addEdgeWithLabel(stateNumbers.get(begin), label.accept(new FormulaConverter()), Collections.singletonList(getStateId(end)), accSets);
     }
 
     public void addEdge(T begin, Formula label, T end, BitSet accSets) throws HOAConsumerException {
@@ -181,12 +179,12 @@ public class HOAConsumerExtended<T> {
         addEdge(begin, label, end, (List<Integer>) null);
     }
 
-    public void addEdge(T begin, Set<String> label, T end) throws HOAConsumerException {
-        addEdge(begin, new Conjunction(alphabet.stream().map(l -> new Literal(l, !label.contains(l)))), end, (List<Integer>) null);
+    public void addEdge(T begin, BitSet label, T end) throws HOAConsumerException {
+        addEdge(begin, Conjunction.create(IntStream.range(0, valuationSetFactory.getSize()).mapToObj(l -> new Literal(l, !label.get(l)))), end, (List<Integer>) null);
     }
 
-    public void addEdge(T begin, Set<String> label, T end, BitSet accSets) throws HOAConsumerException {
-        addEdge(begin, new Conjunction(alphabet.stream().map(l -> new Literal(l, !label.contains(l)))), end, accSets);
+    public void addEdge(T begin, BitSet label, T end, BitSet accSets) throws HOAConsumerException {
+        addEdge(begin, Conjunction.create(IntStream.range(0, valuationSetFactory.getSize()).mapToObj(l -> new Literal(l, !label.get(l)))), end, accSets);
     }
 
     public void addState(T s) throws HOAConsumerException {
@@ -198,9 +196,8 @@ public class HOAConsumerExtended<T> {
             throw new UnsupportedOperationException("For transition-acceptance-based automata, please use the other addState method, where you also put accSets");
         }
 
-        if (!body) {
+        if (currentState == null) {
             hoa.notifyBodyStart();
-            body = true;
         }
 
         currentState = s;
@@ -221,7 +218,6 @@ public class HOAConsumerExtended<T> {
 
     public void stateDone() throws HOAConsumerException {
         hoa.notifyEndOfState(getStateId(currentState));
-        currentState = null;
     }
 
     public void addEdge(T state, ValuationSet key, T accState) throws HOAConsumerException {

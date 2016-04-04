@@ -24,6 +24,7 @@ import com.google.common.collect.Sets;
 import rabinizer.automata.Automaton;
 import rabinizer.automata.IState;
 import rabinizer.automata.Optimisation;
+import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.Formula;
@@ -32,10 +33,7 @@ import rabinizer.ltl.equivalence.EquivalenceClass;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
 
@@ -105,7 +103,7 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
 
         @Nullable
         @Override
-        public State getSuccessor(Set<String> valuation) {
+        public State getSuccessor(BitSet valuation) {
             EquivalenceClass successor = step(current, valuation);
             EquivalenceClass nextSuccessor = step(next, valuation);
 
@@ -131,17 +129,17 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
         }
 
         public ValuationSet getAcceptance() {
-            Set<String> sensitiveLetters = new HashSet<>();
+            BitSet sensitiveLetters = new BitSet();
 
             for (Formula literal : current.unfold(true).getSupport()) {
                 if (literal instanceof Literal) {
-                    sensitiveLetters.add(((Literal) literal).atom);
+                    sensitiveLetters.set(((Literal) literal).getAtom());
                 }
             }
 
             ValuationSet acceptingLetters = valuationSetFactory.createEmptyValuationSet();
 
-            for (Set<String> valuation : Sets.powerSet(sensitiveLetters)) {
+            for (BitSet valuation : Collections3.powerSet(sensitiveLetters)) {
                 EquivalenceClass successor = step(current, valuation);
                 if (successor.isTrue()) {
                     acceptingLetters.addAll(valuationSetFactory.createValuationSet(valuation, sensitiveLetters));
@@ -152,14 +150,20 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
         }
 
         @Override
-        public Set<String> getSensitiveAlphabet() {
-            Set<String> sensitiveLetters = new HashSet<>();
+        public BitSet getSensitiveAlphabet() {
+            BitSet sensitiveLetters = new BitSet();
 
-            for (Formula literal : Sets.union(current.unfold(true).getSupport(), next.unfold(true).getSupport())) {
-                if (literal instanceof Literal) {
-                    sensitiveLetters.add(((Literal) literal).atom);
+            current.unfold(true).getSupport().forEach(f -> {
+                if (f instanceof Literal) {
+                    sensitiveLetters.set(((Literal) f).getAtom());
                 }
-            }
+            });
+
+            next.unfold(true).getSupport().forEach(f -> {
+                if (f instanceof Literal) {
+                    sensitiveLetters.set(((Literal) f).getAtom());
+                }
+            });
 
             return sensitiveLetters;
         }
@@ -173,7 +177,7 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
             return initialFormula;
         }
 
-        private EquivalenceClass step(EquivalenceClass clazz, Set<String> valuation) {
+        private EquivalenceClass step(EquivalenceClass clazz, BitSet valuation) {
             if (eager) {
                 return clazz.temporalStep(valuation).unfold(true);
             } else {

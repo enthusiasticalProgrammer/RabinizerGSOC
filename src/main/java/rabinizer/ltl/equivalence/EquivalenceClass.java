@@ -20,6 +20,7 @@ package rabinizer.ltl.equivalence;
 
 import rabinizer.ltl.Formula;
 
+import java.util.BitSet;
 import java.util.Set;
 
 /**
@@ -47,7 +48,7 @@ public interface EquivalenceClass {
 
     EquivalenceClass unfold(boolean unfoldG);
 
-    EquivalenceClass temporalStep(Set<String> valuation);
+    EquivalenceClass temporalStep(BitSet valuation);
 
     EquivalenceClass and(EquivalenceClass eq);
 

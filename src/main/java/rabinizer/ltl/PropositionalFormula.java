@@ -28,6 +28,10 @@ public abstract class PropositionalFormula extends ImmutableObject implements Fo
 
     public final Set<Formula> children;
 
+    protected PropositionalFormula(ImmutableSet<Formula> children) {
+        this.children = children;
+    }
+
     protected PropositionalFormula(Collection<? extends Formula> children) {
         this.children = ImmutableSet.copyOf(children);
     }
@@ -38,16 +42,6 @@ public abstract class PropositionalFormula extends ImmutableObject implements Fo
 
     protected PropositionalFormula(Stream<? extends Formula> formulaStream) {
         this.children = ImmutableSet.copyOf(formulaStream.iterator());
-    }
-
-    @Override
-    public Formula unfold(boolean unfoldG) {
-        return create(children.stream().map(c -> c.unfold(unfoldG)));
-    }
-
-    @Override
-    public Formula evaluate(Set<GOperator> Gs, EvaluationStrategy s) {
-        return create(children.stream().map(c -> c.evaluate(Gs, s)));
     }
 
     @Override
@@ -102,11 +96,6 @@ public abstract class PropositionalFormula extends ImmutableObject implements Fo
         return allMatch(Formula::isSuspendable);
     }
 
-    @Override
-    public Formula temporalStep(Set<String> valuation) {
-        return create(children.stream().map(c -> c.temporalStep(valuation)));
-    }
-
     public <E> Set<E> union(Function<Formula, Collection<E>> f) {
         Set<E> set = new HashSet<>(children.size());
         children.forEach(c -> set.addAll(f.apply(c)));
@@ -134,8 +123,6 @@ public abstract class PropositionalFormula extends ImmutableObject implements Fo
     public boolean anyMatch(Predicate<Formula> p) {
         return children.stream().anyMatch(p);
     }
-
-    protected abstract PropositionalFormula create(Stream<? extends Formula> formulaStream);
 
     protected abstract char getOperator();
 }

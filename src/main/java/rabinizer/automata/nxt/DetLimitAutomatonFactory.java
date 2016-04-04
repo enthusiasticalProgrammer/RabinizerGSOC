@@ -17,6 +17,7 @@
 
 package rabinizer.automata.nxt;
 
+import com.google.common.collect.BiMap;
 import com.google.common.collect.Sets;
 import rabinizer.automata.Master;
 import rabinizer.automata.Optimisation;
@@ -36,14 +37,14 @@ import java.util.*;
 
 public class DetLimitAutomatonFactory {
     public static DetLimitAutomaton createDetLimitAutomaton(Formula formula) {
-        return createDetLimitAutomaton(formula, EnumSet.allOf(Optimisation.class));
+        return createDetLimitAutomaton(formula, null, EnumSet.allOf(Optimisation.class));
     }
 
-    public static DetLimitAutomaton createDetLimitAutomaton(Formula formula, Collection<Optimisation> optimisations) {
-        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(formula);
+    public static DetLimitAutomaton createDetLimitAutomaton(Formula formula, BiMap<String, Integer> mapping, Collection<Optimisation> optimisations) {
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(formula, mapping);
         EquivalenceClassFactory equivalenceClassFactory = new BDDEquivalenceClassFactory(formula);
 
-        formula = Simplifier.simplify(formula, Simplifier.Strategy.AGGRESSIVELY);
+        formula = Simplifier.simplify(formula, Simplifier.Strategy.MODAL_EXT);
 
         Set<Set<GOperator>> keys = optimisations.contains(Optimisation.SKELETON) ? formula.accept(SkeletonVisitor.getInstance(SkeletonVisitor.SkeletonApproximation.BOTH)) : Sets.powerSet(formula.gSubformulas());
 

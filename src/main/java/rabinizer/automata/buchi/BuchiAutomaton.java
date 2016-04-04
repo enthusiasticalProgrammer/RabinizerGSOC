@@ -23,6 +23,7 @@ import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.output.HOAConsumerExtended;
+import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.*;
@@ -32,7 +33,7 @@ public class BuchiAutomaton {
     final State initialState;
     final Set<State> states;
     final Set<State> acceptingStates;
-    final Table<State, Set<String>, Set<State>> transitions;
+    final Table<State, BitSet, Set<State>> transitions;
     final ValuationSetFactory valuationSetFactory;
 
     BuchiAutomaton(ValuationSetFactory valuationSetFactory) {
@@ -76,7 +77,7 @@ public class BuchiAutomaton {
         return initialState;
     }
 
-    public void addTransition(State source, Set<String> valuation, State target) {
+    public void addTransition(State source, BitSet valuation, State target) {
         Set<BuchiAutomaton.State> targets = transitions.get(source, valuation);
 
         if (targets == null) {
@@ -87,7 +88,7 @@ public class BuchiAutomaton {
         transitions.put(source, valuation, targets);
     }
 
-    public Set<State> getTransitions(State source, Set<String> valuation) {
+    public Set<State> getTransitions(State source, BitSet valuation) {
         Set<State> successors = transitions.get(source, valuation);
 
         if (successors == null) {
@@ -109,14 +110,14 @@ public class BuchiAutomaton {
     public void toHOA(HOAConsumer c) throws HOAConsumerException {
         HOAConsumerExtended<State> consumer = new HOAConsumerExtended<>(c, HOAConsumerExtended.AutomatonType.STATE);
 
-        consumer.setHeader(null, valuationSetFactory.getAlphabet());
+        consumer.setHeader(null, valuationSetFactory);
         consumer.setInitialState(initialState);
         consumer.setBuchiAcceptance();
 
         for (State s : states) {
             consumer.addState(s, acceptingStates.contains(s) ? Collections.singletonList(0) : null);
 
-            for (Map.Entry<Set<String>, Set<State>> t : transitions.row(s).entrySet()) {
+            for (Map.Entry<BitSet, Set<State>> t : transitions.row(s).entrySet()) {
                 for (State s2 : t.getValue()) {
                     consumer.addEdge(s, t.getKey(), s2);
                 }
@@ -137,7 +138,7 @@ public class BuchiAutomaton {
             State current = workList.remove();
             visited.add(current);
 
-            for (Set<String> valuation : Sets.powerSet(new HashSet<>(valuationSetFactory.getAlphabet()))) {
+            for (BitSet valuation : Collections3.powerSet(valuationSetFactory.getSize())) {
                 Collection<State> nexts = getTransitions(current, valuation);
 
                 if (nexts.size() > 1) {
@@ -163,7 +164,7 @@ public class BuchiAutomaton {
             State current = workList.remove();
             visited.add(current);
 
-            for (Set<String> valuation : Sets.powerSet(new HashSet<>(valuationSetFactory.getAlphabet()))) {
+            for (BitSet valuation : Collections3.powerSet(valuationSetFactory.getSize())) {
                 Collection<State> nexts = getTransitions(current, valuation);
 
                 if (nexts.size() > 1) {

@@ -21,6 +21,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import rabinizer.collections.Collections3;
 import rabinizer.collections.Tuple;
 
 import javax.annotation.Nullable;
@@ -64,7 +65,7 @@ public class AlmostDeterminization {
             Set<BuchiAutomaton.State> states = cMapping.inverse().get(current);
 
             if (states != null) {
-                for (Set<String> valuation : Sets.powerSet(new HashSet<>(automaton.valuationSetFactory.getAlphabet()))) {
+                for (BitSet valuation : Collections3.powerSet(automaton.valuationSetFactory.getSize())) {
                     BuchiAutomaton.State successor = getCSuccessor(states, valuation);
 
                     if (successor != null) {
@@ -75,7 +76,7 @@ public class AlmostDeterminization {
             }
 
             for (BuchiAutomaton.State state : Sets.intersection(states != null ? states : Collections.emptySet(), automaton.acceptingStates)) {
-                for (Set<String> valuation : Sets.powerSet(new HashSet<>(automaton.valuationSetFactory.getAlphabet()))) {
+                for (BitSet valuation : Collections3.powerSet(automaton.valuationSetFactory.getSize())) {
                     BuchiAutomaton.State successor = getDSuccessor(new Tuple<>(Collections.singleton(state), Collections.singleton(state)), valuation);
 
                     if (successor != null) {
@@ -89,7 +90,7 @@ public class AlmostDeterminization {
             Tuple<Set<BuchiAutomaton.State>, Set<BuchiAutomaton.State>> tuple = dMapping.inverse().get(current);
 
             if (tuple != null) {
-                for (Set<String> valuation : automaton.valuationSetFactory.createUniverseValuationSet()) {
+                for (BitSet valuation : automaton.valuationSetFactory.createUniverseValuationSet()) {
                     BuchiAutomaton.State successor = getDSuccessor(tuple, valuation);
 
                     if (successor != null) {
@@ -115,7 +116,7 @@ public class AlmostDeterminization {
     }
 
     @Nullable
-    private BuchiAutomaton.State getCSuccessor(Set<BuchiAutomaton.State> states, Set<String> valuation) {
+    private BuchiAutomaton.State getCSuccessor(Set<BuchiAutomaton.State> states, BitSet valuation) {
         Set<BuchiAutomaton.State> successors = new HashSet<>(states.size());
 
         for (BuchiAutomaton.State state : states) {
@@ -138,7 +139,7 @@ public class AlmostDeterminization {
     }
 
     @Nullable
-    private BuchiAutomaton.State getDSuccessor(Tuple<Set<BuchiAutomaton.State>, Set<BuchiAutomaton.State>> tuple, final Set<String> valuation) {
+    private BuchiAutomaton.State getDSuccessor(Tuple<Set<BuchiAutomaton.State>, Set<BuchiAutomaton.State>> tuple, final BitSet valuation) {
         // Standard Subset Construction
         Set<BuchiAutomaton.State> rightSuccessor = new HashSet<>();
 

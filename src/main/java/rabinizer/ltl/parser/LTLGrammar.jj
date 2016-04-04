@@ -1,46 +1,30 @@
- /**
- * The grammar of LTL formulas.
- *
- * @author Andreas & Ruslan
- *
- * JavaCC template file created by SF JavaCC 6.0
- */
 options
 {
   JDK_VERSION = "1.8";
-
   LOOKAHEAD= 2;
   FORCE_LA_CHECK = true;
-
   STATIC = false;
 }
 
 PARSER_BEGIN(LTLParser)
 package rabinizer.ltl.parser;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import rabinizer.ltl.*;
-import rabinizer.exec.*;
 
+@SuppressWarnings("ALL")
 public class LTLParser
 {
-  /**
-   * Parse with new bijection between identifiers and atoms.
-   */
-  public Formula parse() throws ParseException
-  {
-    BDDForVariables.bijectionIdAtom = new BijectionIdAtom();
-    return formula();
-  }
+    public BiMap<String, Integer> map = HashBiMap.create();
 
- /**
-  * Parse using the previous bijection between identifiers and atoms.
-  * If there is no previous bijection, create a new bijection. 
-  */
-  public Formula parsePreviousAtoms() throws ParseException
-  {
-	if (BDDForVariables.bijectionIdAtom == null) BDDForVariables.bijectionIdAtom = new BijectionIdAtom();
-	return formula();
-  }
+    /**
+    * Parse with new bijection between identifiers and atoms.
+    */
+    public Formula parse() throws ParseException
+    {
+        return formula();
+    }
 }
 
 PARSER_END(LTLParser)
@@ -106,7 +90,7 @@ Formula disjunction() :
   (
     < OR > r = conjunction()
     {
-      result = FormulaFactory.mkOr(result, r);
+      result = Disjunction.create(result, r);
     }
   )*
   {
@@ -124,7 +108,7 @@ Formula conjunction() :
   (
     < AND > r = until()
     {
-      result = FormulaFactory.mkAnd(result, r);
+      result = Conjunction.create(result, r);
     }
   )*
   {
@@ -142,7 +126,7 @@ Formula until() :
   (
     < UOP > r = release()
     {
- 	  result = FormulaFactory.mkU(result, r);
+ 	  result = new UOperator(result, r);
     }
   )*
   {
@@ -160,7 +144,7 @@ Formula release() :
   (
     < ROP > r = releasewithv()
     {
- 	  result = FormulaFactory.mkNot(FormulaFactory.mkU(FormulaFactory.mkNot(result),FormulaFactory.mkNot(r)));
+ 	  result = (new UOperator(result.not(), r.not())).not();
     }
   )*
   {
@@ -178,7 +162,7 @@ Formula releasewithv() :
   (
     < VOP > r = weak()
     {
- 	  result = FormulaFactory.mkNot(FormulaFactory.mkU(FormulaFactory.mkNot(result),FormulaFactory.mkNot(r)));
+ 	  result = (new UOperator(result.not(), r.not())).not();
     }
   )*
   {
@@ -196,33 +180,13 @@ Formula weak() :
   (
     < WOP > r = unaryOp()
     {
- 	  result = FormulaFactory.mkOr(FormulaFactory.mkU(result,r),FormulaFactory.mkG(result));
+ 	  result = Disjunction.create(new UOperator(result,r), new GOperator(result));
     }
   )*
   {
     return result;
   }
 }
-
-
-//Formula negation() :
-//{
-//  Formula f;
-//  boolean neg = false;
-//}
-//{
-///*  (< NEG >
-//  {
-//    neg = true;
-//  }
-//  )?
-//*/
-//  f = tempOp()
-//  {
-//    if (neg) return FormulaFactory.mkNot(f);
-//    else return f;
-//  }
-//}
 
 Formula unaryOp() :
 {
@@ -231,19 +195,19 @@ Formula unaryOp() :
 {
   < FOP > f = unaryOp()
   {
-    return FormulaFactory.mkF(f);
+    return new FOperator(f);
   }
 | < GOP > f = unaryOp()
   {
-    return FormulaFactory.mkG(f);
+    return new GOperator(f);
   }
 | < XOP > f = unaryOp()
   {
-    return FormulaFactory.mkX(f);
+    return new XOperator(f);
   }
 | < NEG > f = unaryOp()
   {
-    return FormulaFactory.mkNot(f);
+    return f.not();
   }  
 | f = atom()
   {
@@ -260,16 +224,19 @@ Formula atom() :
 {
   < TRUE >
   {
-	return FormulaFactory.mkConst(true);
+	return BooleanConstant.TRUE;
   }
 | < FALSE >
   {
-	return FormulaFactory.mkConst(false);
+	return BooleanConstant.FALSE;
   }
 | atomString = < ID >.image
   {
-	id = BDDForVariables.bijectionIdAtom.id(atomString);
-	return FormulaFactory.mkLit(atomString, id, false);
+    if (!map.containsKey(atomString)) {
+        map.put(atomString, map.size());
+    }
+
+	return new Literal(map.get(atomString));
   }
 | < LPAR > f = disjunction() < RPAR >
   {

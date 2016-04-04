@@ -21,6 +21,7 @@ import rabinizer.ltl.Formula;
 import rabinizer.ltl.Literal;
 import rabinizer.ltl.equivalence.EquivalenceClass;
 
+import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -45,7 +46,7 @@ public abstract class AbstractFormulaState {
         if (o == null || getClass() != o.getClass())
             return false;
         AbstractFormulaState that = (AbstractFormulaState) o;
-        return Objects.equals(this.getOuter(), that.getOuter()) && Objects.equals(clazz, that.clazz);
+        return Objects.equals(clazz, that.clazz) && Objects.equals(this.getOuter(), that.getOuter());
     }
 
     @Override
@@ -59,12 +60,12 @@ public abstract class AbstractFormulaState {
 
     protected abstract Object getOuter();
 
-    protected Set<String> getSensitive(boolean unfoldG) {
-        Set<String> letters = new HashSet<>();
+    protected BitSet getSensitive(boolean unfoldG) {
+        BitSet letters = new BitSet();
 
         for (Formula literal : clazz.unfold(unfoldG).getSupport()) {
             if (literal instanceof Literal) {
-                letters.add(((Literal) literal).atom);
+                letters.set(((Literal) literal).getAtom());
             }
         }
 

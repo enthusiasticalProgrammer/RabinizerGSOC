@@ -27,10 +27,7 @@ import rabinizer.ltl.*;
 import rabinizer.ltl.simplifier.Simplifier;
 import rabinizer.ltl.simplifier.Simplifier.Strategy;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
 
@@ -69,8 +66,7 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
 
     @Override
     public EquivalenceClass createEquivalenceClass(Formula formula) {
-        Formula simplifiedFormula = Simplifier.simplify(formula, Strategy.PROPOSITIONAL);
-        return probe(new Z3EquivalenceClass(simplifiedFormula, createZ3(simplifiedFormula)));
+        return probe(new Z3EquivalenceClass(formula, createZ3(formula)));
     }
 
     protected Formula createRepresentative(BoolExpr expression) {
@@ -183,7 +179,7 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
         }
 
         @Override
-        public EquivalenceClass temporalStep(Set<String> valuation) {
+        public EquivalenceClass temporalStep(BitSet valuation) {
             return createEquivalenceClass(getRepresentative().temporalStep(valuation));
         }
 

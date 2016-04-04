@@ -19,21 +19,18 @@ package rabinizer.collections.valuationset;
 
 import rabinizer.ltl.*;
 
-import java.util.HashSet;
-import java.util.Set;
-
 class AlphabetVisitor implements VoidVisitor {
 
-    private final Set<String> alphabet;
+    private int alphabetSize;
 
     private AlphabetVisitor() {
-        alphabet = new HashSet<>();
+        alphabetSize = 0;
     }
 
-    static Set<String> extractAlphabet(Formula formula) {
+    static int extractAlphabet(Formula formula) {
         AlphabetVisitor visitor = new AlphabetVisitor();
         formula.accept(visitor);
-        return visitor.alphabet;
+        return visitor.alphabetSize;
     }
 
     @Override
@@ -58,7 +55,7 @@ class AlphabetVisitor implements VoidVisitor {
 
     @Override
     public void visit(Literal literal) {
-        alphabet.add(literal.atom);
+        alphabetSize = Math.max(literal.getAtom() + 1, alphabetSize);
     }
 
     @Override

@@ -120,7 +120,7 @@ public class ImplicationVisitor implements BinaryVisitor<Boolean, Formula> {
         } else if (fo instanceof Literal) {
             return g.operand.accept(this, fo);
         } else if (fo instanceof UOperator) {
-            return g.accept(this, ((UOperator) fo).right) || g.accept(this, Simplifier.simplify(new Conjunction(new GOperator(((UOperator) fo).left), new FOperator(((UOperator) fo).right)), Simplifier.Strategy.PROPOSITIONAL));
+            return g.accept(this, ((UOperator) fo).right) || g.accept(this, new Conjunction(new GOperator(((UOperator) fo).left), new FOperator(((UOperator) fo).right)));
         } else if (fo instanceof XOperator) {
             return g.accept(this, ((ModalOperator) fo).operand) || g.operand.accept(this, fo);
         }

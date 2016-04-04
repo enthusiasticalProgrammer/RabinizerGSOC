@@ -19,32 +19,39 @@ package rabinizer.ltl;
 
 import com.google.common.collect.Sets;
 
+import java.util.BitSet;
 import java.util.Objects;
 import java.util.Set;
 
 public final class Literal extends ImmutableObject implements Formula {
 
-    public final String atom;
-    public final boolean negated;
+    private final int atom;
 
-    public Literal(String atom, boolean negated) {
-        this.atom = atom;
-        this.negated = negated;
+    public Literal(int letter) {
+        this(letter, false);
+    }
+
+    public Literal(int letter, boolean negate) {
+        if (letter < 0) {
+            throw new IllegalArgumentException();
+        }
+
+        this.atom = negate ? -(letter + 1) : letter + 1;
     }
 
     @Override
     public String toString() {
-        return negated ? '!' + atom : atom;
+        return (isNegated() ? "!" : "") + getAtom();
     }
 
     @Override
     public Literal not() {
-        return new Literal(atom, !negated);
+        return new Literal(getAtom(), !isNegated());
     }
 
     @Override
-    public Formula temporalStep(Set<String> valuation) {
-        return BooleanConstant.get(valuation.contains(atom) ^ negated);
+    public Formula temporalStep(BitSet valuation) {
+        return BooleanConstant.get(valuation.get(getAtom()) ^ isNegated());
     }
 
     @Override
@@ -85,7 +92,7 @@ public final class Literal extends ImmutableObject implements Formula {
     @Override
     public boolean equals2(ImmutableObject o) {
         Literal literal = (Literal) o;
-        return negated == literal.negated && Objects.equals(atom, literal.atom);
+        return atom == literal.atom;
     }
 
     @Override
@@ -108,8 +115,16 @@ public final class Literal extends ImmutableObject implements Formula {
         return Sets.newHashSet();
     }
 
+    public int getAtom() {
+        return Math.abs(atom) - 1;
+    }
+
+    public boolean isNegated() {
+        return atom < 0;
+    }
+
     @Override
     protected int hashCodeOnce() {
-        return Objects.hash(atom, negated);
+        return 17 * atom + 5;
     }
 }

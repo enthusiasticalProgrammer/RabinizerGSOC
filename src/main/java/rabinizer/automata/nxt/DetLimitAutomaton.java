@@ -23,6 +23,8 @@ import jhoafparser.consumer.HOAConsumerPrint;
 import rabinizer.automata.IState;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.automata.output.RemoveComments;
+import rabinizer.collections.valuationset.ValuationSet;
+import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
@@ -41,7 +43,7 @@ public class DetLimitAutomaton {
         this.acceptingComponent = acceptingComponent;
     }
 
-    public Collection<String> getAlphabet() {
+    public ValuationSetFactory getAlphabet() {
         return acceptingComponent.getAlphabet();
     }
 
@@ -65,7 +67,7 @@ public class DetLimitAutomaton {
         HOAConsumerExtended<IState<?>> consumer = new HOAConsumerExtended<>(c, HOAConsumerExtended.AutomatonType.TRANSITION);
         IState<?> initialState = getInitialState();
 
-        consumer.setHeader(initialState.toString(), getAlphabet());
+        consumer.setHeader(initialState.toString(), acceptingComponent.getAlphabet());
         consumer.setGenBuchiAcceptance(acceptingComponent.acceptanceConditionSize);
         consumer.setInitialState(initialState);
 

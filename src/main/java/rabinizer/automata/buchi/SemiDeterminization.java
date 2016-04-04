@@ -47,7 +47,7 @@ public class SemiDeterminization {
 
         // Compute Transitions
         for (BuchiAutomaton.State f : automaton.acceptingStates) {
-            for (Set<String> valuation : automaton.valuationSetFactory.createUniverseValuationSet()) {
+            for (BitSet valuation : automaton.valuationSetFactory.createUniverseValuationSet()) {
                 BuchiAutomaton.State succ = getSuccessor(new Tuple<>(Collections.singleton(f), Collections.singleton(f)), valuation);
 
                 if (succ != null) {
@@ -62,7 +62,7 @@ public class SemiDeterminization {
                 if (!done.contains(state)) {
                     Tuple<Set<BuchiAutomaton.State>, Set<BuchiAutomaton.State>> tuple = productStateMapping.inverse().get(state);
 
-                    for (Set<String> valuation : automaton.valuationSetFactory.createUniverseValuationSet()) {
+                    for (BitSet valuation : automaton.valuationSetFactory.createUniverseValuationSet()) {
                         BuchiAutomaton.State successor = getSuccessor(tuple, valuation);
 
                         if (successor != null) {
@@ -87,7 +87,7 @@ public class SemiDeterminization {
         return semi;
     }
 
-    private BuchiAutomaton.State getSuccessor(Tuple<Set<BuchiAutomaton.State>, Set<BuchiAutomaton.State>> tuple, final Set<String> valuation) {
+    private BuchiAutomaton.State getSuccessor(Tuple<Set<BuchiAutomaton.State>, Set<BuchiAutomaton.State>> tuple, final BitSet valuation) {
         // Standard Subset Construction
         Set<BuchiAutomaton.State> rightSuccessor = new HashSet<>();
 

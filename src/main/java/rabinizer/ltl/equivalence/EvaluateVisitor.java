@@ -55,7 +55,7 @@ public class EvaluateVisitor implements Visitor<Formula> {
 
     @Override
     public Formula visit(Conjunction c) {
-        return Simplifier.simplify(new Conjunction(c.children.stream().map(e -> e.accept(this))), Simplifier.Strategy.PROPOSITIONAL);
+        return Conjunction.create(c.children.stream().map(e -> e.accept(this)));
     }
 
     @Override
@@ -66,7 +66,7 @@ public class EvaluateVisitor implements Visitor<Formula> {
             return defaultAction;
         }
 
-        return Simplifier.simplify(new Disjunction(d.children.stream().map(e -> e.accept(this))), Simplifier.Strategy.PROPOSITIONAL);
+        return Disjunction.create(d.children.stream().map(e -> e.accept(this)));
     }
 
     @Override

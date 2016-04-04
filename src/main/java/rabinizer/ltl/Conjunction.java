@@ -17,11 +17,15 @@
 
 package rabinizer.ltl;
 
-import java.util.Collection;
-import java.util.Objects;
+import com.google.common.collect.ImmutableSet;
+import rabinizer.collections.Collections3;
+
+import java.util.*;
 import java.util.stream.Stream;
 
 public final class Conjunction extends PropositionalFormula {
+
+    public Conjunction(ImmutableSet<Formula> conjuncts) { super(conjuncts);}
 
     public Conjunction(Collection<? extends Formula> conjuncts) {
         super(conjuncts);
@@ -61,13 +65,62 @@ public final class Conjunction extends PropositionalFormula {
     }
 
     @Override
+    public Formula unfold(boolean unfoldG) {
+        return create(children.stream().map(c -> c.unfold(unfoldG)));
+    }
+
+    @Override
+    public Formula evaluate(Set<GOperator> Gs, EvaluationStrategy s) {
+        return create(children.stream().map(c -> c.evaluate(Gs, s)));
+    }
+
+    @Override
+    public Formula temporalStep(BitSet valuation) {
+        return create(children.stream().map(c -> c.temporalStep(valuation)));
+    }
+
+    @Override
     protected char getOperator() {
         return '&';
     }
 
-    @Override
-    protected PropositionalFormula create(Stream<? extends Formula> formulaStream) {
-        return new Conjunction(formulaStream);
+    public static Formula create(Formula... formulaStream) {
+        return create(Arrays.stream(formulaStream));
+    }
+
+    public static Formula create(Stream<? extends Formula> formulaStream) {
+        Iterator<? extends Formula> iterator = formulaStream.iterator();
+        ImmutableSet.Builder<Formula> builder = ImmutableSet.builder();
+
+        while (iterator.hasNext()) {
+            Formula child = iterator.next();
+
+            if (child == BooleanConstant.FALSE) {
+                return BooleanConstant.FALSE;
+            }
+
+            if (child == BooleanConstant.TRUE) {
+                continue;
+            }
+
+            if (child instanceof Conjunction) {
+                builder.addAll(((Conjunction) child).children);
+            } else {
+                builder.add(child);
+            }
+        }
+
+        ImmutableSet<Formula> set = builder.build();
+
+        if (set.isEmpty()) {
+            return BooleanConstant.TRUE;
+        }
+
+        if (Collections3.isSingleton(set)) {
+            return Collections3.getElement(set);
+        }
+
+        return new Conjunction(set);
     }
 
     @Override

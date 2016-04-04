@@ -60,9 +60,9 @@ public class FormulaConverter implements rabinizer.ltl.Visitor<BooleanExpression
 
     @Override
     public BooleanExpression<AtomLabel> visit(Literal l) {
-        BooleanExpression<AtomLabel> atom = new BooleanExpression<>(AtomLabel.createAlias(l.atom));
+        BooleanExpression<AtomLabel> atom = new BooleanExpression<>(AtomLabel.createAPIndex(l.getAtom()));
 
-        if (l.negated) {
+        if (l.isNegated()) {
             atom = atom.not();
         }
 

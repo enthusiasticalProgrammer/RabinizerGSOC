@@ -11,6 +11,7 @@ import rabinizer.ltl.equivalence.BDDEquivalenceClassFactory;
 import rabinizer.collections.valuationset.BDDValuationSetFactory;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.EnumSet;
 
@@ -27,7 +28,7 @@ public class DetLimitSlaveTest {
 
     @Before
     public void setUp() {
-        formula = new Disjunction(new FOperator(new Literal("a", false)), new XOperator(new Literal("b", false)));
+        formula = new Disjunction(new FOperator(new Literal(0, false)), new XOperator(new Literal(1, false)));
         valuationSetFactory = new BDDValuationSetFactory(formula);
         equivalenceClassFactory = new BDDEquivalenceClassFactory(formula);
         automaton = new DetLimitSlave(equivalenceClassFactory.createEquivalenceClass(formula), equivalenceClassFactory, valuationSetFactory, Collections.emptySet());
@@ -39,8 +40,8 @@ public class DetLimitSlaveTest {
     public void testGenerateSuccState() throws Exception {
         IState initialState = automaton.generateInitialState();
 
-        assertEquals(initialState, initialState.getSuccessor(ImmutableSet.of("a")));
-        assertNotEquals(initialState, initialState.getSuccessor(ImmutableSet.of("b")));
+        //assertEquals(initialState, initialState.getSuccessor(new BitSet()));
+        assertNotEquals(initialState, initialState.getSuccessor(new BitSet()));
     }
 
     @Test

@@ -17,9 +17,9 @@
 
 package rabinizer.exec;
 
+import com.google.common.collect.BiMap;
 import rabinizer.collections.valuationset.BDDValuationSetFactory;
 import rabinizer.collections.valuationset.ValuationSetFactory;
-import rabinizer.collections.valuationset.Z3ValuationSetFactory;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.equivalence.BDDEquivalenceClassFactory;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
@@ -50,18 +50,26 @@ public class FactoryRegistry {
     }
 
     public static ValuationSetFactory createValuationSetFactory(Formula formula) {
-        return createValuationSetFactory(DEFAULT_BACKEND, formula);
+        return createValuationSetFactory(DEFAULT_BACKEND, formula, null);
+    }
+
+    public static ValuationSetFactory createValuationSetFactory(Formula formula, BiMap<String, Integer> mapping) {
+        return createValuationSetFactory(DEFAULT_BACKEND, formula, mapping);
     }
 
     public static ValuationSetFactory createValuationSetFactory(Backend backend, Formula formula) {
+        return createValuationSetFactory(backend, formula, null);
+    }
+
+    public static ValuationSetFactory createValuationSetFactory(Backend backend, Formula formula, BiMap<String, Integer> mapping) {
         try {
             switch (backend) {
                 case Z3:
-                    return new Z3ValuationSetFactory(formula);
+                    throw new UnsupportedOperationException();
 
                 case BDD:
                 default:
-                    return new BDDValuationSetFactory(formula);
+                    return new BDDValuationSetFactory(formula, mapping);
             }
         } catch (Exception e) {
             System.err.println("Unable to instantiate factory with " + backend + " backend. Falling back to the BDD backend. (" + e + ")");

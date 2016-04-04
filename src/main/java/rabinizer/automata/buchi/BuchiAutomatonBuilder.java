@@ -17,6 +17,9 @@
 
 package rabinizer.automata.buchi;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Sets;
 import jhoafparser.ast.AtomAcceptance;
 import jhoafparser.ast.AtomLabel;
@@ -25,6 +28,7 @@ import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.buchi.BuchiAutomaton.State;
 import rabinizer.automata.output.HOAConsumerExtended;
+import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.BDDValuationSetFactory;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
@@ -38,7 +42,6 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
     private BuchiAutomaton automaton;
     private ValuationSetFactory valuationSetFactory;
     private Integer initialState;
-    private String[] integerToLetter;
     private State[] integerToState;
     private int implicitEdgeCounter;
     private HOAConsumerExtended.AccType accType;
@@ -51,7 +54,6 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
     @Override
     public void notifyHeaderStart(String s) {
         valuationSetFactory = null;
-        integerToLetter = null;
         integerToState = null;
         initialState = null;
         automaton = null;
@@ -78,9 +80,9 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
 
     @Override
     public void setAPs(List<String> list) throws HOAConsumerException {
-        integerToLetter = new String[list.size()];
-        list.toArray(integerToLetter);
-        valuationSetFactory = new BDDValuationSetFactory(new HashSet<>(list));
+        BiMap<String, Integer> aliases = HashBiMap.create(list.size());
+        list.forEach(ap -> aliases.put(ap, aliases.size()));
+        valuationSetFactory = new BDDValuationSetFactory(list.size(), aliases);
     }
 
     @Override
@@ -139,13 +141,13 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
     @Override
     public void notifyBodyStart() throws HOAConsumerException {
         if (valuationSetFactory == null) {
-            valuationSetFactory = new BDDValuationSetFactory(BooleanConstant.TRUE);
+            valuationSetFactory = new BDDValuationSetFactory(BooleanConstant.TRUE, ImmutableBiMap.of());
         }
 
         automaton = new BuchiAutomaton(valuationSetFactory);
 
         if (accType == HOAConsumerExtended.AccType.ALL || accType == HOAConsumerExtended.AccType.NONE) {
-            for (Set<String> valuation : Sets.powerSet(new HashSet<>(valuationSetFactory.getAlphabet()))) {
+            for (BitSet valuation : Collections3.powerSet(valuationSetFactory.getSize())) {
                 automaton.addTransition(automaton.getInitialState(), valuation, automaton.getInitialState());
             }
         }
@@ -186,7 +188,7 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
             return;
         }
 
-        addEdgeWithLabel(i, BooleanExpression.fromImplicit(implicitEdgeCounter, valuationSetFactory.getAlphabet().size()), list, list1);
+        addEdgeWithLabel(i, BooleanExpression.fromImplicit(implicitEdgeCounter, valuationSetFactory.getSize()), list, list1);
         implicitEdgeCounter++;
     }
 
@@ -219,7 +221,7 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
 
             ValuationSet valuationSet = toValuationSet(booleanExpression);
 
-            for (Set<String> valuation : valuationSet) {
+            for (BitSet valuation : valuationSet) {
                 automaton.addTransition(source, valuation, target);
             }
         }
@@ -247,7 +249,7 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
     }
 
     public List<BuchiAutomaton> getAutomata() {
-        return new ArrayList(automata);
+        return new ArrayList<>(automata);
     }
 
     private void ensureSpaceInMap(int id) {
@@ -284,8 +286,9 @@ public class BuchiAutomatonBuilder implements HOAConsumer {
         }
 
         if (label.isAtom()) {
-            String letter = integerToLetter[label.getAtom().getAPIndex()];
-            return valuationSetFactory.createValuationSet(Collections.singleton(letter), Collections.singleton(letter));
+            BitSet bs = new BitSet();
+            bs.set(label.getAtom().getAPIndex());
+            return valuationSetFactory.createValuationSet(bs, bs);
         }
 
         if (label.isNOT()) {

@@ -17,6 +17,7 @@
 
 package rabinizer.exec;
 
+import com.google.common.collect.BiMap;
 import org.apache.commons.cli.*;
 import rabinizer.automata.Optimisation;
 import rabinizer.ltl.Formula;
@@ -78,7 +79,7 @@ public class CLIParser {
         Set<Optimisation> optimisations = EnumSet.allOf(Optimisation.class);
         optimisations.remove(Optimisation.SLAVE_SUSPENSION);
 
-        Simplifier.Strategy simplification;
+        Simplifier.Strategy simplification = Simplifier.Strategy.NONE;
         OutputStream writer = System.out;
         Formula inputFormula;
         FactoryRegistry.Backend backend = FactoryRegistry.Backend.BDD;
@@ -92,7 +93,7 @@ public class CLIParser {
         }
 
         if (cmd.hasOption('p') && cmd.getOptionValue('p').equals("off")) {
-            simplification = Simplifier.Strategy.PROPOSITIONAL;
+
         } else {
             simplification = Simplifier.Strategy.AGGRESSIVELY;
         }
@@ -144,7 +145,7 @@ public class CLIParser {
             } catch (NumberFormatException e) {
                 System.out.println("Wrong format for output-level option. Look at the help printed below.");
                 printHelp();
-                throw new ParseException("");
+                throw new ParseException();
             }
             if (outputLevel < 0 || outputLevel > 2) {
                 System.out.println("Wrong number for output-level option. Look at the help printed below.");
@@ -205,7 +206,6 @@ public class CLIParser {
                                     "It is rather bad to use skeleton together with a simplify-formula level below 1. You can continue, but don't be astonished if an exception is raised during the computation.");
                         }
 
-                        simplification = Simplifier.Strategy.PROPOSITIONAL;
                         break;
 
                     case 1:
@@ -243,8 +243,9 @@ public class CLIParser {
             }
         }
 
+        LTLParser parser;
         if (cmd.hasOption('f') && !cmd.hasOption('n')) {
-            LTLParser parser = new LTLParser(new StringReader(cmd.getOptionValue('f')));
+            parser = new LTLParser(new StringReader(cmd.getOptionValue('f')));
 
             try {
                 inputFormula = parser.parse();
@@ -255,7 +256,7 @@ public class CLIParser {
         } else if (!cmd.hasOption('f') && cmd.hasOption('n')) {
             try (BufferedReader bReader = new BufferedReader(new FileReader(new File(cmd.getOptionValue('n'))))) {
                 String form = bReader.readLine();
-                LTLParser parser = new LTLParser(new StringReader(form));
+                parser = new LTLParser(new StringReader(form));
                 inputFormula = parser.parse();
             } catch (FileNotFoundException e) {
                 System.out.println("Error: The input file has not been found.");
@@ -288,7 +289,7 @@ public class CLIParser {
             optimisations.add(Optimisation.COMPUTE_ACC_CONDITION);
         }
 
-        return new CmdArguments(outputLevel, autType, format, optimisations, simplification, writer, inputFormula, backend);
+        return new CmdArguments(outputLevel, autType, format, optimisations, simplification, writer, inputFormula, backend, parser.map);
     }
 
     private static void printHelp() {
@@ -314,9 +315,10 @@ public class CLIParser {
         final OutputStream writer;
         final Formula inputFormula;
         final FactoryRegistry.Backend backend;
+        final BiMap<String, Integer> mapping;
 
         private CmdArguments(int outputLevel, AutomatonType autType, Format format, Set<Optimisation> optimisations, Simplifier.Strategy strat,
-                             OutputStream writer, Formula inputFormula, FactoryRegistry.Backend backend) {
+                             OutputStream writer, Formula inputFormula, FactoryRegistry.Backend backend, BiMap<String, Integer> mapping) {
             this.outputLevel = outputLevel;
             this.autType = autType;
             this.format = format;
@@ -325,6 +327,7 @@ public class CLIParser {
             this.writer = writer;
             this.inputFormula = inputFormula;
             this.backend = backend;
+            this.mapping = mapping;
         }
     }
 

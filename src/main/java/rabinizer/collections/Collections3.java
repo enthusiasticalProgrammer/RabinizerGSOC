@@ -78,4 +78,102 @@ public class Collections3 {
         bs.stream().forEach(list::add);
         return list;
     }
+
+    public static Set<BitSet> powerSet(int i) {
+        BitSet bs = new BitSet(i);
+        bs.flip(0, i);
+        return powerSet(bs);
+    }
+
+    public static Set<BitSet> powerSet(BitSet bs) {
+        return new PowerBitSet(bs);
+    }
+
+    private static final class PowerBitSet extends AbstractSet<BitSet> {
+        final BitSet baseSet;
+
+        PowerBitSet(BitSet input) {
+            baseSet = (BitSet) input.clone();
+        }
+
+        @Override
+        public int size() {
+            return 1 << baseSet.cardinality();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
+        @Override
+        public Iterator<BitSet> iterator() {
+            return new PowerBitSetIterator();
+        }
+
+        private class PowerBitSetIterator implements Iterator<BitSet> {
+
+            BitSet next = new BitSet();
+
+            @Override
+            public boolean hasNext() {
+                return (next != null);
+            }
+
+            @Override
+            public BitSet next() {
+                BitSet n = (BitSet) next.clone();
+
+                for (int i = baseSet.nextSetBit(0); i >= 0; i = baseSet.nextSetBit(i+1)) {
+                    if (!next.get(i)) {
+                        next.set(i);
+                        break;
+                    } else {
+                        next.clear(i);
+                    }
+
+                    if (i == Integer.MAX_VALUE) {
+                        break; // or (i+1) would overflow
+                    }
+                }
+
+                if (next.isEmpty()) {
+                    next = null;
+                }
+
+                return n;
+            }
+        }
+
+        @Override
+        public boolean contains(@Nullable Object obj) {
+            if (obj instanceof BitSet) {
+                BitSet set = (BitSet) ((BitSet) obj).clone();
+                set.andNot(baseSet);
+                return set.isEmpty();
+            }
+
+            return false;
+        }
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            if (obj instanceof PowerBitSet) {
+                PowerBitSet that = (PowerBitSet) obj;
+                return baseSet.equals(that.baseSet);
+            }
+
+            return super.equals(obj);
+        }
+
+        @Override
+        public int hashCode() {
+            return baseSet.hashCode() << (baseSet.cardinality() - 1);
+        }
+
+        @Override
+        public String toString() {
+            return "powerSet(" + baseSet + ")";
+        }
+    }
 }

@@ -8,10 +8,7 @@ import rabinizer.ltl.equivalence.EquivalenceClass;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class SuspendedMaster extends Master {
 
@@ -50,7 +47,7 @@ public class SuspendedMaster extends Master {
      * This method is there to test, the output is used by
      * relevantGFormulae-Visitor for testing if the successor can be suspended
      */
-    private EquivalenceClass stepTest(EquivalenceClass clazz, Set<String> valuation) {
+    private EquivalenceClass stepTest(EquivalenceClass clazz, BitSet valuation) {
         if (eager) {
             return clazz.temporalStep(valuation).unfold(false);
         } else {
@@ -84,7 +81,7 @@ public class SuspendedMaster extends Master {
 
         @Nullable
         @Override
-        public State getSuccessor(Set<String> valuation) {
+        public State getSuccessor(BitSet valuation) {
             EquivalenceClass successor = step(clazz, valuation);
             EquivalenceClass folded = stepTest(this.folded, valuation);
 
