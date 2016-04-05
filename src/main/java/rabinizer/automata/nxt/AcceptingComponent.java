@@ -17,9 +17,6 @@
 
 package rabinizer.automata.nxt;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
@@ -48,7 +45,6 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
     private final Map<Set<GOperator>, Map<GOperator, DetLimitSlave>> secondaryAutomata;
     private final Collection<Optimisation> optimisations;
     private final Table<Set<GOperator>, GOperator, Integer> acceptanceIndexMapping;
-    private final Map<AcceptingComponent.State, Map<ValuationSet, BitSet>> acceptanceCache;
 
     @Nonnegative
     int acceptanceConditionSize;
@@ -62,22 +58,10 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         acceptanceIndexMapping = HashBasedTable.create();
         equivalenceClassFactory = factory;
         acceptanceConditionSize = 1;
-        acceptanceCache = new HashMap<>();
     }
 
     public int getAcceptanceSize() {
         return acceptanceConditionSize;
-    }
-
-    public Map<ValuationSet, BitSet> getAcceptance(AcceptingComponent.State state) {
-        Map<ValuationSet, BitSet> acceptance = acceptanceCache.get(state);
-
-        if (acceptance == null) {
-            acceptance = state.getAcceptance();
-            acceptanceCache.put(state, acceptance);
-        }
-
-        return acceptance;
     }
 
     void jumpInitial(EquivalenceClass master, Set<GOperator> keys) {
@@ -103,7 +87,11 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         }
 
         State state = new State(primaryState, secondaryStateMap);
-        generate(state);
+
+        if (!optimisations.contains(Optimisation.LAZY_ACCEPTING_COMPONENT_CONSTRUCTION)) {
+            generate(state);
+        }
+
         return state;
     }
 
@@ -111,15 +99,15 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         for (State productState : getStates()) {
             consumer.addState(productState);
 
-            Map<ValuationSet, BitSet> accSetMap = getAcceptance(productState);
+            Map<BitSet, ValuationSet> accSetMap = productState.getAcceptance();
 
             getSuccessors(productState).forEach((successor, valuationSet) -> {
-                for (Map.Entry<ValuationSet, BitSet> acceptance : accSetMap.entrySet()) {
-                    ValuationSet label = acceptance.getKey().intersect(valuationSet);
+                for (Map.Entry<BitSet, ValuationSet> acceptance : accSetMap.entrySet()) {
+                    ValuationSet label = acceptance.getValue().intersect(valuationSet);
 
                     if (!label.isEmpty()) {
                         try {
-                            consumer.addEdge(productState, label.toFormula(), successor, acceptance.getValue());
+                            consumer.addEdge(productState, label.toFormula(), successor, acceptance.getKey());
                         } catch (HOAConsumerException e) {
                             e.printStackTrace();
                         }
@@ -140,7 +128,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
             int i = 0;
 
             for (GOperator key : keys) {
-                Formula initialFormula = Simplifier.simplify(key.operand.evaluate(keys), Simplifier.Strategy.MODAL_EXT);
+                Formula initialFormula = Simplifier.simplify(key.operand.evaluate(keys), Simplifier.Strategy.MODAL);
                 EquivalenceClass initialClazz = equivalenceClassFactory.createEquivalenceClass(initialFormula);
 
                 if (initialClazz.isFalse()) {
@@ -177,7 +165,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         Formula formula = master.getRepresentative().evaluate(keys);
         Conjunction facts = new Conjunction(keys.stream().map(key -> key.operand.evaluate(keys)));
         Visitor<Formula> evaluateVisitor = new EvaluateVisitor(equivalenceClassFactory, facts);
-        formula = Simplifier.simplify(formula.accept(evaluateVisitor), Simplifier.Strategy.MODAL_EXT);
+        formula = Simplifier.simplify(formula.accept(evaluateVisitor), Simplifier.Strategy.MODAL);
 
         EquivalenceClass preClazz = equivalenceClassFactory.createEquivalenceClass(formula);
 
@@ -190,6 +178,8 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
 
     public class State extends AbstractProductState<Master.State, GOperator, DetLimitSlave.State, State> implements IState<State> {
 
+        Map<BitSet, ValuationSet> acceptance = null;
+
         public State(Master.State primaryState, ImmutableMap<GOperator, DetLimitSlave.State> secondaryStates) {
             super(primaryState, secondaryStates);
         }
@@ -199,51 +189,57 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
             return valuationSetFactory;
         }
 
-        Map<ValuationSet, BitSet> getAcceptance() {
+        public Map<BitSet, ValuationSet> getAcceptance() {
+            if (acceptance != null) {
+                return acceptance;
+            }
+
             ValuationSet universe = valuationSetFactory.createUniverseValuationSet();
 
             // Don't generate acceptance condition, if we didn't reached true.
             if (!primaryState.getClazz().isTrue()) {
-                return Collections.singletonMap(universe, new BitSet(acceptanceConditionSize));
+                acceptance = Collections.singletonMap(new BitSet(), universe);
+                return acceptance;
             }
 
-            Map<ValuationSet, BitSet> current = new HashMap<>();
-            current.put(universe, new BitSet(acceptanceConditionSize));
+            acceptance = new LinkedHashMap<>();
+            BitSet bs = new BitSet();
+            bs.set(secondaryStates.size(), acceptanceConditionSize);
+            acceptance.put(bs, universe);
 
-            Map<GOperator, DetLimitSlave> secondaryAuto = secondaryAutomata.get(secondaryStates.keySet());
             Map<GOperator, Integer> accMap = acceptanceIndexMapping.row(secondaryStates.keySet());
 
             for (Map.Entry<GOperator, DetLimitSlave.State> entry : secondaryStates.entrySet()) {
                 GOperator key = entry.getKey();
                 DetLimitSlave.State state = entry.getValue();
+                ValuationSet stateAcceptance = state.getAcceptance();
 
-                ValuationSet acceptance = secondaryAuto.get(key).getAcceptance(state);
+                Map<BitSet, ValuationSet> acceptanceAdd = new LinkedHashMap<>(acceptance.size());
+                Iterator<Map.Entry<BitSet, ValuationSet>> iterator = acceptance.entrySet().iterator();
 
-                Map<ValuationSet, BitSet> next = new HashMap<>();
+                while (iterator.hasNext()) {
+                    Map.Entry<BitSet, ValuationSet> entry1 = iterator.next();
 
-                for (Map.Entry<ValuationSet, BitSet> entry1 : current.entrySet()) {
-                    ValuationSet AandB = entry1.getKey().clone();
-                    ValuationSet AandNotB = entry1.getKey().clone();
-                    AandB.retainAll(acceptance);
-                    AandNotB.removeAll(acceptance);
+                    ValuationSet AandB = entry1.getValue().clone();
+                    ValuationSet AandNotB = entry1.getValue();
+                    AandB.retainAll(stateAcceptance);
+                    AandNotB.removeAll(stateAcceptance);
 
                     if (!AandB.isEmpty()) {
-                        BitSet accList = (BitSet) entry1.getValue().clone();
+                        BitSet accList = (BitSet) entry1.getKey().clone();
                         accList.set(accMap.get(key));
-                        next.put(AandB, accList);
+                        acceptanceAdd.put(accList, AandB);
                     }
 
-                    if (!AandNotB.isEmpty()) {
-                        next.put(AandNotB, entry1.getValue());
+                    if (AandNotB.isEmpty()) {
+                        iterator.remove();
                     }
                 }
 
-                current = next;
+                acceptance.putAll(acceptanceAdd);
             }
 
-            final int size = secondaryStates.size();
-            current.forEach((k, v) -> v.set(size, acceptanceConditionSize));
-            return current;
+            return acceptance;
         }
 
         @Override

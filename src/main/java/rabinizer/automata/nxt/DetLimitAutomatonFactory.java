@@ -62,7 +62,7 @@ public class DetLimitAutomatonFactory {
             initialComponent = new InitialComponent(initialClazz, acceptingComponent, valuationSetFactory, optimisations);
             initialComponent.generate();
 
-            if (optimisations.contains(Optimisation.REMOVE_EPSILON)) {
+            if (optimisations.contains(Optimisation.REMOVE_EPSILON_TRANSITIONS)) {
                 removeEpsilonJumps(initialComponent, acceptingComponent, optimisations);
             }
         }

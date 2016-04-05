@@ -17,10 +17,6 @@
 
 package rabinizer.automata.nxt;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Sets;
 import rabinizer.automata.Automaton;
 import rabinizer.automata.IState;
 import rabinizer.automata.Optimisation;
@@ -42,21 +38,12 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
     protected final boolean eager;
     protected final boolean removeCover;
 
-    private final LoadingCache<State, ValuationSet> acceptanceCache;
-
     public DetLimitSlave(EquivalenceClass formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
         super(valuationSetFactory);
         eager = optimisations.contains(Optimisation.EAGER);
-        removeCover = optimisations.contains(Optimisation.COVER);
+        removeCover = optimisations.contains(Optimisation.REMOVE_COVER);
         initialFormula = eager ? formula.unfold(true) : formula;
         True = equivalenceClassFactory.getTrue();
-
-        CacheLoader<State, ValuationSet> acceptanceLoader = new AcceptanceCacheLoader();
-        acceptanceCache = CacheBuilder.newBuilder().build(acceptanceLoader);
-    }
-
-    public ValuationSet getAcceptance(State state) {
-        return acceptanceCache.getUnchecked(state);
     }
 
     @Override
@@ -64,21 +51,16 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
         return new State(initialFormula, True);
     }
 
-    private static class AcceptanceCacheLoader extends CacheLoader<State, ValuationSet> {
-        @Override
-        public ValuationSet load(State arg) {
-            return arg.getAcceptance();
-        }
-    }
-
     public final class State implements IState<State> {
 
         final EquivalenceClass current;
         final EquivalenceClass next;
+        ValuationSet acceptance;
 
         State(EquivalenceClass current, EquivalenceClass next) {
             this.current = current;
             this.next = next;
+            this.acceptance = null;
         }
 
         @Override
@@ -129,6 +111,10 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
         }
 
         public ValuationSet getAcceptance() {
+            if (acceptance != null) {
+                return acceptance;
+            }
+
             BitSet sensitiveLetters = new BitSet();
 
             for (Formula literal : current.unfold(true).getSupport()) {
@@ -137,16 +123,16 @@ public class DetLimitSlave extends Automaton<DetLimitSlave.State> {
                 }
             }
 
-            ValuationSet acceptingLetters = valuationSetFactory.createEmptyValuationSet();
+            acceptance = valuationSetFactory.createEmptyValuationSet();
 
             for (BitSet valuation : Collections3.powerSet(sensitiveLetters)) {
                 EquivalenceClass successor = step(current, valuation);
                 if (successor.isTrue()) {
-                    acceptingLetters.addAll(valuationSetFactory.createValuationSet(valuation, sensitiveLetters));
+                    acceptance.addAll(valuationSetFactory.createValuationSet(valuation, sensitiveLetters));
                 }
             }
 
-            return acceptingLetters;
+            return acceptance;
         }
 
         @Override

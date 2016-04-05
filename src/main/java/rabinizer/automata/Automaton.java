@@ -234,7 +234,7 @@ public abstract class Automaton<S extends IState<S>> {
         while (!workList.isEmpty()) {
             S state = workList.remove();
 
-            transitions.get(state).forEach((suc, v) -> {
+            getSuccessors(state).forEach((suc, v) -> {
                 if (states.add(suc)) {
                     workList.add(suc);
                 }

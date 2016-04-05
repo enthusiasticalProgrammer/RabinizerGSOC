@@ -47,7 +47,7 @@ public class InitialComponent extends Master {
         super(initialClazz, valuationSetFactory, optimisations);
 
         skeleton = optimisations.contains(Optimisation.SKELETON);
-        scc = optimisations.contains(Optimisation.SCC);
+        scc = optimisations.contains(Optimisation.SCC_ANALYSIS);
         impatient = optimisations.contains(Optimisation.IMPATIENT);
 
         this.acceptingComponent = acceptingComponent;
