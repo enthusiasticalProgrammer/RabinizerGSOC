@@ -43,10 +43,6 @@ public class DetLimitAutomaton {
         this.acceptingComponent = acceptingComponent;
     }
 
-    public ValuationSetFactory getAlphabet() {
-        return acceptingComponent.getAlphabet();
-    }
-
     public IState<?> getInitialState() {
         if (initialComponent != null) {
             return initialComponent.getInitialState();

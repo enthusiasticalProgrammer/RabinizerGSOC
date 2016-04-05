@@ -84,14 +84,6 @@ public class TranSet<S> implements Iterable<Map.Entry<S, ValuationSet>> {
         return backingMap.isEmpty();
     }
 
-    public void removeAll(Collection<S> states) {
-        backingMap.keySet().removeAll(states);
-    }
-
-    public void removeAll(S state) {
-        backingMap.remove(state);
-    }
-
     public void removeAll(S state, ValuationSet vs) {
         ValuationSet valuationSet = backingMap.get(state);
 

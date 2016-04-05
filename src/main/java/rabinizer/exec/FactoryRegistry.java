@@ -53,10 +53,6 @@ public class FactoryRegistry {
         return createValuationSetFactory(DEFAULT_BACKEND, formula, null);
     }
 
-    public static ValuationSetFactory createValuationSetFactory(Formula formula, BiMap<String, Integer> mapping) {
-        return createValuationSetFactory(DEFAULT_BACKEND, formula, mapping);
-    }
-
     public static ValuationSetFactory createValuationSetFactory(Backend backend, Formula formula) {
         return createValuationSetFactory(backend, formula, null);
     }
