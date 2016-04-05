@@ -18,6 +18,7 @@
 package rabinizer.collections;
 
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 /**
@@ -177,6 +178,7 @@ public class TarjanStack<E> extends AbstractCollection<E> implements Deque<E> {
         return removeFirstOccurrence(o);
     }
 
+    @Nonnull
     @Override
     public Iterator<E> descendingIterator() {
         return stack.descendingIterator();
@@ -197,6 +199,7 @@ public class TarjanStack<E> extends AbstractCollection<E> implements Deque<E> {
         return stack.getLast();
     }
 
+    @Nonnull
     @Override
     public Iterator<E> iterator() {
         return stack.iterator();
@@ -222,13 +225,15 @@ public class TarjanStack<E> extends AbstractCollection<E> implements Deque<E> {
         return stack.size();
     }
 
+    @Nonnull
     @Override
     public Object[] toArray() {
         return stack.toArray();
     }
 
+    @Nonnull
     @Override
-    public <T> T[] toArray(T[] a) {
+    public <T> T[] toArray(@Nonnull T[] a) {
         return stack.toArray(a);
     }
 }

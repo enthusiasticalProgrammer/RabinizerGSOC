@@ -25,6 +25,7 @@ import net.sf.javabdd.BDDFactory;
 import rabinizer.collections.Collections3;
 import rabinizer.ltl.*;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.IntStream;
@@ -183,6 +184,7 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
             return isSatAssignment(valuations, (BitSet) o);
         }
 
+        @Nonnull
         @Override
         public Iterator<BitSet> iterator() {
             return Collections3.powerSet(alphabetSize).stream().filter(this::contains).iterator();
@@ -205,7 +207,7 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
-        public boolean addAll(Collection<? extends BitSet> c) {
+        public boolean addAll(@Nonnull Collection<? extends BitSet> c) {
             if (c instanceof BDDValuationSet) {
                 BDD otherValuations = ((BDDValuationSet) c).valuations;
                 BDD newValuations = valuations.or(otherValuations);
@@ -216,7 +218,7 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
-        public boolean retainAll(Collection<?> c) {
+        public boolean retainAll(@Nonnull Collection<?> c) {
             if (c instanceof BDDValuationSet) {
                 BDD otherValuations = ((BDDValuationSet) c).valuations;
                 BDD newValuations = valuations.and(otherValuations);
@@ -227,7 +229,7 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
         }
 
         @Override
-        public boolean removeAll(Collection<?> c) {
+        public boolean removeAll(@Nonnull Collection<?> c) {
             if (c instanceof BDDValuationSet) {
                 BDD otherValuations = ((BDDValuationSet) c).valuations;
                 BDD newValuations = valuations.and(otherValuations.not());

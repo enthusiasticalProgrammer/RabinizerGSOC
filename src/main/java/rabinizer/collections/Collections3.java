@@ -17,6 +17,7 @@
 
 package rabinizer.collections;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
@@ -106,6 +107,7 @@ public class Collections3 {
             return false;
         }
 
+        @Nonnull
         @Override
         public Iterator<BitSet> iterator() {
             return new PowerBitSetIterator();
