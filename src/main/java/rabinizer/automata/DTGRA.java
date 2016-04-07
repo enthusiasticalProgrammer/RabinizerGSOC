@@ -66,22 +66,24 @@ public class DTGRA extends Automaton<Product.ProductState> {
 
             for (BitSet valuation : valuationSetFactory.createUniverseValuationSet()) {
                 Product.ProductState successor = getSuccessor(s, valuation);
+                if (successor != null) {
 
-                BitSet accSet = new BitSet();
+                    BitSet accSet = new BitSet();
 
-                acc.forEach(pair -> {
-                    if (pair.fin.contains(s, valuation)) {
-                        accSet.set(hoa.getNumber(pair.fin));
-                    }
-
-                    for (TranSet<Product.ProductState> inf : pair.infs) {
-                        if (inf.contains(s, valuation)) {
-                            accSet.set(hoa.getNumber(inf));
+                    acc.forEach(pair -> {
+                        if (pair.fin.contains(s, valuation)) {
+                            accSet.set(hoa.getNumber(pair.fin));
                         }
-                    }
-                });
 
-                hoa.addEdge(s, valuation, successor, accSet);
+                        for (TranSet<Product.ProductState> inf : pair.infs) {
+                            if (inf.contains(s, valuation)) {
+                                accSet.set(hoa.getNumber(inf));
+                            }
+                        }
+                    });
+
+                    hoa.addEdge(s, valuation, successor, accSet);
+                }
             }
 
             hoa.stateDone();
