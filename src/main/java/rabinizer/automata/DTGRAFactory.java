@@ -179,7 +179,7 @@ public class DTGRAFactory {
             this2.forEach(pair -> {
                 TranSet<S> allTrans = this2.allTrans.clone();
                 allTrans.removeAll(pair.fin);
-                pair.infs.removeIf(allTrans::containsAll);
+                pair.infs.removeIf(i -> i.containsAll(allTrans));
             });
             printProgress(phase++, this2);
 
