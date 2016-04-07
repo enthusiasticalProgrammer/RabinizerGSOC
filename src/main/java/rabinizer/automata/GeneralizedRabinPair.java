@@ -36,7 +36,7 @@ public class GeneralizedRabinPair<S> {
      * also the other accepts.
      */
     public boolean implies(GeneralizedRabinPair<S> other) {
-        return fin.containsAll(other.fin) && other.infs.stream().allMatch(inf2 -> infs.stream().anyMatch(inf2::containsAll));
+        return fin.containsAll(other.fin) && other.infs.stream().allMatch(inf2 -> infs.stream().anyMatch(i -> i.containsAll(inf2)));
     }
 
     @Override
