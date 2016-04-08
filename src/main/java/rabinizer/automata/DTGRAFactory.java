@@ -204,6 +204,9 @@ public class DTGRAFactory {
             printProgress(phase++, this2);
 
             Main.verboseln(phase + ". Removing (F, I) for which there is a less restrictive (G, J) \n");
+            Set<GeneralizedRabinPair<S>> hs = new HashSet<>(this2);
+            this2.clear();
+            this2.addAll(hs);
             removalPairs = new ArrayList<>();
 
             for (GeneralizedRabinPair<S> pair1 : this2) {
