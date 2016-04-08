@@ -151,7 +151,6 @@ public class DTGRAFactory {
         }
 
         public static <S extends IState<S>> void removeRedundancy(AccTGRRaw<S> this2) {
-            List<GeneralizedRabinPair<S>> removalPairs;
             List<GeneralizedRabinPair<S>> temp;
             List<TranSet<S>> copy;
             int phase = 0;
@@ -204,7 +203,8 @@ public class DTGRAFactory {
             printProgress(phase++, this2);
 
             Main.verboseln(phase + ". Removing (F, I) for which there is a less restrictive (G, J) \n");
-            removalPairs = new ArrayList<>();
+            Set<GeneralizedRabinPair<S>> hs = new HashSet<>(this2);
+
 
             for (GeneralizedRabinPair<S> pair1 : this2) {
                 for (GeneralizedRabinPair<S> pair2 : this2) {
@@ -212,14 +212,15 @@ public class DTGRAFactory {
                         continue;
                     }
 
-                    if (pair2.implies(pair1) && !removalPairs.contains(pair2)) {
-                        removalPairs.add(pair1);
+                    if (pair2.implies(pair1) && hs.contains(pair2)) {
+                        hs.remove(pair2);
                         break;
                     }
                 }
             }
 
-            this2.removeAll(removalPairs);
+            this2.clear();
+            this2.addAll(hs);
 
             // Main.verboseln(this.toString());
             printProgress(phase, this2);

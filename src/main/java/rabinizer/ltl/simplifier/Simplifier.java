@@ -331,12 +331,13 @@ public final class Simplifier {
             for (; innerConjunctionLoop(set); )
                 ;
 
-            Formula f = Simplifier.simplify(c, Strategy.PULLUP_X);
-            if (f instanceof Conjunction) {
-                return f;
+            if (set.size() == 1) {
+                return set.iterator().next();
+            } else if (set.size() == 0) {
+                return BooleanConstant.TRUE;
             }
 
-            return f.accept(this);
+            return Simplifier.simplify(new Conjunction(set), Strategy.PULLUP_X);
         }
 
         @Override
@@ -351,15 +352,17 @@ public final class Simplifier {
 
             // remove ltl that imply other Formulas
             // or do a PseudoSubstitution by a fix-point-iteration
-            while (innerDisjunctionLoop(set)) {
+            for (; innerDisjunctionLoop(set);)
+                ;
+
+            if (set.size() == 1) {
+                return set.iterator().next();
+            } else if (set.size() == 0) {
+                return BooleanConstant.FALSE;
             }
 
-            Formula f = Simplifier.simplify(d, Strategy.PULLUP_X);
-            if (f instanceof Disjunction) {
-                return f;
-            }
+            return Simplifier.simplify(new Disjunction(set), Strategy.PULLUP_X);
 
-            return f.accept(this);
         }
 
         @Override
@@ -437,13 +440,8 @@ public final class Simplifier {
          * children set, and returning true, if something has changed
          */
         private boolean innerConjunctionLoop(Set<Formula> set) {
-            Iterator<Formula> formula = set.iterator();
-
-            while (formula.hasNext()) {
-                Formula form = formula.next();
-                Iterator<Formula> formula2 = set.iterator();
-                while (formula2.hasNext()) {
-                    Formula form2 = formula2.next();
+            for (Formula form : set) {
+                for (Formula form2 : set) {
                     if (!form.equals(form2)) {
                         ImplicationVisitor imp = ImplicationVisitor.getVisitor();
 
@@ -481,10 +479,7 @@ public final class Simplifier {
          * children set, and returning true, if something has changed
          */
         private boolean innerDisjunctionLoop(Set<Formula> set) {
-            Iterator<Formula> formula = set.iterator();
-
-            while (formula.hasNext()) {
-                Formula form = formula.next();
+            for (Formula form : set) {
                 for (Formula form2 : set) {
                     if (!form.equals(form2)) {
                         ImplicationVisitor imp = ImplicationVisitor.getVisitor();
