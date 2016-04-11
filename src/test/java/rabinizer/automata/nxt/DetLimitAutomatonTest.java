@@ -24,7 +24,8 @@ public class DetLimitAutomatonTest {
         BiMap<String, Integer> mapping = HashBiMap.create();
         DetLimitAutomaton automaton = DetLimitAutomatonFactory.createDetLimitAutomaton(Util.createFormula(ltl, mapping), mapping, opts);
 
-        assertEquals(automaton.toString(), size, automaton.size());
+        String hoaString = automaton.toString();
+        assertEquals(hoaString, size, automaton.size());
 
         if (expectedOutput != null) {
             assertEquals(expectedOutput, automaton.toString(true));
@@ -229,6 +230,12 @@ public class DetLimitAutomatonTest {
     public void testCasePrism() throws Exception {
         String ltl = "(G F p1) & (F G ((p1) U (p3)))";
         testOutput(ltl, 2);
+
+        ltl = "((G F p0)|(F G p1)) & ((G F (! p1))|(F G p2))";
+        EnumSet<Optimisation> opts = EnumSet.allOf(Optimisation.class);
+        opts.remove(Optimisation.REMOVE_EPSILON_TRANSITIONS);
+        opts.remove(Optimisation.LAZY_ACCEPTING_COMPONENT_CONSTRUCTION);
+        testOutput(ltl, opts, 5);
     }
 
 
