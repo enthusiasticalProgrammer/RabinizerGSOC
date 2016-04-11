@@ -36,7 +36,7 @@ public final class Util {
         try {
             return parser.parse();
         } catch (ParseException e) {
-            fail("Failed to construct formula from string");
+            fail("Failed to construct formula from string: " + e.getMessage());
             return null;
         }
     }
