@@ -19,18 +19,18 @@ package rabinizer.ltl.equivalence;
 
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import rabinizer.collections.Tuple;
 import rabinizer.ltl.*;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Function;
 
 public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
 
     final BDDFactory factory;
     final Map<Formula, Integer> mapping;
     final List<Formula> reverseMapping;
-    final Visitor<BDD> visitor;
+    final BDDVisitor visitor;
 
     final Map<EquivalenceClass, EquivalenceClass> unfoldCache;
     final Map<EquivalenceClass, EquivalenceClass> unfoldGCache;
@@ -42,7 +42,7 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
 
         int size = mapping.isEmpty() ? 1 : mapping.size();
 
-        factory = BDDFactory.init("micro", 64 * size, 1000);
+        factory = BDDFactory.init("jdd", 64 * size, 1000);
         factory.setVarNum(size);
 
         // Silence library
@@ -80,19 +80,25 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
     }
 
     @Override
+    public EquivalenceClass createEquivalenceClass(Formula formula, Function<Formula, Optional<Boolean>> environment) {
+        visitor.environment = environment;
+        BDD bdd = formula.accept(visitor);
+        visitor.environment = null;
+        return new BDDEquivalenceClass(null, bdd);
+    }
+
+    @Override
     public BDDEquivalenceClass createEquivalenceClass(Formula formula) {
-        return new BDDEquivalenceClass(formula, createBDD(formula));
+        return new BDDEquivalenceClass(formula, formula.accept(visitor));
     }
 
     public void callback(int x, Object stats) {
 
     }
 
-    BDD createBDD(Formula formula) {
-        return formula.accept(visitor);
-    }
-
     private class BDDVisitor implements Visitor<BDD> {
+        Function<Formula, Optional<Boolean>> environment;
+
         @Override
         public BDD visit(BooleanConstant b) {
             return b.value ? factory.one() : factory.zero();
@@ -114,6 +120,14 @@ public class BDDEquivalenceClassFactory implements EquivalenceClassFactory {
 
         @Override
         public BDD defaultAction(Formula formula) {
+            if (environment != null) {
+                Optional<Boolean> valuation = environment.apply(formula);
+
+                if (valuation.isPresent()) {
+                    return valuation.get() ? factory.one() : factory.zero();
+                }
+            }
+
             Integer value = mapping.get(formula);
 
             if (value == null) {

@@ -28,6 +28,7 @@ import rabinizer.ltl.simplifier.Simplifier;
 import rabinizer.ltl.simplifier.Simplifier.Strategy;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
 
@@ -65,8 +66,13 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
     }
 
     @Override
+    public EquivalenceClass createEquivalenceClass(Formula formula, Function<Formula, Optional<Boolean>> environment) {
+        return probe(new Z3EquivalenceClass(formula, createZ3(formula, environment)));
+    }
+
+    @Override
     public EquivalenceClass createEquivalenceClass(Formula formula) {
-        return probe(new Z3EquivalenceClass(formula, createZ3(formula)));
+        return probe(new Z3EquivalenceClass(formula, createZ3(formula, null)));
     }
 
     protected Formula createRepresentative(BoolExpr expression) {
@@ -89,8 +95,11 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
         }
     }
 
-    protected BoolExpr createZ3(Formula f) {
-        return f.accept(visitor);
+    protected BoolExpr createZ3(Formula f, Function<Formula, Optional<Boolean>> environment) {
+        visitor.environment = environment;
+        BoolExpr expr = f.accept(visitor);
+        visitor.environment = null;
+        return expr;
     }
 
     protected boolean checkImplies(BoolExpr condition, BoolExpr conclusion) {
@@ -211,6 +220,8 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
 
     private class Z3Visitor implements Visitor<BoolExpr> {
 
+        Function<Formula, Optional<Boolean>> environment;
+
         @Override
         public BoolExpr visit(BooleanConstant b) {
             return b.value ? TRUE : FALSE;
@@ -247,6 +258,14 @@ public class Z3EquivalenceClassFactory implements EquivalenceClassFactory {
 
         @Override
         public BoolExpr defaultAction(Formula f) {
+            if (environment != null) {
+                Optional<Boolean> valuation = environment.apply(f);
+
+                if (valuation.isPresent()) {
+                    return valuation.get() ? TRUE : FALSE;
+                }
+            }
+
             return mapping.get(f);
         }
     }

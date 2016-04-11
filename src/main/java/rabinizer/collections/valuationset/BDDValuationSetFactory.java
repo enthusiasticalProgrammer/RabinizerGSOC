@@ -47,7 +47,7 @@ public class BDDValuationSetFactory implements ValuationSetFactory {
     public BDDValuationSetFactory(int alphabet, BiMap<String, Integer> a) {
         alphabetSize = alphabet;
         aliases = a != null ? ImmutableBiMap.copyOf(a) : null;
-        factory = BDDFactory.init("micro", (32 * alphabetSize) + 32, 1000);
+        factory = BDDFactory.init("jdd", (32 * alphabetSize) + 32, 1000);
         factory.setVarNum(Math.max(alphabetSize, 1));
 
         // Silence library, TODO: move to logging util class

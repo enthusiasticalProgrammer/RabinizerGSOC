@@ -20,8 +20,14 @@ package rabinizer.ltl.equivalence;
 
 import rabinizer.ltl.BooleanConstant;
 import rabinizer.ltl.Formula;
+import rabinizer.ltl.GOperator;
+
+import java.util.Optional;
+import java.util.function.Function;
 
 public interface EquivalenceClassFactory {
+
+    EquivalenceClass createEquivalenceClass(Formula formula, Function<Formula, Optional<Boolean>> environment);
 
     EquivalenceClass createEquivalenceClass(Formula formula);
 

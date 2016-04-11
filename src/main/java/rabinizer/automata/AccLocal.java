@@ -248,7 +248,14 @@ class AccLocal {
             }
         }
 
-        EquivalenceClass antecedent = equivalenceClassFactory.createEquivalenceClass(new Conjunction(conjunction));
+        EquivalenceClass antecedent = equivalenceClassFactory.createEquivalenceClass(new Conjunction(conjunction), formula -> {
+            if (formula instanceof GOperator && !ranking.containsKey(formula)) {
+                return Optional.of(Boolean.FALSE);
+            }
+
+            return Optional.empty();
+        });
+
         return antecedent.implies(consequent);
     }
 
