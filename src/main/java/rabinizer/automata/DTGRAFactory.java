@@ -208,12 +208,12 @@ public class DTGRAFactory {
 
             for (GeneralizedRabinPair<S> pair1 : this2) {
                 for (GeneralizedRabinPair<S> pair2 : this2) {
-                    if (pair1 == pair2) {
+                    if (pair1.equals(pair2)) {
                         continue;
                     }
 
-                    if (pair2.implies(pair1) && hs.contains(pair2)) {
-                        hs.remove(pair1);
+                    if (pair2.implies(pair1) && hs.contains(pair1)) {
+                        hs.remove(pair2);
                         break;
                     }
                 }
