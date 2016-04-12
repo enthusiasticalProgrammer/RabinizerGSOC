@@ -132,14 +132,6 @@ public abstract class Automaton<S extends IState<S>> {
         removeStatesIf(s -> !reach.contains(s));
     }
 
-    public List<TranSet<S>> SCCs() {
-        return SCCAnalyser.SCCs(this, initialState);
-    }
-
-    public List<TranSet<S>> subSCCs(TranSet<S> SCC, TranSet<S> forbiddenEdges) {
-        return SCCAnalyser.subSCCs(this, SCC, forbiddenEdges);
-    }
-
     public void toHOA(HOAConsumer hoa) throws HOAConsumerException {
         throw new UnsupportedOperationException();
     }
