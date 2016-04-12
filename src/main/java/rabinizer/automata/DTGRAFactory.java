@@ -213,7 +213,7 @@ public class DTGRAFactory {
                     }
 
                     if (pair2.implies(pair1) && hs.contains(pair2)) {
-                        hs.remove(pair2);
+                        hs.remove(pair1);
                         break;
                     }
                 }
