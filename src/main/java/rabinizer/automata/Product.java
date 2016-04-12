@@ -18,6 +18,10 @@
 package rabinizer.automata;
 
 import com.google.common.collect.ImmutableMap;
+
+import rabinizer.automata.SuspendedMaster.State;
+import rabinizer.collections.Tuple;
+import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.GOperator;
 
@@ -96,6 +100,33 @@ public class Product extends Automaton<Product.ProductState> {
         @Override
         protected ProductState constructState(Master.State primaryState, ImmutableMap<GOperator, RabinSlave.State> secondaryStates) {
             return new ProductState(primaryState, secondaryStates);
+        }
+
+        @Override
+        protected Iterable<Tuple<Map<GOperator, RabinSlave.State>, ValuationSet>> secondaryJointMove(Set<GOperator> keys, ValuationSet maxVs) {
+            ArrayDeque<Tuple<Map<GOperator, RabinSlave.State>, ValuationSet>> result = new ArrayDeque<>();
+            if (this.primaryState instanceof SuspendedMaster.State) {
+                SuspendedMaster.State mine = (SuspendedMaster.State) this.primaryState;
+                if (mine.slavesSuspended) {
+                    Map<Master.State, ValuationSet> primarySuccessors = getPrimaryAutomaton().getSuccessors(primaryState);
+
+                    for (Map.Entry<Master.State, ValuationSet> entry1 : primarySuccessors.entrySet()) {
+                        Map<GOperator, RabinSlave.State> map = new HashMap<>();
+                        if (!((SuspendedMaster.State) entry1.getKey()).slavesSuspended) {
+                            for (GOperator g : relevantSecondary(entry1.getKey())) {
+                                map.put(g, secondaryAutomata.get(g).getInitialState());
+                            }
+                        }
+                        ValuationSet valu = entry1.getValue().intersect(maxVs);
+                        if (!valu.isEmpty()) {
+                            result.add(new Tuple<Map<GOperator, RabinSlave.State>, ValuationSet>(map, valu));
+                        }
+                    }
+                    return result;
+                }
+            }
+
+            return super.secondaryJointMove(keys, maxVs);
         }
     }
 }
