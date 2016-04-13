@@ -68,7 +68,7 @@ public class AutomatonClassTest {
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula);
 
         DTGRA dtgra = DTGRAFactory.constructDTGRA(formula, factory, val, standardWithEmpty);
-        List<TranSet<Product.ProductState>> SCC = dtgra.SCCs();
+        List<Set<Product.ProductState>> SCC = SCCAnalyser.SCCsStates(dtgra);
         assertEquals(2, SCC.size());
     }
 
@@ -80,7 +80,7 @@ public class AutomatonClassTest {
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula);
 
         DTGRA dtgra = DTGRAFactory.constructDTGRA(formula, factory, val, standardWithEmpty);
-        List<TranSet<Product.ProductState>> SCC = dtgra.SCCs();
+        List<Set<Product.ProductState>> SCC = SCCAnalyser.SCCsStates(dtgra);
         assertEquals(6, SCC.size());
 
     }
@@ -93,8 +93,8 @@ public class AutomatonClassTest {
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula);
 
         DTGRA dtgra = DTGRAFactory.constructDTGRA(formula, factory, val, standardWithEmpty);
-        List<TranSet<Product.ProductState>> SCC = dtgra.SCCs();
-        assertTrue(SCC.get(1).isEmpty());
+        List<Set<Product.ProductState>> SCC = SCCAnalyser.SCCsStates(dtgra);
+        assertFalse(dtgra.isSink(SCC.get(1)));
     }
 
     @Test
@@ -105,32 +105,30 @@ public class AutomatonClassTest {
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula);
 
         DTGRA dtgra = DTGRAFactory.constructDTGRA(formula, factory, val, standardWithEmpty);
-        List<TranSet<Product.ProductState>> SCC = dtgra.SCCs();
+        List<Set<Product.ProductState>> SCC = SCCAnalyser.SCCsStates(dtgra);
 
-        DTGRA dtgra2 = DTGRAFactory.constructDTGRA(formula, factory, val, standardWithEmpty);
 
-        assertTrue(SCC.get(5).asMap().keySet().stream()
-                .allMatch(s -> s.primaryState.clazz.equals(dtgra2.initialState.primaryState.clazz)));
 
         Formula f2 = Util.createFormula("(X a) & (X X a) & (X X X a) & a");
-        assertTrue(SCC.get(5).asMap().keySet().stream()
+
+        assertTrue(
+                SCC.get(5).stream()
+                .allMatch(s -> s.primaryState.getClazz().equals(DTGRAFactory.constructDTGRA(formula, factory, val, standard).initialState.primaryState.getClazz())));
+
+        Formula f3 = Util.createFormula("(X a) & (X X a)  & a");
+        assertTrue(SCC.get(4).stream()
                 .allMatch(s -> s.primaryState.clazz
                         .equals(DTGRAFactory.constructDTGRA(f2, factory, val, standard).initialState.primaryState.clazz)));
 
-        Formula f3 = Util.createFormula("(X a) & (X X a)  & a");
-        assertTrue(SCC.get(4).asMap().keySet().stream()
+        Formula f4 = Util.createFormula("(X a)  & a");
+        assertTrue(SCC.get(3).stream()
                 .allMatch(s -> s.primaryState.clazz
                         .equals(DTGRAFactory.constructDTGRA(f3, factory, val, standard).initialState.primaryState.clazz)));
 
-        Formula f4 = Util.createFormula("(X a)  & a");
-        assertTrue(SCC.get(3).asMap().keySet().stream()
+        Formula f5 = Util.createFormula("a");
+        assertTrue(SCC.get(2).stream()
                 .allMatch(s -> s.primaryState.clazz
                         .equals(DTGRAFactory.constructDTGRA(f4, factory, val, standard).initialState.primaryState.clazz)));
-
-        Formula f5 = Util.createFormula("a");
-        assertTrue(SCC.get(2).asMap().keySet().stream()
-                .allMatch(s -> s.primaryState.clazz
-                        .equals(DTGRAFactory.constructDTGRA(f5, factory, val, standard).initialState.primaryState.clazz)));
     }
 
     @Test
@@ -141,9 +139,9 @@ public class AutomatonClassTest {
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula);
 
         DTGRA dtgra = DTGRAFactory.constructDTGRA(formula, factory, val, standard);
-        List<TranSet<Product.ProductState>> SCC = dtgra.SCCs();
+        List<Set<Product.ProductState>> SCC = SCCAnalyser.SCCsStates(dtgra);
 
-        assertTrue(dtgra.isSink(SCC.get(0).asMap().keySet()));
+        assertTrue(dtgra.isSink(SCC.get(0)));
     }
 
     @Test
@@ -239,6 +237,38 @@ public class AutomatonClassTest {
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
-        assertEquals(dtgra.SCCs().size(), 1);
+        assertEquals(SCCAnalyser.SCCsStates(dtgra).size(), 1);
+    }
+
+    @Test
+    public void testEmptinessCheck2() {
+        Formula f = Util.createFormula("(G((X(!(X(p2)))) U (p2)))");
+
+        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
+        DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
+        EmptinessCheck.checkEmptiness(dtgra, dtgra.acc);
+        assertEquals(dtgra.getStates().size(), 3);
+    }
+
+    @Test
+    public void testEmptinessCheck3() {
+        Formula f = Util.createFormula("a | X X(G b & F(G !b))");
+
+        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
+        DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
+        EmptinessCheck.checkEmptiness(dtgra, dtgra.acc);
+        assertEquals(dtgra.getStates().size(), 2);
+    }
+
+    @Test
+    public void testEmptinessCheck4() {
+        Formula f = Util.createFormula("X (G a & F (b U !a))");
+
+        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
+        DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
+        assertTrue(EmptinessCheck.checkEmptiness(dtgra, dtgra.acc));
     }
 }

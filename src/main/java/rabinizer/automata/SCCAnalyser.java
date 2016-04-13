@@ -61,15 +61,10 @@ public class SCCAnalyser<S extends IState<S>> {
      * vertices, ordered such that for each transition a->b in the
      * condensation graph, a is in the list before b
      */
-    public static <S extends IState<S>> List<TranSet<S>> SCCs(Automaton<S> a, S initialState) {
-        SCCAnalyser<S> s = new SCCAnalyser<>(a);
-        s.stack.push(initialState);
-        return s.SCCsRecursively();
-    }
 
-    public static <S extends IState<S>> List<Set<S>> SCCsStates(Automaton<S> a, S initialState) {
+    public static <S extends IState<S>> List<Set<S>> SCCsStates(Automaton<S> a) {
         SCCAnalyser<S> s = new SCCAnalyser<>(a);
-        s.stack.push(initialState);
+        s.stack.push(a.getInitialState());
         return s.SCCsStatesRecursively();
     }
 
@@ -85,11 +80,6 @@ public class SCCAnalyser<S extends IState<S>> {
     public static <S extends IState<S>> List<TranSet<S>> subSCCs(Automaton<S> a, TranSet<S> SCC, TranSet<S> forbiddenEdges) {
         SCCAnalyser<S> s = new SCCAnalyser<>(a, SCC.asMap().keySet(), forbiddenEdges);
         return s.subSCCs();
-    }
-
-    public List<TranSet<S>> SCCs() {
-        stack.push(a.initialState);
-        return SCCsRecursively();
     }
 
     private List<TranSet<S>> subSCCs() {
@@ -187,6 +177,20 @@ public class SCCAnalyser<S extends IState<S>> {
             result.add(tranSet);
         }
 
+        return result;
+    }
+
+    public static <S extends IState<S>> TranSet<S> sccToTran(Automaton aut, Set<S> scc) {
+        TranSet<S> result = new TranSet<>(aut.valuationSetFactory);
+
+        for (S s : scc) {
+            Map<S, ValuationSet> map = aut.getSuccessors(s);
+            for (Map.Entry<S, ValuationSet> succ : map.entrySet()) {
+                if (scc.contains(succ.getKey())) {
+                    result.addAll(s, succ.getValue());
+                }
+            }
+        }
         return result;
     }
 
