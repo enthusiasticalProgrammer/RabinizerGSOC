@@ -39,4 +39,11 @@ public class SimplifierTest {
         Formula f2 = Util.createFormula("a & (b | c)");
         assertEquals(Simplifier.simplify(f1, strat), f2);
     }
+
+    @Test
+    public void testPullupX() {
+        Formula f1 = Util.createFormula(" G (F (X b))");
+        Formula f2 = Util.createFormula("X(G(F(b)))");
+        assertEquals(Simplifier.simplify(f1, Simplifier.Strategy.PULLUP_X), f2);
+    }
 }
