@@ -136,7 +136,7 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
 
     protected abstract T constructState(P primaryState, ImmutableMap<K, S> secondaryStates);
 
-    private Iterable<Tuple<Map<K, S>, ValuationSet>> secondaryJointMove(Set<K> keys, ValuationSet maxVs) {
+    protected Iterable<Tuple<Map<K, S>, ValuationSet>> secondaryJointMove(Set<K> keys, ValuationSet maxVs) {
         Map<K, ? extends Automaton<S>> secondary = getSecondaryAutomata();
 
         Deque<Tuple<Map<K, S>, ValuationSet>> current = new ArrayDeque<>();
