@@ -337,7 +337,7 @@ public final class Simplifier {
                 return BooleanConstant.TRUE;
             }
 
-            return Simplifier.simplify(new Conjunction(set), Strategy.PULLUP_X);
+            return new Conjunction(set);
         }
 
         @Override
@@ -361,7 +361,7 @@ public final class Simplifier {
                 return BooleanConstant.FALSE;
             }
 
-            return Simplifier.simplify(new Disjunction(set), Strategy.PULLUP_X);
+            return new Disjunction(set);
 
         }
 
@@ -387,10 +387,6 @@ public final class Simplifier {
 
             if (newG instanceof GOperator) {
                 Formula child = ((GOperator) newG).operand;
-
-                if (child instanceof XOperator) {
-                    return new XOperator(new GOperator(((ModalOperator) child).operand)).accept(this);
-                }
 
                 if (child instanceof Conjunction) {
                     return (new Conjunction(((PropositionalFormula) child).children.stream().map(GOperator::new))).accept(this);
@@ -419,16 +415,17 @@ public final class Simplifier {
                 }
 
                 if (l instanceof XOperator && r instanceof XOperator) {
-                    return Simplifier.simplify(new XOperator(new UOperator(((ModalOperator) l).operand, ((ModalOperator) r).operand)), Strategy.PULLUP_X);
+                    return new XOperator(new UOperator(((ModalOperator) l).operand, ((ModalOperator) r).operand));
                 }
 
                 if (l instanceof Conjunction) {
                     return Simplifier.simplify(new Conjunction(((Conjunction) l).children.stream().map(left -> new UOperator(left, r)).collect(Collectors.toSet())),
-                            Strategy.PULLUP_X);
+                            Strategy.AGGRESSIVELY);
                 }
 
                 if (r instanceof Disjunction) {
-                    Simplifier.simplify(new Disjunction(((Disjunction) r).children.stream().map(right -> new UOperator(l, right)).collect(Collectors.toSet())), Strategy.PULLUP_X);
+                    return Simplifier.simplify(new Disjunction(((Disjunction) r).children.stream().map(right -> new UOperator(l, right)).collect(Collectors.toSet())),
+                            Strategy.AGGRESSIVELY);
                 }
             }
 
