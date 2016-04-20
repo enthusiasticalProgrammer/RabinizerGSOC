@@ -97,6 +97,7 @@ public class DTGRAFactory {
             if (opts.contains(Optimisation.EMPTINESS_CHECK)) {
                 // if it is empty, we have to complete it
                 EmptinessCheck.checkEmptiness(automaton, accTGR);
+                AccTGRRaw.removeRedundancyLightAfterEmptyCheck(accTGR);
             }
         }
 
@@ -228,6 +229,37 @@ public class DTGRAFactory {
 
         public static void printProgress(int phase, Collection<?> this2) {
             Main.nonsilent("Phase " + phase + ": " + Main.stopwatchLocal() + " s " + this2.size() + " pairs");
+        }
+
+        public static <S extends IState<S>> void removeRedundancyLightAfterEmptyCheck(AccTGRRaw<S> accTGR) {
+
+            Iterator<GeneralizedRabinPair<S>> i = accTGR.iterator();
+            while (i.hasNext()) {
+                GeneralizedRabinPair<S> p = i.next();
+                Set<TranSet<S>> s = new HashSet<TranSet<S>>();
+                s.addAll(p.infs);
+                p.infs.clear();
+                p.infs.addAll(s);
+                if (p.infs.stream().anyMatch(TranSet::isEmpty)) {
+                    i.remove();
+                }
+            }
+
+            Set<GeneralizedRabinPair<S>> hs = new HashSet<>(accTGR);
+            for (GeneralizedRabinPair<S> pair1 : accTGR) {
+                for (GeneralizedRabinPair<S> pair2 : accTGR) {
+                    if (pair1.equals(pair2)) {
+                        continue;
+                    }
+
+                    if (pair2.implies(pair1) && hs.contains(pair1)) {
+                        hs.remove(pair2);
+                        break;
+                    }
+                }
+            }
+            accTGR.clear();
+            accTGR.addAll(hs);
         }
 
         @Override
