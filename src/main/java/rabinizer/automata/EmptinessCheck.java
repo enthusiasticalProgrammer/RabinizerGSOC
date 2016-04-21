@@ -95,7 +95,7 @@ public class EmptinessCheck<S extends IState<S>> {
      * @return true if for all inf-sets of the Rabin Pair, the SCC has a
      * transition in the inf-set
      */
-    private boolean infAccepting(TranSet<S> scc, GeneralizedRabinPair<S> pair) {
+    private static <S extends IState<S>> boolean infAccepting(TranSet<S> scc, GeneralizedRabinPair<S> pair) {
         return pair.infs.stream().allMatch(inf -> inf.intersects(scc));
     }
 
