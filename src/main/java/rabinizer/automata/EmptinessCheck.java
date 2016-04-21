@@ -17,7 +17,6 @@
 
 package rabinizer.automata;
 
-import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSet;
 
 import java.util.Collection;
@@ -28,7 +27,10 @@ import java.util.Set;
 /**
  * @author Christopher Ziegler
  */
-public class EmptinessCheck {
+public class EmptinessCheck<S extends IState<S>> {
+
+    private final Automaton<S> automaton;
+    private final Collection<GeneralizedRabinPair<S>> accTGR;
 
     /**
      * This method checks if the automaton is empty and it minimizes the
@@ -38,46 +40,28 @@ public class EmptinessCheck {
      * @param accTGR
      * @return true if the automaton accepts no words
      */
-    public static <S extends IState<S>> boolean checkEmptiness(Automaton<S> automaton, Collection<GeneralizedRabinPair<S>> accTGR) {
-        return checkIfEmpty(automaton, accTGR);
+    public static <S extends IState<S>> boolean checkEmptinessAndMinimiseSCCBased(Automaton<S> automaton, Collection<GeneralizedRabinPair<S>> accTGR) {
+        new EmptinessCheck(automaton, accTGR).minimiseSCCBased();
+        return automaton.getStates().isEmpty();
     }
 
-    private static <S extends IState<S>> boolean checkIfEmpty(Automaton<S> automaton, Collection<GeneralizedRabinPair<S>> accTGR) {
-        boolean automatonEmpty = true;
+    private EmptinessCheck(Automaton<S> automaton, Collection<GeneralizedRabinPair<S>> accTGR) {
+        this.automaton = automaton;
+        this.accTGR = accTGR;
+    }
 
+    private void minimiseSCCBased() {
         for (Set<S> SCC : SCCAnalyser.SCCsStates(automaton)) {
             TranSet<S> tranSCC = SCCAnalyser.sccToTran(automaton, SCC);
-
-            // remove inter-SCC-transitions
-            for (Map.Entry<S, Map<S, ValuationSet>> entry : automaton.transitions.entrySet()) {
-                S source = entry.getKey();
-
-                for (Map.Entry<S, ValuationSet> transition : entry.getValue().entrySet()) {
-                    ValuationSet label = transition.getValue();
-                    S target = transition.getKey();
-
-                    if (SCC.contains(source) && !SCC.contains(target)) {
-                        for (GeneralizedRabinPair<S> pair : accTGR) {
-                            pair.infs.forEach(inf -> inf.removeAll(source, label));
-                            pair.fin.removeAll(source, label);
-                        }
-                    }
-                }
-            }
+            removeInterSCCAccConditions(SCC);
 
             boolean sccEmpty = true;
 
             for (GeneralizedRabinPair<S> pair : accTGR) {
-                if (infAccepting(tranSCC, pair) && finAndInfAccepting(automaton, tranSCC, pair)) {
+                if (infAccepting(tranSCC, pair) && finAndInfAccepting(tranSCC, pair)) {
                     sccEmpty = false;
                 } else {
-                    // all components of infinite
-                    // sets in current scc can be
-                    // deleted and all components of finite sets of current scc
-                    // if any infinite condition is present
-
                     pair.infs.forEach(inf -> inf.removeAll(tranSCC));
-
                     if (!pair.infs.isEmpty()) {
                         pair.fin.removeAll(tranSCC);
                     }
@@ -89,11 +73,21 @@ public class EmptinessCheck {
                     automaton.removeStates(SCC);
                 }
             }
-
-            automatonEmpty = sccEmpty && automatonEmpty;
         }
+    }
 
-        return automatonEmpty;
+    private void removeInterSCCAccConditions(Set<S> SCC) {
+        for (S state : SCC) {
+            Map<S, ValuationSet> relevantTransitions = automaton.transitions.get(state);
+            for (Map.Entry<S, ValuationSet> transition : relevantTransitions.entrySet()) {
+                if (!SCC.contains(transition.getKey())) {
+                    for (GeneralizedRabinPair<S> pair : accTGR) {
+                        pair.infs.forEach(inf -> inf.removeAll(state, transition.getValue()));
+                        pair.fin.removeAll(state, transition.getValue());
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -101,7 +95,7 @@ public class EmptinessCheck {
      * @return true if for all inf-sets of the Rabin Pair, the SCC has a
      * transition in the inf-set
      */
-    private static <S> boolean infAccepting(TranSet<S> scc, GeneralizedRabinPair<S> pair) {
+    private boolean infAccepting(TranSet<S> scc, GeneralizedRabinPair<S> pair) {
         return pair.infs.stream().allMatch(inf -> inf.intersects(scc));
     }
 
@@ -115,17 +109,17 @@ public class EmptinessCheck {
      * SCC (i.e. if this Rabin Pair can accept a word, if the automaton
      * stays infinitely long in the current SCC)
      */
-    private static <S extends IState<S>> boolean finAndInfAccepting(Automaton<S> automaton, TranSet<S> scc, GeneralizedRabinPair<S> pair) {
-        if (scc.isEmpty()) {
+    private boolean finAndInfAccepting(TranSet<S> tranSCC, GeneralizedRabinPair<S> pair) {
+        if (tranSCC.isEmpty()) {
             return false;
         }
 
-        if (!scc.intersects(pair.fin)) {
+        if (!tranSCC.intersects(pair.fin)) {
             return true;
         }
 
         // Compute SubSCCs without Fin-edges.
-        List<TranSet<S>> subSCCs = SCCAnalyser.subSCCs(automaton, scc, pair.fin);
+        List<TranSet<S>> subSCCs = SCCAnalyser.subSCCsTran(automaton, tranSCC, pair.fin);
         return subSCCs.stream().anyMatch(subSCC -> !subSCC.isEmpty() && infAccepting(subSCC, pair));
     }
 }

@@ -22,6 +22,7 @@ import rabinizer.collections.TarjanStack;
 import rabinizer.collections.valuationset.ValuationSet;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Christopher Ziegler
@@ -30,7 +31,7 @@ public class SCCAnalyser<S extends IState<S>> {
     private final Map<S, Integer> lowlink = new HashMap<>();
     private final Map<S, Integer> number = new HashMap<>();
     private final Deque<S> stack = new TarjanStack<>();
-    private final Automaton<S> a;
+    private final Automaton<S> automaton;
     private final TranSet<S> forbiddenEdges;
     private final Set<S> allowedStates;
     private int n = 0;
@@ -39,9 +40,9 @@ public class SCCAnalyser<S extends IState<S>> {
         this(a, a.getStates(), new TranSet<>(a.valuationSetFactory));
     }
 
-    private SCCAnalyser(Automaton<S> a, Set<S> s, TranSet<S> forbiddenEdges) {
-        this.a = a;
-        this.allowedStates = s;
+    private SCCAnalyser(Automaton<S> a, Set<S> allowedStates, TranSet<S> forbiddenEdges) {
+        this.automaton = a;
+        this.allowedStates = allowedStates;
         this.forbiddenEdges = forbiddenEdges;
     }
 
@@ -77,23 +78,22 @@ public class SCCAnalyser<S extends IState<S>> {
      * @param a:              Automaton, for which the SCC-Analysis has to be made
      * @return the sub-SCCs of the SCC as list in topologic ordering
      */
-    public static <S extends IState<S>> List<TranSet<S>> subSCCs(Automaton<S> a, TranSet<S> SCC, TranSet<S> forbiddenEdges) {
+    public static <S extends IState<S>> List<TranSet<S>> subSCCsTran(Automaton<S> a, TranSet<S> SCC, TranSet<S> forbiddenEdges) {
         SCCAnalyser<S> s = new SCCAnalyser<>(a, SCC.asMap().keySet(), forbiddenEdges);
-        return s.subSCCs();
+        return s.subSCCsTran();
     }
 
-    private List<TranSet<S>> subSCCs() {
-        List<TranSet<S>> result = new ArrayList<>();
+    private List<TranSet<S>> subSCCsTran() {
+        List<Set<S>> resultStates = new ArrayList<>();
         Set<S> notYetProcessed = new HashSet<>(allowedStates);
 
         while (!notYetProcessed.isEmpty()) {
             S state = Collections3.removeElement(notYetProcessed);
             stack.push(state);
-            result.addAll(SCCsRecursively());
-            result.forEach(s -> notYetProcessed.removeAll(s.asMap().keySet()));
+            resultStates.addAll(SCCsStatesRecursively());
+            resultStates.forEach(s -> notYetProcessed.removeAll(s));
         }
-
-        return result;
+        return resultStates.stream().map(s -> sccToTran(automaton, s)).collect(Collectors.toList());
     }
 
     private List<Set<S>> SCCsStatesRecursively() {
@@ -103,7 +103,7 @@ public class SCCAnalyser<S extends IState<S>> {
         number.put(v, n);
         List<Set<S>> result = new ArrayList<>();
 
-        for (Map.Entry<S, ValuationSet> entry : a.getSuccessors(v).entrySet()) {
+        for (Map.Entry<S, ValuationSet> entry : automaton.getSuccessors(v).entrySet()) {
             // edge not forbidden
             if (!forbiddenEdges.containsAll(v, entry.getValue())) {
                 S w = entry.getKey();
@@ -132,54 +132,6 @@ public class SCCAnalyser<S extends IState<S>> {
         return result;
     }
 
-
-    private List<TranSet<S>> SCCsRecursively() {
-        n++;
-        S v = stack.peek();
-        lowlink.put(v, n);
-        number.put(v, n);
-        List<TranSet<S>> result = new ArrayList<>();
-
-        for (Map.Entry<S, ValuationSet> entry : a.getSuccessors(v).entrySet()) {
-            // edge not forbidden
-            if (!forbiddenEdges.containsAll(v, entry.getValue())) {
-                S w = entry.getKey();
-
-                if (allowedStates.contains(w) && !number.containsKey(w)) {
-                    stack.push(w);
-                    result.addAll(SCCsRecursively());
-                    lowlink.put(v, Math.min(lowlink.get(v), lowlink.get(w)));
-                } else if (allowedStates.contains(w) && number.get(w) < number.get(v) && stack.contains(w)) {
-                    lowlink.put(v, Math.min(lowlink.get(v), number.get(w)));
-                }
-            }
-        }
-
-        if (lowlink.get(v).equals(number.get(v))) {
-            Set<S> set = new HashSet<>();
-
-            while (!stack.isEmpty() && number.get(stack.peek()) >= number.get(v)) {
-                S w = stack.pop();
-                set.add(w);
-            }
-
-            TranSet<S> tranSet = new TranSet<>(a.valuationSetFactory);
-
-            for (S s : set) {
-                for (Map.Entry<S, ValuationSet> entry : a.getSuccessors(v).entrySet()) {
-                    if (set.contains(entry.getKey()) && !forbiddenEdges.containsAll(s, entry.getValue())) {
-                        tranSet.addAll(s, entry.getValue());
-                        tranSet.removeAll(s, forbiddenEdges.asMap().get(s));
-                    }
-                }
-            }
-
-            result.add(tranSet);
-        }
-
-        return result;
-    }
-
     public static <S extends IState<S>> TranSet<S> sccToTran(Automaton aut, Set<S> scc) {
         TranSet<S> result = new TranSet<>(aut.valuationSetFactory);
 
@@ -193,5 +145,4 @@ public class SCCAnalyser<S extends IState<S>> {
         }
         return result;
     }
-
 }
