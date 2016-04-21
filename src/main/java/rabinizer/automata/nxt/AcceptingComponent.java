@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.*;
-import rabinizer.automata.output.HOAConsumerExtended;
+import rabinizer.automata.output.HOAConsumerExtendedGeneralisedBuchi;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.Conjunction;
@@ -95,7 +95,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         return state;
     }
 
-    void toHOA(HOAConsumerExtended<IState<?>> consumer) throws HOAConsumerException {
+    void toHOA(HOAConsumerExtendedGeneralisedBuchi<IState<?>> consumer) throws HOAConsumerException {
         for (State productState : getStates()) {
             consumer.addState(productState);
 

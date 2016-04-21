@@ -19,7 +19,7 @@ package rabinizer.automata;
 
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import rabinizer.automata.output.HOAConsumerExtended;
+import rabinizer.automata.output.HOAConsumerExtendedRabin;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
@@ -60,30 +60,18 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
 
     @Override
     public void toHOA(HOAConsumer ho) throws HOAConsumerException {
-        HOAConsumerExtended<ProductDegenState> hoa = new HOAConsumerExtended<>(ho, HOAConsumerExtended.AutomatonType.TRANSITION);
-        hoa.setHeader(null, valuationSetFactory);
+        HOAConsumerExtendedRabin hoa = new HOAConsumerExtendedRabin(ho, valuationSetFactory);
+        hoa.setHOAHeader(this.getInitialState().productState.primaryState.getClazz().getRepresentative().toString());
         hoa.setInitialState(this.initialState);
-        hoa.setAcceptanceCondition2(accTR);
+        hoa.setAcceptanceCondition(accTR);
 
         for (ProductDegenState s : getStates()) {
             hoa.addState(s);
 
-            for (BitSet valuation : valuationSetFactory.createUniverseValuationSet()) {
-                ProductDegenState successor = getSuccessor(s, valuation);
-
-                BitSet accSet = new BitSet();
-
-                accTR.forEach(pair -> {
-                    if (pair.fin.contains(s, valuation)) {
-                        accSet.set(hoa.getNumber(pair.fin));
-                    }
-
-                    if (pair.inf.contains(s, valuation)) {
-                        accSet.set(hoa.getNumber(pair.inf));
-                    }
-                });
-
-                hoa.addEdge(s, valuation, successor, accSet);
+            for (Map.Entry<ProductDegenState, ValuationSet> trans : transitions.get(s).entrySet()) {
+                if (!trans.getValue().isEmpty()) {
+                    hoa.addEdge(s, trans.getValue(), trans.getKey());
+                }
             }
 
             hoa.stateDone();

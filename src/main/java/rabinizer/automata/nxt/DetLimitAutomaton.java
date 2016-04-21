@@ -21,16 +21,13 @@ import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import jhoafparser.consumer.HOAConsumerPrint;
 import rabinizer.automata.IState;
-import rabinizer.automata.output.HOAConsumerExtended;
+import rabinizer.automata.output.HOAConsumerExtendedGeneralisedBuchi;
 import rabinizer.automata.output.RemoveComments;
-import rabinizer.collections.valuationset.ValuationSet;
-import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collection;
 
 public class DetLimitAutomaton {
 
@@ -60,11 +57,11 @@ public class DetLimitAutomaton {
     }
 
     public void toHOA(HOAConsumer c) throws HOAConsumerException {
-        HOAConsumerExtended<IState<?>> consumer = new HOAConsumerExtended<>(c, HOAConsumerExtended.AutomatonType.TRANSITION);
+        HOAConsumerExtendedGeneralisedBuchi<IState<?>> consumer = new HOAConsumerExtendedGeneralisedBuchi<IState<?>>(c, acceptingComponent.getFactory());
         IState<?> initialState = getInitialState();
 
-        consumer.setHeader(initialState.toString(), acceptingComponent.getAlphabet());
-        consumer.setGenBuchiAcceptance(acceptingComponent.acceptanceConditionSize);
+        consumer.setHOAHeader(initialState.toString());
+        consumer.setAcceptanceCondition(acceptingComponent.acceptanceConditionSize);
         consumer.setInitialState(initialState);
 
         if (initialComponent != null) {

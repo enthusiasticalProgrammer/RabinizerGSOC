@@ -271,4 +271,14 @@ public class AutomatonClassTest {
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
         assertTrue(EmptinessCheck.checkEmptiness(dtgra, dtgra.acc));
     }
+
+    @Test
+    public void testDTGRAValuationSetFactoryNotNull() {
+        Formula f = Util.createFormula("X (F a)");
+
+        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
+        DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
+        assertNotNull(dtgra.valuationSetFactory);
+    }
 }

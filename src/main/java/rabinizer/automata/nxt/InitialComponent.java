@@ -23,7 +23,7 @@ import rabinizer.automata.IState;
 import rabinizer.automata.Master;
 import rabinizer.automata.Optimisation;
 import rabinizer.automata.SCCAnalyser;
-import rabinizer.automata.output.HOAConsumerExtended;
+import rabinizer.automata.output.HOAConsumerExtendedGeneralisedBuchi;
 import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
@@ -92,7 +92,7 @@ public class InitialComponent extends Master {
         }
     }
 
-    void toHOA(HOAConsumerExtended<IState<?>> consumer) throws HOAConsumerException {
+    void toHOA(HOAConsumerExtendedGeneralisedBuchi<IState<?>> consumer) throws HOAConsumerException {
         for (State state : getStates()) {
             consumer.addState(state);
 

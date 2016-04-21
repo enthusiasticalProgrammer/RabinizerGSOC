@@ -18,11 +18,10 @@
 package rabinizer.automata.buchi;
 
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import rabinizer.automata.output.HOAConsumerExtended;
+import rabinizer.automata.output.HOAConsumerExtendedBuchi;
 import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
@@ -108,14 +107,15 @@ public class BuchiAutomaton {
     }
 
     public void toHOA(HOAConsumer c) throws HOAConsumerException {
-        HOAConsumerExtended<State> consumer = new HOAConsumerExtended<>(c, HOAConsumerExtended.AutomatonType.STATE);
+        HOAConsumerExtendedBuchi consumer = new HOAConsumerExtendedBuchi(c, valuationSetFactory);
 
-        consumer.setHeader(null, valuationSetFactory);
+        consumer.setHOAHeader(null);
+        consumer.setAcceptanceCondition(acceptingStates);
         consumer.setInitialState(initialState);
-        consumer.setBuchiAcceptance();
+
 
         for (State s : states) {
-            consumer.addState(s, acceptingStates.contains(s) ? Collections.singletonList(0) : null);
+            consumer.addState(s);
 
             for (Map.Entry<BitSet, Set<State>> t : transitions.row(s).entrySet()) {
                 for (State s2 : t.getValue()) {

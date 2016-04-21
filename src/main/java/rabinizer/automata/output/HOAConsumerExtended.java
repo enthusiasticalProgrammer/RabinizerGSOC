@@ -17,240 +17,90 @@
 
 package rabinizer.automata.output;
 
-import com.google.common.collect.ImmutableList;
 import jhoafparser.ast.AtomAcceptance;
-import jhoafparser.ast.AtomLabel;
-import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import rabinizer.automata.GeneralizedRabinPair;
-import rabinizer.automata.RabinPair;
 import rabinizer.automata.TranSet;
-import rabinizer.collections.Collections3;
-import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
-import rabinizer.exec.Main;
-import rabinizer.ltl.Conjunction;
 import rabinizer.ltl.Formula;
-import rabinizer.ltl.Literal;
-import rabinizer.ltl.simplifier.Simplifier;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class HOAConsumerExtended<T> {
+/**
+ * S stands for the class of states C for the class of acceptance condition
+ */
+public abstract class HOAConsumerExtended<S, C> {
 
-    private static final BooleanExpression<AtomAcceptance> TRUE = new BooleanExpression<>(BooleanExpression.Type.EXP_TRUE, null, null);
-    private final HOAConsumer hoa;
+    protected final HOAConsumer hoa;
 
-    private final Map<T, Integer> stateNumbers;
-    private final Map<Object, Integer> acceptanceNumbers;
-    private final AutomatonType accType;
+    private final Map<S, Integer> stateNumbers;
+    protected final Map<TranSet<S>, Integer> acceptanceNumbers;
 
-    private T currentState;
-    private ValuationSetFactory valuationSetFactory;
+    private S currentState;
+    protected ValuationSetFactory valuationSetFactory;
 
-    public HOAConsumerExtended(HOAConsumer hoa, AutomatonType type) {
+    public HOAConsumerExtended(HOAConsumer hoa, ValuationSetFactory valSetFac) {
         this.hoa = hoa;
         stateNumbers = new HashMap<>();
         acceptanceNumbers = new HashMap<>();
-        accType = type;
+        valuationSetFactory = valSetFac;
     }
 
-    private static <T> AccType getAccCondition(Collection<GeneralizedRabinPair<T>> acc) {
-        if (acc.isEmpty()) {
-            return AccType.NONE;
-        }
+    protected abstract AccType getAccCondition(C acc);
 
-        if (acc.size() == 1) {
-            GeneralizedRabinPair<T> pair = Collections3.getElement(acc);
+    protected abstract void setAccCondForHOAConsumer(C acc) throws HOAConsumerException;
 
-            if (pair.fin.isEmpty() || pair.infs.size() == 1) {
-                return AccType.BUCHI;
-            }
-
-            if (pair.infs.isEmpty()) {
-                return AccType.COBUCHI;
-            }
-        }
-
-        if (acc.stream().allMatch(pair -> pair.fin.isEmpty())) {
-            return AccType.GENBUCHI;
-        }
-
-        if (acc.stream().allMatch(pair -> pair.infs.size() <= 1)) {
-            return AccType.RABIN;
-        }
-
-        return AccType.GENRABIN;
+    protected static AtomAcceptance mkInf(int number) {
+        return new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_INF, number, false);
     }
 
-    private static BooleanExpression<AtomAcceptance> mkInfAnd(int j) {
-        BooleanExpression<AtomAcceptance> conjunction = new BooleanExpression<>(mkInf(0));
-
-        for (int i = 1; i < j; i++) {
-            conjunction = conjunction.and(new BooleanExpression<>(mkInf(i)));
-        }
-
-        return conjunction;
-    }
-
-    private static AtomAcceptance mkInf(int i) {
-        return new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_INF, i, false);
-    }
-
-    private static AtomAcceptance mkFin(int i) {
-        return new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_FIN, i, false);
-    }
-
-    /**
-     * this sets the version, the tool (Rabinizer), and the atomic propositions
-     *
-     * @throws HOAConsumerException
-     */
-    public void setHeader(String info, ValuationSetFactory factory) throws HOAConsumerException {
+    public void setHOAHeader(String info) throws HOAConsumerException {
         hoa.notifyHeaderStart("v1");
         hoa.setTool("Rabinizer", "infty");
         hoa.setName("Automaton for " + info);
-
-        valuationSetFactory = factory;
-        hoa.setAPs(IntStream.range(0, factory.getSize()).mapToObj(i -> factory.getAliases().inverse().get(i)).collect(Collectors.toList()));
+        hoa.setAPs(IntStream.range(0, valuationSetFactory.getSize()).mapToObj(i -> valuationSetFactory.getAliases().inverse().get(i)).collect(Collectors.toList()));
     }
 
-    /**
-     * @throws HOAConsumerException
-     */
-    public void setInitialState(T initialState) throws HOAConsumerException {
-        if (stateNumbers.containsKey(initialState)) {
-            hoa.addStartStates(Collections.singletonList(stateNumbers.get(initialState)));
-        } else {
-            stateNumbers.put(initialState, stateNumbers.keySet().size());
-            hoa.addStartStates(Collections.singletonList(stateNumbers.get(initialState)));
-        }
+    public void setInitialState(S initialState) throws HOAConsumerException {
+        hoa.addStartStates(Collections.singletonList(getStateId(initialState)));
     }
 
-    /**
-     * Checks if the acceptanceCondition is generalisedRabin or if it can be
-     * specified more precise, for example if it is coBuchi, or Buchi,
-     * genaralized Buchi, or Rabin.
-     *
-     * @throws HOAConsumerException
-     */
-    public void setAcceptanceCondition(Collection<GeneralizedRabinPair<T>> acc) throws HOAConsumerException {
+    public void setAcceptanceCondition(C acc) throws HOAConsumerException {
         AccType accT = getAccCondition(acc);
-
         hoa.provideAcceptanceName(accT.toString(), Collections.emptyList());
-        setAccCond(acc);
+        setAccCondForHOAConsumer(acc);
     }
 
-    public void setAcceptanceCondition2(Collection<RabinPair<T>> acc) throws HOAConsumerException {
-        setAcceptanceCondition(acc.stream().map(pair -> new GeneralizedRabinPair<>(pair.fin, Collections.singletonList(pair.inf))).collect(Collectors.toList()));
-    }
-
-    public void setBuchiAcceptance() throws HOAConsumerException {
-        hoa.provideAcceptanceName(AccType.BUCHI.toString(), Collections.emptyList());
-        hoa.setAcceptanceCondition(1, new BooleanExpression<>(mkInf(0)));
-    }
-
-    public void setGenBuchiAcceptance(int i) throws HOAConsumerException {
-        hoa.provideAcceptanceName(AccType.GENBUCHI.toString(), Collections.singletonList(i));
-        hoa.setAcceptanceCondition(i, mkInfAnd(i));
-    }
-
-    public void addEpsilonEdge(T begin, T successor) throws HOAConsumerException {
-        Main.nonsilent("Warning: HOA does not support epsilon-transitions. (" + begin + " -> " + successor + ")");
-        hoa.addEdgeWithLabel(getStateId(begin), null, Collections.singletonList(getStateId(successor)), null);
-    }
-
-    public void addEdge(T begin, Formula label, T end, List<Integer> accSets) throws HOAConsumerException {
-        if (accSets != null && accType == AutomatonType.STATE) {
-            throw new UnsupportedOperationException("For state-acceptance-based automata, please use the other addEdge method, where you also put accSets");
-        }
-
-        hoa.addEdgeWithLabel(stateNumbers.get(begin), label.accept(new FormulaConverter()), Collections.singletonList(getStateId(end)), accSets);
-    }
-
-    public void addEdge(T begin, Formula label, T end, BitSet accSets) throws HOAConsumerException {
-        addEdge(begin, label, end, Collections3.toList(accSets));
-    }
-
-    public void addEdge(T begin, Formula label, T end) throws HOAConsumerException {
-        addEdge(begin, label, end, (List<Integer>) null);
-    }
-
-    public void addEdge(T begin, BitSet label, T end) throws HOAConsumerException {
-        addEdge(begin, Conjunction.create(IntStream.range(0, valuationSetFactory.getSize()).mapToObj(l -> new Literal(l, !label.get(l)))), end, (List<Integer>) null);
-    }
-
-    public void addEdge(T begin, BitSet label, T end, BitSet accSets) throws HOAConsumerException {
-        addEdge(begin, Conjunction.create(IntStream.range(0, valuationSetFactory.getSize()).mapToObj(l -> new Literal(l, !label.get(l)))), end, accSets);
-    }
-
-    public void addState(T s) throws HOAConsumerException {
-        addState(s, null);
-    }
-
-    public void addState(T s, List<Integer> accSets) throws HOAConsumerException {
-        if (accSets != null && accType == AutomatonType.TRANSITION) {
-            throw new UnsupportedOperationException("For transition-acceptance-based automata, please use the other addState method, where you also put accSets");
-        }
-
+    public void addState(S state) throws HOAConsumerException {
         if (currentState == null) {
             hoa.notifyBodyStart();
         }
-
-        currentState = s;
-        hoa.addState(getStateId(s), s.toString(), null, accSets);
-    }
-
-    public Integer getNumber(Object o) {
-        if (!acceptanceNumbers.containsKey(o)) {
-            acceptanceNumbers.put(o, acceptanceNumbers.size());
-        }
-
-        return acceptanceNumbers.get(o);
-    }
-
-    public void done() throws HOAConsumerException {
-        hoa.notifyEnd();
+        currentState = state;
+        hoa.addState(getStateId(state), state.toString(), null, null);
     }
 
     public void stateDone() throws HOAConsumerException {
         hoa.notifyEndOfState(getStateId(currentState));
     }
 
-    public void addEdge(T state, ValuationSet key, T accState) throws HOAConsumerException {
-        addEdge(state, key.toFormula(), accState);
+    public void done() throws HOAConsumerException {
+        hoa.notifyEnd();
     }
 
-    private void setAccCond(Collection<GeneralizedRabinPair<T>> acc) throws HOAConsumerException {
-        BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
+    protected void addEdgeBackend(S begin, Formula label, S end, List<Integer> accSets) throws HOAConsumerException {
+        hoa.addEdgeWithLabel(getStateId(begin), label.accept(new FormulaConverter()), Collections.singletonList(getStateId(end)), accSets);
+    }
 
-        for (GeneralizedRabinPair<T> rabin : acc) {
-            BooleanExpression<AtomAcceptance> left = TRUE;
-            BooleanExpression<AtomAcceptance> right = TRUE;
-            BooleanExpression<AtomAcceptance> both;
-
-            if (!rabin.fin.isEmpty()) {
-                left = new BooleanExpression<>(mkFin(getNumber(rabin.fin)));
-            }
-
-
-            if (!rabin.infs.isEmpty()) {
-                for (TranSet<T> inf : rabin.infs) {
-                    right = new BooleanExpression<>(BooleanExpression.Type.EXP_AND, right, new BooleanExpression<>(mkInf(getNumber(inf))));
-                }
-            }
-
-            both = new BooleanExpression<>(BooleanExpression.Type.EXP_AND, left, right);
-            all = new BooleanExpression<>(BooleanExpression.Type.EXP_OR, all, both);
+    protected Integer getTranSetId(TranSet<S> o) {
+        if (!acceptanceNumbers.containsKey(o)) {
+            acceptanceNumbers.put(o, acceptanceNumbers.size());
         }
-
-        hoa.setAcceptanceCondition(acceptanceNumbers.size(), new RemoveConstants<AtomAcceptance>().visit(all));
+        return acceptanceNumbers.get(o);
     }
 
-    private int getStateId(T state) {
+    protected int getStateId(S state) {
         if (!stateNumbers.containsKey(state)) {
             stateNumbers.put(state, stateNumbers.keySet().size());
         }
@@ -258,9 +108,6 @@ public class HOAConsumerExtended<T> {
         return stateNumbers.get(state);
     }
 
-    public enum AutomatonType {
-        STATE, TRANSITION
-    }
 
     public enum AccType {
         NONE, ALL, BUCHI, COBUCHI, GENBUCHI, RABIN, GENRABIN;
