@@ -189,7 +189,7 @@ public class AutomatonClassTest {
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(f);
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, standard);
-        assertFalse(EmptinessCheck.checkEmptiness(dtgra, dtgra.acc));
+        assertFalse(EmptinessCheck.checkEmptinessAndMinimiseSCCBased(dtgra, dtgra.acc));
     }
 
     @Test
@@ -227,7 +227,7 @@ public class AutomatonClassTest {
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
-        assertFalse(EmptinessCheck.checkEmptiness(dtgra, dtgra.acc));
+        assertFalse(EmptinessCheck.checkEmptinessAndMinimiseSCCBased(dtgra, dtgra.acc));
     }
 
     @Test
@@ -247,7 +247,7 @@ public class AutomatonClassTest {
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
-        EmptinessCheck.checkEmptiness(dtgra, dtgra.acc);
+        EmptinessCheck.checkEmptinessAndMinimiseSCCBased(dtgra, dtgra.acc);
         assertEquals(dtgra.getStates().size(), 3);
     }
 
@@ -258,7 +258,7 @@ public class AutomatonClassTest {
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
-        EmptinessCheck.checkEmptiness(dtgra, dtgra.acc);
+        EmptinessCheck.checkEmptinessAndMinimiseSCCBased(dtgra, dtgra.acc);
         assertEquals(dtgra.getStates().size(), 2);
     }
 
@@ -269,6 +269,6 @@ public class AutomatonClassTest {
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
-        assertTrue(EmptinessCheck.checkEmptiness(dtgra, dtgra.acc));
+        assertTrue(EmptinessCheck.checkEmptinessAndMinimiseSCCBased(dtgra, dtgra.acc));
     }
 }

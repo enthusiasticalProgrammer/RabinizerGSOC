@@ -26,7 +26,7 @@ import rabinizer.ltl.parser.LTLParser;
 
 import java.io.StringReader;
 
-public class LTL2DetLimit {
+public class LTL2LDBA {
 
     public static void main(String... args) throws rabinizer.ltl.parser.ParseException, HOAConsumerException {
         LTLParser parser = new LTLParser(new StringReader(args[0]));

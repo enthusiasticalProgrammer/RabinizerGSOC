@@ -96,7 +96,7 @@ public class DTGRAFactory {
              */
             if (opts.contains(Optimisation.EMPTINESS_CHECK)) {
                 // if it is empty, we have to complete it
-                EmptinessCheck.checkEmptiness(automaton, accTGR);
+                EmptinessCheck.checkEmptinessAndMinimiseSCCBased(automaton, accTGR);
                 AccTGRRaw.removeRedundancyLightAfterEmptyCheck(accTGR);
             }
         }

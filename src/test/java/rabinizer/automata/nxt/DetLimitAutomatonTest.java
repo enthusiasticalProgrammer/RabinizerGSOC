@@ -238,7 +238,7 @@ public class DetLimitAutomatonTest {
         testOutput(ltl, opts, 5);
 
         ltl = "(G p0 |(G p1)|(G p2))&((F G p3)|(G F p4)|(G F p5))&((F G !p4)|(G F !p3)|(G F p5))";
-        testOutput(ltl, opts, 5);
+        testOutput(ltl, opts, 34);
     }
 
 
