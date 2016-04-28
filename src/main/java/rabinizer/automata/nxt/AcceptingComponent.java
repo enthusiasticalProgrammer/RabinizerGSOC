@@ -101,19 +101,29 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
 
             Map<BitSet, ValuationSet> accSetMap = productState.getAcceptance();
 
-            getSuccessors(productState).forEach((successor, valuationSet) -> {
-                for (Map.Entry<BitSet, ValuationSet> acceptance : accSetMap.entrySet()) {
-                    ValuationSet label = acceptance.getValue().intersect(valuationSet);
+            if (accSetMap == null) {
+                getSuccessors(productState).forEach((successor, valuationSet) -> {
+                    try {
+                        consumer.addEdge(productState, valuationSet.toFormula(), successor);
+                    } catch (HOAConsumerException e) {
+                        e.printStackTrace();
+                    }
+                });
+            } else {
+                getSuccessors(productState).forEach((successor, valuationSet) -> {
+                    for (Map.Entry<BitSet, ValuationSet> acceptance : accSetMap.entrySet()) {
+                        ValuationSet label = acceptance.getValue().intersect(valuationSet);
 
-                    if (!label.isEmpty()) {
-                        try {
-                            consumer.addEdge(productState, label.toFormula(), successor, acceptance.getKey());
-                        } catch (HOAConsumerException e) {
-                            e.printStackTrace();
+                        if (!label.isEmpty()) {
+                            try {
+                                consumer.addEdge(productState, label.toFormula(), successor, acceptance.getKey());
+                            } catch (HOAConsumerException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
 
             consumer.stateDone();
         }

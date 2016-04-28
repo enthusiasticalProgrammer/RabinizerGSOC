@@ -19,10 +19,7 @@ package rabinizer.automata.nxt;
 
 import com.google.common.collect.*;
 import jhoafparser.consumer.HOAConsumerException;
-import rabinizer.automata.IState;
-import rabinizer.automata.Master;
-import rabinizer.automata.Optimisation;
-import rabinizer.automata.SCCAnalyser;
+import rabinizer.automata.*;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSet;
@@ -31,6 +28,7 @@ import rabinizer.ltl.Formula;
 import rabinizer.ltl.GOperator;
 import rabinizer.ltl.SkeletonVisitor;
 import rabinizer.ltl.equivalence.EquivalenceClass;
+import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.*;
 
@@ -54,6 +52,19 @@ public class InitialComponent extends Master {
 
         epsilonJumps = HashMultimap.create();
         valuationSetJumps = HashBasedTable.create();
+    }
+
+    public InitialComponent(EquivalenceClass init, AcceptingComponent acceptingComponent, ValuationSetFactory valuationSetFactory) {
+        super(init, valuationSetFactory, Collections.emptySet());
+        initialState = new Master.State(init);
+        transitions.put(getInitialState(), Collections.emptyMap());
+        epsilonJumps = HashMultimap.create();
+        epsilonJumps.put(getInitialState(), acceptingComponent.getInitialState());
+        valuationSetJumps = HashBasedTable.create();
+        skeleton = false;
+        scc = false;
+        impatient = false;
+        this.acceptingComponent = acceptingComponent;
     }
 
     @Override

@@ -69,6 +69,8 @@ public class DetLimitAutomaton {
 
         if (initialComponent != null) {
             initialComponent.toHOA(consumer);
+        } else {
+            acceptingComponent.generate();
         }
 
         acceptingComponent.toHOA(consumer);
