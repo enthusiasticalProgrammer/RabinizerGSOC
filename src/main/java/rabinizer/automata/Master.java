@@ -25,17 +25,16 @@ import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 import javax.annotation.Nullable;
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.Set;
 
 public class Master extends Automaton<Master.State> {
 
     final boolean eager;
     @Nullable
-    final EquivalenceClass initialState;
+    final EquivalenceClass initialClazz;
 
     public Master(@Nullable EquivalenceClass clazz, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
         super(valuationSetFactory);
-        initialState = clazz;
+        initialClazz = clazz;
         eager = optimisations.contains(Optimisation.EAGER);
     }
 
@@ -58,11 +57,11 @@ public class Master extends Automaton<Master.State> {
 
     @Override
     protected State generateInitialState() {
-        if (initialState == null) {
+        if (initialClazz == null) {
             throw new IllegalStateException("There is no initial state!");
         }
 
-        return generateInitialState(initialState);
+        return generateInitialState(initialClazz);
     }
 
     protected EquivalenceClass step(EquivalenceClass clazz, BitSet valuation) {

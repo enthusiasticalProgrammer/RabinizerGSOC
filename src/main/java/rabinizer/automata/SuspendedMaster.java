@@ -92,6 +92,7 @@ public class SuspendedMaster extends Master {
             if (slaveSuspension && this.slavesSuspended && !folded.getRepresentative().accept(RelevantGFormulaeWithSlaveSuspension.RELEVANT_G_FORMULAE_PRESENT)) {
                 return new State(successor, true, folded);
             }
+
             return new State(successor, false, folded);
         }
 
