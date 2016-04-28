@@ -115,7 +115,10 @@ public class HOAConsumerExtended<T> {
         hoa.setName("Automaton for " + info);
 
         valuationSetFactory = factory;
-        hoa.setAPs(IntStream.range(0, factory.getSize()).mapToObj(i -> factory.getAliases().inverse().get(i)).collect(Collectors.toList()));
+
+        if (factory.getAliases() != null) {
+            hoa.setAPs(IntStream.range(0, factory.getSize()).mapToObj(i -> factory.getAliases().inverse().get(i)).collect(Collectors.toList()));
+        }
     }
 
     /**

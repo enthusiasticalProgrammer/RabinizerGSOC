@@ -37,7 +37,11 @@ import java.util.*;
 
 public class DetLimitAutomatonFactory {
     public static DetLimitAutomaton createDetLimitAutomaton(Formula formula) {
-        return createDetLimitAutomaton(formula, null, EnumSet.allOf(Optimisation.class));
+        return createDetLimitAutomaton(formula, null);
+    }
+
+    public static DetLimitAutomaton createDetLimitAutomaton(Formula formula, BiMap<String, Integer> mapping) {
+        return createDetLimitAutomaton(formula, mapping, EnumSet.allOf(Optimisation.class));
     }
 
     public static DetLimitAutomaton createDetLimitAutomaton(Formula formula, BiMap<String, Integer> mapping, Collection<Optimisation> optimisations) {

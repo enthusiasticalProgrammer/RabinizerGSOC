@@ -31,7 +31,7 @@ public class LTL2LDBA {
     public static void main(String... args) throws rabinizer.ltl.parser.ParseException, HOAConsumerException {
         LTLParser parser = new LTLParser(new StringReader(args[0]));
         Formula formula = parser.parse();
-        DetLimitAutomaton automaton = DetLimitAutomatonFactory.createDetLimitAutomaton(formula);
+        DetLimitAutomaton automaton = DetLimitAutomatonFactory.createDetLimitAutomaton(formula, parser.map);
         automaton.toHOA(new HOAConsumerPrint(System.out));
     }
 }
