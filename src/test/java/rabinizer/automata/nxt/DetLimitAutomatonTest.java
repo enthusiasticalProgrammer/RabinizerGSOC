@@ -236,7 +236,11 @@ public class DetLimitAutomatonTest {
         opts.remove(Optimisation.REMOVE_EPSILON_TRANSITIONS);
         opts.remove(Optimisation.LAZY_ACCEPTING_COMPONENT_CONSTRUCTION);
         testOutput(ltl, opts, 5);
+
+        ltl = "(G p0 |(G p1)|(G p2))&((F G p3)|(G F p4)|(G F p5))&((F G !p4)|(G F !p3)|(G F p5))";
+        testOutput(ltl, opts, 5);
     }
+
 
 
     // @Test
