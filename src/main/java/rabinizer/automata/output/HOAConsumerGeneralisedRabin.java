@@ -13,11 +13,9 @@ import rabinizer.automata.TranSet;
 import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
-public class HOAConsumerExtendedGeneralisedRabin extends HOAConsumerExtendedAbstractRabin<Product.ProductState, Collection<GeneralizedRabinPair<Product.ProductState>>> {
+public class HOAConsumerGeneralisedRabin extends HOAConsumerAbstractRabin<Product.ProductState, Collection<GeneralizedRabinPair<Product.ProductState>>> {
 
-    private static final BooleanExpression<AtomAcceptance> TRUE = new BooleanExpression<>(BooleanExpression.Type.EXP_TRUE, null, null);
-
-    public HOAConsumerExtendedGeneralisedRabin(HOAConsumer hoa, ValuationSetFactory valFac) {
+    public HOAConsumerGeneralisedRabin(HOAConsumer hoa, ValuationSetFactory valFac) {
         super(hoa, valFac);
     }
 
@@ -55,16 +53,19 @@ public class HOAConsumerExtendedGeneralisedRabin extends HOAConsumerExtendedAbst
         BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
 
         for (GeneralizedRabinPair<Product.ProductState> genRabinPair : acc) {
-            BooleanExpression<AtomAcceptance> both = TRUE;
+            BooleanExpression<AtomAcceptance> both = new BooleanExpression<>(BooleanExpression.Type.EXP_TRUE, null, null);
+
             if (!genRabinPair.fin.isEmpty()) {
-                both = new BooleanExpression<>(mkFin(genRabinPair.fin));
+                both = mkFin(genRabinPair.fin);
             }
 
             for (TranSet<Product.ProductState> inf : genRabinPair.infs) {
-                both = both.and(new BooleanExpression<>(mkInf(inf)));
+                both = both.and(mkInf(inf));
             }
+
             all = all.or(both);
         }
+
         hoa.setAcceptanceCondition(acceptanceNumbers.size(), new RemoveConstants<AtomAcceptance>().visit(all));
     }
 

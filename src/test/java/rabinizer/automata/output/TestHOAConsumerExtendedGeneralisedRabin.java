@@ -27,9 +27,10 @@ public class TestHOAConsumerExtendedGeneralisedRabin extends TestHOAConsumerExte
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, Collections.emptySet());
 
-        HOAConsumerExtendedGeneralisedRabin ho = new HOAConsumerExtendedGeneralisedRabin(null, val);
-        assertEquals(1, ho.getMaximallyMergedEdgesOfEdge(dtgra.getInitialState(), val.createUniverseValuationSet()).size());
+        HOAConsumerGeneralisedRabin ho = new HOAConsumerGeneralisedRabin(null, val);
+        ho.addState(dtgra.getInitialState());
 
+        assertEquals(1, ho.getMaximallyMergedEdgesOfEdge(val.createUniverseValuationSet()).size());
     }
 
     @Override

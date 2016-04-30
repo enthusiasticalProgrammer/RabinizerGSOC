@@ -20,8 +20,6 @@ public class TestHOAConsumerExtendedRabin extends TestHOAConsumerExtended {
         Formula f = Util.createFormula("(F b) & (c U d)");
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
-        DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, Collections.emptySet());
-        return new DTRA(dtgra);
+        return DTGRAFactory.constructDTGRA(f, factory, val, Collections.emptySet());
     }
-
 }

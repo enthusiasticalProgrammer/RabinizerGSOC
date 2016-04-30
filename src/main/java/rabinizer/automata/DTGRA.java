@@ -20,12 +20,11 @@ package rabinizer.automata;
 import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import rabinizer.automata.output.HOAConsumerExtendedGeneralisedRabin;
+import rabinizer.automata.output.HOAConsumerGeneralisedRabin;
 import rabinizer.collections.valuationset.ValuationSet;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +56,7 @@ public class DTGRA extends Automaton<Product.ProductState> {
             return;
         }
 
-        HOAConsumerExtendedGeneralisedRabin hoa = new HOAConsumerExtendedGeneralisedRabin(ho, valuationSetFactory);
+        HOAConsumerGeneralisedRabin hoa = new HOAConsumerGeneralisedRabin(ho, valuationSetFactory);
 
         hoa.setHOAHeader(this.getInitialState().primaryState.getClazz().getRepresentative().toString());
         hoa.setInitialState(this.initialState);
@@ -66,10 +65,8 @@ public class DTGRA extends Automaton<Product.ProductState> {
         for (Product.ProductState s : getStates()) {
             hoa.addState(s);
 
-            for (Map.Entry<Product.ProductState, ValuationSet> trans : transitions.get(s).entrySet()) {
-                if (!trans.getValue().isEmpty()) {
-                    hoa.addEdge(s, trans.getValue(), trans.getKey());
-                }
+            for (Map.Entry<Product.ProductState, ValuationSet> trans : getSuccessors(s).entrySet()) {
+                hoa.addEdge(trans.getValue(), trans.getKey());
             }
 
             hoa.stateDone();

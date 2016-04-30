@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.*;
-import rabinizer.automata.output.HOAConsumerExtendedGeneralisedBuchi;
+import rabinizer.automata.output.HOAConsumerGeneralisedBuchi;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.Conjunction;
@@ -95,7 +95,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
         return state;
     }
 
-    void toHOA(HOAConsumerExtendedGeneralisedBuchi<IState<?>> consumer) throws HOAConsumerException {
+    void toHOA(HOAConsumerGeneralisedBuchi<IState<?>> consumer) throws HOAConsumerException {
         for (State productState : getStates()) {
             consumer.addState(productState);
 
@@ -104,7 +104,7 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
             if (accSetMap == null) {
                 getSuccessors(productState).forEach((successor, valuationSet) -> {
                     try {
-                        consumer.addEdge(productState, valuationSet.toFormula(), successor);
+                        consumer.addEdge(valuationSet, successor);
                     } catch (HOAConsumerException e) {
                         e.printStackTrace();
                     }
@@ -114,12 +114,10 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
                     for (Map.Entry<BitSet, ValuationSet> acceptance : accSetMap.entrySet()) {
                         ValuationSet label = acceptance.getValue().intersect(valuationSet);
 
-                        if (!label.isEmpty()) {
-                            try {
-                                consumer.addEdge(productState, label.toFormula(), successor, acceptance.getKey());
-                            } catch (HOAConsumerException e) {
-                                e.printStackTrace();
-                            }
+                        try {
+                            consumer.addEdge(label, successor, acceptance.getKey());
+                        } catch (HOAConsumerException e) {
+                            e.printStackTrace();
                         }
                     }
                 });

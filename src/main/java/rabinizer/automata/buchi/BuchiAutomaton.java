@@ -21,7 +21,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import rabinizer.automata.output.HOAConsumerExtendedBuchi;
+import rabinizer.automata.output.HOAConsumerBuchi;
 import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
@@ -107,7 +107,7 @@ public class BuchiAutomaton {
     }
 
     public void toHOA(HOAConsumer c) throws HOAConsumerException {
-        HOAConsumerExtendedBuchi consumer = new HOAConsumerExtendedBuchi(c, valuationSetFactory);
+        HOAConsumerBuchi consumer = new HOAConsumerBuchi(c, valuationSetFactory);
 
         consumer.setHOAHeader(null);
         consumer.setAcceptanceCondition(acceptingStates);
@@ -119,7 +119,7 @@ public class BuchiAutomaton {
 
             for (Map.Entry<BitSet, Set<State>> t : transitions.row(s).entrySet()) {
                 for (State s2 : t.getValue()) {
-                    consumer.addEdge(s, t.getKey(), s2);
+                    consumer.addEdge(t.getKey(), s2);
                 }
             }
 

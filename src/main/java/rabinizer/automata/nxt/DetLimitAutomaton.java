@@ -21,7 +21,7 @@ import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import jhoafparser.consumer.HOAConsumerPrint;
 import rabinizer.automata.IState;
-import rabinizer.automata.output.HOAConsumerExtendedGeneralisedBuchi;
+import rabinizer.automata.output.HOAConsumerGeneralisedBuchi;
 import rabinizer.automata.output.RemoveComments;
 
 import javax.annotation.Nullable;
@@ -57,7 +57,7 @@ public class DetLimitAutomaton {
     }
 
     public void toHOA(HOAConsumer c) throws HOAConsumerException {
-        HOAConsumerExtendedGeneralisedBuchi<IState<?>> consumer = new HOAConsumerExtendedGeneralisedBuchi<IState<?>>(c, acceptingComponent.getFactory());
+        HOAConsumerGeneralisedBuchi<IState<?>> consumer = new HOAConsumerGeneralisedBuchi<IState<?>>(c, acceptingComponent.getFactory());
         IState<?> initialState = getInitialState();
 
         consumer.setHOAHeader(initialState.toString());

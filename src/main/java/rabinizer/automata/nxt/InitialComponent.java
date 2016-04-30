@@ -20,7 +20,7 @@ package rabinizer.automata.nxt;
 import com.google.common.collect.*;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.*;
-import rabinizer.automata.output.HOAConsumerExtendedGeneralisedBuchi;
+import rabinizer.automata.output.HOAConsumerGeneralisedBuchi;
 import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
@@ -102,21 +102,21 @@ public class InitialComponent extends Master {
         }
     }
 
-    void toHOA(HOAConsumerExtendedGeneralisedBuchi<IState<?>> consumer) throws HOAConsumerException {
+    void toHOA(HOAConsumerGeneralisedBuchi<IState<?>> consumer) throws HOAConsumerException {
         for (State state : getStates()) {
             consumer.addState(state);
 
             for (Map.Entry<State, ValuationSet> edge : getSuccessors(state).entrySet()) {
-                consumer.addEdge(state, edge.getValue(), edge.getKey());
+                consumer.addEdge(edge.getValue(), edge.getKey());
             }
 
             for (AcceptingComponent.State accState : epsilonJumps.get(state)) {
-                consumer.addEpsilonEdge(state, accState);
+                consumer.addEpsilonEdge(accState);
             }
 
             for (Map.Entry<ValuationSet, List<AcceptingComponent.State>> entry : valuationSetJumps.row(state).entrySet()) {
                 for (AcceptingComponent.State accState : entry.getValue()) {
-                    consumer.addEdge(state, entry.getKey(), accState);
+                    consumer.addEdge(entry.getKey(), accState);
                 }
             }
 
