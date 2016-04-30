@@ -164,7 +164,7 @@ public abstract class Automaton<S extends IState<S>> {
         }
     }
 
-    public ValuationSetFactory getAlphabet() {
+    public ValuationSetFactory getFactory() {
         return valuationSetFactory;
     }
 

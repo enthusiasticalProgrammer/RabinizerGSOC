@@ -20,7 +20,7 @@ package rabinizer.automata.nxt;
 import com.google.common.collect.*;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.*;
-import rabinizer.automata.output.HOAConsumerExtended;
+import rabinizer.automata.output.HOAConsumerExtendedGeneralisedBuchi;
 import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
@@ -28,7 +28,6 @@ import rabinizer.ltl.Formula;
 import rabinizer.ltl.GOperator;
 import rabinizer.ltl.SkeletonVisitor;
 import rabinizer.ltl.equivalence.EquivalenceClass;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.*;
 
@@ -103,7 +102,7 @@ public class InitialComponent extends Master {
         }
     }
 
-    void toHOA(HOAConsumerExtended<IState<?>> consumer) throws HOAConsumerException {
+    void toHOA(HOAConsumerExtendedGeneralisedBuchi<IState<?>> consumer) throws HOAConsumerException {
         for (State state : getStates()) {
             consumer.addState(state);
 
