@@ -23,8 +23,13 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
+
+import rabinizer.Util;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
+import rabinizer.exec.FactoryRegistry;
+import rabinizer.exec.FactoryRegistry.Backend;
+import rabinizer.ltl.Formula;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -99,5 +104,12 @@ public abstract class ValuationSetTest {
         for (BitSet valuation : empty) {
             fail("empty should be empty...");
         }
+    }
+
+    @Test
+    public void testAliasNotNull() {
+        Formula f = Util.createFormula("a | X X(G b & F(G !b))");
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
+        assertNotEquals(null, val.getAliases());
     }
 }
