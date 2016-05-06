@@ -16,7 +16,6 @@ public abstract class TestHOAConsumerExtended {
     @Test
     public void testHOA() throws HOAConsumerException {
         Automaton testAutomaton = getAutomaton();
-        System.out.println("automaton obtained");
         testAutomaton.toHOA(getTestConsumer());
     }
 

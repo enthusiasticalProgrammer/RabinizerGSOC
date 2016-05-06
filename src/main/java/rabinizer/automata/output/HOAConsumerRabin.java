@@ -27,7 +27,7 @@ public class HOAConsumerRabin extends HOAConsumerAbstractRabin<ProductDegenState
     }
 
     @Override
-    protected void setAccCondForHOAConsumer(Collection<RabinPair<ProductDegenState>> acc) throws HOAConsumerException {
+    public void setAcceptanceCondition(Collection<RabinPair<ProductDegenState>> acc) throws HOAConsumerException {
         hoa.provideAcceptanceName("Rabin", Collections.nCopies(1, acc.size()));
         BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
 

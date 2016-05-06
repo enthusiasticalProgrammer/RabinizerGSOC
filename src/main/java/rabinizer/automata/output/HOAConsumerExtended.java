@@ -21,10 +21,8 @@ import jhoafparser.ast.AtomAcceptance;
 import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import rabinizer.automata.TranSet;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
-import rabinizer.ltl.Formula;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,22 +30,29 @@ import java.util.stream.IntStream;
 
 /**
  *
- * @param <S> type of the states
- * @param <C> type of the acceptance condition
+ * @param <S> type of states
+ * @param <C> type of acceptance condition
  */
 public abstract class HOAConsumerExtended<S, C> {
 
     protected final HOAConsumer hoa;
+
+
+    private final Map<S, Integer> stateNumbers;
+
+    protected S currentState;
     protected ValuationSetFactory valuationSetFactory;
 
-    protected final Map<S, Integer> stateNumbers;
-    protected S currentState;
 
-    protected HOAConsumerExtended(HOAConsumer hoa, ValuationSetFactory valSetFac) {
+    public HOAConsumerExtended(HOAConsumer hoa, ValuationSetFactory valSetFac) {
         this.hoa = hoa;
         stateNumbers = new HashMap<>();
         valuationSetFactory = valSetFac;
     }
+
+    protected abstract AccType getAccCondition(C acc);
+
+    public abstract void setAcceptanceCondition(C acc) throws HOAConsumerException;
 
     protected static BooleanExpression<AtomAcceptance> mkInf(int number) {
         return new BooleanExpression<>(new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_INF, number, false));
@@ -57,10 +62,7 @@ public abstract class HOAConsumerExtended<S, C> {
         hoa.notifyHeaderStart("v1");
         hoa.setTool("Rabinizer", "infty");
         hoa.setName("Automaton for " + info);
-
-        if (valuationSetFactory.getAliases() != null) {
-            hoa.setAPs(IntStream.range(0, valuationSetFactory.getSize()).mapToObj(i -> valuationSetFactory.getAliases().inverse().get(i)).collect(Collectors.toList()));
-        }
+        hoa.setAPs(IntStream.range(0, valuationSetFactory.getSize()).mapToObj(i -> valuationSetFactory.getAliases().inverse().get(i)).collect(Collectors.toList()));
     }
 
     public void setInitialState(S initialState) throws HOAConsumerException {
@@ -84,11 +86,11 @@ public abstract class HOAConsumerExtended<S, C> {
         hoa.notifyEnd();
     }
 
+
     protected void addEdgeBackend(ValuationSet label, S end, List<Integer> accSets) throws HOAConsumerException {
         if (label.isEmpty()) {
             return;
         }
-
         hoa.addEdgeWithLabel(getStateId(currentState), label.toFormula().accept(new FormulaConverter()), Collections.singletonList(getStateId(end)), accSets);
     }
 

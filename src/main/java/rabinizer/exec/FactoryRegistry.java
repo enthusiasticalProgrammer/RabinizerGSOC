@@ -53,6 +53,10 @@ public class FactoryRegistry {
         return createValuationSetFactory(DEFAULT_BACKEND, formula, null);
     }
 
+    /**
+     * Does not use mapping, can therefore have unexpected behaviour
+     */
+    @Deprecated
     public static ValuationSetFactory createValuationSetFactory(Backend backend, Formula formula) {
         return createValuationSetFactory(backend, formula, null);
     }

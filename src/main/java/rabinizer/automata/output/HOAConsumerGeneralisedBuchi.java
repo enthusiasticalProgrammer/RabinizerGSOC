@@ -18,17 +18,6 @@ public class HOAConsumerGeneralisedBuchi<T> extends HOAConsumerExtended<T, Integ
         super(hoa, valFac);
     }
 
-    public void setAcceptanceCondition(Integer acc) throws HOAConsumerException {
-        hoa.provideAcceptanceName(AccType.GENBUCHI.toString(), Collections.singletonList(acc));
-        BooleanExpression<AtomAcceptance> conjunction = mkInf(0);
-
-        for (int i = 1; i < acc; i++) {
-            conjunction = conjunction.and(mkInf(i));
-        }
-
-        hoa.setAcceptanceCondition(acc, conjunction);
-    }
-
     public void addEdge(ValuationSet label, T key) throws HOAConsumerException {
         addEdgeBackend(label, key, null);
     }
@@ -40,5 +29,22 @@ public class HOAConsumerGeneralisedBuchi<T> extends HOAConsumerExtended<T, Integ
     public void addEpsilonEdge(T successor) throws HOAConsumerException {
         Main.nonsilent("Warning: HOA does not support epsilon-transitions. (" + currentState + " -> " + successor + ')');
         hoa.addEdgeWithLabel(getStateId(currentState), null, Collections.singletonList(getStateId(successor)), null);
+    }
+
+    @Override
+    protected AccType getAccCondition(Integer acc) {
+        return AccType.GENBUCHI;
+    }
+
+    @Override
+    public void setAcceptanceCondition(Integer acc) throws HOAConsumerException {
+        hoa.provideAcceptanceName(AccType.GENBUCHI.toString(), Collections.singletonList(acc));
+        BooleanExpression<AtomAcceptance> conjunction = mkInf(0);
+
+        for (int i = 1; i < acc; i++) {
+            conjunction = conjunction.and(mkInf(i));
+        }
+
+        hoa.setAcceptanceCondition(acc, conjunction);
     }
 }

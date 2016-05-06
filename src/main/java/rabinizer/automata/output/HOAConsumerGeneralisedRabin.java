@@ -49,9 +49,11 @@ public class HOAConsumerGeneralisedRabin extends HOAConsumerAbstractRabin<Produc
     }
 
     @Override
-    protected void setAccCondForHOAConsumer(Collection<GeneralizedRabinPair<Product.ProductState>> acc) throws HOAConsumerException {
-        BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
+    public void setAcceptanceCondition(Collection<GeneralizedRabinPair<Product.ProductState>> acc) throws HOAConsumerException {
+        AccType accT = getAccCondition(acc);
+        hoa.provideAcceptanceName(accT.toString(), Collections.emptyList());
 
+        BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
         for (GeneralizedRabinPair<Product.ProductState> genRabinPair : acc) {
             BooleanExpression<AtomAcceptance> both = new BooleanExpression<>(BooleanExpression.Type.EXP_TRUE, null, null);
 
@@ -67,12 +69,5 @@ public class HOAConsumerGeneralisedRabin extends HOAConsumerAbstractRabin<Produc
         }
 
         hoa.setAcceptanceCondition(acceptanceNumbers.size(), new RemoveConstants<AtomAcceptance>().visit(all));
-    }
-
-    @Override
-    public void setAcceptanceCondition(Collection<GeneralizedRabinPair<Product.ProductState>> acc) throws HOAConsumerException {
-        AccType accT = getAccCondition(acc);
-        hoa.provideAcceptanceName(accT.toString(), Collections.emptyList());
-        setAccCondForHOAConsumer(acc);
     }
 }
