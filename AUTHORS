@@ -1,11 +1,16 @@
-The project is maintained and developed by:
+= The project is maintained and developed by:
 
-Jan Kretinsky
-Salomon Sickert
+* Jan Kretinsky
+* Salomon Sickert
 
-The following people have contributed code to the project:
+= The following people have contributed code to Rabinizer:
 
-Andreas Gaiser (Version 1)
-Ruslan Ledesma-Garza (Version 2)
-Zuzana Komarkova (Version 3)
-Christopher Ziegler (This Version)
+* Andreas Gaiser (Version 1)
+* Ruslan Ledesma-Garza (Version 2)
+* Zuzana Komarkova (Version 3)
+* Christopher Ziegler (This Version)
+* Salomon Sickert (This Version)
+
+= ltl2ldba
+
+ltl2ldba is developed by Salomon Sickert.
