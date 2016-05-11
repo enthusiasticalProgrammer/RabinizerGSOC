@@ -19,8 +19,8 @@ package rabinizer.exec;
 
 import jhoafparser.consumer.HOAConsumerException;
 import jhoafparser.consumer.HOAConsumerPrint;
-import rabinizer.automata.nxt.DetLimitAutomaton;
-import rabinizer.automata.nxt.DetLimitAutomatonFactory;
+import ltl2ldba.DetLimitAutomaton;
+import ltl2ldba.DetLimitAutomatonFactory;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.parser.LTLParser;
 

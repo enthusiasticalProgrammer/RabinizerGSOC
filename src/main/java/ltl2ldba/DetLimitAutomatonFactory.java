@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package rabinizer.automata.nxt;
+package ltl2ldba;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.Sets;
