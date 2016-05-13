@@ -26,6 +26,8 @@ import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.*;
 
+import jhoafparser.consumer.HOAConsumerPrint;
+
 public class DTGRAFactory {
 
     private DTGRAFactory() {
@@ -33,8 +35,8 @@ public class DTGRAFactory {
     }
 
     public static DTGRA constructDTGRA(Formula phi, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> opts) {
-        Main.verboseln("========================================");
-        Main.nonsilent("Generating primaryAutomaton");
+        Main.nonsilent("========================================");
+        Main.nonsilent("Generating primaryAutomaton:\n");
         Master master;
 
         if (opts.contains(Optimisation.SLAVE_SUSPENSION)) {
@@ -43,9 +45,14 @@ public class DTGRAFactory {
             master = new Master(phi, equivalenceClassFactory, valuationSetFactory, opts);
         }
         master.generate();
+        if (!Main.silent) {
+            HOAConsumerPrint hoa = new HOAConsumerPrint(System.out);
+            master.toHOA(hoa);
+        }
 
-        Main.verboseln("========================================");
-        Main.nonsilent("Generating Mojmir & Rabin secondaryAutomata");
+        Main.nonsilent("========================================");
+        Main.nonsilent("Generating Mojmir & Rabin secondaryAutomata:\n");
+
         Set<GOperator> gSubformulas = phi.gSubformulas();
         Map<GOperator, RabinSlave> slaves = new HashMap<>();
 
@@ -64,9 +71,18 @@ public class DTGRAFactory {
             }
 
             slaves.put(f, rSlave);
+
+            if (Main.verbose) {
+                HOAConsumerPrint hoa = new HOAConsumerPrint(System.out);
+                Main.verboseln("Mojmir Slave: ");
+                mSlave.toHOA(hoa);
+
+                Main.verboseln("\nRabin Slave: ");
+                rSlave.toHOA(hoa);
+            }
         }
 
-        Main.verboseln("========================================");
+        Main.nonsilent("========================================");
         Main.nonsilent("Generating product");
 
         Product automaton = new Product(master, slaves, valuationSetFactory, opts);
@@ -75,18 +91,18 @@ public class DTGRAFactory {
         AccTGRRaw<ProductState> accTGR = null;
 
         if (opts.contains(Optimisation.COMPUTE_ACC_CONDITION)) {
-            Main.verboseln("========================================");
+            Main.nonsilent("========================================");
             Main.nonsilent("Generating local acceptance conditions");
 
             AccLocal accLocal = new AccLocal(automaton, valuationSetFactory, equivalenceClassFactory, opts);
 
-            Main.verboseln("========================================");
-            Main.nonsilent("Generating global acceptance condition");
-            accTGR = AccTGRRaw.createAccTGRRaw(accLocal, valuationSetFactory);
+            Main.nonsilent("========================================");
+            Main.nonsilent("Generating global acceptance condition\n");
+            accTGR = AccTGRRaw.createAccTGRRaw(accLocal, valuationSetFactory, automaton, opts);
 
             Main.nonsilent("Generating optimized acceptance condition");
             AccTGRRaw.removeRedundancy(accTGR);
-            Main.verboseln("========================================");
+            Main.nonsilent("========================================");
 
             /**
              * Side effect: empty sink-SCCs get deleted, acceptance condition gets
@@ -95,7 +111,6 @@ public class DTGRAFactory {
              * @return true if automaton together witch acceptance condition is empty
              */
             if (opts.contains(Optimisation.EMPTINESS_CHECK)) {
-                // if it is empty, we have to complete it
                 EmptinessCheck.checkEmptinessAndMinimiseSCCBased(automaton, accTGR);
                 AccTGRRaw.removeRedundancyLightAfterEmptyCheck(accTGR);
             }
@@ -120,9 +135,6 @@ public class DTGRAFactory {
             for (Map.Entry<Map<GOperator, Integer>, TranSet<ProductState>> entry : accLocal.accMasterOptions.entrySet()) {
                 Map<GOperator, Integer> ranking = entry.getKey();
                 Set<GOperator> gSet = ranking.keySet();
-
-                Main.verboseln("\tGSet " + gSet);
-                Main.verboseln("\t  Ranking " + ranking);
 
                 TranSet<ProductState> Fin = new TranSet<>(factory);
                 List<TranSet<ProductState>> Infs = new ArrayList<>();
@@ -167,12 +179,10 @@ public class DTGRAFactory {
 
             Main.verboseln(phase + ". Removing F from each Ii: (F, {I1,...,In}) |-> (F, {I1\\F,...,In\\F})\n");
             this2.forEach(pair -> pair.infs.forEach(inf -> inf.removeAll(pair.fin)));
-            // Main.verboseln(this.toString());
             printProgress(phase++, this2);
 
             Main.verboseln(phase + ". Removing (F, {..., \\emptyset, ...} )\n");
             this2.removeIf(pair -> pair.infs.stream().anyMatch(TranSet::isEmpty));
-            // Main.verboseln(this.toString());
             printProgress(phase++, this2);
 
             Main.verboseln(phase + ". Removing complete Ii in (F, {I1,...,In}), i.e. Ii U F = Q \n");
@@ -200,7 +210,6 @@ public class DTGRAFactory {
             this2.clear();
             this2.addAll(temp);
 
-            // Main.verboseln(this.toString());
             printProgress(phase++, this2);
 
             Main.verboseln(phase + ". Removing (F, I) for which there is a less restrictive (G, J) \n");
@@ -223,12 +232,11 @@ public class DTGRAFactory {
             this2.clear();
             this2.addAll(hs);
 
-            // Main.verboseln(this.toString());
             printProgress(phase, this2);
         }
 
         public static void printProgress(int phase, Collection<?> this2) {
-            Main.nonsilent("Phase " + phase + ": " + Main.stopwatchLocal() + " s " + this2.size() + " pairs");
+            Main.nonsilent("Phase: " + phase + "..." + this2.size() + " pairs");
         }
 
         public static <S extends IState<S>> void removeRedundancyLightAfterEmptyCheck(AccTGRRaw<S> accTGR) {

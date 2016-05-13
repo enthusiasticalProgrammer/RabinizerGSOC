@@ -7,13 +7,12 @@ import java.util.Set;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.buchi.BuchiAutomaton;
-import rabinizer.automata.buchi.BuchiAutomaton.State;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
 public class HOAConsumerBuchi extends HOAConsumerExtended<BuchiAutomaton.State, Set<BuchiAutomaton.State>> {
 
-    public HOAConsumerBuchi(HOAConsumer hoa, ValuationSetFactory valFac) {
-        super(hoa, valFac);
+    public HOAConsumerBuchi(HOAConsumer hoa, ValuationSetFactory valFac, Set<BuchiAutomaton.State> accCond) {
+        super(hoa, valFac, accCond);
     }
 
     public void addEdge(BitSet key, BuchiAutomaton.State end) throws HOAConsumerException {
@@ -21,8 +20,14 @@ public class HOAConsumerBuchi extends HOAConsumerExtended<BuchiAutomaton.State, 
     }
 
     @Override
-    public void setAcceptanceCondition(Set<State> acc) throws HOAConsumerException {
+    protected AccType getAccCondition() {
+        return AccType.BUCHI;
+    }
+
+    @Override
+    public void setAcceptanceCondition() throws HOAConsumerException {
         hoa.provideAcceptanceName(AccType.BUCHI.toString(), Collections.emptyList());
         hoa.setAcceptanceCondition(1, mkInf(0));
+
     }
 }

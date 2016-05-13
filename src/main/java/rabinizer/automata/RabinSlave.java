@@ -33,8 +33,8 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
     }
 
     public void optimizeInitialState() {
+        Main.verboseln("Optimizing initial states");
         while (hasSuccessors(initialState) && transitions.values().stream().allMatch(map -> !map.containsKey(initialState))) {
-            Main.verboseln("Optimizing initial states");
             State oldInit = initialState;
             initialState = getSuccessor(oldInit, new BitSet());
             transitions.remove(oldInit);

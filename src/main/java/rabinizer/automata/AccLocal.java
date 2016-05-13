@@ -69,14 +69,12 @@ class AccLocal {
             accSlavesOptions.put(f, optionForf);
         }
 
-        Main.verboseln("Acceptance for secondaryAutomata:\n" + this.accSlavesOptions);
         ValuationSet allVals = valuationSetFactory.createUniverseValuationSet();
         for (Product.ProductState ps : product.getStates()) {
             allTrans.addAll(ps, allVals);
         }
 
         accMasterOptions = computeAccMasterOptions();
-        Main.verboseln("Acceptance for primaryAutomaton:\n" + this.accMasterOptions);
     }
 
     private static RabinPair<Product.ProductState> createRabinPair(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank, Product product,
@@ -172,7 +170,6 @@ class AccLocal {
             }
         }
 
-        Main.verboseln("\tAn acceptance pair for slave " + slave.mojmir.label + ":\n" + failP + buyP + succeedP);
         failP.addAll(buyP);
         return new RabinPair<>(failP, succeedP);
     }
@@ -270,10 +267,8 @@ class AccLocal {
         }
 
         for (Set<GOperator> gSet : gSets) {
-            Main.verboseln("\tGSet " + gSet);
 
             for (Map<GOperator, Integer> ranking : powersetRanks(new HashSet<>(gSet))) {
-                Main.verboseln("\t  Ranking " + ranking);
 
                 TranSet<Product.ProductState> avoidP = new TranSet<>(valuationSetFactory);
 
@@ -282,12 +277,10 @@ class AccLocal {
                 }
 
                 if (avoidP.equals(allTrans)) {
-                    Main.verboseln("Skipping complete Avoid");
                     continue;
                 }
 
                 builder.put(ImmutableMap.copyOf(ranking), avoidP);
-                Main.verboseln("Avoid for " + gSet + ranking + "\n" + avoidP);
             }
         }
 

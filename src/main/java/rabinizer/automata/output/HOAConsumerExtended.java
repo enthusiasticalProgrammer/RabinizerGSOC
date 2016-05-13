@@ -21,6 +21,7 @@ import jhoafparser.ast.AtomAcceptance;
 import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
+import rabinizer.automata.output.HOAConsumerExtended.AccType;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
@@ -33,21 +34,29 @@ import java.util.stream.IntStream;
  * @param <S> type of states
  * @param <C> type of acceptance condition
  */
-public abstract class HOAConsumerExtended<S, C> {
+public class HOAConsumerExtended<S, C> {
 
     protected final HOAConsumer hoa;
+    protected final C acc;
     protected S currentState;
     protected ValuationSetFactory valuationSetFactory;
 
     private final Map<S, Integer> stateNumbers;
 
-    public HOAConsumerExtended(HOAConsumer hoa, ValuationSetFactory valSetFac) {
+    public HOAConsumerExtended(HOAConsumer hoa, ValuationSetFactory valSetFac, C accCond) {
         this.hoa = hoa;
         stateNumbers = new HashMap<>();
         valuationSetFactory = valSetFac;
+        acc=accCond;
     }
 
-    public abstract void setAcceptanceCondition(C acc) throws HOAConsumerException;
+    protected AccType getAccCondition() {
+        return AccType.ALL;
+    }
+
+    public void setAcceptanceCondition() throws HOAConsumerException {
+        hoa.provideAcceptanceName(getAccCondition().toString(), Collections.emptyList());
+    }
 
     protected static BooleanExpression<AtomAcceptance> mkInf(int number) {
         return new BooleanExpression<>(new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_INF, number, false));
@@ -58,6 +67,14 @@ public abstract class HOAConsumerExtended<S, C> {
         hoa.setTool("Rabinizer", "infty");
         hoa.setName("Automaton for " + info);
         hoa.setAPs(IntStream.range(0, valuationSetFactory.getSize()).mapToObj(i -> valuationSetFactory.getAliases().inverse().get(i)).collect(Collectors.toList()));
+    }
+
+    public void doHOAStatesEmpty() throws HOAConsumerException {
+        this.setHOAHeader("empty language");
+        hoa.setAcceptanceCondition(0, new BooleanExpression<>(false));
+        hoa.notifyBodyStart();
+        hoa.notifyEnd();
+        return;
     }
 
     public void setInitialState(S initialState) throws HOAConsumerException {
@@ -89,6 +106,10 @@ public abstract class HOAConsumerExtended<S, C> {
         hoa.addEdgeWithLabel(getStateId(currentState), label.toFormula().accept(new FormulaConverter()), Collections.singletonList(getStateId(end)), accSets);
     }
 
+    public void addEdge(ValuationSet key, S end) throws HOAConsumerException {
+        addEdgeBackend(key, end, null);
+    }
+
     protected int getStateId(S state) {
         if (!stateNumbers.containsKey(state)) {
             stateNumbers.put(state, stateNumbers.size());
@@ -96,6 +117,7 @@ public abstract class HOAConsumerExtended<S, C> {
 
         return stateNumbers.get(state);
     }
+
 
     public enum AccType {
         NONE, ALL, BUCHI, COBUCHI, GENBUCHI, RABIN, GENRABIN;

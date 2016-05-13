@@ -14,14 +14,14 @@ public abstract class HOAConsumerAbstractRabin<T, C> extends HOAConsumerExtended
 
     protected final Map<TranSet<T>, Integer> acceptanceNumbers;
 
-    public HOAConsumerAbstractRabin(HOAConsumer hoa, ValuationSetFactory valuationSetFactory) {
-        super(hoa, valuationSetFactory);
+    public HOAConsumerAbstractRabin(HOAConsumer hoa, ValuationSetFactory valuationSetFactory, C accCond) {
+        super(hoa, valuationSetFactory, accCond);
         acceptanceNumbers = new HashMap<>();
     }
 
     @Override
-    public void setAcceptanceCondition(C acc) throws HOAConsumerException {
-        hoa.provideAcceptanceName(getAccCondition(acc).toString(), Collections.emptyList());
+    public void setAcceptanceCondition() throws HOAConsumerException {
+        hoa.provideAcceptanceName(getAccCondition().toString(), Collections.emptyList());
     }
 
     protected BooleanExpression<AtomAcceptance> mkFin(TranSet<T> tranSet) {
@@ -34,6 +34,7 @@ public abstract class HOAConsumerAbstractRabin<T, C> extends HOAConsumerExtended
         return new BooleanExpression<>(new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_INF, i, false));
     }
 
+    @Override
     public void addEdge(ValuationSet key, T end) throws HOAConsumerException {
         List<Integer> accSets = new ArrayList<>();
         Set<ValuationSet> realEdges = getMaximallyMergedEdgesOfEdge(key);
@@ -79,6 +80,4 @@ public abstract class HOAConsumerAbstractRabin<T, C> extends HOAConsumerExtended
         }
         return acceptanceNumbers.get(o);
     }
-
-    protected abstract AccType getAccCondition(C acc);
 }

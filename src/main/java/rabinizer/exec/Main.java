@@ -82,6 +82,7 @@ public class Main {
                 + "* Version 1 by Andreas Gaiser                                                *\n"
                 + "* Version 2 by Ruslan Ledesma-Garza                                          *\n"
                 + "* Version 3 by Zuzana Komarkova and Jan Kretinsky                            *\n"
+                + "* Version 3.2. by Salomon Sickert and Christopher Ziegler                    *\n"
                 + "******************************************************************************");
 
         Automaton<?> automaton = computeAutomaton(arguments.inputFormula, arguments.autType, arguments.simplification, arguments.backend, arguments.optimisations, arguments.mapping);
