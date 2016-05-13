@@ -2,14 +2,10 @@ package rabinizer;
 
 import com.google.common.collect.BiMap;
 import rabinizer.ltl.Formula;
-import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.ltl.parser.LTLParser;
 import rabinizer.ltl.parser.ParseException;
 
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 import static org.junit.Assert.fail;
 

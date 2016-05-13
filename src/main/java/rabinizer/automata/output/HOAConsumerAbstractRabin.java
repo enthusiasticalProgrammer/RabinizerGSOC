@@ -10,7 +10,7 @@ import rabinizer.automata.TranSet;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
-public abstract class HOAConsumerAbstractRabin<T, C> extends HOAConsumerExtended<T, C> {
+public abstract class HOAConsumerAbstractRabin<T, C> extends HOAConsumerExtendedAutomaton<T, C> {
 
     protected final Map<TranSet<T>, Integer> acceptanceNumbers;
 
@@ -19,21 +19,17 @@ public abstract class HOAConsumerAbstractRabin<T, C> extends HOAConsumerExtended
         acceptanceNumbers = new HashMap<>();
     }
 
-    public void setAcceptanceCondition(C acc) throws HOAConsumerException {
-        AccType accT = getAccCondition(acc);
-        hoa.provideAcceptanceName(accT.toString(), Collections.emptyList());
-        setAccCondForHOAConsumer(acc);
-    }
-
-    protected BooleanExpression<AtomAcceptance> mkInf(TranSet<T> tranSet) {
-        return mkInf(getTranSetId(tranSet));
-    }
-
     protected BooleanExpression<AtomAcceptance> mkFin(TranSet<T> tranSet) {
         int i = getTranSetId(tranSet);
         return new BooleanExpression<>(new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_FIN, i, false));
     }
 
+    protected BooleanExpression<AtomAcceptance> mkInf(TranSet<T> tranSet) {
+        int i = getTranSetId(tranSet);
+        return new BooleanExpression<>(new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_INF, i, false));
+    }
+
+    @Override
     public void addEdge(ValuationSet key, T end) throws HOAConsumerException {
         List<Integer> accSets = new ArrayList<>();
         Set<ValuationSet> realEdges = getMaximallyMergedEdgesOfEdge(key);
@@ -77,11 +73,10 @@ public abstract class HOAConsumerAbstractRabin<T, C> extends HOAConsumerExtended
         if (!acceptanceNumbers.containsKey(o)) {
             acceptanceNumbers.put(o, acceptanceNumbers.size());
         }
-
         return acceptanceNumbers.get(o);
     }
 
+    @Override
     protected abstract AccType getAccCondition(C acc);
 
-    protected abstract void setAccCondForHOAConsumer(C acc) throws HOAConsumerException;
 }

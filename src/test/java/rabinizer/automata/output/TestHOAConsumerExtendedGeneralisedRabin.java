@@ -6,6 +6,9 @@ import java.util.Collections;
 
 import org.junit.Test;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
+
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.Util;
 import rabinizer.automata.Automaton;
@@ -23,11 +26,14 @@ public class TestHOAConsumerExtendedGeneralisedRabin extends TestHOAConsumerExte
     @Test
     public void testTransitionMerging() throws HOAConsumerException {
         Formula f = Util.createFormula("X F (a & c)");
+        BiMap<String, Integer> aliases = ImmutableBiMap.of("a", 0, "c", 1);
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f, aliases);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, Collections.emptySet());
 
-        HOAConsumerGeneralisedRabin ho = new HOAConsumerGeneralisedRabin(null, val);
+        HOAConsumerGeneralisedRabin ho = new HOAConsumerGeneralisedRabin(getTestConsumer(), val);
+        ho.setHOAHeader("Test Automaton");
+        ho.setAcceptanceCondition(Collections.emptySet());
         ho.addState(dtgra.getInitialState());
 
         assertEquals(1, ho.getMaximallyMergedEdgesOfEdge(val.createUniverseValuationSet()).size());
@@ -36,8 +42,9 @@ public class TestHOAConsumerExtendedGeneralisedRabin extends TestHOAConsumerExte
     @Override
     protected Automaton getAutomaton() {
         Formula f = Util.createFormula("G(!a | X(X(!a))) & (F b) & (c U d)");
+        BiMap<String, Integer> aliases = ImmutableBiMap.of("a", 0, "b", 1, "c", 2, "d", 3);
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f, aliases);
         return DTGRAFactory.constructDTGRA(f, factory, val, Collections.emptySet());
     }
 }

@@ -108,8 +108,9 @@ public abstract class ValuationSetTest {
 
     @Test
     public void testAliasNotNull() {
+        BiMap<String, Integer> aliases = ImmutableBiMap.of("a", 0, "b", 1);
         Formula f = Util.createFormula("a | X X(G b & F(G !b))");
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f, aliases);
         assertNotEquals(null, val.getAliases());
     }
 }
