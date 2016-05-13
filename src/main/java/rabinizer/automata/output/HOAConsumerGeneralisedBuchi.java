@@ -27,13 +27,8 @@ public class HOAConsumerGeneralisedBuchi<T> extends HOAConsumerExtended<T, Integ
     }
 
     public void addEpsilonEdge(T successor) throws HOAConsumerException {
-        Main.nonsilent("Warning: HOA does not support epsilon-transitions. (" + currentState + " -> " + successor + ')');
+        Main.nonsilent("Warning: HOA currently does not support epsilon-transitions. (" + currentState + " -> " + successor + ')');
         hoa.addEdgeWithLabel(getStateId(currentState), null, Collections.singletonList(getStateId(successor)), null);
-    }
-
-    @Override
-    protected AccType getAccCondition(Integer acc) {
-        return AccType.GENBUCHI;
     }
 
     @Override

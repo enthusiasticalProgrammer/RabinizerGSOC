@@ -36,21 +36,16 @@ import java.util.stream.IntStream;
 public abstract class HOAConsumerExtended<S, C> {
 
     protected final HOAConsumer hoa;
-
-
-    private final Map<S, Integer> stateNumbers;
-
     protected S currentState;
     protected ValuationSetFactory valuationSetFactory;
 
+    private final Map<S, Integer> stateNumbers;
 
     public HOAConsumerExtended(HOAConsumer hoa, ValuationSetFactory valSetFac) {
         this.hoa = hoa;
         stateNumbers = new HashMap<>();
         valuationSetFactory = valSetFac;
     }
-
-    protected abstract AccType getAccCondition(C acc);
 
     public abstract void setAcceptanceCondition(C acc) throws HOAConsumerException;
 
@@ -86,11 +81,11 @@ public abstract class HOAConsumerExtended<S, C> {
         hoa.notifyEnd();
     }
 
-
     protected void addEdgeBackend(ValuationSet label, S end, List<Integer> accSets) throws HOAConsumerException {
         if (label.isEmpty()) {
             return;
         }
+
         hoa.addEdgeWithLabel(getStateId(currentState), label.toFormula().accept(new FormulaConverter()), Collections.singletonList(getStateId(end)), accSets);
     }
 

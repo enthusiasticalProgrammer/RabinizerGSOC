@@ -21,14 +21,8 @@ public class HOAConsumerBuchi extends HOAConsumerExtended<BuchiAutomaton.State, 
     }
 
     @Override
-    protected AccType getAccCondition(Set<State> acc) {
-        return AccType.BUCHI;
-    }
-
-    @Override
     public void setAcceptanceCondition(Set<State> acc) throws HOAConsumerException {
         hoa.provideAcceptanceName(AccType.BUCHI.toString(), Collections.emptyList());
         hoa.setAcceptanceCondition(1, mkInf(0));
-
     }
 }

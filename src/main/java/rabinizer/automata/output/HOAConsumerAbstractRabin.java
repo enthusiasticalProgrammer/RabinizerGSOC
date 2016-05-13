@@ -10,13 +10,18 @@ import rabinizer.automata.TranSet;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
-public abstract class HOAConsumerAbstractRabin<T, C> extends HOAConsumerExtendedAutomaton<T, C> {
+public abstract class HOAConsumerAbstractRabin<T, C> extends HOAConsumerExtended<T,C> {
 
     protected final Map<TranSet<T>, Integer> acceptanceNumbers;
 
     public HOAConsumerAbstractRabin(HOAConsumer hoa, ValuationSetFactory valuationSetFactory) {
         super(hoa, valuationSetFactory);
         acceptanceNumbers = new HashMap<>();
+    }
+
+    @Override
+    public void setAcceptanceCondition(C acc) throws HOAConsumerException {
+        hoa.provideAcceptanceName(getAccCondition(acc).toString(), Collections.emptyList());
     }
 
     protected BooleanExpression<AtomAcceptance> mkFin(TranSet<T> tranSet) {
@@ -29,7 +34,6 @@ public abstract class HOAConsumerAbstractRabin<T, C> extends HOAConsumerExtended
         return new BooleanExpression<>(new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_INF, i, false));
     }
 
-    @Override
     public void addEdge(ValuationSet key, T end) throws HOAConsumerException {
         List<Integer> accSets = new ArrayList<>();
         Set<ValuationSet> realEdges = getMaximallyMergedEdgesOfEdge(key);
@@ -76,7 +80,5 @@ public abstract class HOAConsumerAbstractRabin<T, C> extends HOAConsumerExtended
         return acceptanceNumbers.get(o);
     }
 
-    @Override
     protected abstract AccType getAccCondition(C acc);
-
 }
