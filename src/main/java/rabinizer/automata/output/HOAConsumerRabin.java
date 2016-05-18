@@ -2,6 +2,7 @@ package rabinizer.automata.output;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import jhoafparser.ast.AtomAcceptance;
 import jhoafparser.ast.BooleanExpression;
@@ -29,17 +30,17 @@ public class HOAConsumerRabin extends HOAConsumerAbstractRabin<ProductDegenState
     @Override
     public void setAcceptanceCondition() {
         try {
-            // TODO: This violates the HOAF specification
-            hoa.provideAcceptanceName("Rabin", Collections.nCopies(1, acc.size()));
+            hoa.provideAcceptanceName("Rabin", Collections.singletonList(acc.size()));
             BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
 
             for (RabinPair<ProductDegenState> pair : acc) {
                 all = all.or(mkFin(pair.fin).and(mkInf(pair.inf)));
             }
 
-            hoa.setAcceptanceCondition(acceptanceNumbers.size(), all);
+            hoa.setAcceptanceCondition(acceptanceNumbers.size(), new RemoveConstants<AtomAcceptance>().visit(all));
         } catch (HOAConsumerException ex) {
-            // We wrap HOAConsumerException into an unchecked exception in order to keep the interfaces clean and tidy.
+            // We wrap HOAConsumerException into an unchecked exception in order
+            // to keep the interfaces clean and tidy.
             throw new RuntimeException(ex);
         }
     }

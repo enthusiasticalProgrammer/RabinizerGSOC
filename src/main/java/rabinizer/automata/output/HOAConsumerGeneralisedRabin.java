@@ -1,7 +1,9 @@
 package rabinizer.automata.output;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import jhoafparser.ast.AtomAcceptance;
 import jhoafparser.ast.BooleanExpression;
@@ -13,9 +15,9 @@ import rabinizer.automata.TranSet;
 import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
-public class HOAConsumerGeneralisedRabin extends HOAConsumerAbstractRabin<Product.ProductState, Collection<GeneralizedRabinPair<Product.ProductState>>> {
+public class HOAConsumerGeneralisedRabin extends HOAConsumerAbstractRabin<Product.ProductState, List<GeneralizedRabinPair<Product.ProductState>>> {
 
-    public HOAConsumerGeneralisedRabin(HOAConsumer hoa, ValuationSetFactory valFac, Product.ProductState initialState, Collection<GeneralizedRabinPair<Product.ProductState>> accCond) {
+    public HOAConsumerGeneralisedRabin(HOAConsumer hoa, ValuationSetFactory valFac, Product.ProductState initialState, List<GeneralizedRabinPair<Product.ProductState>> accCond) {
         super(hoa, valFac, initialState, accCond);
     }
 
@@ -52,8 +54,7 @@ public class HOAConsumerGeneralisedRabin extends HOAConsumerAbstractRabin<Produc
     public void setAcceptanceCondition() {
         try {
             AccType accT = getAccCondition();
-            // TODO: This violates the HOAF specification
-            hoa.provideAcceptanceName(accT.toString(), Collections.emptyList());
+            hoa.provideAcceptanceName(accT.toString(), getAccList());
 
             BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
             for (GeneralizedRabinPair<Product.ProductState> genRabinPair : acc) {
@@ -75,5 +76,14 @@ public class HOAConsumerGeneralisedRabin extends HOAConsumerAbstractRabin<Produc
             // We wrap HOAConsumerException into an unchecked exception in order to keep the interfaces clean and tidy.
             throw new RuntimeException(ex);
         }
+    }
+
+    private List<Object> getAccList() {
+        List<Object> result=new ArrayList<Object>();
+        result.add(acc.size());
+        for (GeneralizedRabinPair<Product.ProductState> singleCond : acc) {
+            result.add(singleCond.infs.size());
+        }
+        return result;
     }
 }
