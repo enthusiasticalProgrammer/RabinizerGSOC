@@ -208,13 +208,13 @@ public class AutomatonClassTest {
     public void testNotExceptionOccurring() {
         Formula f = Util.createFormula("G(a)");
 
-        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.Z3, f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.Z3, f);
+        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(f);
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
         assertNotNull(dtgra);
 
-        factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
-        val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
+        factory = FactoryRegistry.createEquivalenceClassFactory(f);
+        val = FactoryRegistry.createValuationSetFactory(f);
         dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
         assertNotNull(dtgra);
 
@@ -224,8 +224,8 @@ public class AutomatonClassTest {
     public void testEmptinessCheck() {
         Formula f = Util.createFormula("G(!a | X(X(!a)))");
 
-        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
+        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(f);
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
         assertFalse(EmptinessCheck.checkEmptinessAndMinimiseSCCBased(dtgra, dtgra.acc));
     }

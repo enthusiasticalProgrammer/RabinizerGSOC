@@ -23,7 +23,6 @@ import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.equivalence.BDDEquivalenceClassFactory;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
-import rabinizer.ltl.equivalence.Z3EquivalenceClassFactory;
 
 public class FactoryRegistry {
 
@@ -36,9 +35,6 @@ public class FactoryRegistry {
     public static EquivalenceClassFactory createEquivalenceClassFactory(Backend backend, Formula formula) {
         try {
             switch (backend) {
-                case Z3:
-                    return new Z3EquivalenceClassFactory(formula);
-
                 case BDD:
                 default:
                     return new BDDEquivalenceClassFactory(formula);
@@ -64,9 +60,6 @@ public class FactoryRegistry {
     public static ValuationSetFactory createValuationSetFactory(Backend backend, Formula formula, BiMap<String, Integer> mapping) {
         try {
             switch (backend) {
-                case Z3:
-                    throw new UnsupportedOperationException();
-
                 case BDD:
                 default:
                     return new BDDValuationSetFactory(formula, mapping);
@@ -77,7 +70,8 @@ public class FactoryRegistry {
         }
     }
 
+    // TODO: expose different BDD backends.
     public enum Backend {
-        BDD, Z3
+        BDD
     }
 }
