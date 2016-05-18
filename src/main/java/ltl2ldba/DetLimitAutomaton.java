@@ -57,11 +57,11 @@ public class DetLimitAutomaton {
     }
 
     public void toHOA(HOAConsumer c) throws HOAConsumerException {
-        HOAConsumerGeneralisedBuchi<IState<?>> consumer = new HOAConsumerGeneralisedBuchi<IState<?>>(c, acceptingComponent.getFactory());
+        HOAConsumerGeneralisedBuchi<IState<?>> consumer = new HOAConsumerGeneralisedBuchi<IState<?>>(c, acceptingComponent.getFactory(),
+                acceptingComponent.acceptanceConditionSize);
         IState<?> initialState = getInitialState();
 
         consumer.setHOAHeader(initialState.toString());
-        consumer.setAcceptanceCondition(acceptingComponent.acceptanceConditionSize);
         consumer.setInitialState(initialState);
 
         if (initialComponent != null) {

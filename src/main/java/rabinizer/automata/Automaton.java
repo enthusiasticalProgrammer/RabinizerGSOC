@@ -19,6 +19,7 @@ package rabinizer.automata;
 
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
+import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
@@ -132,10 +133,6 @@ public abstract class Automaton<S extends IState<S>> {
         removeStatesIf(s -> !reach.contains(s));
     }
 
-    public void toHOA(HOAConsumer hoa) throws HOAConsumerException {
-        throw new UnsupportedOperationException();
-    }
-
     /**
      * This method removes unused states and their in- and outgoing transitions.
      * If the set dependsOn the initial state, it becomes an automaton with the
@@ -233,4 +230,44 @@ public abstract class Automaton<S extends IState<S>> {
             });
         }
     }
+
+    public void toHOA(HOAConsumer ho) {
+        try {
+            HOAConsumerExtended<S, Object> hoa = getConsumer(ho);
+            if (getStates().isEmpty()) {
+                hoa.doHOAStatesEmpty();
+                return;
+            }
+            doHOAOutput(hoa);
+        } catch (HOAConsumerException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.toString());
+        }
+    }
+
+    protected void doHOAOutput(HOAConsumerExtended hoa) throws HOAConsumerException {
+
+        hoa.setHOAHeader(this.getInitialState().toString());
+        hoa.setInitialState(this.getInitialState());
+        hoa.setAcceptanceCondition();
+
+        for (S s : getStates()) {
+            hoa.addState(s);
+
+            for (Map.Entry<S, ValuationSet> trans : s.getSuccessors().entrySet()) {
+                if (!trans.getValue().isEmpty()) {
+                    hoa.addEdge(trans.getValue(), trans.getKey());
+                }
+            }
+
+            hoa.stateDone();
+        }
+
+        hoa.done();
+    }
+
+    public HOAConsumerExtended getConsumer(HOAConsumer ho) {
+        return new HOAConsumerExtended<S, Object>(ho, valuationSetFactory, null);
+    }
+
 }

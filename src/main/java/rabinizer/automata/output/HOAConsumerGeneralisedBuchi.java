@@ -14,8 +14,8 @@ import rabinizer.exec.Main;
 
 public class HOAConsumerGeneralisedBuchi<T> extends HOAConsumerExtended<T, Integer> {
 
-    public HOAConsumerGeneralisedBuchi(HOAConsumer hoa, ValuationSetFactory valFac) {
-        super(hoa, valFac);
+    public HOAConsumerGeneralisedBuchi(HOAConsumer hoa, ValuationSetFactory valFac, Integer accCond) {
+        super(hoa, valFac, accCond);
     }
 
     public void addEdge(ValuationSet label, T key) throws HOAConsumerException {
@@ -32,8 +32,13 @@ public class HOAConsumerGeneralisedBuchi<T> extends HOAConsumerExtended<T, Integ
     }
 
     @Override
-    public void setAcceptanceCondition(Integer acc) throws HOAConsumerException {
-        hoa.provideAcceptanceName(AccType.GENBUCHI.toString(), Collections.singletonList(acc));
+    protected AccType getAccCondition() {
+        return AccType.GENBUCHI;
+    }
+
+    @Override
+    public void setAcceptanceCondition() throws HOAConsumerException {
+        hoa.provideAcceptanceName(getAccCondition().toString(), Collections.singletonList(acc));
         BooleanExpression<AtomAcceptance> conjunction = mkInf(0);
 
         for (int i = 1; i < acc; i++) {

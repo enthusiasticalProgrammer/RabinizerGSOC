@@ -107,10 +107,10 @@ public class BuchiAutomaton {
     }
 
     public void toHOA(HOAConsumer c) throws HOAConsumerException {
-        HOAConsumerBuchi consumer = new HOAConsumerBuchi(c, valuationSetFactory);
+        HOAConsumerBuchi consumer = new HOAConsumerBuchi(c, valuationSetFactory, acceptingStates);
 
         consumer.setHOAHeader(null);
-        consumer.setAcceptanceCondition(acceptingStates);
+        consumer.setAcceptanceCondition();
         consumer.setInitialState(initialState);
 
 

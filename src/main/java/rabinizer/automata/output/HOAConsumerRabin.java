@@ -13,12 +13,12 @@ import rabinizer.collections.valuationset.ValuationSetFactory;
 
 public class HOAConsumerRabin extends HOAConsumerAbstractRabin<ProductDegenState, Collection<RabinPair<ProductDegenState>>> {
 
-    public HOAConsumerRabin(HOAConsumer hoa, ValuationSetFactory valFac) {
-        super(hoa, valFac);
+    public HOAConsumerRabin(HOAConsumer hoa, ValuationSetFactory valFac, Collection<RabinPair<ProductDegenState>> accCond) {
+        super(hoa, valFac, accCond);
     }
 
     @Override
-    protected AccType getAccCondition(Collection<RabinPair<ProductDegenState>> acc) {
+    protected AccType getAccCondition() {
         if (acc.isEmpty()) {
             return AccType.NONE;
         }
@@ -27,7 +27,7 @@ public class HOAConsumerRabin extends HOAConsumerAbstractRabin<ProductDegenState
     }
 
     @Override
-    public void setAcceptanceCondition(Collection<RabinPair<ProductDegenState>> acc) throws HOAConsumerException {
+    public void setAcceptanceCondition() throws HOAConsumerException {
         hoa.provideAcceptanceName("Rabin", Collections.nCopies(1, acc.size()));
         BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
 
