@@ -15,8 +15,8 @@ import rabinizer.collections.valuationset.ValuationSetFactory;
 
 public class HOAConsumerGeneralisedRabin extends HOAConsumerAbstractRabin<Product.ProductState, Collection<GeneralizedRabinPair<Product.ProductState>>> {
 
-    public HOAConsumerGeneralisedRabin(HOAConsumer hoa, ValuationSetFactory valFac, Collection<GeneralizedRabinPair<Product.ProductState>> accCond) {
-        super(hoa, valFac, accCond);
+    public HOAConsumerGeneralisedRabin(HOAConsumer hoa, ValuationSetFactory valFac, Product.ProductState initialState, Collection<GeneralizedRabinPair<Product.ProductState>> accCond) {
+        super(hoa, valFac, initialState, accCond);
     }
 
     @Override
@@ -49,25 +49,31 @@ public class HOAConsumerGeneralisedRabin extends HOAConsumerAbstractRabin<Produc
     }
 
     @Override
-    public void setAcceptanceCondition() throws HOAConsumerException {
-        AccType accT = getAccCondition();
-        hoa.provideAcceptanceName(accT.toString(), Collections.emptyList());
+    public void setAcceptanceCondition() {
+        try {
+            AccType accT = getAccCondition();
+            // TODO: This violates the HOAF specification
+            hoa.provideAcceptanceName(accT.toString(), Collections.emptyList());
 
-        BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
-        for (GeneralizedRabinPair<Product.ProductState> genRabinPair : acc) {
-            BooleanExpression<AtomAcceptance> both = new BooleanExpression<>(BooleanExpression.Type.EXP_TRUE, null, null);
+            BooleanExpression<AtomAcceptance> all = new BooleanExpression<>(BooleanExpression.Type.EXP_FALSE, null, null);
+            for (GeneralizedRabinPair<Product.ProductState> genRabinPair : acc) {
+                BooleanExpression<AtomAcceptance> both = new BooleanExpression<>(BooleanExpression.Type.EXP_TRUE, null, null);
 
-            if (!genRabinPair.fin.isEmpty()) {
-                both = mkFin(genRabinPair.fin);
+                if (!genRabinPair.fin.isEmpty()) {
+                    both = mkFin(genRabinPair.fin);
+                }
+
+                for (TranSet<Product.ProductState> inf : genRabinPair.infs) {
+                    both = both.and(mkInf(inf));
+                }
+
+                all = all.or(both);
             }
 
-            for (TranSet<Product.ProductState> inf : genRabinPair.infs) {
-                both = both.and(mkInf(inf));
-            }
-
-            all = all.or(both);
+            hoa.setAcceptanceCondition(acceptanceNumbers.size(), new RemoveConstants<AtomAcceptance>().visit(all));
+        } catch (HOAConsumerException ex) {
+            // We wrap HOAConsumerException into an unchecked exception in order to keep the interfaces clean and tidy.
+            throw new RuntimeException(ex);
         }
-
-        hoa.setAcceptanceCondition(acceptanceNumbers.size(), new RemoveConstants<AtomAcceptance>().visit(all));
     }
 }

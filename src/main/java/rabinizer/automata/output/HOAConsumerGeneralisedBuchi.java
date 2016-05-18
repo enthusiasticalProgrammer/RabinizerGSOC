@@ -18,17 +18,23 @@ public class HOAConsumerGeneralisedBuchi<T> extends HOAConsumerExtended<T, Integ
         super(hoa, valFac, accCond);
     }
 
-    public void addEdge(ValuationSet label, T key) throws HOAConsumerException {
+    @Override
+    public void addEdge(ValuationSet label, T key) {
         addEdgeBackend(label, key, null);
     }
 
-    public void addEdge(ValuationSet label, T successor, BitSet acceptingLevels) throws HOAConsumerException {
+    public void addEdge(ValuationSet label, T successor, BitSet acceptingLevels) {
         addEdgeBackend(label, successor, Collections3.toList(acceptingLevels));
     }
 
-    public void addEpsilonEdge(T successor) throws HOAConsumerException {
-        Main.nonsilent("Warning: HOA currently does not support epsilon-transitions. (" + currentState + " -> " + successor + ')');
-        hoa.addEdgeWithLabel(getStateId(currentState), null, Collections.singletonList(getStateId(successor)), null);
+    public void addEpsilonEdge(T successor) {
+        try {
+            Main.nonsilent("Warning: HOA currently does not support epsilon-transitions. (" + currentState + " -> " + successor + ')');
+            hoa.addEdgeWithLabel(getStateId(currentState), null, Collections.singletonList(getStateId(successor)), null);
+        } catch (HOAConsumerException ex) {
+            // We wrap HOAConsumerException into an unchecked exception in order to keep the interfaces clean and tidy.
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override

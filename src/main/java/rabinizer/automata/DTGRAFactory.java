@@ -98,7 +98,7 @@ public class DTGRAFactory {
 
             Main.nonsilent("========================================");
             Main.nonsilent("Generating global acceptance condition\n");
-            accTGR = AccTGRRaw.createAccTGRRaw(accLocal, valuationSetFactory, automaton, opts);
+            accTGR = AccTGRRaw.createAccTGRRaw(accLocal, valuationSetFactory);
 
             Main.nonsilent("Generating optimized acceptance condition");
             AccTGRRaw.removeRedundancy(accTGR);
@@ -244,8 +244,7 @@ public class DTGRAFactory {
             Iterator<GeneralizedRabinPair<S>> i = accTGR.iterator();
             while (i.hasNext()) {
                 GeneralizedRabinPair<S> p = i.next();
-                Set<TranSet<S>> s = new HashSet<TranSet<S>>();
-                s.addAll(p.infs);
+                Set<TranSet<S>> s = new HashSet<>(p.infs);
                 p.infs.clear();
                 p.infs.addAll(s);
                 if (p.infs.stream().anyMatch(TranSet::isEmpty)) {

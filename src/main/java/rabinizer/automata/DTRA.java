@@ -63,8 +63,8 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
 
 
     @Override
-    public HOAConsumerExtended getConsumer(HOAConsumer ho) {
-        return new HOAConsumerRabin(ho, valuationSetFactory, accTR);
+    public HOAConsumerRabin getConsumer(HOAConsumer ho) {
+        return new HOAConsumerRabin(ho, valuationSetFactory, getInitialState(), accTR);
     }
 
     @Override

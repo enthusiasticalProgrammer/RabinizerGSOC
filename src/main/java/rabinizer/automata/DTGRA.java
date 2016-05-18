@@ -42,7 +42,7 @@ public class DTGRA extends Automaton<Product.ProductState> {
     }
 
     @Override
-    public HOAConsumerExtended getConsumer(HOAConsumer ho) {
-        return new HOAConsumerGeneralisedRabin(ho, valuationSetFactory, acc);
+    public HOAConsumerGeneralisedRabin getConsumer(HOAConsumer ho) {
+        return new HOAConsumerGeneralisedRabin(ho, valuationSetFactory, getInitialState(), acc);
     }
 }

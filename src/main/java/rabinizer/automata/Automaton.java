@@ -231,43 +231,26 @@ public abstract class Automaton<S extends IState<S>> {
         }
     }
 
-    public void toHOA(HOAConsumer ho) {
-        try {
-            HOAConsumerExtended<S, Object> hoa = getConsumer(ho);
-            if (getStates().isEmpty()) {
-                hoa.doHOAStatesEmpty();
-                return;
-            }
-            doHOAOutput(hoa);
-        } catch (HOAConsumerException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e.toString());
+    public final void toHOA(HOAConsumer ho) {
+        if (getStates().isEmpty()) {
+            HOAConsumerExtended.doHOAStatesEmpty(ho);
+            return;
         }
+
+        toHOABody(getConsumer(ho));
     }
 
-    protected void doHOAOutput(HOAConsumerExtended hoa) throws HOAConsumerException {
-
-        hoa.setHOAHeader(this.getInitialState().toString());
-        hoa.setInitialState(this.getInitialState());
-        hoa.setAcceptanceCondition();
-
+    protected void toHOABody(HOAConsumerExtended<S, ?> hoa) {
         for (S s : getStates()) {
             hoa.addState(s);
-
-            for (Map.Entry<S, ValuationSet> trans : s.getSuccessors().entrySet()) {
-                if (!trans.getValue().isEmpty()) {
-                    hoa.addEdge(trans.getValue(), trans.getKey());
-                }
-            }
-
+            s.getSuccessors().forEach((k, v) -> hoa.addEdge(v, k));
             hoa.stateDone();
         }
 
         hoa.done();
     }
 
-    public HOAConsumerExtended getConsumer(HOAConsumer ho) {
-        return new HOAConsumerExtended<S, Object>(ho, valuationSetFactory, null);
+    protected HOAConsumerExtended<S, ?> getConsumer(HOAConsumer ho) {
+        return new HOAConsumerExtended<>(ho, valuationSetFactory, null);
     }
-
 }

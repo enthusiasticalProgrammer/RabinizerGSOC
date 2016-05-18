@@ -28,6 +28,5 @@ public class HOAConsumerBuchi extends HOAConsumerExtended<BuchiAutomaton.State, 
     public void setAcceptanceCondition() throws HOAConsumerException {
         hoa.provideAcceptanceName(AccType.BUCHI.toString(), Collections.emptyList());
         hoa.setAcceptanceCondition(1, mkInf(0));
-
     }
 }

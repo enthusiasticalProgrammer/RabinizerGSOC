@@ -22,7 +22,6 @@ import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
 public class TestHOAConsumerExtendedGeneralisedRabin extends TestHOAConsumerExtended {
 
-
     @Test
     public void testTransitionMerging() throws HOAConsumerException {
         Formula f = Util.createFormula("X F (a & c)");
@@ -32,10 +31,6 @@ public class TestHOAConsumerExtendedGeneralisedRabin extends TestHOAConsumerExte
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, Collections.emptySet());
 
         HOAConsumerGeneralisedRabin ho = (HOAConsumerGeneralisedRabin) dtgra.getConsumer(getTestConsumer());
-        ho.setHOAHeader("Test Automaton");
-        ho.setAcceptanceCondition();
-        ho.addState(dtgra.getInitialState());
-
         assertEquals(1, ho.getMaximallyMergedEdgesOfEdge(val.createUniverseValuationSet()).size());
     }
 

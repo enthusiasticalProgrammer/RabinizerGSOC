@@ -62,51 +62,88 @@ public class HOAConsumerExtended<S, C> {
         return new BooleanExpression<>(new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_INF, number, false));
     }
 
-    public void setHOAHeader(String info) throws HOAConsumerException {
-        hoa.notifyHeaderStart("v1");
-        hoa.setTool("Rabinizer", "infty");
-        hoa.setName("Automaton for " + info);
-        hoa.setAPs(IntStream.range(0, valuationSetFactory.getSize()).mapToObj(i -> valuationSetFactory.getAliases().inverse().get(i)).collect(Collectors.toList()));
-    }
-
-    public void doHOAStatesEmpty() throws HOAConsumerException {
-        this.setHOAHeader("empty language");
-        hoa.setAcceptanceCondition(0, new BooleanExpression<>(false));
-        hoa.notifyBodyStart();
-        hoa.notifyEnd();
-        return;
-    }
-
-    public void setInitialState(S initialState) throws HOAConsumerException {
-        hoa.addStartStates(Collections.singletonList(getStateId(initialState)));
-    }
-
-    public void addState(S state) throws HOAConsumerException {
-        if (currentState == null) {
-            hoa.notifyBodyStart();
+    public void setHOAHeader(String info) {
+        try {
+            hoa.notifyHeaderStart("v1");
+            hoa.setTool("Rabinizer", "infty");
+            hoa.setName("Automaton for " + info);
+            hoa.setAPs(IntStream.range(0, valuationSetFactory.getSize()).mapToObj(i -> valuationSetFactory.getAliases().inverse().get(i)).collect(Collectors.toList()));
+        } catch (HOAConsumerException ex) {
+            // We wrap HOAConsumerException into an unchecked exception in order to keep the interfaces clean and tidy.
+            throw new RuntimeException(ex);
         }
-
-        currentState = state;
-        hoa.addState(getStateId(state), state.toString(), null, null);
     }
 
-    public void stateDone() throws HOAConsumerException {
-        hoa.notifyEndOfState(getStateId(currentState));
+    public static void doHOAStatesEmpty(HOAConsumer hoa) {
+        try {
+            hoa.notifyHeaderStart("v1");
+            hoa.setTool("Rabinizer", "infty");
+            hoa.setName("Automaton for false");
+            hoa.setAPs(Collections.emptyList());
+            hoa.setAcceptanceCondition(0, new BooleanExpression<>(false));
+            hoa.notifyBodyStart();
+            hoa.notifyEnd();
+        } catch (HOAConsumerException ex) {
+            // We wrap HOAConsumerException into an unchecked exception in order to keep the interfaces clean and tidy.
+            throw new RuntimeException(ex);
+        }x
     }
 
-    public void done() throws HOAConsumerException {
-        hoa.notifyEnd();
+    public void setInitialState(S initialState) {
+        try {
+            hoa.addStartStates(Collections.singletonList(getStateId(initialState)));
+        } catch (HOAConsumerException ex) {
+            // We wrap HOAConsumerException into an unchecked exception in order to keep the interfaces clean and tidy.
+            throw new RuntimeException(ex);
+        }
     }
 
-    protected void addEdgeBackend(ValuationSet label, S end, List<Integer> accSets) throws HOAConsumerException {
+    public void addState(S state) {
+        try {
+            if (currentState == null) {
+                hoa.notifyBodyStart();
+            }
+
+            currentState = state;
+            hoa.addState(getStateId(state), state.toString(), null, null);
+        } catch (HOAConsumerException ex) {
+            // We wrap HOAConsumerException into an unchecked exception in order to keep the interfaces clean and tidy.
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public void stateDone() {
+        try {
+            hoa.notifyEndOfState(getStateId(currentState));
+        } catch (HOAConsumerException ex) {
+            // We wrap HOAConsumerException into an unchecked exception in order to keep the interfaces clean and tidy.
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public void done() {
+        try {
+            hoa.notifyEnd();
+        } catch (HOAConsumerException ex) {
+            // We wrap HOAConsumerException into an unchecked exception in order to keep the interfaces clean and tidy.
+            throw new RuntimeException(ex);
+        }
+    }
+
+    protected void addEdgeBackend(ValuationSet label, S end, List<Integer> accSets) {
         if (label.isEmpty()) {
             return;
         }
 
-        hoa.addEdgeWithLabel(getStateId(currentState), label.toFormula().accept(new FormulaConverter()), Collections.singletonList(getStateId(end)), accSets);
+        try {
+            hoa.addEdgeWithLabel(getStateId(currentState), label.toFormula().accept(new FormulaConverter()), Collections.singletonList(getStateId(end)), accSets);
+        } catch (HOAConsumerException ex) {
+            // We wrap HOAConsumerException into an unchecked exception in order to keep the interfaces clean and tidy.
+            throw new RuntimeException(ex);
+        }
     }
 
-    public void addEdge(ValuationSet key, S end) throws HOAConsumerException {
+    public void addEdge(ValuationSet key, S end) {
         addEdgeBackend(key, end, null);
     }
 
@@ -117,7 +154,6 @@ public class HOAConsumerExtended<S, C> {
 
         return stateNumbers.get(state);
     }
-
 
     public enum AccType {
         NONE, ALL, BUCHI, COBUCHI, GENBUCHI, RABIN, GENRABIN;
