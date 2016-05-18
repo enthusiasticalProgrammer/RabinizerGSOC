@@ -86,7 +86,7 @@ public class HOAConsumerExtended<S, C> {
         } catch (HOAConsumerException ex) {
             // We wrap HOAConsumerException into an unchecked exception in order to keep the interfaces clean and tidy.
             throw new RuntimeException(ex);
-        }x
+        }
     }
 
     public void setInitialState(S initialState) {
