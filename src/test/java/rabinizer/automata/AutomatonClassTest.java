@@ -5,6 +5,9 @@ import java.util.EnumSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
+
 import rabinizer.Util;
 import rabinizer.exec.FactoryRegistry;
 import rabinizer.ltl.equivalence.EquivalenceClassFactory;
@@ -125,7 +128,6 @@ public class AutomatonClassTest {
                 .allMatch(s -> s.primaryState.clazz
                         .equals(DTGRAFactory.constructDTGRA(f3, factory, val, standard).initialState.primaryState.clazz)));
 
-        Formula f5 = Util.createFormula("a");
         assertTrue(SCC.get(2).stream()
                 .allMatch(s -> s.primaryState.clazz
                         .equals(DTGRAFactory.constructDTGRA(f4, factory, val, standard).initialState.primaryState.clazz)));
@@ -153,7 +155,7 @@ public class AutomatonClassTest {
         assertEquals(dtgra.size(), 1);
 
         dtgra = DTGRAFactory.constructDTGRA(f, factory, val, standard);
-        assertEquals(dtgra.size(), 1);
+        assertEquals(1, dtgra.size());
     }
 
     @Test
@@ -233,41 +235,45 @@ public class AutomatonClassTest {
     @Test
     public void testSCC3() {
         Formula f = Util.createFormula("G(!a | X(X(!a)))");
+        BiMap<String, Integer> aliases = ImmutableBiMap.of("a", 0);
 
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f, aliases);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
-        assertEquals(SCCAnalyser.SCCsStates(dtgra).size(), 1);
+        assertEquals(1, SCCAnalyser.SCCsStates(dtgra).size());
     }
 
     @Test
     public void testEmptinessCheck2() {
         Formula f = Util.createFormula("(G((X(!(X(p2)))) U (p2)))");
+        BiMap<String, Integer> aliases = ImmutableBiMap.of("p2", 0);
 
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f, aliases);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
         EmptinessCheck.checkEmptinessAndMinimiseSCCBased(dtgra, dtgra.acc);
-        assertEquals(dtgra.getStates().size(), 3);
+        assertEquals(3, dtgra.getStates().size());
     }
 
     @Test
     public void testEmptinessCheck3() {
         Formula f = Util.createFormula("a | X X(G b & F(G !b))");
+        BiMap<String, Integer> aliases = ImmutableBiMap.of("a", 0, "b", 1);
 
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f, aliases);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
         EmptinessCheck.checkEmptinessAndMinimiseSCCBased(dtgra, dtgra.acc);
-        assertEquals(dtgra.getStates().size(), 2);
+        assertEquals(2, dtgra.getStates().size());
     }
 
     @Test
     public void testEmptinessCheck4() {
         Formula f = Util.createFormula("X (G a & F (b U !a))");
+        BiMap<String, Integer> aliases = ImmutableBiMap.of("a", 0, "b", 1);
 
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f, aliases);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
         assertTrue(EmptinessCheck.checkEmptinessAndMinimiseSCCBased(dtgra, dtgra.acc));
     }
@@ -275,9 +281,10 @@ public class AutomatonClassTest {
     @Test
     public void testDTGRAValuationSetFactoryNotNull() {
         Formula f = Util.createFormula("X (F a)");
+        BiMap<String, Integer> aliases = ImmutableBiMap.of("a", 0);
 
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f);
+        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(Backend.BDD, f, aliases);
         DTGRA dtgra = DTGRAFactory.constructDTGRA(f, factory, val, EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION));
         assertNotNull(dtgra.valuationSetFactory);
     }
