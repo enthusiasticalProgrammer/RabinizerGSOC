@@ -19,7 +19,6 @@ package rabinizer.automata;
 
 import com.google.common.collect.ImmutableMap;
 
-import rabinizer.automata.SuspendedMaster.State;
 import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;

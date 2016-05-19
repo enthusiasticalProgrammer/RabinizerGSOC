@@ -25,13 +25,13 @@ import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MojmirSlave extends Automaton<MojmirSlave.State> {
 
-    public final GOperator label;
-    final boolean eager;
-    final EquivalenceClass initialState;
+    protected final GOperator label;
+    private final boolean eager;
+    private final EquivalenceClass initialState;
 
     public MojmirSlave(GOperator formula, EquivalenceClassFactory equivalenceClassFactory,
                        ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
@@ -48,6 +48,16 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
         } else {
             return new State(initialState);
         }
+    }
+
+    public TranSet<State> getAllTransitions() {
+        TranSet<State> result = new TranSet<>(valuationSetFactory);
+        this.getStates().forEach(state -> result.addAll(state, valuationSetFactory.createUniverseValuationSet()));
+        return result;
+    }
+
+    protected Collection<State> getSinks() {
+        return getStates().stream().filter(this::isSink).collect(Collectors.toList());
     }
 
     public final class State extends AbstractFormulaState implements IState<State> {

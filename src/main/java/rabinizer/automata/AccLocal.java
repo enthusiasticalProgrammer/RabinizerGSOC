@@ -22,7 +22,6 @@ import com.google.common.collect.Sets;
 import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
-import rabinizer.exec.Main;
 import rabinizer.ltl.Conjunction;
 import rabinizer.ltl.Formula;
 import rabinizer.ltl.GOperator;
@@ -34,157 +33,87 @@ import java.util.*;
 
 class AccLocal {
 
-    final Map<GOperator, Set<GOperator>> topmostGs = new HashMap<>();
-    final TranSet<Product.ProductState> allTrans;
-    // separate automata acceptance projected to the whole product
-    final Map<GOperator, Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>>> accSlavesOptions = new HashMap<>();
-    // actually just coBuchi
-    final Map<Map<GOperator, Integer>, TranSet<Product.ProductState>> accMasterOptions;
+    private final Product product;
     private final ValuationSetFactory valuationSetFactory;
     private final EquivalenceClassFactory equivalenceClassFactory;
-    private final Product product;
-    private final Formula formula;
+    final Map<GOperator, Set<GOperator>> topmostGs = new HashMap<>();
     private final Map<GOperator, Integer> maxRank = new HashMap<>();
-    private final boolean gSkeleton;
-    private final boolean eager;
+    private final Collection<Optimisation> optimisations;
 
-    public AccLocal(Product product, ValuationSetFactory factory, EquivalenceClassFactory factory2, Collection<Optimisation> opts) {
+    public AccLocal(Product product, ValuationSetFactory valuationSetFactory, EquivalenceClassFactory equivalenceFactory, Collection<Optimisation> opts) {
         this.product = product;
-        // TODO: Drop this.formula
-        this.formula = product.primaryAutomaton.getInitialState().getClazz().getRepresentative();
-        this.valuationSetFactory = factory;
-        this.equivalenceClassFactory = factory2;
-        allTrans = new TranSet<>(valuationSetFactory);
-        gSkeleton = opts.contains(Optimisation.SKELETON);
-        eager = opts.contains(Optimisation.EAGER);
+        this.valuationSetFactory = valuationSetFactory;
+        this.equivalenceClassFactory = equivalenceFactory;
+        optimisations = opts;
 
-        for (GOperator f : formula.gSubformulas()) {
-            int maxRankF = 0;
-            for (RabinSlave.State rs : product.secondaryAutomata.get(f).getStates()) {
-                maxRankF = maxRankF >= rs.size() ? maxRankF : rs.size();
-            }
-            maxRank.put(f, maxRankF);
-            topmostGs.put(f, f.operand.topmostGs());
-            Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> optionForf = computeAccSlavesOptions(f, false);
-            accSlavesOptions.put(f, optionForf);
+        for (GOperator gOperator : getOverallFormula().gSubformulas()) {
+            initialiseMaxRankOfGOperator(gOperator);
+            topmostGs.put(gOperator, gOperator.operand.topmostGs());
         }
-
-        ValuationSet allVals = valuationSetFactory.createUniverseValuationSet();
-        for (Product.ProductState ps : product.getStates()) {
-            allTrans.addAll(ps, allVals);
-        }
-
-        accMasterOptions = computeAccMasterOptions();
     }
 
-    private static RabinPair<Product.ProductState> createRabinPair(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank, Product product,
-                                                                   ValuationSetFactory valuationSetFactory) {
-        // Set fail
-        // Mojmir
-        TranSet<MojmirSlave.State> failM = new TranSet<>(valuationSetFactory);
-        for (MojmirSlave.State fs : slave.mojmir.getStates()) {
-            for (Map.Entry<MojmirSlave.State, ValuationSet> vsfs : slave.mojmir.getSuccessors(fs).entrySet()) {
-                if (slave.mojmir.isSink(vsfs.getKey()) && !finalStates.contains(vsfs.getKey())) {
-                    failM.addAll(fs, vsfs.getValue());
+    private void initialiseMaxRankOfGOperator(GOperator gOperator) {
+        int maxRankF = 0;
+        for (RabinSlave.State rs : product.secondaryAutomata.get(gOperator).getStates()) {
+            maxRankF = Math.max(maxRankF, rs.size());
+        }
+        maxRank.put(gOperator, maxRankF);
+    }
+
+    public Map<Map<GOperator, Integer>, TranSet<Product.ProductState>> computeAccMasterOptions() {
+        Map<Map<GOperator, Integer>, TranSet<Product.ProductState>> result = new HashMap<>();
+
+        Set<Set<GOperator>> gSets;
+        if (optimisations.contains(Optimisation.SKELETON)) {
+            gSets = getOverallFormula().accept(SkeletonVisitor.getInstance(SkeletonVisitor.SkeletonApproximation.LOWER_BOUND));
+        } else {
+            gSets = Sets.powerSet(getOverallFormula().gSubformulas());
+        }
+
+        for (Set<GOperator> gSet : gSets) {
+
+            for (Map<GOperator, Integer> ranking : powersetRanks(new ArrayDeque<>(gSet))) {
+
+                TranSet<Product.ProductState> avoidP = new TranSet<>(valuationSetFactory);
+
+                for (Product.ProductState ps : product.getStates()) {
+                    avoidP.addAll(computeNonAccMasterTransForState(ranking, ps));
+                }
+
+                if (!product.inputContainsAllAutomatonTransitions(avoidP)) {
+                    result.put(ImmutableMap.copyOf(ranking), avoidP);
                 }
             }
         }
 
-        // Product
-        TranSet<Product.ProductState> failP = new TranSet<>(valuationSetFactory);
-        for (Product.ProductState ps : product.getStates()) {
-            RabinSlave.State rs = ps.secondaryStates.get(slave.mojmir.label);
-            if (rs != null) { // relevant slave
-                for (MojmirSlave.State fs : rs.keySet()) {
-                    failP.addAll(ps, failM.asMap().get(fs));
-                }
-            }
-        }
+        return result;
+    }
 
-        // Set succeed(pi)
-        // Mojmir
-        TranSet<MojmirSlave.State> succeedM = new TranSet<>(valuationSetFactory);
-        if (finalStates.contains(slave.mojmir.getInitialState())) {
-            for (MojmirSlave.State fs : slave.mojmir.getStates()) {
-                for (Map.Entry<MojmirSlave.State, ValuationSet> vsfs : slave.mojmir.getSuccessors(fs).entrySet()) {
-                    succeedM.addAll(fs, vsfs.getValue());
+    private TranSet<Product.ProductState> computeNonAccMasterTransForState(Map<GOperator, Integer> ranking, Product.ProductState ps) {
+        TranSet<Product.ProductState> result = new TranSet<>(valuationSetFactory);
+
+        if (optimisations.contains(Optimisation.EAGER)) {
+            BitSet sensitiveAlphabet = ps.getSensitiveAlphabet();
+
+            for (BitSet valuation : Collections3.powerSet(sensitiveAlphabet)) {
+                if (!slavesEntail(ps, ranking, valuation, ps.primaryState.getClazz())) {
+                    result.addAll(ps, valuationSetFactory.createValuationSet(valuation, sensitiveAlphabet));
                 }
             }
         } else {
-            for (MojmirSlave.State fs : slave.mojmir.getStates()) {
-                if (!finalStates.contains(fs)) {
-                    for (Map.Entry<MojmirSlave.State, ValuationSet> vsfs : slave.mojmir.getSuccessors(fs).entrySet()) {
-                        if (finalStates.contains(vsfs.getKey())) {
-                            succeedM.addAll(fs, vsfs.getValue());
-                        }
-                    }
-                }
-            }
-        }
-        // Product
-        TranSet<Product.ProductState> succeedP = new TranSet<>(valuationSetFactory);
-        for (Product.ProductState ps : product.getStates()) {
-            RabinSlave.State rs = ps.secondaryStates.get(slave.mojmir.label);
-            if (rs != null) { // relevant slave
-                for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : rs.entrySet()) {
-                    if (stateIntegerEntry.getValue() != rank) {
-                        continue;
-                    }
-
-                    succeedP.addAll(ps, succeedM.asMap().get(stateIntegerEntry.getKey()));
-                }
+            if (!slavesEntail(ps, ranking, null, ps.primaryState.getClazz())) {
+                result.addAll(ps, valuationSetFactory.createUniverseValuationSet());
             }
         }
 
-        // Set buy(pi)
-        // Rabin
-        TranSet<RabinSlave.State> buyR = new TranSet<>(valuationSetFactory);
-        for (RabinSlave.State rs : slave.getStates()) {
-            for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : rs.entrySet()) {
-                if (stateIntegerEntry.getValue() < rank) {
-                    for (MojmirSlave.State fs2 : rs.keySet()) {
-                        for (MojmirSlave.State succ : slave.mojmir.getStates()) {
-                            ValuationSet vs1, vs2;
-                            if (!finalStates.contains(succ) && (vs1 = slave.mojmir.transitions.get(stateIntegerEntry.getKey()).get(succ)) != null
-                                    && (vs2 = slave.mojmir.transitions.get(fs2).get(succ)) != null) {
-                                if (!stateIntegerEntry.getKey().equals(fs2)) {
-                                    ValuationSet vs1copy = vs1.clone();
-                                    vs1copy.retainAll(vs2);
-                                    buyR.addAll(rs, vs1copy);
-                                } else if (succ.equals(slave.mojmir.getInitialState())) {
-                                    buyR.addAll(rs, vs1);
-                                }
-
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        // Product
-        TranSet<Product.ProductState> buyP = new TranSet<>(valuationSetFactory);
-        for (Product.ProductState ps : product.getStates()) {
-            RabinSlave.State rs = ps.secondaryStates.get(slave.mojmir.label);
-            if (rs != null) { // relevant slave
-                buyP.addAll(ps, buyR.asMap().get(rs));
-            }
-        }
-
-        failP.addAll(buyP);
-        return new RabinPair<>(failP, succeedP);
+        return result;
     }
 
-    Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> computeAccSlavesOptions(GOperator g, boolean forceAllSlaves) {
+    private Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> computeAccSlavesOptions(GOperator g) {
         Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> result = new HashMap<>();
 
         RabinSlave rSlave = product.secondaryAutomata.get(g);
-        Set<Set<GOperator>> gSets;
-        if (gSkeleton && !forceAllSlaves) {
-            gSets = g.operand.accept(SkeletonVisitor.getInstance(SkeletonVisitor.SkeletonApproximation.LOWER_BOUND));
-            gSets.retainAll(Sets.powerSet(topmostGs.get(g)));
-        } else {
-            gSets = Sets.powerSet(topmostGs.get(g));
-        }
+        Set<Set<GOperator>> gSets = Sets.powerSet(getOverallFormula().gSubformulas());
 
         for (Set<GOperator> gSet : gSets) {
             Set<MojmirSlave.State> finalStates = new HashSet<>();
@@ -198,51 +127,159 @@ class AccLocal {
 
             result.put(gSet, new HashMap<>());
             for (int rank = 1; rank <= maxRank.get(g); rank++) {
-                result.get(gSet).put(rank, createRabinPair(rSlave, finalStates, rank, product, valuationSetFactory));
+                result.get(gSet).put(rank, createRabinPair(rSlave, finalStates, rank));
             }
         }
 
         return result;
     }
 
-    private boolean slavesEntail(Product.ProductState ps, Map<GOperator, Integer> ranking, BitSet v, EquivalenceClass consequent) {
-        Set<GOperator> gSet = ranking.keySet();
+    public Map<GOperator, Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>>> getAllSlaveAcceptanceConditions() {
+        Map<GOperator, Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>>> result = new HashMap<>();
+        for (GOperator g : product.secondaryAutomata.keySet()) {
+            result.put(g, computeAccSlavesOptions(g));
+        }
 
-        Collection<Formula> conjunction = new ArrayList<>(3 * gSet.size());
+        return result;
+    }
 
-        if (eager) {
-            for (Map.Entry<GOperator, Integer> entry : ranking.entrySet()) {
-                GOperator G = entry.getKey();
-                int rank = entry.getValue();
+    private RabinPair<Product.ProductState> createRabinPair(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank) {
 
-                conjunction.add(G);
-                conjunction.add(G.operand);
-                RabinSlave.State rs = ps.secondaryStates.get(G);
-                if (rs != null) {
-                    for (Map.Entry<MojmirSlave.State, Integer> stateEntry : rs.entrySet()) {
-                        if (stateEntry.getValue() >= rank) {
-                            conjunction.add(stateEntry.getKey().getClazz().getRepresentative().temporalStep(v));
+        TranSet<Product.ProductState> failP = getFailingProductTransitions(slave, finalStates);
+        TranSet<Product.ProductState> succeedP = getSucceedingProductTransitions(slave, rank, finalStates);
+        TranSet<Product.ProductState> buyP = getBuyProductTransitions(slave, finalStates, rank);
+
+        failP.addAll(buyP);
+        return new RabinPair<>(failP, succeedP);
+    }
+
+    private TranSet<Product.ProductState> getBuyProductTransitions(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank) {
+        TranSet<RabinSlave.State> buyR = getBuyRabinTransitions(slave, finalStates, rank);
+        TranSet<Product.ProductState> buyP = new TranSet<>(valuationSetFactory);
+        for (Product.ProductState ps : product.getStates()) {
+            RabinSlave.State rs = ps.secondaryStates.get(slave.mojmir.label);
+            if (rs != null) { // relevant slave
+                buyP.addAll(ps, buyR.asMap().get(rs));
+            }
+        }
+        return buyP;
+    }
+
+    private TranSet<RabinSlave.State> getBuyRabinTransitions(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank) {
+        TranSet<RabinSlave.State> buyRabin = new TranSet<>(valuationSetFactory);
+        for (RabinSlave.State rs : slave.getStates()) {
+            for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : rs.entrySet()) {
+                if (stateIntegerEntry.getValue() < rank) {
+                    for (MojmirSlave.State fs2 : rs.keySet()) {
+                        for (MojmirSlave.State succ : slave.mojmir.getStates()) {
+                            ValuationSet vs1, vs2;
+                            if (!finalStates.contains(succ) && (vs1 = slave.mojmir.transitions.get(stateIntegerEntry.getKey()).get(succ)) != null
+                                    && (vs2 = slave.mojmir.transitions.get(fs2).get(succ)) != null) {
+                                if (!stateIntegerEntry.getKey().equals(fs2)) {
+                                    ValuationSet vs1copy = vs1.clone();
+                                    vs1copy.retainAll(vs2);
+                                    buyRabin.addAll(rs, vs1copy);
+                                } else if (succ.equals(slave.mojmir.getInitialState())) {
+                                    buyRabin.addAll(rs, vs1);
+                                }
+
+                            }
                         }
                     }
                 }
             }
+        }
+        return buyRabin;
+    }
 
-            consequent = consequent.temporalStep(v);
+    private TranSet<Product.ProductState> getSucceedingProductTransitions(RabinSlave slave, int rank, Set<MojmirSlave.State> finalStates) {
+        TranSet<MojmirSlave.State> succeedMojmir = getSucceedingMojmirTransitions(slave, finalStates);
+        TranSet<Product.ProductState> succeedP = new TranSet<>(valuationSetFactory);
+        for (Product.ProductState ps : product.getStates()) {
+            RabinSlave.State rs = ps.secondaryStates.get(slave.mojmir.label);
+            if (rs != null) { // relevant slave
+                for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : rs.entrySet()) {
+                    if (stateIntegerEntry.getValue() == rank) {
+                        succeedP.addAll(ps, succeedMojmir.asMap().get(stateIntegerEntry.getKey()));
+                    }
+                }
+            }
+        }
+        return succeedP;
+    }
+
+    private TranSet<MojmirSlave.State> getSucceedingMojmirTransitions(RabinSlave slave, Set<MojmirSlave.State> finalStates) {
+        TranSet<MojmirSlave.State> succeedM = new TranSet<>(valuationSetFactory);
+        if (finalStates.contains(slave.mojmir.getInitialState())) {
+            succeedM.addAll(slave.mojmir.getAllTransitions());
         } else {
-            for (Map.Entry<GOperator, Integer> entry : ranking.entrySet()) {
-                GOperator G = entry.getKey();
-                int rank = entry.getValue();
-
-                conjunction.add(G);
-                RabinSlave.State rs = ps.secondaryStates.get(G);
-                if (rs != null) {
-                    for (Map.Entry<MojmirSlave.State, Integer> stateEntry : rs.entrySet()) {
-                        if (stateEntry.getValue() >= rank) {
-                            conjunction.add(stateEntry.getKey().getClazz().getRepresentative());
+            for (MojmirSlave.State mojmirState : slave.mojmir.getStates()) {
+                if (!finalStates.contains(mojmirState)) {
+                    for (Map.Entry<MojmirSlave.State, ValuationSet> valuation : slave.mojmir.getSuccessors(mojmirState).entrySet()) {
+                        if (finalStates.contains(valuation.getKey())) {
+                            succeedM.addAll(mojmirState, valuation.getValue());
                         }
                     }
                 }
             }
+        }
+        return succeedM;
+    }
+
+    private TranSet<Product.ProductState> getFailingProductTransitions(RabinSlave slave, Set<MojmirSlave.State> finalStates) {
+        TranSet<MojmirSlave.State> failMojmir = getFailingMojmirTransitions(slave, finalStates);
+        TranSet<Product.ProductState> failP = new TranSet<>(valuationSetFactory);
+        for (Product.ProductState ps : product.getStates()) {
+            RabinSlave.State rs = ps.secondaryStates.get(slave.mojmir.label);
+            if (rs != null) { // relevant slave
+                for (MojmirSlave.State fs : rs.keySet()) {
+                    failP.addAll(ps, failMojmir.asMap().get(fs));
+                }
+            }
+        }
+        return failP;
+    }
+
+    private TranSet<MojmirSlave.State> getFailingMojmirTransitions(RabinSlave slave, Set<MojmirSlave.State> finalStates) {
+        TranSet<MojmirSlave.State> failM = new TranSet<>(valuationSetFactory);
+        Collection<MojmirSlave.State> sinks = slave.mojmir.getSinks();
+        sinks.removeIf(finalStates::contains);
+        for (MojmirSlave.State state : slave.mojmir.getStates()) {
+            for (Map.Entry<MojmirSlave.State, ValuationSet> valuationSetFailState : slave.mojmir.getSuccessors(state).entrySet()) {
+                if (sinks.contains(valuationSetFailState.getKey())) {
+                    failM.addAll(state, valuationSetFailState.getValue());
+                }
+            }
+        }
+        return failM;
+    }
+
+    private boolean slavesEntail(Product.ProductState ps, Map<GOperator, Integer> ranking, BitSet valuation, EquivalenceClass consequent) {
+        Collection<Formula> conjunction = new ArrayList<>(3 * ranking.size());
+
+        for (Map.Entry<GOperator, Integer> entry : ranking.entrySet()) {
+            GOperator G = entry.getKey();
+            int rank = entry.getValue();
+
+            conjunction.add(G);
+            if (optimisations.contains(Optimisation.EAGER)) {
+                conjunction.add(G.operand);
+            }
+            RabinSlave.State rs = ps.secondaryStates.get(G);
+            if (rs != null) {
+                for (Map.Entry<MojmirSlave.State, Integer> stateEntry : rs.entrySet()) {
+                    if (stateEntry.getValue() >= rank) {
+                        if (optimisations.contains(Optimisation.EAGER)) {
+                            conjunction.add(stateEntry.getKey().getClazz().getRepresentative().temporalStep(valuation));
+                        }
+                        conjunction.add(stateEntry.getKey().getClazz().getRepresentative());
+                    }
+                }
+            }
+
+        }
+        if (optimisations.contains(Optimisation.EAGER)) {
+            consequent = consequent.temporalStep(valuation);
         }
 
         EquivalenceClass antecedent = equivalenceClassFactory.createEquivalenceClass(new Conjunction(conjunction), formula -> {
@@ -255,38 +292,6 @@ class AccLocal {
 
         return antecedent.implies(consequent);
     }
-
-    private Map<Map<GOperator, Integer>, TranSet<Product.ProductState>> computeAccMasterOptions() {
-        ImmutableMap.Builder<Map<GOperator, Integer>, TranSet<Product.ProductState>> builder = ImmutableMap.builder();
-
-        Set<Set<GOperator>> gSets;
-        if (gSkeleton) {
-            gSets = formula.accept(SkeletonVisitor.getInstance(SkeletonVisitor.SkeletonApproximation.LOWER_BOUND));
-        } else {
-            gSets = Sets.powerSet(formula.gSubformulas());
-        }
-
-        for (Set<GOperator> gSet : gSets) {
-
-            for (Map<GOperator, Integer> ranking : powersetRanks(new ArrayDeque<>(gSet))) {
-
-                TranSet<Product.ProductState> avoidP = new TranSet<>(valuationSetFactory);
-
-                for (Product.ProductState ps : product.getStates()) {
-                    avoidP.addAll(computeAccMasterForState(ranking, ps));
-                }
-
-                if (avoidP.equals(allTrans)) {
-                    continue;
-                }
-
-                builder.put(ImmutableMap.copyOf(ranking), avoidP);
-            }
-        }
-
-        return builder.build();
-    }
-
 
     private Collection<Map<GOperator, Integer>> powersetRanks(Deque<GOperator> gSet) {
         GOperator next = gSet.pollLast();
@@ -308,23 +313,7 @@ class AccLocal {
         return result;
     }
 
-    private TranSet<Product.ProductState> computeAccMasterForState(Map<GOperator, Integer> ranking, Product.ProductState ps) {
-        TranSet<Product.ProductState> result = new TranSet<>(valuationSetFactory);
-
-        if (eager) {
-            BitSet sensitiveAlphabet = ps.getSensitiveAlphabet();
-
-            for (BitSet valuation : Collections3.powerSet(sensitiveAlphabet)) {
-                if (!slavesEntail(ps, ranking, valuation, ps.primaryState.getClazz())) {
-                    result.addAll(ps, valuationSetFactory.createValuationSet(valuation, sensitiveAlphabet));
-                }
-            }
-        } else {
-            if (!slavesEntail(ps, ranking, null, ps.primaryState.getClazz())) {
-                result.addAll(ps, valuationSetFactory.createUniverseValuationSet());
-            }
-        }
-
-        return result;
+    private Formula getOverallFormula() {
+        return product.primaryAutomaton.getInitialState().getClazz().getRepresentative();
     }
 }

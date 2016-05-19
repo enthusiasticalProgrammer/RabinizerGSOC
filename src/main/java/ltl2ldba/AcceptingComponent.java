@@ -113,7 +113,6 @@ public class AcceptingComponent extends Automaton<AcceptingComponent.State> {
                 getSuccessors(productState).forEach((successor, valuationSet) -> {
                     for (Map.Entry<BitSet, ValuationSet> acceptance : accSetMap.entrySet()) {
                         ValuationSet label = acceptance.getValue().intersect(valuationSet);
-
                         try {
                             consumer.addEdge(label, successor, acceptance.getKey());
                         } catch (HOAConsumerException e) {
