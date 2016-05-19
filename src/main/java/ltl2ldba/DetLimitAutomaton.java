@@ -62,6 +62,7 @@ public class DetLimitAutomaton {
         IState<?> initialState = getInitialState();
 
         consumer.setHOAHeader(initialState.toString());
+        consumer.setAcceptanceCondition();
         consumer.setInitialState(initialState);
 
         if (initialComponent != null) {
