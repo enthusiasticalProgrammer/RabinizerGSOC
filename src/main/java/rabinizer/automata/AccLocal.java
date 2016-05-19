@@ -268,7 +268,7 @@ class AccLocal {
 
         for (Set<GOperator> gSet : gSets) {
 
-            for (Map<GOperator, Integer> ranking : powersetRanks(new HashSet<>(gSet))) {
+            for (Map<GOperator, Integer> ranking : powersetRanks(new ArrayDeque<>(gSet))) {
 
                 TranSet<Product.ProductState> avoidP = new TranSet<>(valuationSetFactory);
 
@@ -288,20 +288,19 @@ class AccLocal {
     }
 
 
-    private Collection<Map<GOperator, Integer>> powersetRanks(Collection<GOperator> gSet) {
-        if (gSet.isEmpty()) {
+    private Collection<Map<GOperator, Integer>> powersetRanks(Deque<GOperator> gSet) {
+        GOperator next = gSet.pollLast();
+
+        if (next == null) {
             return Collections.singleton(Collections.emptyMap());
         }
 
         Collection<Map<GOperator, Integer>> result = new ArrayList<>();
 
-        GOperator curr = gSet.iterator().next();
-        gSet.remove(curr);
-
         for (Map<GOperator, Integer> ranking : powersetRanks(gSet)) {
-            for (int rank = 1; rank <= maxRank.get(curr); rank++) {
+            for (int rank = 1; rank <= maxRank.get(next); rank++) {
                 Map<GOperator, Integer> rankingNew = new HashMap<>(ranking);
-                rankingNew.put(curr, rank);
+                rankingNew.put(next, rank);
                 result.add(rankingNew);
             }
         }
