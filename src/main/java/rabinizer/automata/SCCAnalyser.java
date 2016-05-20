@@ -93,7 +93,7 @@ public class SCCAnalyser<S extends IState<S>> {
             resultStates.addAll(SCCsStatesRecursively());
             resultStates.forEach(s -> notYetProcessed.removeAll(s));
         }
-        return resultStates.stream().map(s -> sccToTran(automaton, s)).collect(Collectors.toList());
+        return resultStates.stream().map(s -> sccToTran(automaton, s, forbiddenEdges)).collect(Collectors.toList());
     }
 
     private List<Set<S>> SCCsStatesRecursively() {
@@ -132,7 +132,7 @@ public class SCCAnalyser<S extends IState<S>> {
         return result;
     }
 
-    public static <S extends IState<S>> TranSet<S> sccToTran(Automaton aut, Set<S> scc) {
+    public static <S extends IState<S>> TranSet<S> sccToTran(Automaton aut, Set<S> scc, TranSet<S> forbiddenEdges) {
         TranSet<S> result = new TranSet<>(aut.valuationSetFactory);
 
         for (S s : scc) {
@@ -143,6 +143,7 @@ public class SCCAnalyser<S extends IState<S>> {
                 }
             }
         }
+        result.removeAll(forbiddenEdges);
         return result;
     }
 }

@@ -52,7 +52,7 @@ public class EmptinessCheck<S extends IState<S>> {
 
     private void minimiseSCCBased() {
         for (Set<S> SCC : SCCAnalyser.SCCsStates(automaton)) {
-            TranSet<S> tranSCC = SCCAnalyser.sccToTran(automaton, SCC);
+            TranSet<S> tranSCC = SCCAnalyser.sccToTran(automaton, SCC, new TranSet<S>(automaton.valuationSetFactory));
             removeInterSCCAccConditions(SCC);
 
             boolean sccEmpty = true;
