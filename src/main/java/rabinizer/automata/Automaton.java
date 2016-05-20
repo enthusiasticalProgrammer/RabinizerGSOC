@@ -253,7 +253,9 @@ public abstract class Automaton<S extends IState<S>> {
         return new HOAConsumerExtended<>(ho, valuationSetFactory, null);
     }
 
-    public boolean inputContainsAllAutomatonTransitions(TranSet<S> trans) {
-        return this.getStates().stream().allMatch(state -> trans.containsAll(state, valuationSetFactory.createUniverseValuationSet()));
+    // FIXME: use transitions table.
+    public boolean containsAllTransitions(TranSet<S> trans) {
+        ValuationSet universe = valuationSetFactory.createUniverseValuationSet();
+        return getStates().stream().allMatch(state -> trans.containsAll(state, universe));
     }
 }

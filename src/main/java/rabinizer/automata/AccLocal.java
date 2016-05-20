@@ -64,6 +64,7 @@ class AccLocal {
         Map<Map<GOperator, Integer>, TranSet<Product.ProductState>> result = new HashMap<>();
 
         Set<Set<GOperator>> gSets;
+
         if (optimisations.contains(Optimisation.SKELETON)) {
             gSets = getOverallFormula().accept(SkeletonVisitor.getInstance(SkeletonVisitor.SkeletonApproximation.LOWER_BOUND));
         } else {
@@ -71,7 +72,6 @@ class AccLocal {
         }
 
         for (Set<GOperator> gSet : gSets) {
-
             for (Map<GOperator, Integer> ranking : powersetRanks(new ArrayDeque<>(gSet))) {
 
                 TranSet<Product.ProductState> avoidP = new TranSet<>(valuationSetFactory);
@@ -80,7 +80,7 @@ class AccLocal {
                     avoidP.addAll(computeNonAccMasterTransForState(ranking, ps));
                 }
 
-                if (!product.inputContainsAllAutomatonTransitions(avoidP)) {
+                if (!product.containsAllTransitions(avoidP)) {
                     result.put(ImmutableMap.copyOf(ranking), avoidP);
                 }
             }
@@ -143,28 +143,31 @@ class AccLocal {
         return result;
     }
 
+    // TODO: Move to Product.State
     private RabinPair<Product.ProductState> createRabinPair(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank) {
-
         TranSet<Product.ProductState> failP = getFailingProductTransitions(slave, finalStates);
         TranSet<Product.ProductState> succeedP = getSucceedingProductTransitions(slave, rank, finalStates);
         TranSet<Product.ProductState> buyP = getBuyProductTransitions(slave, finalStates, rank);
-
         failP.addAll(buyP);
         return new RabinPair<>(failP, succeedP);
     }
 
+    // TODO: Move to Product.State
     private TranSet<Product.ProductState> getBuyProductTransitions(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank) {
         TranSet<RabinSlave.State> buyR = getBuyRabinTransitions(slave, finalStates, rank);
         TranSet<Product.ProductState> buyP = new TranSet<>(valuationSetFactory);
+
         for (Product.ProductState ps : product.getStates()) {
             RabinSlave.State rs = ps.secondaryStates.get(slave.mojmir.label);
             if (rs != null) { // relevant slave
                 buyP.addAll(ps, buyR.asMap().get(rs));
             }
         }
+
         return buyP;
     }
 
+    // TODO: Move to Product.State
     private TranSet<RabinSlave.State> getBuyRabinTransitions(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank) {
         TranSet<RabinSlave.State> buyRabin = new TranSet<>(valuationSetFactory);
         for (RabinSlave.State rs : slave.getStates()) {
@@ -192,6 +195,7 @@ class AccLocal {
         return buyRabin;
     }
 
+    // TODO: Move to Product.State
     private TranSet<Product.ProductState> getSucceedingProductTransitions(RabinSlave slave, int rank, Set<MojmirSlave.State> finalStates) {
         TranSet<MojmirSlave.State> succeedMojmir = getSucceedingMojmirTransitions(slave, finalStates);
         TranSet<Product.ProductState> succeedP = new TranSet<>(valuationSetFactory);
@@ -208,6 +212,7 @@ class AccLocal {
         return succeedP;
     }
 
+    // TODO: Move to MojmirSlave.State
     private TranSet<MojmirSlave.State> getSucceedingMojmirTransitions(RabinSlave slave, Set<MojmirSlave.State> finalStates) {
         TranSet<MojmirSlave.State> succeedM = new TranSet<>(valuationSetFactory);
         if (finalStates.contains(slave.mojmir.getInitialState())) {
@@ -226,6 +231,7 @@ class AccLocal {
         return succeedM;
     }
 
+    // TODO: Move to Product.State
     private TranSet<Product.ProductState> getFailingProductTransitions(RabinSlave slave, Set<MojmirSlave.State> finalStates) {
         TranSet<MojmirSlave.State> failMojmir = getFailingMojmirTransitions(slave, finalStates);
         TranSet<Product.ProductState> failP = new TranSet<>(valuationSetFactory);
@@ -240,6 +246,7 @@ class AccLocal {
         return failP;
     }
 
+    // TODO: Move to MojmirSlave.State
     private TranSet<MojmirSlave.State> getFailingMojmirTransitions(RabinSlave slave, Set<MojmirSlave.State> finalStates) {
         TranSet<MojmirSlave.State> failM = new TranSet<>(valuationSetFactory);
         Collection<MojmirSlave.State> sinks = slave.mojmir.getSinks();
@@ -265,6 +272,7 @@ class AccLocal {
             if (optimisations.contains(Optimisation.EAGER)) {
                 conjunction.add(G.operand);
             }
+
             RabinSlave.State rs = ps.secondaryStates.get(G);
             if (rs != null) {
                 for (Map.Entry<MojmirSlave.State, Integer> stateEntry : rs.entrySet()) {
@@ -276,8 +284,8 @@ class AccLocal {
                     }
                 }
             }
-
         }
+
         if (optimisations.contains(Optimisation.EAGER)) {
             consequent = consequent.temporalStep(valuation);
         }

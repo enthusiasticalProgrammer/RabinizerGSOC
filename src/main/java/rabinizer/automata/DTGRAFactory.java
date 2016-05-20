@@ -170,7 +170,7 @@ public class DTGRAFactory {
 
             // This rule is subsumed by the following two rules.
             Main.verboseln(phase + ". Removing (F, {I1,...,In}) with complete F\n");
-            this2.removeIf(pair -> this2.product.inputContainsAllAutomatonTransitions(pair.fin));
+            this2.removeIf(pair -> this2.product.containsAllTransitions(pair.fin));
             printProgress(phase++, this2);
 
             Main.verboseln(phase + ". Removing F from each Ii: (F, {I1,...,In}) |-> (F, {I1\\F,...,In\\F})\n");
@@ -183,7 +183,7 @@ public class DTGRAFactory {
 
             Main.verboseln(phase + ". Removing complete Ii in (F, {I1,...,In}), i.e. Ii U F = Q \n");
             this2.forEach(pair -> pair.infs.removeIf(i ->
-            this2.product.inputContainsAllAutomatonTransitions(i.union(pair.fin))));
+            this2.product.containsAllTransitions(i.union(pair.fin))));
             printProgress(phase++, this2);
 
             Main.verboseln(phase + ". Removing redundant Ii: (F, I) |-> (F, { i | i in I and !\\exists j in I : Ij <= Ii })\n");
