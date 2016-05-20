@@ -20,7 +20,6 @@ package rabinizer.automata;
 import jhoafparser.consumer.HOAConsumer;
 
 import rabinizer.automata.output.HOAConsumerRabin;
-import rabinizer.automata.output.HOAConsumerExtended;
 
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;

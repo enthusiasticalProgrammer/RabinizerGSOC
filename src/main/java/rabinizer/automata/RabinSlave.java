@@ -25,7 +25,7 @@ import java.util.*;
 
 public class RabinSlave extends Automaton<RabinSlave.State> {
 
-    public final MojmirSlave mojmir;
+    protected final MojmirSlave mojmir;
 
     public RabinSlave(MojmirSlave mojmir, ValuationSetFactory factory) {
         super(factory);

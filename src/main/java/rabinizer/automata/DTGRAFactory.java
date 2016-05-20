@@ -98,7 +98,7 @@ public class DTGRAFactory {
 
             Main.nonsilent("========================================");
             Main.nonsilent("Generating global acceptance condition\n");
-            accTGR = AccTGRRaw.createAccTGRRaw(accLocal, valuationSetFactory);
+            accTGR = AccTGRRaw.createAccTGRRaw(accLocal, valuationSetFactory, automaton);
 
             Main.nonsilent("Generating optimized acceptance condition");
             AccTGRRaw.removeRedundancy(accTGR);
@@ -123,16 +123,18 @@ public class DTGRAFactory {
 
         private static final long serialVersionUID = 245172601429256815L;
 
-        private final TranSet<S> allTrans;
+        private final Automaton<S> product;
 
-        private AccTGRRaw(TranSet<S> allTrans) {
-            this.allTrans = allTrans;
+        private AccTGRRaw(Automaton<S> product) {
+            this.product = product;
         }
 
-        public static AccTGRRaw<ProductState> createAccTGRRaw(AccLocal accLocal, ValuationSetFactory factory) {
-            AccTGRRaw<ProductState> accTGRRaw = new AccTGRRaw<>(accLocal.allTrans);
 
-            for (Map.Entry<Map<GOperator, Integer>, TranSet<ProductState>> entry : accLocal.accMasterOptions.entrySet()) {
+        public static AccTGRRaw<ProductState> createAccTGRRaw(AccLocal accLocal, ValuationSetFactory factory, Product product) {
+            AccTGRRaw<ProductState> accTGRRaw = new AccTGRRaw<>(product);
+
+            Map<GOperator, Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>>> completeSlaveAcceptance = accLocal.getAllSlaveAcceptanceConditions();
+            for (Map.Entry<Map<GOperator, Integer>, TranSet<ProductState>> entry : accLocal.computeAccMasterOptions().entrySet()) {
                 Map<GOperator, Integer> ranking = entry.getKey();
                 Set<GOperator> gSet = ranking.keySet();
 
@@ -143,20 +145,14 @@ public class DTGRAFactory {
                 for (GOperator g : gSet) {
                     Set<GOperator> localGSet = new HashSet<>(gSet);
                     localGSet.retainAll(accLocal.topmostGs.get(g));
-                    RabinPair<ProductState> fPair;
+                    RabinPair<ProductState> gPair;
+                    gPair = completeSlaveAcceptance.get(g).get(localGSet).get(ranking.get(g));
 
-                    if (accLocal.accSlavesOptions.get(g).get(localGSet) != null) {
-                        fPair = accLocal.accSlavesOptions.get(g).get(localGSet).get(ranking.get(g));
-                    } else {
-                        fPair = accLocal.computeAccSlavesOptions(g, true).get(localGSet).get(ranking.get(g));
-                    }
-
-                    Fin.addAll(fPair.fin);
-                    Infs.add(fPair.inf.clone());
+                    Fin.addAll(gPair.fin);
+                    Infs.add(gPair.inf.clone());
                 }
 
                 GeneralizedRabinPair<ProductState> pair = new GeneralizedRabinPair<>(Fin, Infs);
-                Main.verboseln(pair.toString());
                 accTGRRaw.add(pair);
             }
 
@@ -174,7 +170,7 @@ public class DTGRAFactory {
 
             // This rule is subsumed by the following two rules.
             Main.verboseln(phase + ". Removing (F, {I1,...,In}) with complete F\n");
-            this2.removeIf(pair -> pair.fin.equals(this2.allTrans));
+            this2.removeIf(pair -> this2.product.inputContainsAllAutomatonTransitions(pair.fin));
             printProgress(phase++, this2);
 
             Main.verboseln(phase + ". Removing F from each Ii: (F, {I1,...,In}) |-> (F, {I1\\F,...,In\\F})\n");
@@ -186,11 +182,8 @@ public class DTGRAFactory {
             printProgress(phase++, this2);
 
             Main.verboseln(phase + ". Removing complete Ii in (F, {I1,...,In}), i.e. Ii U F = Q \n");
-            this2.forEach(pair -> {
-                TranSet<S> allTrans = this2.allTrans.clone();
-                allTrans.removeAll(pair.fin);
-                pair.infs.removeIf(i -> i.containsAll(allTrans));
-            });
+            this2.forEach(pair -> pair.infs.removeIf(i ->
+            this2.product.inputContainsAllAutomatonTransitions(i.union(pair.fin))));
             printProgress(phase++, this2);
 
             Main.verboseln(phase + ". Removing redundant Ii: (F, I) |-> (F, { i | i in I and !\\exists j in I : Ij <= Ii })\n");

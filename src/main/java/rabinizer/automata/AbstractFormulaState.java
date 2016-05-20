@@ -22,9 +22,7 @@ import rabinizer.ltl.Literal;
 import rabinizer.ltl.equivalence.EquivalenceClass;
 
 import java.util.BitSet;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 public abstract class AbstractFormulaState {
 

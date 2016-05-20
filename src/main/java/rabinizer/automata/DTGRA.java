@@ -19,7 +19,6 @@ package rabinizer.automata;
 
 import jhoafparser.consumer.HOAConsumer;
 import rabinizer.automata.output.HOAConsumerGeneralisedRabin;
-import rabinizer.automata.output.HOAConsumerExtended;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

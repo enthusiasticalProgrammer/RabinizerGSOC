@@ -58,8 +58,8 @@ public class Main {
         return (clock2 - start) / 1000.0;
     }
 
-    public static void main(String... args) throws IOException, HOAConsumerException {
         // Parsing arguments
+    public static void main(String... args) throws IOException {
 
         CLIParser.CmdArguments arguments;
 

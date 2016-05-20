@@ -84,6 +84,12 @@ public class TranSet<S> implements Iterable<Map.Entry<S, ValuationSet>> {
         return backingMap.isEmpty();
     }
 
+    public TranSet<S> union(TranSet<S> other) {
+        TranSet<S> result = this.clone();
+        result.addAll(other);
+        return result;
+    }
+
     public void removeAll(S state, ValuationSet vs) {
         ValuationSet valuationSet = backingMap.get(state);
 

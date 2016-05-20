@@ -18,7 +18,6 @@
 package rabinizer.automata;
 
 import jhoafparser.consumer.HOAConsumer;
-import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.output.HOAConsumerExtended;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
@@ -252,5 +251,9 @@ public abstract class Automaton<S extends IState<S>> {
 
     protected HOAConsumerExtended<S, ?> getConsumer(HOAConsumer ho) {
         return new HOAConsumerExtended<>(ho, valuationSetFactory, null);
+    }
+
+    public boolean inputContainsAllAutomatonTransitions(TranSet<S> trans) {
+        return this.getStates().stream().allMatch(state -> trans.containsAll(state, valuationSetFactory.createUniverseValuationSet()));
     }
 }
