@@ -1,10 +1,9 @@
 .classpath
 .project
 bin
-Z3
 lib
 build/
 .gradle/
 .settings
-output.dot
-
+.idea/
+Rabinizer.iml
