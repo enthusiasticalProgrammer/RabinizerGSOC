@@ -40,7 +40,7 @@ public class TranSet<S> implements Iterable<Map.Entry<S, ValuationSet>> {
         return Collections.unmodifiableMap(backingMap);
     }
 
-    public void addAll(S state, ValuationSet vs) {
+    public <T extends S> void addAll(T state, ValuationSet vs) {
         if (vs == null || vs.isEmpty()) {
             return;
         }
@@ -59,15 +59,15 @@ public class TranSet<S> implements Iterable<Map.Entry<S, ValuationSet>> {
         other.backingMap.forEach(this::addAll);
     }
 
-    public boolean contains(S state) {
+    public <T extends S> boolean contains(T state) {
         return backingMap.containsKey(state);
     }
 
-    public boolean contains(S state, BitSet valuation) {
+    public <T extends S> boolean contains(T state, BitSet valuation) {
         return backingMap.getOrDefault(state, empty).contains(valuation);
     }
 
-    public boolean containsAll(S state, ValuationSet vs) {
+    public <T extends S> boolean containsAll(T state, ValuationSet vs) {
         return backingMap.getOrDefault(state, empty).containsAll(vs);
     }
 
