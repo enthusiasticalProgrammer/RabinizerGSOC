@@ -67,7 +67,7 @@ public abstract class HOAConsumerAbstractRabin<T, C> extends HOAConsumerExtended
             if (interestingValuationSet != null && interestingValuationSet.intersects(edge) && !interestingValuationSet.containsAll(edge)) {
                 toRemove.add(edge);
                 toAdd.add(edge.intersect(interestingValuationSet));
-                toAdd.add(edge.intersect(interestingValuationSet).complement());
+                toAdd.add(edge.intersect(interestingValuationSet.complement()));
             }
         }
 
