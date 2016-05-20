@@ -18,6 +18,7 @@
 package rabinizer.automata;
 
 
+import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.ltl.GOperator;
 import rabinizer.ltl.equivalence.EquivalenceClass;
@@ -25,6 +26,8 @@ import rabinizer.ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MojmirSlave extends Automaton<MojmirSlave.State> {
@@ -87,6 +90,31 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
         @Override
         protected Object getOuter() {
             return MojmirSlave.this;
+        }
+
+        ValuationSet getFailingMojmirTransitions(Set<State> finalStates) {
+            ValuationSet fail = valuationSetFactory.createEmptyValuationSet();
+            if (finalStates.contains(this)) {
+                return fail;
+            }
+            for (Map.Entry<MojmirSlave.State, ValuationSet> valuationSetFailState : this.getSuccessors().entrySet()) {
+                if (isSink(valuationSetFailState.getKey()) && !finalStates.contains(valuationSetFailState.getKey())) {
+                    fail.addAll(valuationSetFailState.getValue());
+                }
+            }
+            return fail;
+        }
+
+        ValuationSet getSucceedMojmirTransitions(Set<State> finalStates) {
+            ValuationSet succeed = valuationSetFactory.createEmptyValuationSet();
+            if (!finalStates.contains(this)) {
+                for (Map.Entry<MojmirSlave.State, ValuationSet> valuation : getSuccessors().entrySet()) {
+                    if (finalStates.contains(valuation.getKey())) {
+                        succeed.addAll(valuation.getValue());
+                    }
+                }
+            }
+            return succeed;
         }
     }
 }

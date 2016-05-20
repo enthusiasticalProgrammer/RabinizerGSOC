@@ -17,7 +17,7 @@
 
 package rabinizer.automata;
 
-
+import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.Main;
 
@@ -106,6 +106,31 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
             }
 
             return succ;
+        }
+
+        protected ValuationSet getBuyTrans(int rank, Set<MojmirSlave.State> finalStates) {
+            ValuationSet buy = valuationSetFactory.createEmptyValuationSet();
+            for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : entrySet()) {
+                if (stateIntegerEntry.getValue() < rank) {
+                    for (MojmirSlave.State fs : keySet()) {
+                        for (MojmirSlave.State succ : mojmir.getStates()) {
+                            ValuationSet vs1 = mojmir.transitions.get(stateIntegerEntry.getKey()).get(succ);
+                            ValuationSet vs2 = mojmir.transitions.get(fs).get(succ);
+                            if (!finalStates.contains(succ) && vs1 != null && vs2 != null) {
+                                if (!stateIntegerEntry.getKey().equals(fs)) {
+                                    vs1 = vs1.clone();
+                                    vs1.retainAll(vs2);
+                                    buy.addAll(vs1);
+                                } else if (succ.equals(mojmir.getInitialState())) {
+                                    buy.addAll(vs1);
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+            return buy;
         }
     }
 }

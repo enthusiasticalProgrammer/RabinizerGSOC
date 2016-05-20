@@ -19,6 +19,8 @@ package rabinizer.automata;
 
 import com.google.common.collect.ImmutableMap;
 
+import rabinizer.automata.MojmirSlave.State;
+import rabinizer.automata.Product.ProductState;
 import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
@@ -64,6 +66,44 @@ public class Product extends Automaton<Product.ProductState> {
         }
 
         return keys;
+    }
+
+    protected TranSet<ProductState> getFailingProductTransitions(RabinSlave slave, Set<MojmirSlave.State> finalStates) {
+        TranSet<Product.ProductState> failP = new TranSet<>(valuationSetFactory);
+        for (ProductState ps : getStates()) {
+            failP.addAll(ps.getFailTransitions(slave.mojmir, finalStates));
+
+        }
+
+        return failP;
+    }
+
+    protected TranSet<Product.ProductState> getSucceedingProductTransitions(RabinSlave slave, int rank, Set<MojmirSlave.State> finalStates) {
+        TranSet<Product.ProductState> succeedP = new TranSet<>(valuationSetFactory);
+        for (Product.ProductState ps : getStates()) {
+            succeedP.addAll(ps, ps.getSucceedTransitions(slave.mojmir, rank, finalStates));
+        }
+        return succeedP;
+    }
+
+    protected TranSet<Product.ProductState> getBuyProductTransitions(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank) {
+        TranSet<Product.ProductState> buyP = new TranSet<>(valuationSetFactory);
+        for (Product.ProductState ps : getStates()) {
+            RabinSlave.State rs = ps.secondaryStates.get(slave.mojmir.label);
+            if (rs != null) { // relevant slave
+                buyP.addAll(ps, ps.getBuyTransitions(slave.mojmir, rank, finalStates));
+            }
+        }
+
+        return buyP;
+    }
+
+    RabinPair<Product.ProductState> createRabinPair(RabinSlave slave, Set<State> finalStates, int rank) {
+        TranSet<ProductState> failP = getFailingProductTransitions(slave, finalStates);
+        TranSet<ProductState> succeedP = getSucceedingProductTransitions(slave, rank, finalStates);
+        TranSet<ProductState> buyP = getBuyProductTransitions(slave, finalStates, rank);
+        failP.addAll(buyP);
+        return new RabinPair<>(failP, succeedP);
     }
 
     public class ProductState extends AbstractProductState<Master.State, GOperator, RabinSlave.State, ProductState> implements IState<ProductState> {
@@ -126,6 +166,40 @@ public class Product extends Automaton<Product.ProductState> {
             }
 
             return super.secondaryJointMove(keys, maxVs);
+        }
+
+        private TranSet<ProductState> getFailTransitions(MojmirSlave mojmir, Set<MojmirSlave.State> finalStates) {
+            TranSet<ProductState> fail = new TranSet<>(valuationSetFactory);
+            RabinSlave.State rs = secondaryStates.get(mojmir.label);
+            if (rs != null) { // relevant slave
+                for (MojmirSlave.State fs : rs.keySet()) {
+                    fail.addAll(this, fs.getFailingMojmirTransitions(finalStates));
+                }
+            }
+            return fail;
+        }
+
+        private ValuationSet getSucceedTransitions(MojmirSlave mojmir, int rank, Set<MojmirSlave.State> finalStates) {
+            ValuationSet succeed = valuationSetFactory.createEmptyValuationSet();
+            RabinSlave.State rs = secondaryStates.get(mojmir.label);
+            if (rs != null) { // relevant slave
+                for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : rs.entrySet()) {
+                    if (stateIntegerEntry.getValue() == rank) {
+                        succeed.addAll(stateIntegerEntry.getKey().getSucceedMojmirTransitions(finalStates));
+                    }
+                }
+            }
+
+            return succeed;
+        }
+
+        private ValuationSet getBuyTransitions(MojmirSlave mojmir, int rank, Set<MojmirSlave.State> finalStates) {
+            ValuationSet buy = valuationSetFactory.createEmptyValuationSet();
+            RabinSlave.State rs = secondaryStates.get(mojmir.label);
+            if (rs != null) { // relevant slave
+                buy.addAll(rs.getBuyTrans(rank, finalStates));
+            }
+            return buy;
         }
     }
 }
