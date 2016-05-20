@@ -75,6 +75,10 @@ public class Collections3 {
     }
 
     public static List<Integer> toList(BitSet bs) {
+        if (bs == null) {
+            return null;
+        }
+
         List<Integer> list = new ArrayList<>(bs.length());
         bs.stream().forEach(list::add);
         return list;
