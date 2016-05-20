@@ -243,7 +243,7 @@ public abstract class Automaton<S extends IState<S>> {
     protected void toHOABody(HOAConsumerExtended<S, ?> hoa) {
         for (S s : getStates()) {
             hoa.addState(s);
-            s.getSuccessors().forEach((k, v) -> hoa.addEdge(v, k));
+            getSuccessors(s).forEach((k, v) -> hoa.addEdge(v, k));
             hoa.stateDone();
         }
 
