@@ -104,10 +104,11 @@ public class Main {
     public static Automaton<?> computeAutomaton(Formula inputFormula, CLIParser.AutomatonType type, Simplifier.Strategy simplify, FactoryRegistry.Backend backend,
                                                 Set<Optimisation> opts, BiMap<String, Integer> mapping) {
         nonsilent("Formula unsimplified: " + inputFormula);
+
+        inputFormula = Simplifier.simplify(inputFormula, simplify);
         if (opts.contains(Optimisation.SLAVE_SUSPENSION)) {
             inputFormula = Simplifier.simplify(inputFormula, Simplifier.Strategy.PULLUP_X);
         }
-        inputFormula = Simplifier.simplify(inputFormula, simplify);
         nonsilent("Formula simplified:" + inputFormula);
 
         EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(backend, inputFormula);
