@@ -25,13 +25,13 @@ import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.BDDValuationSetFactory;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.GOperator;
-import rabinizer.ltl.SkeletonVisitor;
-import rabinizer.ltl.equivalence.BDDEquivalenceClassFactory;
-import rabinizer.ltl.equivalence.EquivalenceClass;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
-import rabinizer.ltl.simplifier.Simplifier;
+import ltl.Formula;
+import ltl.GOperator;
+import ltl.SkeletonVisitor;
+import ltl.equivalence.BDDEquivalenceClassFactory;
+import ltl.equivalence.EquivalenceClass;
+import ltl.equivalence.EquivalenceClassFactory;
+import ltl.simplifier.Simplifier;
 
 import java.util.*;
 

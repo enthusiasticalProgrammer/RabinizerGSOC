@@ -24,7 +24,7 @@ import rabinizer.automata.Product.ProductState;
 import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
-import rabinizer.ltl.GOperator;
+import ltl.GOperator;
 
 import java.util.*;
 import java.util.function.Function;

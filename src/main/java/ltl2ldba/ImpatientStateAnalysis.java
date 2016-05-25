@@ -19,8 +19,8 @@ package ltl2ldba;
 
 
 import rabinizer.automata.Master;
-import rabinizer.ltl.*;
-import rabinizer.ltl.equivalence.EquivalenceClass;
+import ltl.*;
+import ltl.equivalence.EquivalenceClass;
 
 import java.util.HashSet;
 import java.util.Set;

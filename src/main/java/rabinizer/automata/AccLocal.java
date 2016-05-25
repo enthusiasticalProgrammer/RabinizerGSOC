@@ -21,12 +21,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.ValuationSetFactory;
-import rabinizer.ltl.Conjunction;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.GOperator;
-import rabinizer.ltl.SkeletonVisitor;
-import rabinizer.ltl.equivalence.EquivalenceClass;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
+import ltl.Conjunction;
+import ltl.Formula;
+import ltl.GOperator;
+import ltl.SkeletonVisitor;
+import ltl.equivalence.EquivalenceClass;
+import ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.*;
 

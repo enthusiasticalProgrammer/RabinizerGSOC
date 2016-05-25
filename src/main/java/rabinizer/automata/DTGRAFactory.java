@@ -20,9 +20,9 @@ package rabinizer.automata;
 import rabinizer.automata.Product.ProductState;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.Main;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.GOperator;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
+import ltl.Formula;
+import ltl.GOperator;
+import ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.*;
 

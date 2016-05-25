@@ -23,7 +23,7 @@ import com.google.common.collect.Sets;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import rabinizer.collections.Collections3;
-import rabinizer.ltl.*;
+import ltl.*;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;

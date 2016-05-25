@@ -20,7 +20,6 @@ package rabinizer.automata.buchi;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.Sets;
 import jhoafparser.ast.AtomAcceptance;
 import jhoafparser.ast.AtomLabel;
 import jhoafparser.ast.BooleanExpression;
@@ -32,7 +31,7 @@ import rabinizer.collections.Collections3;
 import rabinizer.collections.valuationset.BDDValuationSetFactory;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
-import rabinizer.ltl.BooleanConstant;
+import ltl.BooleanConstant;
 
 import java.util.*;
 

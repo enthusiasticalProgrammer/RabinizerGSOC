@@ -17,9 +17,9 @@
 
 package rabinizer.automata;
 
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.Literal;
-import rabinizer.ltl.equivalence.EquivalenceClass;
+import ltl.Formula;
+import ltl.Literal;
+import ltl.equivalence.EquivalenceClass;
 
 import java.util.BitSet;
 import java.util.Objects;

@@ -21,9 +21,9 @@ import org.junit.Before;
 import org.junit.Test;
 import rabinizer.automata.IState;
 import rabinizer.automata.Optimisation;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
-import rabinizer.ltl.*;
-import rabinizer.ltl.equivalence.BDDEquivalenceClassFactory;
+import ltl.equivalence.EquivalenceClassFactory;
+import ltl.*;
+import ltl.equivalence.BDDEquivalenceClassFactory;
 import rabinizer.collections.valuationset.BDDValuationSetFactory;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 

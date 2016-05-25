@@ -20,7 +20,7 @@ package rabinizer.automata;
 import com.google.common.collect.ImmutableMap;
 import rabinizer.collections.Tuple;
 import rabinizer.collections.valuationset.ValuationSet;
-import rabinizer.ltl.ImmutableObject;
+import ltl.ImmutableObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

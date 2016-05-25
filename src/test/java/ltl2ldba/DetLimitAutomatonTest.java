@@ -23,8 +23,8 @@ import jhoafparser.consumer.*;
 import org.junit.Test;
 import rabinizer.Util;
 import rabinizer.automata.Optimisation;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.FormulaStorage;
+import ltl.Formula;
+import ltl.FormulaStorage;
 
 import java.io.File;
 import java.io.IOException;

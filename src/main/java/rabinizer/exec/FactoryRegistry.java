@@ -20,9 +20,9 @@ package rabinizer.exec;
 import com.google.common.collect.BiMap;
 import rabinizer.collections.valuationset.BDDValuationSetFactory;
 import rabinizer.collections.valuationset.ValuationSetFactory;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.equivalence.BDDEquivalenceClassFactory;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
+import ltl.Formula;
+import ltl.equivalence.BDDEquivalenceClassFactory;
+import ltl.equivalence.EquivalenceClassFactory;
 
 public class FactoryRegistry {
 

@@ -1,9 +1,9 @@
 package rabinizer;
 
 import com.google.common.collect.BiMap;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.parser.LTLParser;
-import rabinizer.ltl.parser.ParseException;
+import ltl.Formula;
+import ltl.parser.LTLParser;
+import ltl.parser.ParseException;
 
 import java.io.StringReader;
 

@@ -19,20 +19,15 @@ package rabinizer.collections.valuationset;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
 
 import rabinizer.Util;
-import rabinizer.collections.valuationset.ValuationSet;
-import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.FactoryRegistry;
 import rabinizer.exec.FactoryRegistry.Backend;
-import rabinizer.ltl.Formula;
+import ltl.Formula;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
 

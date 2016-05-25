@@ -20,10 +20,10 @@ package rabinizer.exec;
 import com.google.common.collect.BiMap;
 import org.apache.commons.cli.*;
 import rabinizer.automata.Optimisation;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.parser.LTLParser;
-import rabinizer.ltl.parser.ParseException;
-import rabinizer.ltl.simplifier.Simplifier;
+import ltl.Formula;
+import ltl.parser.LTLParser;
+import ltl.parser.ParseException;
+import ltl.simplifier.Simplifier;
 
 import java.io.*;
 import java.util.EnumSet;
@@ -86,7 +86,7 @@ public class CLIParser {
         } catch (org.apache.commons.cli.ParseException pvException) {
             System.out.println(pvException.getMessage());
             printHelp();
-            throw new rabinizer.ltl.parser.ParseException();
+            throw new ltl.parser.ParseException();
         }
 
         if (!cmd.hasOption('p') || !cmd.getOptionValue('p').equals("off")) {

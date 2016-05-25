@@ -17,7 +17,7 @@
 
 package rabinizer.collections.valuationset;
 
-import rabinizer.ltl.Formula;
+import ltl.Formula;
 
 import java.util.BitSet;
 import java.util.Set;

@@ -11,8 +11,8 @@ import rabinizer.automata.DTGRAFactory;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.FactoryRegistry;
 import rabinizer.exec.FactoryRegistry.Backend;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
+import ltl.Formula;
+import ltl.equivalence.EquivalenceClassFactory;
 
 public class TestHOAConsumerExtendedRabin extends TestHOAConsumerExtended {
 

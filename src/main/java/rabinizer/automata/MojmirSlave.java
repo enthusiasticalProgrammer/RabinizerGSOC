@@ -17,12 +17,11 @@
 
 package rabinizer.automata;
 
-
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
-import rabinizer.ltl.GOperator;
-import rabinizer.ltl.equivalence.EquivalenceClass;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
+import ltl.GOperator;
+import ltl.equivalence.EquivalenceClass;
+import ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.BitSet;
 import java.util.Collection;

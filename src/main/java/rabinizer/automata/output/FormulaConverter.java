@@ -19,9 +19,9 @@ package rabinizer.automata.output;
 
 import jhoafparser.ast.AtomLabel;
 import jhoafparser.ast.BooleanExpression;
-import rabinizer.ltl.*;
+import ltl.*;
 
-public class FormulaConverter implements rabinizer.ltl.Visitor<BooleanExpression<AtomLabel>> {
+public class FormulaConverter implements ltl.Visitor<BooleanExpression<AtomLabel>> {
 
     private static final BooleanExpression<AtomLabel> TRUE = new BooleanExpression<>(true);
     private static final BooleanExpression<AtomLabel> FALSE = new BooleanExpression<>(false);

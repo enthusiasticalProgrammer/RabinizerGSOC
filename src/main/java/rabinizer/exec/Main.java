@@ -19,17 +19,16 @@ package rabinizer.exec;
 
 import com.google.common.collect.BiMap;
 import jhoafparser.consumer.HOAConsumer;
-import jhoafparser.consumer.HOAConsumerException;
 import jhoafparser.consumer.HOAConsumerPrint;
 import jhoafparser.consumer.HOAIntermediateStoreAndManipulate;
 import jhoafparser.transformations.ToStateAcceptance;
 import rabinizer.automata.*;
 import rabinizer.automata.output.DotPrinter;
 import rabinizer.collections.valuationset.ValuationSetFactory;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
-import rabinizer.ltl.parser.ParseException;
-import rabinizer.ltl.simplifier.Simplifier;
+import ltl.Formula;
+import ltl.equivalence.EquivalenceClassFactory;
+import ltl.parser.ParseException;
+import ltl.simplifier.Simplifier;
 
 import java.io.IOException;
 import java.util.Set;

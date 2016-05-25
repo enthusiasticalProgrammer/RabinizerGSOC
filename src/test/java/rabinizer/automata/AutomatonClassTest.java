@@ -2,7 +2,6 @@ package rabinizer.automata;
 
 import java.util.EnumSet;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import com.google.common.collect.BiMap;
@@ -10,11 +9,10 @@ import com.google.common.collect.ImmutableBiMap;
 
 import rabinizer.Util;
 import rabinizer.exec.FactoryRegistry;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
+import ltl.equivalence.EquivalenceClassFactory;
 import rabinizer.exec.Main;
-import rabinizer.ltl.*;
+import ltl.*;
 import rabinizer.exec.FactoryRegistry.Backend;
-import rabinizer.ltl.simplifier.Simplifier;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.Collections;
