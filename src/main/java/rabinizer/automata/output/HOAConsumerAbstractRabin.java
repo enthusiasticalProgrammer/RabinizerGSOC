@@ -12,12 +12,13 @@ import rabinizer.collections.valuationset.ValuationSetFactory;
 
 public abstract class HOAConsumerAbstractRabin<T, C> extends HOAConsumerExtended<T,C> {
 
-    protected final Map<TranSet<T>, Integer> acceptanceNumbers;
+    protected final IdentityHashMap<TranSet<T>, TranSet<T>> acceptanceToUniqueAcceptance;
+    protected final IdentityHashMap<TranSet<T>, Integer> acceptanceNumbers;
 
     public HOAConsumerAbstractRabin(HOAConsumer hoa, ValuationSetFactory valuationSetFactory, T initialState, C accCond) {
         super(hoa, valuationSetFactory, accCond);
-        acceptanceNumbers = new HashMap<>();
-
+        acceptanceToUniqueAcceptance = new IdentityHashMap<>();
+        acceptanceNumbers = new IdentityHashMap<>();
         setHOAHeader(initialState.toString());
         setInitialState(initialState);
         setAcceptanceCondition();
@@ -77,9 +78,22 @@ public abstract class HOAConsumerAbstractRabin<T, C> extends HOAConsumerExtended
     }
 
     protected int getTranSetId(TranSet<T> o) {
-        if (!acceptanceNumbers.containsKey(o)) {
-            acceptanceNumbers.put(o, acceptanceNumbers.size());
+        if (!acceptanceToUniqueAcceptance.containsKey(o)) {
+            for (TranSet<T> tranSet : acceptanceToUniqueAcceptance.keySet()) {
+                if (tranSet.equals(o)) {
+                    acceptanceToUniqueAcceptance.put(o, acceptanceToUniqueAcceptance.get(tranSet));
+                    break;
+                }
+            }
         }
-        return acceptanceNumbers.get(o);
+
+        if (!acceptanceToUniqueAcceptance.containsKey(o)) {
+            acceptanceToUniqueAcceptance.put(o, o);
+        }
+        TranSet<T> key = acceptanceToUniqueAcceptance.get(o);
+        if (acceptanceNumbers.get(key) == null) {
+            acceptanceNumbers.put(key, acceptanceNumbers.keySet().size());
+        }
+        return acceptanceNumbers.get(key);
     }
 }
