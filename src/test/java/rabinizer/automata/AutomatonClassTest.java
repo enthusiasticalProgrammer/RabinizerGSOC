@@ -25,8 +25,8 @@ import static org.junit.Assert.*;
 
 public class AutomatonClassTest {
 
-    private Set<Optimisation> standard = EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION);
-    private Set<Optimisation> standardWithEmpty = EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION, Optimisation.EMPTINESS_CHECK);
+    static final Set<Optimisation> standard = EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION);
+    static final Set<Optimisation> standardWithEmpty = EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION, Optimisation.EMPTINESS_CHECK);
 
     @Before
     public final void setUp() {

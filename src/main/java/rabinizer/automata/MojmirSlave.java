@@ -113,6 +113,8 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
                         succeed.addAll(valuation.getValue());
                     }
                 }
+            } else if (finalStates.contains(getInitialState())) {
+                succeed.addAll(valuationSetFactory.createUniverseValuationSet());
             }
             return succeed;
         }
