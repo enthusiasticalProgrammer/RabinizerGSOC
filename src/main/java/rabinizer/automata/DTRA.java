@@ -138,7 +138,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState> {
 
         @Override
         public int hashCode() {
-            return Objects.hash(productState, awaitedIndices);
+            return Objects.hash(productState, Arrays.hashCode(awaitedIndices));
         }
     }
 }
