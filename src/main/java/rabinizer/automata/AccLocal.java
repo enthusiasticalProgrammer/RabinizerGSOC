@@ -19,7 +19,7 @@ package rabinizer.automata;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import rabinizer.collections.Collections3;
+import ltl.Collections3;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import ltl.Conjunction;
 import ltl.Formula;

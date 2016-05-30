@@ -63,11 +63,11 @@ public class TranSet<S> implements Iterable<Map.Entry<S, ValuationSet>> {
         return backingMap.containsKey(state);
     }
 
-    public <T extends S> boolean contains(T state, BitSet valuation) {
+    public boolean contains(Object state, BitSet valuation) {
         return backingMap.getOrDefault(state, empty).contains(valuation);
     }
 
-    public <T extends S> boolean containsAll(T state, ValuationSet vs) {
+    public boolean containsAll(Object state, ValuationSet vs) {
         return backingMap.getOrDefault(state, empty).containsAll(vs);
     }
 

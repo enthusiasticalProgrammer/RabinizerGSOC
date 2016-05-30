@@ -22,7 +22,7 @@ import com.google.common.collect.Table;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.output.HOAConsumerBuchi;
-import rabinizer.collections.Collections3;
+import ltl.Collections3;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
 import java.util.*;

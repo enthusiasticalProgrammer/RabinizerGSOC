@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Sets;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import rabinizer.collections.Collections3;
+import ltl.Collections3;
 import ltl.*;
 
 import javax.annotation.Nonnull;

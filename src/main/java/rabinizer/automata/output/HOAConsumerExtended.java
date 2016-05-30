@@ -21,9 +21,11 @@ import jhoafparser.ast.AtomAcceptance;
 import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import rabinizer.automata.output.HOAConsumerExtended.AccType;
+import rabinizer.automata.IState;
+import ltl.Collections3;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
+import rabinizer.exec.Main;
 
 import java.util.*;
 import java.util.stream.Collectors;

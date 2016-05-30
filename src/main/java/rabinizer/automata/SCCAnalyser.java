@@ -17,7 +17,7 @@
 
 package rabinizer.automata;
 
-import rabinizer.collections.Collections3;
+import ltl.Collections3;
 import rabinizer.collections.TarjanStack;
 import rabinizer.collections.valuationset.ValuationSet;
 

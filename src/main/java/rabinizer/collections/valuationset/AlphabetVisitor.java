@@ -17,7 +17,7 @@
 
 package rabinizer.collections.valuationset;
 
-import rabinizer.ltl.*;
+import ltl.*;
 
 class AlphabetVisitor implements VoidVisitor {
 

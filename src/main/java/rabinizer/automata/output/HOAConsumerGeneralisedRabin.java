@@ -12,7 +12,7 @@ import jhoafparser.consumer.HOAConsumerException;
 import rabinizer.automata.GeneralizedRabinPair;
 import rabinizer.automata.Product;
 import rabinizer.automata.TranSet;
-import rabinizer.collections.Collections3;
+import ltl.Collections3;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
 public class HOAConsumerGeneralisedRabin extends HOAConsumerAbstractRabin<Product.ProductState, List<GeneralizedRabinPair<Product.ProductState>>> {

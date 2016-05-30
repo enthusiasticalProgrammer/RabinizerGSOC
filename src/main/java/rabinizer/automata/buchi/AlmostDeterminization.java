@@ -21,7 +21,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import rabinizer.collections.Collections3;
+import ltl.Collections3;
 import rabinizer.collections.Tuple;
 
 import javax.annotation.Nullable;

@@ -20,7 +20,7 @@ package ltl2ldba;
 import rabinizer.automata.Automaton;
 import rabinizer.automata.IState;
 import rabinizer.automata.Optimisation;
-import rabinizer.collections.Collections3;
+import ltl.Collections3;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import ltl.Formula;

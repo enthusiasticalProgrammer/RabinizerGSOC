@@ -21,7 +21,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.Sets;
 import rabinizer.automata.Master;
 import rabinizer.automata.Optimisation;
-import rabinizer.collections.Collections3;
+import ltl.Collections3;
 import rabinizer.collections.valuationset.BDDValuationSetFactory;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;

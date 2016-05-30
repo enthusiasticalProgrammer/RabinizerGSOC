@@ -7,10 +7,10 @@ import jhoafparser.ast.AtomAcceptance;
 import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
-import rabinizer.collections.Collections3;
+import rabinizer.automata.IState;
+import ltl.Collections3;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;
-import rabinizer.exec.Main;
 
 public class HOAConsumerGeneralisedBuchi<T> extends HOAConsumerExtended<T, Integer> {
 

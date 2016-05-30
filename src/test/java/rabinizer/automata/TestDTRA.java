@@ -7,8 +7,8 @@ import org.junit.Test;
 import rabinizer.Util;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.FactoryRegistry;
-import rabinizer.ltl.Formula;
-import rabinizer.ltl.equivalence.EquivalenceClassFactory;
+import ltl.Formula;
+import ltl.equivalence.EquivalenceClassFactory;
 
 public class TestDTRA {
 

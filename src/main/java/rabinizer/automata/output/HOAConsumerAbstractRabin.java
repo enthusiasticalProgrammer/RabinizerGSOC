@@ -6,6 +6,7 @@ import jhoafparser.ast.AtomAcceptance;
 import jhoafparser.ast.BooleanExpression;
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
+import rabinizer.automata.IState;
 import rabinizer.automata.TranSet;
 import rabinizer.collections.valuationset.ValuationSet;
 import rabinizer.collections.valuationset.ValuationSetFactory;

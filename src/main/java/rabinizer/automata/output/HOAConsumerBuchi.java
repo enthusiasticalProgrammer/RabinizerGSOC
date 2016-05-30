@@ -6,6 +6,7 @@ import java.util.Set;
 
 import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerException;
+import rabinizer.automata.IState;
 import rabinizer.automata.buchi.BuchiAutomaton;
 import rabinizer.collections.valuationset.ValuationSetFactory;
 
