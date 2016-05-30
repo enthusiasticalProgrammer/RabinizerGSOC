@@ -112,7 +112,7 @@ class AccLocal {
         Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> result = new HashMap<>();
 
         RabinSlave rSlave = product.secondaryAutomata.get(g);
-        Set<Set<GOperator>> gSets = Sets.powerSet(getOverallFormula().gSubformulas());
+        Set<Set<GOperator>> gSets = Sets.powerSet(topmostGs.get(g));
 
         for (Set<GOperator> gSet : gSets) {
             Set<MojmirSlave.State> finalStates = new HashSet<>();
