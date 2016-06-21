@@ -17,13 +17,16 @@
 
 package rabinizer.automata;
 
-import rabinizer.collections.valuationset.ValuationSet;
-import rabinizer.collections.valuationset.ValuationSetFactory;
+import omega_automaton.Automaton;
+import omega_automaton.AutomatonState;
+import omega_automaton.acceptance.AllAcceptance;
+import omega_automaton.collections.valuationset.ValuationSet;
+import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.Main;
 
 import java.util.*;
 
-public class RabinSlave extends Automaton<RabinSlave.State> {
+public class RabinSlave extends Automaton<RabinSlave.State, AllAcceptance> {
 
     protected final MojmirSlave mojmir;
 
@@ -48,7 +51,7 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
         return init;
     }
 
-    public class State extends HashMap<MojmirSlave.State, Integer> implements IState<State> {
+    public class State extends HashMap<MojmirSlave.State, Integer> implements AutomatonState<State> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -114,8 +117,8 @@ public class RabinSlave extends Automaton<RabinSlave.State> {
                 if (stateIntegerEntry.getValue() < rank) {
                     for (MojmirSlave.State fs : keySet()) {
                         for (MojmirSlave.State succ : mojmir.getStates()) {
-                            ValuationSet vs1 = mojmir.transitions.get(stateIntegerEntry.getKey()).get(succ);
-                            ValuationSet vs2 = mojmir.transitions.get(fs).get(succ);
+                            ValuationSet vs1 = mojmir.getSuccessors(stateIntegerEntry.getKey()).get(succ);
+                            ValuationSet vs2 = mojmir.getSuccessors(fs).get(succ);
                             if (!finalStates.contains(succ) && vs1 != null && vs2 != null) {
                                 if (!stateIntegerEntry.getKey().equals(fs)) {
                                     vs1 = vs1.clone();

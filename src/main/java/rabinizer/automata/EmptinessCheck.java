@@ -17,9 +17,13 @@
 
 package rabinizer.automata;
 
-import rabinizer.collections.valuationset.ValuationSet;
+import omega_automaton.Automaton;
+import omega_automaton.AutomatonState;
+import omega_automaton.acceptance.GeneralisedRabinAcceptance;
+import omega_automaton.collections.TranSet;
+import omega_automaton.collections.Tuple;
+import omega_automaton.collections.valuationset.ValuationSet;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,10 +31,9 @@ import java.util.Set;
 /**
  * @author Christopher Ziegler
  */
-public class EmptinessCheck<S extends IState<S>> {
+public class EmptinessCheck<S extends AutomatonState<S>> {
 
-    private final Automaton<S> automaton;
-    private final Collection<GeneralizedRabinPair<S>> accTGR;
+    private final Automaton<S, ? extends GeneralisedRabinAcceptance<S>> automaton;
 
     /**
      * This method checks if the automaton is empty and it minimizes the
@@ -40,14 +43,13 @@ public class EmptinessCheck<S extends IState<S>> {
      * @param accTGR
      * @return true if the automaton accepts no words
      */
-    public static <S extends IState<S>> boolean checkEmptinessAndMinimiseSCCBased(Automaton<S> automaton, Collection<GeneralizedRabinPair<S>> accTGR) {
-        new EmptinessCheck(automaton, accTGR).minimiseSCCBased();
+    public static <S extends AutomatonState<S>> boolean checkEmptinessAndMinimiseSCCBased(Automaton<S, ? extends GeneralisedRabinAcceptance<S>> automaton) {
+        new EmptinessCheck<>(automaton).minimiseSCCBased();
         return automaton.getStates().isEmpty();
     }
 
-    private EmptinessCheck(Automaton<S> automaton, Collection<GeneralizedRabinPair<S>> accTGR) {
+    private EmptinessCheck(Automaton<S, ? extends GeneralisedRabinAcceptance<S>> automaton) {
         this.automaton = automaton;
-        this.accTGR = accTGR;
     }
 
     private void minimiseSCCBased() {
@@ -57,13 +59,13 @@ public class EmptinessCheck<S extends IState<S>> {
 
             boolean sccEmpty = true;
 
-            for (GeneralizedRabinPair<S> pair : accTGR) {
+            for (Tuple<TranSet<S>, List<TranSet<S>>> pair : automaton.acceptance.acceptanceCondition) {
                 if (infAccepting(tranSCC, pair) && finAndInfAccepting(tranSCC, pair)) {
                     sccEmpty = false;
                 } else {
-                    pair.infs.forEach(inf -> inf.removeAll(tranSCC));
-                    if (!pair.infs.isEmpty()) {
-                        pair.fin.removeAll(tranSCC);
+                    pair.right.forEach(inf -> inf.removeAll(tranSCC));
+                    if (!pair.right.isEmpty()) {
+                        pair.left.removeAll(tranSCC);
                     }
                 }
             }
@@ -78,12 +80,12 @@ public class EmptinessCheck<S extends IState<S>> {
 
     private void removeInterSCCAccConditions(Set<S> SCC) {
         for (S state : SCC) {
-            Map<S, ValuationSet> relevantTransitions = automaton.transitions.get(state);
+            Map<S, ValuationSet> relevantTransitions = automaton.getSuccessors(state);
             for (Map.Entry<S, ValuationSet> transition : relevantTransitions.entrySet()) {
                 if (!SCC.contains(transition.getKey())) {
-                    for (GeneralizedRabinPair<S> pair : accTGR) {
-                        pair.infs.forEach(inf -> inf.removeAll(state, transition.getValue()));
-                        pair.fin.removeAll(state, transition.getValue());
+                    for (Tuple<TranSet<S>, List<TranSet<S>>> pair : automaton.acceptance.acceptanceCondition) {
+                        pair.right.forEach(inf -> inf.removeAll(state, transition.getValue()));
+                        pair.left.removeAll(state, transition.getValue());
                     }
                 }
             }
@@ -95,8 +97,8 @@ public class EmptinessCheck<S extends IState<S>> {
      * @return true if for all inf-sets of the Rabin Pair, the SCC has a
      * transition in the inf-set
      */
-    private static <S extends IState<S>> boolean infAccepting(TranSet<S> scc, GeneralizedRabinPair<S> pair) {
-        return pair.infs.stream().allMatch(inf -> inf.intersects(scc));
+    private static <S extends AutomatonState<S>> boolean infAccepting(TranSet<S> scc, Tuple<TranSet<S>, List<TranSet<S>>> pair) {
+        return pair.right.stream().allMatch(inf -> inf.intersects(scc));
     }
 
     /**
@@ -109,17 +111,17 @@ public class EmptinessCheck<S extends IState<S>> {
      * SCC (i.e. if this Rabin Pair can accept a word, if the automaton
      * stays infinitely long in the current SCC)
      */
-    private boolean finAndInfAccepting(TranSet<S> tranSCC, GeneralizedRabinPair<S> pair) {
+    private boolean finAndInfAccepting(TranSet<S> tranSCC, Tuple<TranSet<S>, List<TranSet<S>>> pair) {
         if (tranSCC.isEmpty()) {
             return false;
         }
 
-        if (!tranSCC.intersects(pair.fin)) {
+        if (!tranSCC.intersects(pair.left)) {
             return true;
         }
 
         // Compute SubSCCs without Fin-edges.
-        List<TranSet<S>> subSCCs = SCCAnalyser.subSCCsTran(automaton, tranSCC, pair.fin);
+        List<TranSet<S>> subSCCs = SCCAnalyser.subSCCsTran(automaton, tranSCC, pair.left);
         return subSCCs.stream().anyMatch(subSCC -> !subSCC.isEmpty() && infAccepting(subSCC, pair));
     }
 }

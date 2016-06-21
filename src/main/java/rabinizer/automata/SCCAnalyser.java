@@ -18,8 +18,11 @@
 package rabinizer.automata;
 
 import ltl.Collections3;
-import rabinizer.collections.TarjanStack;
-import rabinizer.collections.valuationset.ValuationSet;
+import omega_automaton.Automaton;
+import omega_automaton.AutomatonState;
+import omega_automaton.collections.TarjanStack;
+import omega_automaton.collections.TranSet;
+import omega_automaton.collections.valuationset.ValuationSet;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,20 +30,20 @@ import java.util.stream.Collectors;
 /**
  * @author Christopher Ziegler
  */
-public class SCCAnalyser<S extends IState<S>> {
+public class SCCAnalyser<S extends AutomatonState<S>> {
     private final Map<S, Integer> lowlink = new HashMap<>();
     private final Map<S, Integer> number = new HashMap<>();
     private final Deque<S> stack = new TarjanStack<>();
-    private final Automaton<S> automaton;
+    private final Automaton<S, ?> automaton;
     private final TranSet<S> forbiddenEdges;
     private final Set<S> allowedStates;
     private int n = 0;
 
-    private SCCAnalyser(Automaton<S> a) {
+    private SCCAnalyser(Automaton<S, ?> a) {
         this(a, a.getStates(), new TranSet<>(a.valuationSetFactory));
     }
 
-    private SCCAnalyser(Automaton<S> a, Set<S> allowedStates, TranSet<S> forbiddenEdges) {
+    private SCCAnalyser(Automaton<S, ?> a, Set<S> allowedStates, TranSet<S> forbiddenEdges) {
         this.automaton = a;
         this.allowedStates = allowedStates;
         this.forbiddenEdges = forbiddenEdges;
@@ -63,7 +66,7 @@ public class SCCAnalyser<S extends IState<S>> {
      * condensation graph, a is in the list before b
      */
 
-    public static <S extends IState<S>> List<Set<S>> SCCsStates(Automaton<S> a) {
+    public static <S extends AutomatonState<S>> List<Set<S>> SCCsStates(Automaton<S, ?> a) {
         SCCAnalyser<S> s = new SCCAnalyser<>(a);
         s.stack.push(a.getInitialState());
         return s.SCCsStatesRecursively();
@@ -78,7 +81,7 @@ public class SCCAnalyser<S extends IState<S>> {
      * @param a:              Automaton, for which the SCC-Analysis has to be made
      * @return the sub-SCCs of the SCC as list in topologic ordering
      */
-    public static <S extends IState<S>> List<TranSet<S>> subSCCsTran(Automaton<S> a, TranSet<S> SCC, TranSet<S> forbiddenEdges) {
+    public static <S extends AutomatonState<S>> List<TranSet<S>> subSCCsTran(Automaton<S, ?> a, TranSet<S> SCC, TranSet<S> forbiddenEdges) {
         SCCAnalyser<S> s = new SCCAnalyser<>(a, SCC.asMap().keySet(), forbiddenEdges);
         return s.subSCCsTran();
     }
@@ -132,7 +135,7 @@ public class SCCAnalyser<S extends IState<S>> {
         return result;
     }
 
-    public static <S extends IState<S>> TranSet<S> sccToTran(Automaton aut, Set<S> scc, TranSet<S> forbiddenEdges) {
+    public static <S extends AutomatonState<S>> TranSet<S> sccToTran(Automaton<S, ?> aut, Set<S> scc, TranSet<S> forbiddenEdges) {
         TranSet<S> result = new TranSet<>(aut.valuationSetFactory);
 
         for (S s : scc) {

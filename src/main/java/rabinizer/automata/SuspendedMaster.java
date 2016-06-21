@@ -1,7 +1,8 @@
 package rabinizer.automata;
 
 
-import rabinizer.collections.valuationset.ValuationSetFactory;
+import omega_automaton.AutomatonState;
+import omega_automaton.collections.valuationset.ValuationSetFactory;
 import ltl.Formula;
 import ltl.RelevantGFormulaeWithSlaveSuspension;
 import ltl.equivalence.EquivalenceClass;
@@ -68,7 +69,7 @@ public class SuspendedMaster extends Master {
         }
     }
 
-    public class State extends Master.State implements IState<Master.State> {
+    public class State extends Master.State implements AutomatonState<Master.State> {
 
         final boolean slavesSuspended;
         private final EquivalenceClass folded;

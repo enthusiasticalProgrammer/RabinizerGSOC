@@ -17,19 +17,23 @@
 
 package rabinizer.automata;
 
-import rabinizer.collections.valuationset.ValuationSet;
-import rabinizer.collections.valuationset.ValuationSetFactory;
+import omega_automaton.Automaton;
+import omega_automaton.AutomatonState;
+import omega_automaton.acceptance.MojmirAcceptance;
+import omega_automaton.collections.TranSet;
+import omega_automaton.collections.valuationset.ValuationSet;
+import omega_automaton.collections.valuationset.ValuationSetFactory;
 import ltl.GOperator;
 import ltl.equivalence.EquivalenceClass;
 import ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class MojmirSlave extends Automaton<MojmirSlave.State> {
+public class MojmirSlave extends Automaton<MojmirSlave.State, MojmirAcceptance> {
 
     protected final GOperator label;
     private final boolean eager;
@@ -62,7 +66,7 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
         return getStates().stream().filter(this::isSink).collect(Collectors.toList());
     }
 
-    public final class State extends AbstractFormulaState implements IState<State> {
+    public final class State extends AbstractFormulaState implements AutomatonState<State> {
         State(EquivalenceClass clazz) {
             super(clazz);
         }
@@ -96,7 +100,7 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
             if (finalStates.contains(this)) {
                 return fail;
             }
-            for (Map.Entry<MojmirSlave.State, ValuationSet> valuationSetFailState : this.getSuccessors().entrySet()) {
+            for (Entry<MojmirSlave.State, ValuationSet> valuationSetFailState : this.getSuccessors().entrySet()) {
                 if (isSink(valuationSetFailState.getKey()) && !finalStates.contains(valuationSetFailState.getKey())) {
                     fail.addAll(valuationSetFailState.getValue());
                 }
@@ -107,7 +111,7 @@ public class MojmirSlave extends Automaton<MojmirSlave.State> {
         ValuationSet getSucceedMojmirTransitions(Set<State> finalStates) {
             ValuationSet succeed = valuationSetFactory.createEmptyValuationSet();
             if (!finalStates.contains(this)) {
-                for (Map.Entry<MojmirSlave.State, ValuationSet> valuation : getSuccessors().entrySet()) {
+                for (Entry<MojmirSlave.State, ValuationSet> valuation : getSuccessors().entrySet()) {
                     if (finalStates.contains(valuation.getKey())) {
                         succeed.addAll(valuation.getValue());
                     }

@@ -19,8 +19,11 @@ package rabinizer.automata;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+
 import ltl.Collections3;
-import rabinizer.collections.valuationset.ValuationSetFactory;
+import omega_automaton.collections.TranSet;
+import omega_automaton.collections.Tuple;
+import omega_automaton.collections.valuationset.ValuationSetFactory;
 import ltl.Conjunction;
 import ltl.Formula;
 import ltl.GOperator;
@@ -47,7 +50,7 @@ class AccLocal {
 
         for (GOperator gOperator : getOverallFormula().gSubformulas()) {
             initialiseMaxRankOfGOperator(gOperator);
-            topmostGs.put(gOperator, gOperator.operand.topmostGs());
+            topmostGs.put(gOperator, (gOperator.operand).topmostOperators());
         }
     }
 
@@ -108,8 +111,8 @@ class AccLocal {
         return result;
     }
 
-    private Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> computeAccSlavesOptions(GOperator g) {
-        Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>> result = new HashMap<>();
+    private Map<Set<GOperator>, Map<Integer, Tuple<TranSet<Product.ProductState>, TranSet<Product.ProductState>>>> computeAccSlavesOptions(GOperator g) {
+        Map<Set<GOperator>, Map<Integer, Tuple<TranSet<Product.ProductState>, TranSet<Product.ProductState>>>> result = new HashMap<>();
 
         RabinSlave rSlave = product.secondaryAutomata.get(g);
         Set<Set<GOperator>> gSets = Sets.powerSet(topmostGs.get(g));
@@ -133,8 +136,8 @@ class AccLocal {
         return result;
     }
 
-    public Map<GOperator, Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>>> getAllSlaveAcceptanceConditions() {
-        Map<GOperator, Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>>> result = new HashMap<>();
+    public Map<GOperator, Map<Set<GOperator>, Map<Integer, Tuple<TranSet<Product.ProductState>, TranSet<Product.ProductState>>>>> getAllSlaveAcceptanceConditions() {
+        Map<GOperator, Map<Set<GOperator>, Map<Integer, Tuple<TranSet<Product.ProductState>, TranSet<Product.ProductState>>>>> result = new HashMap<>();
         for (GOperator g : product.secondaryAutomata.keySet()) {
             result.put(g, computeAccSlavesOptions(g));
         }

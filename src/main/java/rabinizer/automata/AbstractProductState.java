@@ -18,8 +18,11 @@
 package rabinizer.automata;
 
 import com.google.common.collect.ImmutableMap;
-import rabinizer.collections.Tuple;
-import rabinizer.collections.valuationset.ValuationSet;
+
+import omega_automaton.Automaton;
+import omega_automaton.AutomatonState;
+import omega_automaton.collections.Tuple;
+import omega_automaton.collections.valuationset.ValuationSet;
 import ltl.ImmutableObject;
 
 import javax.annotation.Nonnull;
@@ -27,7 +30,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
-public abstract class AbstractProductState<P extends IState<P>, K, S extends IState<S>, T> extends ImmutableObject {
+public abstract class AbstractProductState<P extends AutomatonState<P>, K, S extends AutomatonState<S>, T> extends ImmutableObject {
 
     protected final P primaryState;
     protected final ImmutableMap<K, S> secondaryStates;
@@ -125,9 +128,9 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
                 Objects.equals(secondaryStates, that.secondaryStates);
     }
 
-    protected abstract Automaton<P> getPrimaryAutomaton();
+    protected abstract Automaton<P, ?> getPrimaryAutomaton();
 
-    protected abstract Map<K, ? extends Automaton<S>> getSecondaryAutomata();
+    protected abstract Map<K, ? extends Automaton<S, ?>> getSecondaryAutomata();
 
     @Nullable
     protected Set<K> relevantSecondary(P primaryState) {
@@ -137,7 +140,7 @@ public abstract class AbstractProductState<P extends IState<P>, K, S extends ISt
     protected abstract T constructState(P primaryState, ImmutableMap<K, S> secondaryStates);
 
     protected Iterable<Tuple<Map<K, S>, ValuationSet>> secondaryJointMove(Set<K> keys, ValuationSet maxVs) {
-        Map<K, ? extends Automaton<S>> secondary = getSecondaryAutomata();
+        Map<K, ? extends Automaton<S, ?>> secondary = getSecondaryAutomata();
 
         Deque<Tuple<Map<K, S>, ValuationSet>> current = new ArrayDeque<>();
         Deque<Tuple<Map<K, S>, ValuationSet>> next = new ArrayDeque<>();
