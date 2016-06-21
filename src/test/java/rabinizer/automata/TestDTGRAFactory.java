@@ -6,8 +6,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import rabinizer.Util;
-import rabinizer.collections.valuationset.ValuationSetFactory;
-import rabinizer.exec.FactoryRegistry;
+import omega_automaton.collections.valuationset.*;
 import ltl.Formula;
 import ltl.equivalence.EquivalenceClassFactory;
 
@@ -17,11 +16,11 @@ public class TestDTGRAFactory {
     public void testAcceptance1() { // It is created to reproduce a bug
         Formula formula = Util.createFormula("G(a | G b)");
 
-        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(formula);
+        EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula);
 
         DTGRA dtgra = DTGRAFactory.constructDTGRA(formula, factory, val, AutomatonClassTest.standard);
-        assertTrue(dtgra.acc.stream().allMatch(pair -> pair.infs.stream().allMatch(p -> !p.isEmpty())));
+        assertTrue(dtgra.acceptance.acceptanceCondition.stream().allMatch(pair -> pair.right.stream().allMatch(p -> !p.isEmpty())));
     }
 
 }

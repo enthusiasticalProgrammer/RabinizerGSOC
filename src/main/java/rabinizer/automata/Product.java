@@ -21,15 +21,19 @@ import com.google.common.collect.ImmutableMap;
 
 import rabinizer.automata.MojmirSlave.State;
 import rabinizer.automata.Product.ProductState;
-import rabinizer.collections.Tuple;
-import rabinizer.collections.valuationset.ValuationSet;
-import rabinizer.collections.valuationset.ValuationSetFactory;
+import omega_automaton.Automaton;
+import omega_automaton.AutomatonState;
+import omega_automaton.acceptance.GeneralisedRabinAcceptance;
+import omega_automaton.collections.TranSet;
+import omega_automaton.collections.Tuple;
+import omega_automaton.collections.valuationset.ValuationSet;
+import omega_automaton.collections.valuationset.ValuationSetFactory;
 import ltl.GOperator;
 
 import java.util.*;
 import java.util.function.Function;
 
-public class Product extends Automaton<Product.ProductState> {
+public class Product extends Automaton<Product.ProductState, GeneralisedRabinAcceptance<ProductState>> {
 
     protected final Master primaryAutomaton;
     protected final Map<GOperator, RabinSlave> secondaryAutomata;
@@ -98,15 +102,15 @@ public class Product extends Automaton<Product.ProductState> {
         return buyP;
     }
 
-    RabinPair<Product.ProductState> createRabinPair(RabinSlave slave, Set<State> finalStates, int rank) {
+    Tuple<TranSet<Product.ProductState>, TranSet<Product.ProductState>> createRabinPair(RabinSlave slave, Set<State> finalStates, int rank) {
         TranSet<ProductState> failP = getFailingProductTransitions(slave, finalStates);
         TranSet<ProductState> succeedP = getSucceedingProductTransitions(slave, rank, finalStates);
         TranSet<ProductState> buyP = getBuyProductTransitions(slave, finalStates, rank);
         failP.addAll(buyP);
-        return new RabinPair<>(failP, succeedP);
+        return new Tuple<>(failP, succeedP);
     }
 
-    public class ProductState extends AbstractProductState<Master.State, GOperator, RabinSlave.State, ProductState> implements IState<ProductState> {
+    public class ProductState extends AbstractProductState<Master.State, GOperator, RabinSlave.State, ProductState> implements AutomatonState<ProductState> {
 
         private ProductState(Master.State primaryState, ImmutableMap<GOperator, RabinSlave.State> secondaryStates) {
             super(primaryState, secondaryStates);
@@ -122,7 +126,7 @@ public class Product extends Automaton<Product.ProductState> {
         }
 
         @Override
-        protected Automaton<Master.State> getPrimaryAutomaton() {
+        protected Automaton<Master.State, ?> getPrimaryAutomaton() {
             return primaryAutomaton;
         }
 
@@ -158,7 +162,7 @@ public class Product extends Automaton<Product.ProductState> {
                         }
                         ValuationSet valu = entry1.getValue().intersect(maxVs);
                         if (!valu.isEmpty()) {
-                            result.add(new Tuple<Map<GOperator, RabinSlave.State>, ValuationSet>(map, valu));
+                            result.add(new Tuple<>(map, valu));
                         }
                     }
                     return result;

@@ -21,7 +21,8 @@ import com.google.common.collect.BiMap;
 import org.apache.commons.cli.*;
 import rabinizer.automata.Optimisation;
 import ltl.Formula;
-import ltl.parser.LTLParser;
+import ltl.equivalence.FactoryRegistry;
+import ltl.parser.Parser;
 import ltl.parser.ParseException;
 import ltl.simplifier.Simplifier;
 
@@ -238,12 +239,12 @@ public class CLIParser {
             }
         }
 
-        LTLParser parser;
+        Parser parser;
         if (cmd.hasOption('f') && !cmd.hasOption('n')) {
-            parser = new LTLParser(new StringReader(cmd.getOptionValue('f')));
+            parser = new Parser(new StringReader(cmd.getOptionValue('f')));
 
             try {
-                inputFormula = parser.parse();
+                inputFormula = parser.formula();
             } catch (ParseException e) {
                 System.out.println("An error occurred while parsing the formula.");
                 throw new ParseException();

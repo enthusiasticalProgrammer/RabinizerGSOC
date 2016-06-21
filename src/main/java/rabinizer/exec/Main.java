@@ -23,8 +23,8 @@ import jhoafparser.consumer.HOAConsumerPrint;
 import jhoafparser.consumer.HOAIntermediateStoreAndManipulate;
 import jhoafparser.transformations.ToStateAcceptance;
 import rabinizer.automata.*;
-import rabinizer.automata.output.DotPrinter;
-import rabinizer.collections.valuationset.ValuationSetFactory;
+import omega_automaton.Automaton;
+import omega_automaton.collections.valuationset.ValuationSetFactory;
 import ltl.Formula;
 import ltl.equivalence.EquivalenceClassFactory;
 import ltl.parser.ParseException;
@@ -84,24 +84,23 @@ public class Main {
                 + "* Version 3.2. by Salomon Sickert and Christopher Ziegler                    *\n"
                 + "******************************************************************************");
 
-        Automaton<?> automaton = computeAutomaton(arguments.inputFormula, arguments.autType, arguments.simplification, arguments.backend, arguments.optimisations, arguments.mapping);
+        Automaton<?, ?> automaton = computeAutomaton(arguments.inputFormula, arguments.autType, arguments.simplification, arguments.backend, arguments.optimisations,
+                arguments.mapping);
 
         nonsilent("Done!");
 
-        HOAConsumer outputPipeline = arguments.format == CLIParser.Format.DOT
-                ? new DotPrinter(arguments.writer)
-                : new HOAConsumerPrint(arguments.writer);
+        HOAConsumer outputPipeline = arguments.format == CLIParser.Format.DOT ? new omega_automaton.output.DotPrinter(arguments.writer) : new HOAConsumerPrint(arguments.writer);
 
         if (arguments.autType == CLIParser.AutomatonType.SGR || arguments.autType == CLIParser.AutomatonType.SR) {
             outputPipeline = new HOAIntermediateStoreAndManipulate(outputPipeline, new ToStateAcceptance());
         }
 
-        automaton.toHOA(outputPipeline);
+        automaton.toHOA(outputPipeline, arguments.mapping);
         arguments.writer.close();
     }
 
-    public static Automaton<?> computeAutomaton(Formula inputFormula, CLIParser.AutomatonType type, Simplifier.Strategy simplify, FactoryRegistry.Backend backend,
-                                                Set<Optimisation> opts, BiMap<String, Integer> mapping) {
+    public static Automaton<?, ?> computeAutomaton(Formula inputFormula, CLIParser.AutomatonType type, Simplifier.Strategy simplify,
+            ltl.equivalence.FactoryRegistry.Backend backend, Set<Optimisation> opts, BiMap<String, Integer> mapping) {
         nonsilent("Formula unsimplified: " + inputFormula);
 
         inputFormula = Simplifier.simplify(inputFormula, simplify);
@@ -110,8 +109,8 @@ public class Main {
         }
         nonsilent("Formula simplified:" + inputFormula);
 
-        EquivalenceClassFactory factory = FactoryRegistry.createEquivalenceClassFactory(backend, inputFormula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(backend, inputFormula, mapping);
+        EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(backend, inputFormula);
+        ValuationSetFactory valuationSetFactory = omega_automaton.collections.valuationset.FactoryRegistry.createValuationSetFactory(inputFormula);
 
         DTGRA dtgra = DTGRAFactory.constructDTGRA(inputFormula, factory, valuationSetFactory, opts);
 

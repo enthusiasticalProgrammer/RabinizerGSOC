@@ -18,7 +18,11 @@
 package rabinizer.automata;
 
 import rabinizer.automata.Product.ProductState;
-import rabinizer.collections.valuationset.ValuationSetFactory;
+import omega_automaton.Automaton;
+import omega_automaton.acceptance.GeneralisedRabinAcceptance;
+import omega_automaton.collections.TranSet;
+import omega_automaton.collections.Tuple;
+import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.Main;
 import ltl.Formula;
 import ltl.GOperator;
@@ -47,7 +51,7 @@ public class DTGRAFactory {
         master.generate();
         if (!Main.silent) {
             HOAConsumerPrint hoa = new HOAConsumerPrint(System.out);
-            master.toHOA(hoa);
+            master.toHOA(hoa, null);
         }
 
         Main.nonsilent("========================================");
@@ -75,10 +79,10 @@ public class DTGRAFactory {
             if (Main.verbose) {
                 HOAConsumerPrint hoa = new HOAConsumerPrint(System.out);
                 Main.verboseln("Mojmir Slave: ");
-                mSlave.toHOA(hoa);
+                mSlave.toHOA(hoa, null);
 
                 Main.verboseln("\nRabin Slave: ");
-                rSlave.toHOA(hoa);
+                rSlave.toHOA(hoa, null);
             }
         }
 
@@ -88,7 +92,7 @@ public class DTGRAFactory {
         Product automaton = new Product(master, slaves, valuationSetFactory, opts);
         automaton.generate();
 
-        AccTGRRaw<ProductState> accTGR = null;
+        AccTGRRaw accTGR = null;
 
         if (opts.contains(Optimisation.COMPUTE_ACC_CONDITION)) {
             Main.nonsilent("========================================");
@@ -111,7 +115,7 @@ public class DTGRAFactory {
              * @return true if automaton together witch acceptance condition is empty
              */
             if (opts.contains(Optimisation.EMPTINESS_CHECK)) {
-                EmptinessCheck.checkEmptinessAndMinimiseSCCBased(automaton, accTGR);
+                EmptinessCheck.checkEmptinessAndMinimiseSCCBased(automaton);
                 AccTGRRaw.removeRedundancyLightAfterEmptyCheck(accTGR);
             }
         }
@@ -119,21 +123,21 @@ public class DTGRAFactory {
         return new DTGRA(automaton, accTGR);
     }
 
-    public static class AccTGRRaw<S extends IState<S>> extends LinkedList<GeneralizedRabinPair<S>> {
+    public static class AccTGRRaw extends GeneralisedRabinAcceptance<ProductState> {
 
-        private static final long serialVersionUID = 245172601429256815L;
+        private final Automaton<ProductState, ?> product;
 
-        private final Automaton<S> product;
-
-        private AccTGRRaw(Automaton<S> product) {
+        private AccTGRRaw(Automaton<ProductState, ?> product) {
+            super(new ArrayList<Tuple<TranSet<ProductState>, List<TranSet<ProductState>>>>());
             this.product = product;
         }
 
 
-        public static AccTGRRaw<ProductState> createAccTGRRaw(AccLocal accLocal, ValuationSetFactory factory, Product product) {
-            AccTGRRaw<ProductState> accTGRRaw = new AccTGRRaw<>(product);
+        public static AccTGRRaw createAccTGRRaw(AccLocal accLocal, ValuationSetFactory factory, Product product) {
+            AccTGRRaw accTGRRaw = new AccTGRRaw(product);
 
-            Map<GOperator, Map<Set<GOperator>, Map<Integer, RabinPair<Product.ProductState>>>> completeSlaveAcceptance = accLocal.getAllSlaveAcceptanceConditions();
+            Map<GOperator, Map<Set<GOperator>, Map<Integer, Tuple<TranSet<Product.ProductState>, TranSet<Product.ProductState>>>>> completeSlaveAcceptance = accLocal
+                    .getAllSlaveAcceptanceConditions();
             for (Map.Entry<Map<GOperator, Integer>, TranSet<ProductState>> entry : accLocal.computeAccMasterOptions().entrySet()) {
                 Map<GOperator, Integer> ranking = entry.getKey();
                 Set<GOperator> gSet = ranking.keySet();
@@ -145,132 +149,119 @@ public class DTGRAFactory {
                 for (GOperator g : gSet) {
                     Set<GOperator> localGSet = new HashSet<>(gSet);
                     localGSet.retainAll(accLocal.topmostGs.get(g));
-                    RabinPair<ProductState> gPair;
+                    Tuple<TranSet<Product.ProductState>, TranSet<Product.ProductState>> gPair;
                     gPair = completeSlaveAcceptance.get(g).get(localGSet).get(ranking.get(g));
 
-                    Fin.addAll(gPair.fin);
-                    Infs.add(gPair.inf.clone());
+                    Fin.addAll(gPair.left);
+                    Infs.add(gPair.right.clone());
                 }
 
-                GeneralizedRabinPair<ProductState> pair = new GeneralizedRabinPair<>(Fin, Infs);
-                accTGRRaw.add(pair);
+                accTGRRaw.acceptanceCondition.add(new Tuple<>(Fin, Infs));
             }
 
             return accTGRRaw;
         }
 
-        public static <S extends IState<S>> void removeRedundancy(AccTGRRaw<S> this2) {
-            List<GeneralizedRabinPair<S>> temp;
-            List<TranSet<S>> copy;
+        public static void removeRedundancy(AccTGRRaw this2) {
+            List<TranSet<ProductState>> copy;
             int phase = 0;
             Main.stopwatchLocal();
 
             Main.verboseln(phase + ". Raw Generalized Rabin Acceptance Condition\n");
-            printProgress(phase++, this2);
+            printProgress(phase++, this2.acceptanceCondition.size());
 
             // This rule is subsumed by the following two rules.
             Main.verboseln(phase + ". Removing (F, {I1,...,In}) with complete F\n");
-            this2.removeIf(pair -> this2.product.containsAllTransitions(pair.fin));
-            printProgress(phase++, this2);
+            this2.acceptanceCondition.removeIf(pair -> this2.product.containsAllTransitions(pair.left));
+            printProgress(phase++, this2.acceptanceCondition.size());
 
             Main.verboseln(phase + ". Removing F from each Ii: (F, {I1,...,In}) |-> (F, {I1\\F,...,In\\F})\n");
-            this2.forEach(pair -> pair.infs.forEach(inf -> inf.removeAll(pair.fin)));
-            printProgress(phase++, this2);
+            this2.acceptanceCondition.forEach(pair -> pair.right.forEach(inf -> inf.removeAll(pair.left)));
+            printProgress(phase++, this2.acceptanceCondition.size());
 
             Main.verboseln(phase + ". Removing (F, {..., \\emptyset, ...} )\n");
-            this2.removeIf(pair -> pair.infs.stream().anyMatch(TranSet::isEmpty));
-            printProgress(phase++, this2);
+            this2.acceptanceCondition.removeIf(pair -> pair.right.stream().anyMatch(TranSet::isEmpty));
+            printProgress(phase++, this2.acceptanceCondition.size());
 
             Main.verboseln(phase + ". Removing complete Ii in (F, {I1,...,In}), i.e. Ii U F = Q \n");
-            this2.forEach(pair -> pair.infs.removeIf(i ->
-            this2.product.containsAllTransitions(i.union(pair.fin))));
-            printProgress(phase++, this2);
+            this2.acceptanceCondition.forEach(pair -> pair.right.removeIf(i ->
+            this2.product.containsAllTransitions(i.union(pair.left))));
+            printProgress(phase++, this2.acceptanceCondition.size());
 
             Main.verboseln(phase + ". Removing redundant Ii: (F, I) |-> (F, { i | i in I and !\\exists j in I : Ij <= Ii })\n");
-            temp = new ArrayList<>();
-            for (GeneralizedRabinPair<S> pair : this2) {
-                copy = new ArrayList<>(pair.infs);
-                for (TranSet<S> i : pair.infs) {
-                    for (TranSet<S> j : pair.infs) {
+            Collection<Tuple<TranSet<ProductState>, List<TranSet<ProductState>>>> temp = new ArrayList<>();
+            for (Tuple<TranSet<ProductState>, List<TranSet<ProductState>>> pair : this2.acceptanceCondition) {
+                copy = new ArrayList<>(pair.right);
+                for (TranSet<ProductState> i : pair.right) {
+                    for (TranSet<ProductState> j : pair.right) {
                         if (!j.equals(i) && i.containsAll(j)) {
                             copy.remove(i);
                             break;
                         }
                     }
                 }
-                temp.add(new GeneralizedRabinPair<>(pair.fin, copy));
+                temp.add(new Tuple<>(pair.left, copy));
             }
-            this2.clear();
-            this2.addAll(temp);
+            this2.acceptanceCondition.clear();
+            this2.acceptanceCondition.addAll(temp);
 
-            printProgress(phase++, this2);
+            printProgress(phase++, this2.acceptanceCondition.size());
 
             Main.verboseln(phase + ". Removing (F, I) for which there is a less restrictive (G, J) \n");
-            Set<GeneralizedRabinPair<S>> hs = new HashSet<>(this2);
 
 
-            for (GeneralizedRabinPair<S> pair1 : this2) {
-                for (GeneralizedRabinPair<S> pair2 : this2) {
+            Collection<Tuple<TranSet<ProductState>, List<TranSet<ProductState>>>> toRemove = new HashSet<>();
+            for (Tuple<TranSet<ProductState>, List<TranSet<ProductState>>> pair1 : this2.acceptanceCondition) {
+                for (Tuple<TranSet<ProductState>, List<TranSet<ProductState>>> pair2 : this2.acceptanceCondition) {
                     if (pair1.equals(pair2)) {
                         continue;
                     }
 
-                    if (pair2.implies(pair1) && hs.contains(pair1)) {
-                        hs.remove(pair2);
+                    if (GeneralisedRabinAcceptance.implies(pair2, pair1) && !toRemove.contains(pair1)) {
+                        toRemove.add(pair2);
                         break;
                     }
                 }
             }
 
-            this2.clear();
-            this2.addAll(hs);
+            this2.acceptanceCondition.clear();
+            this2.acceptanceCondition.removeAll(toRemove);
 
-            printProgress(phase, this2);
+            printProgress(phase, this2.acceptanceCondition.size());
         }
 
-        public static void printProgress(int phase, Collection<?> this2) {
-            Main.nonsilent("Phase: " + phase + "..." + this2.size() + " pairs");
+        public static void printProgress(int phase, int size) {
+            Main.nonsilent("Phase: " + phase + "..." + size + " pairs");
         }
 
-        public static <S extends IState<S>> void removeRedundancyLightAfterEmptyCheck(AccTGRRaw<S> accTGR) {
+        public static void removeRedundancyLightAfterEmptyCheck(AccTGRRaw accTGR) {
 
-            Iterator<GeneralizedRabinPair<S>> i = accTGR.iterator();
-            while (i.hasNext()) {
-                GeneralizedRabinPair<S> p = i.next();
-                Set<TranSet<S>> s = new HashSet<>(p.infs);
-                p.infs.clear();
-                p.infs.addAll(s);
-                if (p.infs.stream().anyMatch(TranSet::isEmpty)) {
-                    i.remove();
+            Collection<Tuple<TranSet<ProductState>, List<TranSet<ProductState>>>> toRemove = new HashSet<>();
+            for (Tuple<TranSet<ProductState>, List<TranSet<ProductState>>> pair : accTGR.acceptanceCondition) {
+                Set<TranSet<ProductState>> s = new HashSet<>(pair.right);
+                pair.right.clear();
+                pair.right.addAll(s);
+                if (pair.right.stream().anyMatch(TranSet::isEmpty)) {
+                    toRemove.add(pair);
                 }
             }
+            accTGR.acceptanceCondition.removeAll(toRemove);
 
-            Set<GeneralizedRabinPair<S>> hs = new HashSet<>(accTGR);
-            for (GeneralizedRabinPair<S> pair1 : accTGR) {
-                for (GeneralizedRabinPair<S> pair2 : accTGR) {
+            toRemove.clear();
+            for (Tuple<TranSet<ProductState>, List<TranSet<ProductState>>> pair1 : accTGR.acceptanceCondition) {
+                for (Tuple<TranSet<ProductState>, List<TranSet<ProductState>>> pair2 : accTGR.acceptanceCondition) {
                     if (pair1.equals(pair2)) {
                         continue;
                     }
 
-                    if (pair2.implies(pair1) && hs.contains(pair1)) {
-                        hs.remove(pair2);
+                    if (GeneralisedRabinAcceptance.implies(pair2, pair1) && !toRemove.contains(pair1)) {
+                        toRemove.add(pair2);
                         break;
                     }
                 }
             }
-            accTGR.clear();
-            accTGR.addAll(hs);
-        }
-
-        @Override
-        public String toString() {
-            String result = "Gen. Rabin acceptance condition";
-            int i = 1;
-            for (GeneralizedRabinPair<S> pair : this) {
-                result += "\nPair " + i + "\n" + pair;
-                i++;
-            }
-            return result;
+            accTGR.acceptanceCondition.clear();
+            accTGR.acceptanceCondition.removeAll(toRemove);
         }
     }
 }

@@ -17,8 +17,10 @@
 
 package rabinizer.automata;
 
-import rabinizer.collections.valuationset.ValuationSet;
-import rabinizer.collections.valuationset.ValuationSetFactory;
+import omega_automaton.Automaton;
+import omega_automaton.AutomatonState;
+import omega_automaton.acceptance.AllAcceptance;
+import omega_automaton.collections.valuationset.ValuationSetFactory;
 import ltl.Formula;
 import ltl.equivalence.EquivalenceClass;
 import ltl.equivalence.EquivalenceClassFactory;
@@ -27,7 +29,7 @@ import javax.annotation.Nullable;
 import java.util.BitSet;
 import java.util.Collection;
 
-public class Master extends Automaton<Master.State> {
+public class Master extends Automaton<Master.State, AllAcceptance> {
 
     final boolean eager;
     @Nullable
@@ -77,7 +79,7 @@ public class Master extends Automaton<Master.State> {
         return successor.isFalse();
     }
 
-    public class State extends AbstractFormulaState implements IState<State> {
+    public class State extends AbstractFormulaState implements AutomatonState<State> {
 
         public State(EquivalenceClass clazz) {
             super(clazz);

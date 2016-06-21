@@ -17,31 +17,33 @@
 
 package rabinizer.automata;
 
-import jhoafparser.consumer.HOAConsumer;
-import rabinizer.automata.output.HOAConsumerGeneralisedRabin;
-
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import com.google.common.collect.BiMap;
+
+import jhoafparser.consumer.HOAConsumer;
+import omega_automaton.Automaton;
+import omega_automaton.acceptance.GeneralisedRabinAcceptance;
+import omega_automaton.output.HOAConsumerExtended;
+import omega_automaton.output.HOAConsumerGeneralisedRabin;
+import rabinizer.automata.Product.ProductState;
+
 import java.util.Collections;
-import java.util.List;
 
-public class DTGRA extends Automaton<Product.ProductState> {
+public class DTGRA extends Automaton<Product.ProductState, GeneralisedRabinAcceptance<ProductState>> {
 
-    @Nonnull
-    final List<GeneralizedRabinPair<Product.ProductState>> acc;
-
-    public DTGRA(Product product, @Nullable List<GeneralizedRabinPair<Product.ProductState>> acc) {
+    public DTGRA(Product product, @Nullable GeneralisedRabinAcceptance<ProductState> acc) {
         super(product);
 
         if (acc != null) {
-            this.acc = acc;
+            this.acceptance = acc;
         } else {
-            this.acc = Collections.emptyList();
+            this.acceptance = new GeneralisedRabinAcceptance<>(Collections.emptyList());
         }
     }
 
     @Override
-    public HOAConsumerGeneralisedRabin getConsumer(HOAConsumer ho) {
-        return new HOAConsumerGeneralisedRabin(ho, valuationSetFactory, getInitialState(), acc);
+    protected HOAConsumerExtended getHOAConsumer(HOAConsumer ho, BiMap<String, Integer> aliases) {
+        return new HOAConsumerGeneralisedRabin(ho, valuationSetFactory, aliases, initialState, acceptance, size());
     }
 }
