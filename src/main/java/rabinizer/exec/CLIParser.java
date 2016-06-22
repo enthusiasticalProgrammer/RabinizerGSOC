@@ -20,13 +20,19 @@ package rabinizer.exec;
 import com.google.common.collect.BiMap;
 import org.apache.commons.cli.*;
 import rabinizer.automata.Optimisation;
+import rabinizer.frequencyLTL.MojmirOperatorVisitor;
+import ltl.ContainsVisitor;
 import ltl.Formula;
+import ltl.FrequencyG;
+import ltl.GOperator;
+import ltl.UOperator;
 import ltl.equivalence.FactoryRegistry;
 import ltl.parser.Parser;
 import ltl.parser.ParseException;
 import ltl.simplifier.Simplifier;
 
 import java.io.*;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -64,6 +70,8 @@ public class CLIParser {
         result.addOption("f", "formula", true,
                 "The input formula in spot-syntax. We can recognize the modal operators F,G,U,V,W,R, and propositional negations, ands, and ors. Either use the formula option or the input-file option");
         result.addOption("z", "acc-condition", false, "This flag prohibits computing the acceptance condition. It can be used for benchmarking.");
+        result.addOption("U", "use-controller-syntheses-for-MDP-algorithm", false,
+                "This flag should be used if it is desired to employ the algorithm called controller synthesis for MDPs and Frequency LTL\\GU");
         return result;
     }
 
@@ -252,8 +260,8 @@ public class CLIParser {
         } else if (!cmd.hasOption('f') && cmd.hasOption('n')) {
             try (BufferedReader bReader = new BufferedReader(new FileReader(new File(cmd.getOptionValue('n'))))) {
                 String form = bReader.readLine();
-                parser = new LTLParser(new StringReader(form));
-                inputFormula = parser.parse();
+                parser = new Parser(new StringReader(form));
+                inputFormula = parser.formula();
             } catch (FileNotFoundException e) {
                 System.out.println("Error: The input file has not been found.");
                 throw new ParseException();
@@ -275,6 +283,38 @@ public class CLIParser {
             optimisations.remove(Optimisation.COMPUTE_ACC_CONDITION);
         } else {
             optimisations.add(Optimisation.COMPUTE_ACC_CONDITION);
+        }
+
+        if (cmd.hasOption('U')) {
+            // prepare for controller synthesis
+            if (autType != AutomatonType.TGR) {
+                if (outputLevel != 0) {
+                    System.out.println(
+                            "Warning: Despite your preferences, we are outputting a transition-based generalised Rabin automaton, because Controller synthesis for MDPs only supports this.");
+                    System.out.println(
+                            "         Note that the output automaton is technically not a transition-based generalised Rabin automaton, but we have nothing better to output, because jhoafparserlibrary does not support DTMGRA");
+                }
+                autType = AutomatonType.TGR;
+            }
+
+            optimisations = Collections.singleton(Optimisation.COMPUTE_ACC_CONDITION);
+            simplification = Simplifier.Strategy.NONE;
+            if (outputLevel != 0) {
+                System.out.println("Warning: Optimisations and simplification have been disabled.");
+            }
+
+            inputFormula = inputFormula.accept(new MojmirOperatorVisitor());
+            Set<GOperator> gSubformulae = inputFormula.gSubformulas();
+            if (gSubformulae.stream().anyMatch(g -> g.accept(new ContainsVisitor(UOperator.class)))) {
+                throw new ParseException("The controller synthesis construction works only for fLTL\\GU."
+                        + "If your formula contains no frequency-G, then maybe you want to drop the -U option to use the Rabinizer construction, which can cope with LTL");
+            }
+
+        } else {
+            if (inputFormula.accept(new ContainsVisitor(FrequencyG.class))) {
+                throw new ParseException("The Rabinizer-construction does not work with FrequencyG operator. "
+                        + "Maybe you want to use the -U option to do the Controller synthesis construction for fLTL\\GU");
+            }
         }
 
         return new CmdArguments(outputLevel, autType, format, optimisations, simplification, writer, inputFormula, FactoryRegistry.Backend.BDD, parser.map);
