@@ -112,7 +112,13 @@ public class Main {
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(backend, inputFormula);
         ValuationSetFactory valuationSetFactory = omega_automaton.collections.valuationset.FactoryRegistry.createValuationSetFactory(inputFormula);
 
-        DTGRA dtgra = DTGRAFactory.constructDTGRA(inputFormula, factory, valuationSetFactory, opts);
+        AbstractAutomatonFactory<?, ?> automataFactory;
+        if (type == AutomatonType.MDP) {
+            automataFactory = new DTGRMAFactory(inputFormula, factory, valuationSetFactory, opts);
+        } else {
+            automataFactory = new DTGRAFactory(inputFormula, factory, valuationSetFactory, opts);
+        }
+        Product dtgra = automataFactory.constructAutomaton();
 
         switch (type) {
             case SR:
