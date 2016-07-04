@@ -2,7 +2,10 @@ package rabinizer.automata;
 
 
 import omega_automaton.AutomatonState;
+import omega_automaton.Edge;
+import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
+import rabinizer.frequencyLTL.UnfoldNoSlaveOperatorVisitor;
 import ltl.Formula;
 import ltl.RelevantGFormulaeWithSlaveSuspension;
 import ltl.equivalence.EquivalenceClass;
@@ -21,7 +24,7 @@ public class SuspendedMaster extends Master {
     }
 
     public SuspendedMaster(Formula formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory,
-                           Collection<Optimisation> optimisations) {
+            Collection<Optimisation> optimisations) {
         this(equivalenceClassFactory.createEquivalenceClass(formula), valuationSetFactory, optimisations);
     }
 
@@ -29,7 +32,7 @@ public class SuspendedMaster extends Master {
     public State generateInitialState(EquivalenceClass clazz) {
         boolean suspendable = slaveSuspension && !clazz.getRepresentative().accept(RelevantGFormulaeWithSlaveSuspension.RELEVANT_G_FORMULAE_PRESENT);
         if (eager) {
-            return new State(clazz.unfold(true), suspendable, clazz.unfold(false));
+            return new State(clazz.unfold(), suspendable, clazz.apply(formula -> formula.accept(new UnfoldNoSlaveOperatorVisitor())));
         } else {
             return new State(clazz, suspendable, clazz);
         }
@@ -50,9 +53,9 @@ public class SuspendedMaster extends Master {
      */
     private EquivalenceClass stepTest(EquivalenceClass clazz, BitSet valuation) {
         if (eager) {
-            return clazz.temporalStep(valuation).unfold(false);
+            return clazz.temporalStep(valuation).apply(formula -> formula.accept(new UnfoldNoSlaveOperatorVisitor()));
         } else {
-            return clazz.unfold(false).temporalStep(valuation);
+            return clazz.apply(formula -> formula.accept(new UnfoldNoSlaveOperatorVisitor())).temporalStep(valuation);
         }
     }
 
@@ -69,6 +72,43 @@ public class SuspendedMaster extends Master {
         }
     }
 
+    /**
+     * The method replaces antecessor by replacement. Both must be in the
+     * states-set (and both must not be null) when calling the method.
+     * Antecessor gets deleted during the method, and the transitions to
+     * antecessor will be recurved towards replacement.
+     * <p>
+     * The method throws an IllegalArgumentException, when one of the parameters
+     * is not in the states-set
+     */
+    protected void replaceBy(State antecessor, State replacement) {
+        if (!(transitions.containsKey(antecessor) && transitions.containsKey(replacement))) {
+            throw new IllegalArgumentException();
+        }
+
+        transitions.remove(antecessor).clear();
+
+        for (Map<Edge<Master.State>, ValuationSet> edges : transitions.values()) {
+            ValuationSet vs = edges.get(new Edge<>(antecessor, new BitSet(0)));
+
+            if (vs == null) {
+                continue;
+            }
+
+            ValuationSet vs2 = edges.get(replacement);
+
+            if (vs2 == null) {
+                edges.put(new Edge<>(replacement, new BitSet(0)), vs);
+            } else {
+                vs2.addAll(vs);
+            }
+        }
+
+        if (antecessor.equals(initialState)) {
+            initialState = replacement;
+        }
+    }
+
     public class State extends Master.State implements AutomatonState<Master.State> {
 
         final boolean slavesSuspended;
@@ -82,7 +122,7 @@ public class SuspendedMaster extends Master {
 
         @Nullable
         @Override
-        public State getSuccessor(BitSet valuation) {
+        public Edge<rabinizer.automata.Master.State> getSuccessor(BitSet valuation) {
             EquivalenceClass successor = step(clazz, valuation);
             EquivalenceClass folded = stepTest(this.folded, valuation);
 
@@ -91,10 +131,10 @@ public class SuspendedMaster extends Master {
             }
 
             if (slaveSuspension && this.slavesSuspended && !folded.getRepresentative().accept(RelevantGFormulaeWithSlaveSuspension.RELEVANT_G_FORMULAE_PRESENT)) {
-                return new State(successor, true, folded);
+                return new Edge<>(new State(successor, true, folded), new BitSet(0));
             }
 
-            return new State(successor, false, folded);
+            return new Edge<>(new State(successor, false, folded), new BitSet(0));
         }
 
         @Override
@@ -104,11 +144,6 @@ public class SuspendedMaster extends Master {
             if (o.getClass() != this.getClass())
                 return false;
             return super.equals(o) && ((State) o).slavesSuspended == this.slavesSuspended;
-        }
-
-        @Override
-        protected Object getOuter() {
-            return SuspendedMaster.this;
         }
 
         /**

@@ -52,7 +52,7 @@ public class Master extends Automaton<Master.State, AllAcceptance> {
 
     public State generateInitialState(EquivalenceClass clazz) {
         if (eager) {
-            return new State(clazz.unfold(true));
+            return new State(clazz.unfold());
         } else {
             return new State(clazz);
         }
@@ -69,9 +69,9 @@ public class Master extends Automaton<Master.State, AllAcceptance> {
 
     protected EquivalenceClass step(EquivalenceClass clazz, BitSet valuation) {
         if (eager) {
-            return clazz.temporalStep(valuation).unfold(true);
+            return clazz.temporalStep(valuation).unfold();
         } else {
-            return clazz.unfold(true).temporalStep(valuation);
+            return clazz.unfold().temporalStep(valuation);
         }
     }
 
@@ -87,14 +87,14 @@ public class Master extends Automaton<Master.State, AllAcceptance> {
 
         @Nullable
         @Override
-        public State getSuccessor(BitSet valuation) {
+        public Edge<State> getSuccessor(BitSet valuation) {
             EquivalenceClass successor = step(clazz, valuation);
 
             if (suppressEdge(clazz, successor)) {
                 return null;
             }
 
-            return new State(successor);
+            return new Edge<>(new State(successor), new BitSet(0));
         }
 
         @Override

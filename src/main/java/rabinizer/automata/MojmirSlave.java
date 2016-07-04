@@ -19,11 +19,13 @@ package rabinizer.automata;
 
 import omega_automaton.Automaton;
 import omega_automaton.AutomatonState;
-import omega_automaton.acceptance.MojmirAcceptance;
+import omega_automaton.Edge;
+import omega_automaton.acceptance.AllAcceptance;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
-import ltl.GOperator;
+import rabinizer.frequencyLTL.UnfoldNoSlaveOperatorVisitor;
+import ltl.ModalOperator;
 import ltl.equivalence.EquivalenceClass;
 import ltl.equivalence.EquivalenceClassFactory;
 
@@ -33,26 +35,26 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class MojmirSlave extends Automaton<MojmirSlave.State, MojmirAcceptance> {
+public class MojmirSlave extends Automaton<MojmirSlave.State, AllAcceptance> {
 
-    protected final GOperator label;
+    final ModalOperator label;
     private final boolean eager;
-    private final EquivalenceClass initialState;
+    private final EquivalenceClass initialStateEquivalence;
 
-    public MojmirSlave(GOperator formula, EquivalenceClassFactory equivalenceClassFactory,
-                       ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
+    public MojmirSlave(ModalOperator formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
         super(valuationSetFactory);
-        initialState = equivalenceClassFactory.createEquivalenceClass(formula.operand);
+        initialStateEquivalence = equivalenceClassFactory.createEquivalenceClass(formula.operand);
         eager = optimisations.contains(Optimisation.EAGER);
         label = formula;
+
     }
 
     @Override
     protected State generateInitialState() {
         if (eager) {
-            return new State(initialState.unfold(false));
+            return new State(initialStateEquivalence.apply(formula -> formula.accept(new UnfoldNoSlaveOperatorVisitor())));
         } else {
-            return new State(initialState);
+            return new State(initialStateEquivalence);
         }
     }
 
@@ -72,11 +74,11 @@ public class MojmirSlave extends Automaton<MojmirSlave.State, MojmirAcceptance> 
         }
 
         @Override
-        public State getSuccessor(BitSet valuation) {
+        public Edge<State> getSuccessor(BitSet valuation) {
             if (eager) {
-                return new State(clazz.temporalStep(valuation).unfold(false));
+                return new Edge<>(new State(clazz.temporalStep(valuation).apply(formula -> formula.accept(new UnfoldNoSlaveOperatorVisitor()))), new BitSet(0));
             } else {
-                return new State(clazz.unfold(false).temporalStep(valuation));
+                return new Edge<>(new State(clazz.apply(formula -> formula.accept(new UnfoldNoSlaveOperatorVisitor())).temporalStep(valuation)), new BitSet(0));
             }
         }
 
@@ -86,33 +88,28 @@ public class MojmirSlave extends Automaton<MojmirSlave.State, MojmirAcceptance> 
         }
 
         @Override
-        public ValuationSetFactory getFactory() {
-            return valuationSetFactory;
-        }
-
-        @Override
         protected Object getOuter() {
             return MojmirSlave.this;
         }
 
-        ValuationSet getFailingMojmirTransitions(Set<State> finalStates) {
+        ValuationSet getFailingMojmirTransitions(Set<MojmirSlave.State> finalStates) {
             ValuationSet fail = valuationSetFactory.createEmptyValuationSet();
             if (finalStates.contains(this)) {
                 return fail;
             }
-            for (Entry<MojmirSlave.State, ValuationSet> valuationSetFailState : this.getSuccessors().entrySet()) {
-                if (isSink(valuationSetFailState.getKey()) && !finalStates.contains(valuationSetFailState.getKey())) {
+            for (Entry<Edge<MojmirSlave.State>, ValuationSet> valuationSetFailState : MojmirSlave.this.getSuccessors(this).entrySet()) {
+                if (isSink(valuationSetFailState.getKey().successor) && !finalStates.contains(valuationSetFailState.getKey().successor)) {
                     fail.addAll(valuationSetFailState.getValue());
                 }
             }
             return fail;
         }
 
-        ValuationSet getSucceedMojmirTransitions(Set<State> finalStates) {
+        ValuationSet getSucceedMojmirTransitions(Set<MojmirSlave.State> finalStates) {
             ValuationSet succeed = valuationSetFactory.createEmptyValuationSet();
             if (!finalStates.contains(this)) {
-                for (Entry<MojmirSlave.State, ValuationSet> valuation : getSuccessors().entrySet()) {
-                    if (finalStates.contains(valuation.getKey())) {
+                for (Entry<Edge<MojmirSlave.State>, ValuationSet> valuation : MojmirSlave.this.getSuccessors(this).entrySet()) {
+                    if (finalStates.contains(valuation.getKey().successor)) {
                         succeed.addAll(valuation.getValue());
                     }
                 }

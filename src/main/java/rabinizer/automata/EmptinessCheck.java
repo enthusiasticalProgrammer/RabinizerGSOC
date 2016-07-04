@@ -71,7 +71,7 @@ public class EmptinessCheck<S extends AutomatonState<S>> {
             }
 
             if (sccEmpty) {
-                if (automaton.isSink(SCC)) {
+                if (automaton.isBSCC(SCC)) {
                     automaton.removeStates(SCC);
                 }
             }

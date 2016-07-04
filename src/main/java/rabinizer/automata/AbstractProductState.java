@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableMap;
 
 import omega_automaton.Automaton;
 import omega_automaton.AutomatonState;
+import omega_automaton.Edge;
 import omega_automaton.collections.Tuple;
 import omega_automaton.collections.valuationset.ValuationSet;
 import ltl.ImmutableObject;
@@ -31,6 +32,8 @@ import java.util.*;
 import java.util.function.Function;
 
 public abstract class AbstractProductState<P extends AutomatonState<P>, K, S extends AutomatonState<S>, T> extends ImmutableObject {
+
+    private static BitSet defaultBitSet = new BitSet(0);
 
     protected final P primaryState;
     protected final ImmutableMap<K, S> secondaryStates;
@@ -54,8 +57,8 @@ public abstract class AbstractProductState<P extends AutomatonState<P>, K, S ext
     }
 
     @Nullable
-    public T getSuccessor(BitSet valuation) {
-        P primarySuccessor = primaryState.getSuccessor(valuation);
+    public Edge<T> getSuccessor(BitSet valuation) {
+        P primarySuccessor = primaryState.getSuccessor(valuation).successor;
 
         if (primarySuccessor == null) {
             return null;
@@ -73,7 +76,7 @@ public abstract class AbstractProductState<P extends AutomatonState<P>, K, S ext
             S secondary = secondaryStates.get(key);
 
             if (secondary != null) {
-                S secondarySuccessor = secondary.getSuccessor(valuation);
+                S secondarySuccessor = secondary.getSuccessor(valuation).successor;
 
                 if (secondarySuccessor != null) {
                     builder.put(key, secondarySuccessor);
@@ -83,13 +86,16 @@ public abstract class AbstractProductState<P extends AutomatonState<P>, K, S ext
             }
         }
 
-        return constructState(primarySuccessor, builder.build());
+        return new Edge<>(constructState(primarySuccessor, builder.build()), defaultBitSet);
     }
 
     @Nonnull
-    public Map<T, ValuationSet> getSuccessors() {
-        Map<T, ValuationSet> successors = new LinkedHashMap<>();
-        Map<P, ValuationSet> primarySuccessors = getPrimaryAutomaton().getSuccessors(primaryState);
+    public Map<Edge<T>, ValuationSet> getSuccessors() {
+        Map<Edge<T>, ValuationSet> successors = new LinkedHashMap<>();
+        Map<P, ValuationSet> primarySuccessors = new HashMap<>();
+        for(Map.Entry<Edge<P>,ValuationSet> entry :getPrimaryAutomaton().getSuccessors(primaryState).entrySet()){
+            primarySuccessors.put(entry.getKey().successor, entry.getValue());
+        }
 
         for (Map.Entry<P, ValuationSet> entry1 : primarySuccessors.entrySet()) {
             Set<K> keys = relevantSecondary(entry1.getKey());
@@ -99,7 +105,7 @@ public abstract class AbstractProductState<P extends AutomatonState<P>, K, S ext
             }
 
             for (Tuple<Map<K, S>, ValuationSet> entry2 : secondaryJointMove(keys, entry1.getValue())) {
-                successors.put(constructState(entry1.getKey(), ImmutableMap.copyOf(entry2.left)), entry2.right);
+                successors.put(new Edge<>(constructState(entry1.getKey(), ImmutableMap.copyOf(entry2.left)), defaultBitSet), entry2.right);
             }
         }
 
@@ -154,12 +160,15 @@ public abstract class AbstractProductState<P extends AutomatonState<P>, K, S ext
                 state = getSecondaryAutomata().get(key).getInitialState();
             }
 
-            Map<S, ValuationSet> successors = secondary.get(key).getSuccessors(state);
+            Map<S, ValuationSet> secondarySuccessors = new HashMap<>();
+            for (Map.Entry<Edge<S>, ValuationSet> entry : secondary.get(key).getSuccessors(state).entrySet()) {
+                secondarySuccessors.put(entry.getKey().successor, entry.getValue());
+            }
 
             while (!current.isEmpty()) {
                 Tuple<Map<K, S>, ValuationSet> entry1 = current.remove();
 
-                for (Map.Entry<S, ValuationSet> entry2 : successors.entrySet()) {
+                for (Map.Entry<S, ValuationSet> entry2 : secondarySuccessors.entrySet()) {
                     ValuationSet set = entry1.right.intersect(entry2.getValue());
 
                     if (!set.isEmpty()) {

@@ -20,8 +20,10 @@ package rabinizer.automata;
 import ltl.Formula;
 import ltl.Literal;
 import ltl.equivalence.EquivalenceClass;
+import rabinizer.frequencyLTL.UnfoldNoSlaveOperatorVisitor;
 
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Objects;
 
 public abstract class AbstractFormulaState {
@@ -61,7 +63,14 @@ public abstract class AbstractFormulaState {
     protected BitSet getSensitive(boolean unfoldG) {
         BitSet letters = new BitSet();
 
-        for (Formula literal : clazz.unfold(unfoldG).getSupport()) {
+        Collection<Formula> literals;
+        if(unfoldG){
+            literals = clazz.unfold().getSupport();
+        }else{
+            literals = clazz.apply(formula -> formula.accept(new UnfoldNoSlaveOperatorVisitor())).getSupport();
+        }
+
+        for (Formula literal : literals) {
             if (literal instanceof Literal) {
                 letters.set(((Literal) literal).getAtom());
             }
