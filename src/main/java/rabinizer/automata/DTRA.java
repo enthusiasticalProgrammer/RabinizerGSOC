@@ -94,18 +94,20 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
 
         @Nullable
         @Override
-        public ProductDegenState getSuccessor(BitSet valuation) {
-            Product.ProductState successor = dtgra.getSuccessor(productState, valuation);
+        public Edge<ProductDegenState> getSuccessor(BitSet valuation) {
+            Edge<ProductState<?>> successor = dtgra.getSuccessor(productState, valuation);
 
             if (successor == null) {
                 return null;
             }
 
-            int[] awaitedIndices = new int[dtgra.acceptance.acceptanceCondition.size()];
+            GeneralisedRabinAcceptance<ProductState<?>> acc = dtgra.getAcceptance();
+
+            int[] awaitedIndices = new int[acc.acceptanceCondition.size()];
 
             // TODO: Use listIterator
             int i = 0;
-            for (Tuple<TranSet<ProductState>, List<TranSet<ProductState>>> grp : dtgra.acceptance.acceptanceCondition) {
+            for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> grp : acc.acceptanceCondition) {
 
                 int awaited = this.awaitedIndices[i];
 
