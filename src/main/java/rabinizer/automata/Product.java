@@ -17,52 +17,49 @@
 
 package rabinizer.automata;
 
+import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableMap;
 
+import jhoafparser.consumer.HOAConsumer;
 import rabinizer.automata.MojmirSlave.State;
-import rabinizer.automata.Product.ProductState;
+import rabinizer.frequencyLTL.SlaveSubformulaVisitor;
 import omega_automaton.Automaton;
 import omega_automaton.AutomatonState;
+import omega_automaton.Edge;
 import omega_automaton.acceptance.GeneralisedRabinAcceptance;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.Tuple;
 import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
-import ltl.GOperator;
+import omega_automaton.output.HOAConsumerExtended;
+import omega_automaton.output.HOAConsumerGeneralisedRabin;
+import ltl.ModalOperator;
 
 import java.util.*;
 import java.util.function.Function;
 
-public class Product extends Automaton<Product.ProductState, GeneralisedRabinAcceptance<ProductState>> {
+public abstract class Product extends Automaton<Product.ProductState<?>, GeneralisedRabinAcceptance<Product.ProductState<?>>> {
 
     protected final Master primaryAutomaton;
-    protected final Map<GOperator, RabinSlave> secondaryAutomata;
 
     protected final boolean allSlaves;
 
-    public Product(Master primaryAutomaton, Map<GOperator, RabinSlave> slaves, ValuationSetFactory factory, Collection<Optimisation> optimisations) {
+    public Product(Master primaryAutomaton, ValuationSetFactory factory, Collection<Optimisation> optimisations) {
         super(factory);
         // relevant secondaryAutomata dynamically
         // computed from primaryAutomaton formula
         // master formula
         this.primaryAutomaton = primaryAutomaton;
-        this.secondaryAutomata = slaves;
         this.allSlaves = !optimisations.contains(Optimisation.ONLY_RELEVANT_SLAVES);
     }
 
-    @Override
-    protected Product.ProductState generateInitialState() {
-        return new ProductState(primaryAutomaton.getInitialState(), relevantSecondarySlaves(primaryAutomaton.getInitialState()),
-                k -> secondaryAutomata.get(k).getInitialState());
-    }
-
-    private Set<GOperator> relevantSecondarySlaves(Master.State primaryState) {
-        Set<GOperator> keys;
+    protected final Set<ModalOperator> relevantSecondarySlaves(Master.State primaryState) {
+        Set<ModalOperator> keys;
         if (allSlaves) {
-            keys = secondaryAutomata.keySet();
+            keys = getKeys();
         } else {
             keys = new HashSet<>();
-            primaryState.getClazz().getSupport().forEach(f -> keys.addAll(f.gSubformulas()));
+            primaryState.getClazz().getSupport().forEach(f -> keys.addAll(f.accept(new SlaveSubformulaVisitor())));
         }
 
         if (primaryState instanceof SuspendedMaster.State && ((SuspendedMaster.State) primaryState).slavesSuspended) {
@@ -72,9 +69,13 @@ public class Product extends Automaton<Product.ProductState, GeneralisedRabinAcc
         return keys;
     }
 
-    protected TranSet<ProductState> getFailingProductTransitions(RabinSlave slave, Set<MojmirSlave.State> finalStates) {
-        TranSet<Product.ProductState> failP = new TranSet<>(valuationSetFactory);
-        for (ProductState ps : getStates()) {
+    protected abstract Set<ModalOperator> getKeys();
+
+    protected abstract Map<ModalOperator, ? extends AbstractSelfProductSlave<?>> getSecondaryAutomata();
+
+    protected final TranSet<ProductState<?>> getFailingProductTransitions(AbstractSelfProductSlave<?> slave, Set<MojmirSlave.State> finalStates) {
+        TranSet<ProductState<?>> failP = new TranSet<>(valuationSetFactory);
+        for (ProductState<?> ps : getStates()) {
             failP.addAll(ps.getFailTransitions(slave.mojmir, finalStates));
 
         }
@@ -82,41 +83,66 @@ public class Product extends Automaton<Product.ProductState, GeneralisedRabinAcc
         return failP;
     }
 
-    protected TranSet<Product.ProductState> getSucceedingProductTransitions(RabinSlave slave, int rank, Set<MojmirSlave.State> finalStates) {
-        TranSet<Product.ProductState> succeedP = new TranSet<>(valuationSetFactory);
-        for (Product.ProductState ps : getStates()) {
+    /**
+     * @param rank
+     *            rank is either semantically a rank or the token-number of the
+     *            states rank=-1 means that the rank does not matter (used for
+     *            ProductControllerSynthesis, F-slave).
+     **/
+    protected final TranSet<ProductState<?>> getSucceedingProductTransitions(AbstractSelfProductSlave<?> slave, int rank, Set<MojmirSlave.State> finalStates) {
+        TranSet<ProductState<?>> succeedP = new TranSet<>(valuationSetFactory);
+        for (ProductState<?> ps : getStates()) {
             succeedP.addAll(ps, ps.getSucceedTransitions(slave.mojmir, rank, finalStates));
         }
         return succeedP;
     }
 
-    protected TranSet<Product.ProductState> getBuyProductTransitions(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank) {
-        TranSet<Product.ProductState> buyP = new TranSet<>(valuationSetFactory);
-        for (Product.ProductState ps : getStates()) {
-            RabinSlave.State rs = ps.secondaryStates.get(slave.mojmir.label);
-            if (rs != null) { // relevant slave
-                buyP.addAll(ps, ps.getBuyTransitions(slave.mojmir, rank, finalStates));
-            }
+    @Override
+    public final void toHOABody(HOAConsumerExtended hoa) {
+        for (ProductState<?> s : getStates()) {
+            hoa.addState(s);
+            getSuccessors(s).forEach((k, v) -> hoa.addEdge(v, k.successor));
+            toHOABodyEdge(s, hoa);
+            hoa.stateDone();
         }
-
-        return buyP;
     }
 
-    Tuple<TranSet<Product.ProductState>, TranSet<Product.ProductState>> createRabinPair(RabinSlave slave, Set<State> finalStates, int rank) {
-        TranSet<ProductState> failP = getFailingProductTransitions(slave, finalStates);
-        TranSet<ProductState> succeedP = getSucceedingProductTransitions(slave, rank, finalStates);
-        TranSet<ProductState> buyP = getBuyProductTransitions(slave, finalStates, rank);
-        failP.addAll(buyP);
-        return new Tuple<>(failP, succeedP);
+    @Override
+    public void toHOA(HOAConsumer ho, BiMap<String, Integer> aliases) {
+        HOAConsumerExtended hoa = new HOAConsumerGeneralisedRabin<>(ho, valuationSetFactory, aliases, initialState, acceptance, size());
+        toHOABody(hoa);
+        hoa.done();
     }
 
-    public class ProductState extends AbstractProductState<Master.State, GOperator, RabinSlave.State, ProductState> implements AutomatonState<ProductState> {
+    /**
+     * This method is important, because currently the acceptance is computed
+     * after the product is constructed.
+     */
+    protected void setAcceptance(GeneralisedRabinAcceptance<ProductState<?>> acc) {
+        this.acceptance = acc;
+    }
 
-        private ProductState(Master.State primaryState, ImmutableMap<GOperator, RabinSlave.State> secondaryStates) {
+    public abstract class ProductState<S extends AbstractSelfProductSlave<S>.State> extends AbstractProductState<Master.State, ModalOperator, S, ProductState<S>>
+    implements AutomatonState<ProductState<S>> {
+
+        protected ProductState(Master.State primaryState, ImmutableMap<ModalOperator, S> secondaryStates) {
             super(primaryState, secondaryStates);
         }
 
-        private ProductState(Master.State primaryState, Collection<GOperator> keys, Function<GOperator, RabinSlave.State> constructor) {
+        public abstract ValuationSet getSucceedTransitions(MojmirSlave mojmir, int rank, Set<State> finalStates);
+
+        public TranSet<ProductState<?>> getFailTransitions(MojmirSlave mojmir, Set<State> finalStates) {
+            TranSet<ProductState<?>> fail = new TranSet<>(valuationSetFactory);
+            S rs = secondaryStates.get(mojmir.label);
+            if (rs != null) { // relevant slave
+                for (MojmirSlave.State fs : rs.keySet()) {
+                    fail.addAll(this, fs.getFailingMojmirTransitions(finalStates));
+                }
+            }
+            return fail;
+        }
+
+        protected ProductState(Master.State primaryState, Collection<ModalOperator> keys, Function<ModalOperator, S> constructor) {
             super(primaryState, keys, constructor);
         }
 
@@ -131,33 +157,27 @@ public class Product extends Automaton<Product.ProductState, GeneralisedRabinAcc
         }
 
         @Override
-        protected Map<GOperator, RabinSlave> getSecondaryAutomata() {
-            return secondaryAutomata;
-        }
-
-        @Override
-        protected Set<GOperator> relevantSecondary(Master.State primaryState) {
+        protected Set<ModalOperator> relevantSecondary(Master.State primaryState) {
             return relevantSecondarySlaves(primaryState);
         }
 
-        @Override
-        protected ProductState constructState(Master.State primaryState, ImmutableMap<GOperator, RabinSlave.State> secondaryStates) {
-            return new ProductState(primaryState, secondaryStates);
+        public S getSecondaryState(ModalOperator key) {
+            return this.secondaryStates.get(key);
         }
 
         @Override
-        protected Iterable<Tuple<Map<GOperator, RabinSlave.State>, ValuationSet>> secondaryJointMove(Set<GOperator> keys, ValuationSet maxVs) {
-            ArrayDeque<Tuple<Map<GOperator, RabinSlave.State>, ValuationSet>> result = new ArrayDeque<>();
+        protected Iterable<Tuple<Map<ModalOperator, S>, ValuationSet>> secondaryJointMove(Set<ModalOperator> keys, ValuationSet maxVs) {
+            ArrayDeque<Tuple<Map<ModalOperator, S>, ValuationSet>> result = new ArrayDeque<>();
             if (this.primaryState instanceof SuspendedMaster.State) {
                 SuspendedMaster.State mine = (SuspendedMaster.State) this.primaryState;
                 if (mine.slavesSuspended) {
-                    Map<Master.State, ValuationSet> primarySuccessors = getPrimaryAutomaton().getSuccessors(primaryState);
+                    Map<Edge<Master.State>, ValuationSet> primarySuccessors = getPrimaryAutomaton().getSuccessors(primaryState);
 
-                    for (Map.Entry<Master.State, ValuationSet> entry1 : primarySuccessors.entrySet()) {
-                        Map<GOperator, RabinSlave.State> map = new HashMap<>();
-                        if (!((SuspendedMaster.State) entry1.getKey()).slavesSuspended) {
-                            for (GOperator g : relevantSecondary(entry1.getKey())) {
-                                map.put(g, secondaryAutomata.get(g).getInitialState());
+                    for (Map.Entry<Edge<Master.State>, ValuationSet> entry1 : primarySuccessors.entrySet()) {
+                        Map<ModalOperator, S> map = new HashMap<>();
+                        if (!((SuspendedMaster.State) entry1.getKey().successor).slavesSuspended) {
+                            for (ModalOperator g : relevantSecondary(entry1.getKey().successor)) {
+                                map.put(g, getSecondaryAutomata().get(g).getInitialState());
                             }
                         }
                         ValuationSet valu = entry1.getValue().intersect(maxVs);
@@ -170,40 +190,6 @@ public class Product extends Automaton<Product.ProductState, GeneralisedRabinAcc
             }
 
             return super.secondaryJointMove(keys, maxVs);
-        }
-
-        private TranSet<ProductState> getFailTransitions(MojmirSlave mojmir, Set<MojmirSlave.State> finalStates) {
-            TranSet<ProductState> fail = new TranSet<>(valuationSetFactory);
-            RabinSlave.State rs = secondaryStates.get(mojmir.label);
-            if (rs != null) { // relevant slave
-                for (MojmirSlave.State fs : rs.keySet()) {
-                    fail.addAll(this, fs.getFailingMojmirTransitions(finalStates));
-                }
-            }
-            return fail;
-        }
-
-        private ValuationSet getSucceedTransitions(MojmirSlave mojmir, int rank, Set<MojmirSlave.State> finalStates) {
-            ValuationSet succeed = valuationSetFactory.createEmptyValuationSet();
-            RabinSlave.State rs = secondaryStates.get(mojmir.label);
-            if (rs != null) { // relevant slave
-                for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : rs.entrySet()) {
-                    if (stateIntegerEntry.getValue() == rank) {
-                        succeed.addAll(stateIntegerEntry.getKey().getSucceedMojmirTransitions(finalStates));
-                    }
-                }
-            }
-
-            return succeed;
-        }
-
-        private ValuationSet getBuyTransitions(MojmirSlave mojmir, int rank, Set<MojmirSlave.State> finalStates) {
-            ValuationSet buy = valuationSetFactory.createEmptyValuationSet();
-            RabinSlave.State rs = secondaryStates.get(mojmir.label);
-            if (rs != null) { // relevant slave
-                buy.addAll(rs.getBuyTrans(rank, finalStates));
-            }
-            return buy;
         }
     }
 }

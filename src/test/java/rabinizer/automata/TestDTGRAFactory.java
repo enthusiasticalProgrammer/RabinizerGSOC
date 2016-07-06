@@ -19,8 +19,9 @@ public class TestDTGRAFactory {
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
         ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula);
 
-        DTGRA dtgra = DTGRAFactory.constructDTGRA(formula, factory, val, AutomatonClassTest.standard);
-        assertTrue(dtgra.acceptance.acceptanceCondition.stream().allMatch(pair -> pair.right.stream().allMatch(p -> !p.isEmpty())));
+        DTGRAFactory automatonFactory = new DTGRAFactory(formula, factory, val, AutomatonClassTest.standard);
+        Product dtgra = automatonFactory.constructAutomaton();
+        assertTrue(dtgra.getAcceptance().acceptanceCondition.stream().allMatch(pair -> pair.right.stream().allMatch(p -> !p.isEmpty())));
     }
 
 }

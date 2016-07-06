@@ -17,74 +17,48 @@
 
 package rabinizer.automata;
 
-import omega_automaton.Automaton;
-import omega_automaton.AutomatonState;
-import omega_automaton.acceptance.AllAcceptance;
+import omega_automaton.Edge;
 import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.Main;
 
 import java.util.*;
 
-public class RabinSlave extends Automaton<RabinSlave.State, AllAcceptance> {
-
-    protected final MojmirSlave mojmir;
+public final class RabinSlave extends AbstractSelfProductSlave<RabinSlave.State> {
 
     public RabinSlave(MojmirSlave mojmir, ValuationSetFactory factory) {
-        super(factory);
-        this.mojmir = mojmir;
+        super(mojmir, factory);
     }
 
     public void optimizeInitialState() {
         Main.verboseln("Optimizing initial states");
-        while (hasSuccessors(initialState) && transitions.values().stream().allMatch(map -> !map.containsKey(initialState))) {
+        while (hasSuccessors(initialState)
+                && transitions.values().stream().allMatch(map -> !map.keySet().stream().map(edge -> edge.successor).anyMatch(state -> state.equals(initialState)))) {
             State oldInit = initialState;
-            initialState = getSuccessor(oldInit, new BitSet());
+            initialState = getSuccessor(oldInit, new BitSet()).successor;
             transitions.remove(oldInit);
         }
     }
 
     @Override
-    protected State generateInitialState() {
-        State init = new State();
-        init.put(mojmir.getInitialState(), 1);
-        return init;
+    protected State generateState(Map<MojmirSlave.State, Integer> map) {
+        State s = new State();
+        map.forEach((a, b) -> s.put(a, b));
+        return s;
     }
 
-    public class State extends HashMap<MojmirSlave.State, Integer> implements AutomatonState<State> {
-        private static final long serialVersionUID = 1L;
-
+    public class State extends AbstractSelfProductSlave<State>.State
+    {
         @Override
-        public String toString() {
-            String result = "";
-            for (MojmirSlave.State f : keySet()) {
-                result += " " + f + "=" + get(f);
-            }
-            return result;
-        }
-
-        @Override
-        public BitSet getSensitiveAlphabet() {
-            BitSet alphabet = new BitSet();
-            this.forEach((state, rank) -> alphabet.or(state.getSensitiveAlphabet()));
-            return alphabet;
-        }
-
-        @Override
-        public ValuationSetFactory getFactory() {
-            return valuationSetFactory;
-        }
-
-        @Override
-        public State getSuccessor(BitSet valuation) {
+        public Edge<State> getSuccessor(BitSet valuation) {
             State succ = new State();
 
             // move tokens, keeping the lowest only
             for (MojmirSlave.State currMojmir : keySet()) {
-                MojmirSlave.State succMojmir = currMojmir.getSuccessor(valuation);
-                if (!mojmir.isSink(succMojmir)) {
-                    if (((succ.get(succMojmir) == null) || (succ.get(succMojmir) > get(currMojmir)))) {
-                        succ.put(succMojmir, get(currMojmir));
+                Edge<MojmirSlave.State> succMojmir = currMojmir.getSuccessor(valuation);
+                if (!mojmir.isSink(succMojmir.successor)) {
+                    if (((succ.get(succMojmir.successor) == null) || (succ.get(succMojmir.successor) > get(currMojmir)))) {
+                        succ.put(succMojmir.successor, get(currMojmir));
                     }
                 }
             }
@@ -108,7 +82,8 @@ public class RabinSlave extends Automaton<RabinSlave.State, AllAcceptance> {
                 succ.put(mojmir.getInitialState(), succ.keySet().size() + 1);
             }
 
-            return succ;
+            return new Edge<>(succ, new BitSet(0));
+
         }
 
         protected ValuationSet getBuyTrans(int rank, Set<MojmirSlave.State> finalStates) {
