@@ -80,51 +80,6 @@ public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, ProductRa
         }
     }
 
-    @Override
-    public void removeRedundancy() {
-        List<TranSet<ProductState<?>>> copy;
-
-        product.getAcceptance().acceptanceCondition.removeIf(pair -> product.containsAllTransitions(pair.left));
-
-        product.getAcceptance().acceptanceCondition.forEach(pair -> pair.right.forEach(inf -> inf.removeAll(pair.left)));
-
-        product.getAcceptance().acceptanceCondition.removeIf(pair -> pair.right.stream().anyMatch(TranSet::isEmpty));
-
-        product.getAcceptance().acceptanceCondition.forEach(pair -> pair.right.removeIf(i -> product.containsAllTransitions(i.union(pair.left))));
-
-        Collection<Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>>> temp = new ArrayList<>();
-        for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> pair : product.getAcceptance().acceptanceCondition) {
-            copy = new ArrayList<>(pair.right);
-            for (TranSet<ProductState<?>> i : pair.right) {
-                for (TranSet<ProductState<?>> j : pair.right) {
-                    if (!j.equals(i) && i.containsAll(j)) {
-                        copy.remove(i);
-                        break;
-                    }
-                }
-            }
-            temp.add(new Tuple<>(pair.left, copy));
-        }
-        product.getAcceptance().acceptanceCondition.clear();
-        product.getAcceptance().acceptanceCondition.addAll(temp);
-
-        Collection<Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>>> toRemove = new HashSet<>();
-        for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> pair1 : product.getAcceptance().acceptanceCondition) {
-            for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> pair2 : product.getAcceptance().acceptanceCondition) {
-                if (pair1.equals(pair2)) {
-                    continue;
-                }
-
-                if (implies(pair2, pair1) && !toRemove.contains(pair1)) {
-                    toRemove.add(pair2);
-                    break;
-                }
-            }
-        }
-
-        product.getAcceptance().acceptanceCondition.removeAll(toRemove);
-    }
-
     public void removeRedundancyLightAfterEmptinessCheck() {
         Collection<Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>>> toRemove = new HashSet<>();
         for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> pair : product.getAcceptance().acceptanceCondition) {
@@ -141,20 +96,13 @@ public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, ProductRa
                     continue;
                 }
 
-                if (implies(pair2, pair1) && !toRemove.contains(pair1)) {
+                if (product.getAcceptance().implies(pair2, pair1) && !toRemove.contains(pair1)) {
                     toRemove.add(pair2);
                     break;
                 }
             }
         }
         product.getAcceptance().acceptanceCondition.removeAll(toRemove);
-    }
-
-    /**
-     * checks if premise implies conclusion (as acceptance pair)
-     */
-    private boolean implies(Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> premisse, Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> conclusion) {
-        return premisse.left.containsAll(conclusion.left) && conclusion.right.stream().allMatch(inf2 -> premisse.right.stream().anyMatch(inf2::containsAll));
     }
 
     @Override
