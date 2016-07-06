@@ -1,19 +1,24 @@
 package rabinizer.automata;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import jhoafparser.consumer.HOAConsumerPrint;
 import ltl.Formula;
 import ltl.ModalOperator;
 import ltl.equivalence.EquivalenceClassFactory;
+import omega_automaton.collections.TranSet;
+import omega_automaton.collections.Tuple;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.Main;
 import rabinizer.frequencyLTL.SlaveSubformulaVisitor;
 import rabinizer.automata.Optimisation;
+import rabinizer.automata.Product.ProductState;
 
 /**
  * This class contains the behaviour, which belongs to both constructions:
@@ -74,7 +79,54 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
 
     }
 
-    protected abstract void removeRedundancy();
+    protected final void removeRedundancy() {
+        List<TranSet<ProductState<?>>> copy;
+        Collection<Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>>> toRemove = new HashSet<>();
+
+        product.getAcceptance().acceptanceCondition.stream().filter(pair -> product.containsAllTransitions(pair.left)).forEach(s -> toRemove.add(s));
+        product.getAcceptance().deleteTheFollowingAcceptanceConditions(toRemove);
+        toRemove.clear();
+
+        product.getAcceptance().acceptanceCondition.forEach(pair -> pair.right.forEach(inf -> inf.removeAll(pair.left)));
+
+        product.getAcceptance().acceptanceCondition.stream().filter(pair -> pair.right.stream().anyMatch(TranSet::isEmpty)).forEach(s -> toRemove.add(s));
+        product.getAcceptance().deleteTheFollowingAcceptanceConditions(toRemove);
+        toRemove.clear();
+
+        product.getAcceptance().acceptanceCondition.forEach(pair -> pair.right.removeIf(i -> product.containsAllTransitions(i.union(pair.left))));
+
+        Collection<Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>>> temp = new ArrayList<>();
+        for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> pair : product.getAcceptance().acceptanceCondition) {
+            copy = new ArrayList<>(pair.right);
+            for (TranSet<ProductState<?>> i : pair.right) {
+                for (TranSet<ProductState<?>> j : pair.right) {
+                    if (!j.equals(i) && i.containsAll(j)) {
+                        copy.remove(i);
+                        break;
+                    }
+                }
+            }
+            temp.add(new Tuple<>(pair.left, copy));
+        }
+        product.getAcceptance().acceptanceCondition.clear();
+        product.getAcceptance().acceptanceCondition.addAll(temp);
+
+        for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> pair1 : product.getAcceptance().acceptanceCondition) {
+            for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> pair2 : product.getAcceptance().acceptanceCondition) {
+                if (pair1.equals(pair2)) {
+                    continue;
+                }
+
+                if (product.getAcceptance().implies(pair2, pair1) && !toRemove.contains(pair1)) {
+                    toRemove.add(pair2);
+                    break;
+                }
+            }
+        }
+
+        product.getAcceptance().deleteTheFollowingAcceptanceConditions(toRemove);
+    }
+
 
     protected abstract P obtainProduct(Master master, Map<ModalOperator, T> slaves);
 

@@ -11,7 +11,6 @@ import java.util.Set;
 
 import jhoafparser.ast.AtomAcceptance;
 import jhoafparser.ast.BooleanExpression;
-import omega_automaton.Automaton;
 import omega_automaton.acceptance.GeneralisedRabinAcceptance;
 import omega_automaton.acceptance.OmegaAcceptance;
 import omega_automaton.collections.TranSet;
@@ -96,5 +95,23 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
             }
         }
         return result;
+    }
+
+    @Override
+    public void deleteTheFollowingAcceptanceConditions(Collection<Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>>> toRemove) {
+        toRemove.stream().forEach(pair -> {
+            while (acceptanceCondition.indexOf(pair) != -1) {
+                int offset = acceptanceCondition.indexOf(pair);
+                acceptanceCondition.remove(offset);
+                acceptanceMDP.remove(offset);
+            }
+        });
+    }
+
+    @Override
+    public boolean implies(Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> premisse, Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> conclusion) {
+        int offsetPremisse = acceptanceCondition.indexOf(premisse);
+        int offsetConclusion = acceptanceCondition.indexOf(conclusion);
+        return super.implies(premisse, conclusion) && acceptanceMDP.get(offsetPremisse).containsAll(acceptanceMDP.get(offsetConclusion));
     }
 }

@@ -105,9 +105,4 @@ public class DTGRMAFactory extends AbstractAutomatonFactory<FrequencySelfProduct
     protected FrequencySelfProductSlave obtainSelfProductSlave(MojmirSlave mSlave) {
         return new FrequencySelfProductSlave(mSlave, valuationSetFactory);
     }
-
-    @Override
-    protected void removeRedundancy() {
-        // This optimisation is not yet implemented
-    }
 }
