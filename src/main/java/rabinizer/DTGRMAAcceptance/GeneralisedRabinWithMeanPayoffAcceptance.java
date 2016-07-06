@@ -98,7 +98,7 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
     }
 
     @Override
-    public void deleteTheFollowingAcceptanceConditions(Collection<Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>>> toRemove) {
+    public void remove(Collection<Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>>> toRemove) {
         toRemove.stream().forEach(pair -> {
             while (acceptanceCondition.indexOf(pair) != -1) {
                 int offset = acceptanceCondition.indexOf(pair);

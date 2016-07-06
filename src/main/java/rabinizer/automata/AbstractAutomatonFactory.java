@@ -84,13 +84,13 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
         Collection<Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>>> toRemove = new HashSet<>();
 
         product.getAcceptance().acceptanceCondition.stream().filter(pair -> product.containsAllTransitions(pair.left)).forEach(s -> toRemove.add(s));
-        product.getAcceptance().deleteTheFollowingAcceptanceConditions(toRemove);
+        product.getAcceptance().remove(toRemove);
         toRemove.clear();
 
         product.getAcceptance().acceptanceCondition.forEach(pair -> pair.right.forEach(inf -> inf.removeAll(pair.left)));
 
         product.getAcceptance().acceptanceCondition.stream().filter(pair -> pair.right.stream().anyMatch(TranSet::isEmpty)).forEach(s -> toRemove.add(s));
-        product.getAcceptance().deleteTheFollowingAcceptanceConditions(toRemove);
+        product.getAcceptance().remove(toRemove);
         toRemove.clear();
 
         product.getAcceptance().acceptanceCondition.forEach(pair -> pair.right.removeIf(i -> product.containsAllTransitions(i.union(pair.left))));
@@ -124,7 +124,7 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
             }
         }
 
-        product.getAcceptance().deleteTheFollowingAcceptanceConditions(toRemove);
+        product.getAcceptance().remove(toRemove);
     }
 
 
