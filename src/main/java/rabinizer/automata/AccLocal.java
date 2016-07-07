@@ -18,8 +18,13 @@
 package rabinizer.automata;
 
 import com.google.common.collect.Sets;
-
-import ltl.Collections3;
+import ltl.Conjunction;
+import ltl.Formula;
+import ltl.GOperator;
+import ltl.ModalOperator;
+import ltl.equivalence.EquivalenceClass;
+import ltl.equivalence.EquivalenceClassFactory;
+import omega_automaton.collections.Collections3;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.automata.MojmirSlave.State;
@@ -27,13 +32,6 @@ import rabinizer.automata.Product.ProductState;
 import rabinizer.frequencyLTL.FOperatorForMojmir;
 import rabinizer.frequencyLTL.SlaveSubformulaVisitor;
 import rabinizer.frequencyLTL.TopMostOperatorVisitor;
-import ltl.Conjunction;
-import ltl.Formula;
-import ltl.GOperator;
-import ltl.ModalOperator;
-import ltl.SkeletonVisitor;
-import ltl.equivalence.EquivalenceClass;
-import ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.*;
 

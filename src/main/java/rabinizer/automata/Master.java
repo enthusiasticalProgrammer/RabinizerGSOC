@@ -17,13 +17,14 @@
 
 package rabinizer.automata;
 
-import omega_automaton.Automaton;
-import omega_automaton.AutomatonState;
-import omega_automaton.acceptance.AllAcceptance;
-import omega_automaton.collections.valuationset.ValuationSetFactory;
 import ltl.Formula;
 import ltl.equivalence.EquivalenceClass;
 import ltl.equivalence.EquivalenceClassFactory;
+import omega_automaton.Automaton;
+import omega_automaton.AutomatonState;
+import omega_automaton.Edge;
+import omega_automaton.acceptance.AllAcceptance;
+import omega_automaton.collections.valuationset.ValuationSetFactory;
 
 import javax.annotation.Nullable;
 import java.util.BitSet;
