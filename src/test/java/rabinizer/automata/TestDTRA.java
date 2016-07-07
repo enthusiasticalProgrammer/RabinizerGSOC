@@ -16,7 +16,7 @@ public class TestDTRA {
         Formula formula = Util.createFormula("true");
 
         EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(0);
 
         DTGRAFactory automatonFactory = new DTGRAFactory(formula, equivalenceClassFactory, valuationSetFactory, AutomatonClassTest.standard);
         Product dtgra = automatonFactory.constructAutomaton();
