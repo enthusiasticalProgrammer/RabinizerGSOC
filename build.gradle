@@ -21,13 +21,6 @@ apply plugin: 'application'
 version = '3.5'
 mainClassName = 'rabinizer.exec.Main'
 
-jar {
-    manifest {
-        attributes 'Implementation-Title': 'Rabinizer',
-                   'Implementation-Version': version
-    }
-}
-
 repositories {
     maven {url 'https://www7.in.tum.de/~sickert/maven/'}
     mavenCentral()
