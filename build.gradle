@@ -18,7 +18,7 @@
 apply plugin: 'java'
 apply plugin: 'application'
 
-version = '3.2'
+version = '3.5'
 mainClassName = 'rabinizer.exec.Main'
 
 jar {
@@ -38,7 +38,8 @@ dependencies {
     compile 'com.google.guava:guava:19.0'
     compile 'com.google.code.findbugs:jsr305:3.0.1'
     compile 'it.unimi.dsi:fastutil:7.0.12'
-    compile 'de.tum.in:ltl-lib:0.0.1'
+    compile 'de.tum.in:ltl-lib:0.0.7'
+    compile 'de.tum.in:omega-automaton-lib:0.0.7'
     compile files('lib/jhoafparser-1.1.1.jar')
     testCompile 'junit:junit:4+'
     runtime 'jdd:jdd:107-lite'
