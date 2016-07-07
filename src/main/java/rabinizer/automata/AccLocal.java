@@ -30,6 +30,7 @@ import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.automata.MojmirSlave.State;
 import rabinizer.automata.Product.ProductState;
 import rabinizer.frequencyLTL.FOperatorForMojmir;
+import rabinizer.frequencyLTL.SkeletonVisitor;
 import rabinizer.frequencyLTL.SlaveSubformulaVisitor;
 import rabinizer.frequencyLTL.TopMostOperatorVisitor;
 
@@ -73,7 +74,7 @@ abstract class AccLocal<AccMasterInput, AccMasterOutput, AccSlaves, P extends Pr
         Set<Set<ModalOperator>> gSets;
 
         if (optimisations.contains(Optimisation.SKELETON)) {
-            gSets = getOverallFormula().accept(SkeletonVisitor.getInstance(SkeletonVisitor.SkeletonApproximation.LOWER_BOUND));
+            gSets = getOverallFormula().accept(new SkeletonVisitor());
         } else {
             gSets = Sets.powerSet(getOverallFormula().accept(new SlaveSubformulaVisitor()));
         }
