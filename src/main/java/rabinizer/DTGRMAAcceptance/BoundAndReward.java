@@ -3,6 +3,7 @@ package rabinizer.DTGRMAAcceptance;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -108,5 +109,20 @@ public class BoundAndReward {
     public Set<Entry<Integer, TranSet<ProductState<?>>>> relevantEntries() {
         HashMap<Integer, TranSet<Product.ProductState<?>>> result = new HashMap<>(reward);
         return result.entrySet();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(GOp, reward);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof BoundAndReward) {
+            BoundAndReward that = (BoundAndReward) obj;
+            return Objects.equals(this.GOp, that.GOp) && Objects.equals(this.reward, that.reward);
+        }
+        return false;
+
     }
 }

@@ -19,35 +19,37 @@ package rabinizer.automata;
 
 import omega_automaton.Automaton;
 import omega_automaton.AutomatonState;
+import omega_automaton.Edge;
+import omega_automaton.acceptance.GeneralisedRabinAcceptance;
 import omega_automaton.acceptance.RabinAcceptance;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.Tuple;
 import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
-import omega_automaton.output.HOAConsumerExtended;
-import omega_automaton.output.HOAConsumerGeneralisedRabin;
 import rabinizer.automata.Product.ProductState;
 
 import javax.annotation.Nullable;
-
-import com.google.common.collect.BiMap;
-
-import jhoafparser.consumer.HOAConsumer;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA.ProductDegenState>> {
 
-    private final DTGRA dtgra;
+    private static BitSet standardBitSet = new BitSet(0);
 
-    public DTRA(DTGRA dtgra) {
-        super(dtgra.valuationSetFactory);
+    private final Product dtgra;
+
+    public DTRA(Product dtgra) {
+        super(dtgra.getFactory());
+        if (!(dtgra.getAcceptance() instanceof GeneralisedRabinAcceptance<?>)) {
+            throw new IllegalArgumentException();
+        }
+        GeneralisedRabinAcceptance<ProductState<?>> acc = dtgra.getAcceptance();
         this.dtgra = dtgra;
         generate();
 
         int i = 0;
-        for (Tuple<TranSet<ProductState>, List<TranSet<ProductState>>> grp : dtgra.acceptance.acceptanceCondition) {
+        for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> grp : acc.acceptanceCondition) {
             TranSet<ProductDegenState> fin = new TranSet<>(valuationSetFactory);
             TranSet<ProductDegenState> inf = new TranSet<>(valuationSetFactory);
 
@@ -57,7 +59,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
                     fin.addAll(s, vsFin);
                 }
 
-                if (s.awaitedIndices[i] == grp.infs.size()) {
+                if (s.awaitedIndices[i] == grp.right.size()) {
                     inf.addAll(s, valuationSetFactory.createUniverseValuationSet());
                 }
             }
@@ -68,22 +70,17 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
     }
 
     @Override
-    protected HOAConsumerExtended getHOAConsumer(HOAConsumer ho, BiMap<String, Integer> aliases) {
-        return new HOAConsumerGeneralisedRabin(ho, valuationSetFactory, aliases, initialState, acceptance, size());
-    }
-
-    @Override
     protected ProductDegenState generateInitialState() {
-        return new ProductDegenState(dtgra.getInitialState(), new int[dtgra.acceptance.acceptanceCondition.size()]);
+        return new ProductDegenState(dtgra.getInitialState(), new int[dtgra.getAcceptance().acceptanceCondition.size()]);
     }
 
     public class ProductDegenState implements AutomatonState<ProductDegenState> {
 
-        public final Product.ProductState productState;
+        public final ProductState<?> productState;
         public final int[] awaitedIndices;
 
-        public ProductDegenState(Product.ProductState ps, int... awaitedIndices) {
-            this.productState = ps;
+        public ProductDegenState(ProductState<?> automatonState, int... awaitedIndices) {
+            this.productState = automatonState;
             this.awaitedIndices = awaitedIndices;
         }
 
@@ -126,7 +123,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
                 i++;
             }
 
-            return new ProductDegenState(successor, awaitedIndices);
+            return new Edge<>(new ProductDegenState(successor.successor, awaitedIndices), standardBitSet);
         }
 
         @Override
