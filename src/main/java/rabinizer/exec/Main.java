@@ -23,9 +23,12 @@ import jhoafparser.consumer.HOAConsumerPrint;
 import jhoafparser.consumer.HOAIntermediateStoreAndManipulate;
 import jhoafparser.transformations.ToStateAcceptance;
 import rabinizer.automata.*;
+import rabinizer.exec.CLIParser.AutomatonType;
 import omega_automaton.Automaton;
+import omega_automaton.collections.valuationset.BDDValuationSetFactory;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import ltl.Formula;
+import ltl.Literal;
 import ltl.equivalence.EquivalenceClassFactory;
 import ltl.parser.ParseException;
 import ltl.simplifier.Simplifier;
@@ -110,7 +113,8 @@ public class Main {
         nonsilent("Formula simplified:" + inputFormula);
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(backend, inputFormula);
-        ValuationSetFactory valuationSetFactory = omega_automaton.collections.valuationset.FactoryRegistry.createValuationSetFactory(inputFormula);
+
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(mapping.values().size());
 
         AbstractAutomatonFactory<?, ?> automataFactory;
         if (type == AutomatonType.MDP) {

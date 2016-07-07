@@ -44,7 +44,7 @@ public class AutomatonClassTest {
         Formula f4 = new GOperator(f3);
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(f4);
-        ValuationSetFactory val = omega_automaton.collections.valuationset.FactoryRegistry.createValuationSetFactory(f4);
+        ValuationSetFactory val = new BDDValuationSetFactory(1);
 
         Master m = new Master(f4, factory, val, Collections.emptySet());
         assertEquals(f4, m.generateInitialState().getClazz().getRepresentative());
@@ -57,9 +57,8 @@ public class AutomatonClassTest {
     public void testDTGRARawConstructor() {
         Formula formula = Util.createFormula("(p1) U (X((G(F(G(p2)))) & (F(X(X(G(p2)))))))");
 
-        EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry
-                .createEquivalenceClassFactory(formula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(formula);
+        EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(2);
 
         DTGRAFactory automatonFactory = new DTGRAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         Product dtgra = automatonFactory.constructAutomaton();
@@ -71,7 +70,7 @@ public class AutomatonClassTest {
         Formula formula = Util.createFormula("(p1&(p2|p3))");
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory val = new BDDValuationSetFactory(3);
 
         DTGRAFactory automatonFactory = new DTGRAFactory(formula, factory, val, standardWithEmpty);
         Product dtgra = automatonFactory.constructAutomaton();
@@ -84,7 +83,7 @@ public class AutomatonClassTest {
         Formula formula = Util.createFormula("(X a) & (X X a) & (X X X a) & (X X X X a)");
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory val = new BDDValuationSetFactory(1);
 
         DTGRAFactory automatonFactory = new DTGRAFactory(formula, factory, val, standardWithEmpty);
         Product dtgra = automatonFactory.constructAutomaton();
@@ -98,7 +97,7 @@ public class AutomatonClassTest {
         Formula formula = Util.createFormula("(p1&(p2|p3))");
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory val = new BDDValuationSetFactory(3);
 
         DTGRAFactory automatonFactory = new DTGRAFactory(formula, factory, val, standardWithEmpty);
         Product dtgra = automatonFactory.constructAutomaton();
@@ -111,7 +110,7 @@ public class AutomatonClassTest {
         Formula formula = Util.createFormula("(X a) & (X X a) & (X X X a) & (X X X X a)");
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory val = new BDDValuationSetFactory(1);
 
         DTGRAFactory automatonFactory = new DTGRAFactory(formula, factory, val, standardWithEmpty);
         Product dtgra = automatonFactory.constructAutomaton();
@@ -143,7 +142,7 @@ public class AutomatonClassTest {
         Formula formula = Util.createFormula("(X a) & (X X a) & (X X X a) & (X X X X a)");
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory val = new BDDValuationSetFactory(3);
 
         DTGRAFactory automatonFactory = new DTGRAFactory(formula, factory, val, standard);
         Product dtgra = automatonFactory.constructAutomaton();
@@ -156,7 +155,7 @@ public class AutomatonClassTest {
     public void checkIfStatesGetLostInTheDTGRATranslation() {
         Formula f = Util.createFormula("true");
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
+        ValuationSetFactory val = new BDDValuationSetFactory(0);
 
         DTGRAFactory automatonFactory = new DTGRAFactory(f, factory, val, standard);
         Product dtgra = automatonFactory.constructAutomaton();
@@ -167,7 +166,7 @@ public class AutomatonClassTest {
     public void checkIfStatesGetLostInTheDTGRATranslation2() {
         Formula f = Util.createFormula("F a & G b");
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
+        ValuationSetFactory val = new BDDValuationSetFactory(2);
         DTGRAFactory automatonFactory = new DTGRAFactory(f, factory, val, standard);
         Product dtgra = automatonFactory.constructAutomaton();
         assertEquals(2, dtgra.size());
@@ -175,9 +174,9 @@ public class AutomatonClassTest {
 
     @Test
     public void checkNullNotInTransition() {
-        Formula f=Util.createFormula("p0");
+        Formula f = Util.createFormula("p0");
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
+        ValuationSetFactory val = new BDDValuationSetFactory(1);
         DTGRAFactory automatonFactory = new DTGRAFactory(f, factory, val, standard);
         Product dtgra = automatonFactory.constructAutomaton();
         assertFalse(dtgra.getSuccessors(dtgra.getInitialState()).values().contains(null));
@@ -185,9 +184,9 @@ public class AutomatonClassTest {
 
     @Test
     public void checkMissingState() {
-        Formula f=Util.createFormula("p0");
+        Formula f = Util.createFormula("p0");
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
+        ValuationSetFactory val = new BDDValuationSetFactory(1);
         DTGRAFactory automatonFactory = new DTGRAFactory(f, factory, val, standard);
         Product dtgra = automatonFactory.constructAutomaton();
         assertEquals(2, dtgra.size());
@@ -197,7 +196,7 @@ public class AutomatonClassTest {
     public void checkEmptinessCheck() {
         Formula f = Util.createFormula("G(p0)");
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
+        ValuationSetFactory val = new BDDValuationSetFactory(1);
         DTGRAFactory automatonFactory = new DTGRAFactory(f, factory, val, standard);
         Product dtgra = automatonFactory.constructAutomaton();
         assertFalse(EmptinessCheck.checkEmptinessAndMinimiseSCCBasedProduct(dtgra));
@@ -207,7 +206,7 @@ public class AutomatonClassTest {
     public void testRabinSlaveSuccessors() {
         Formula f = Util.createFormula("G(a)");
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
+        ValuationSetFactory val = new BDDValuationSetFactory(1);
         MojmirSlave mSlave = new MojmirSlave((ModalOperator) f, factory, val, EnumSet.of(Optimisation.EAGER));
         mSlave.generate();
 
@@ -220,7 +219,7 @@ public class AutomatonClassTest {
         Formula f = Util.createFormula("G(a)");
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
+        ValuationSetFactory val = new BDDValuationSetFactory(1);
         DTGRAFactory automatonFactory = new DTGRAFactory(f, factory, val, standard);
         Product dtgra = automatonFactory.constructAutomaton();
         assertNotNull(dtgra);
@@ -231,7 +230,7 @@ public class AutomatonClassTest {
         Formula f = Util.createFormula("G(!a | X(X(!a)))");
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
+        ValuationSetFactory val = new BDDValuationSetFactory(1);
         DTGRAFactory automatonFactory = new DTGRAFactory(f, factory, val, standard);
         Product dtgra = automatonFactory.constructAutomaton();
         assertFalse(EmptinessCheck.checkEmptinessAndMinimiseSCCBasedProduct(dtgra));
@@ -242,7 +241,7 @@ public class AutomatonClassTest {
         Formula f = Util.createFormula("G(!a | X(X(!a)))");
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
+        ValuationSetFactory val = new BDDValuationSetFactory(1);
         DTGRAFactory automatonFactory = new DTGRAFactory(f, factory, val, standard);
         Product dtgra = automatonFactory.constructAutomaton();
         assertEquals(1, SCCAnalyser.SCCsStates(dtgra).size());
@@ -253,7 +252,7 @@ public class AutomatonClassTest {
         Formula f = Util.createFormula("(G((X(!(X(p2)))) U (p2)))");
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
+        ValuationSetFactory val = new BDDValuationSetFactory(1);
         DTGRAFactory automatonFactory = new DTGRAFactory(f, factory, val, standard);
         Product dtgra = automatonFactory.constructAutomaton();
         EmptinessCheck.checkEmptinessAndMinimiseSCCBasedProduct(dtgra);
@@ -265,7 +264,7 @@ public class AutomatonClassTest {
         Formula f = Util.createFormula("a | X X(G b & F(G !b))");
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
+        ValuationSetFactory val = new BDDValuationSetFactory(2);
         DTGRAFactory automatonFactory = new DTGRAFactory(f, factory, val, standard);
         Product dtgra = automatonFactory.constructAutomaton();
         EmptinessCheck.checkEmptinessAndMinimiseSCCBasedProduct(dtgra);
@@ -277,7 +276,7 @@ public class AutomatonClassTest {
         Formula f = Util.createFormula("X (G a & F (b U !a))");
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
+        ValuationSetFactory val = new BDDValuationSetFactory(2);
         DTGRAFactory automatonFactory = new DTGRAFactory(f, factory, val, standard);
         Product dtgra = automatonFactory.constructAutomaton();
         assertTrue(EmptinessCheck.checkEmptinessAndMinimiseSCCBasedProduct(dtgra));
@@ -288,7 +287,7 @@ public class AutomatonClassTest {
         Formula f = Util.createFormula("X (F a)");
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
+        ValuationSetFactory val = new BDDValuationSetFactory(1);
         DTGRAFactory automatonFactory = new DTGRAFactory(f, factory, val, standard);
         Product dtgra = automatonFactory.constructAutomaton();
         assertNotNull(dtgra.getFactory());
@@ -299,7 +298,7 @@ public class AutomatonClassTest {
         Formula f = Util.createFormula("true");
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, f);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(f);
+        ValuationSetFactory val = new BDDValuationSetFactory(0);
         DTGRAFactory automatonFactory = new DTGRAFactory(f, factory, val, standardWithEmpty);
         Product dtgra = automatonFactory.constructAutomaton();
         assertNotEquals(0, dtgra.getAcceptance().getAcceptanceSets());
@@ -310,7 +309,7 @@ public class AutomatonClassTest {
         Formula formula = Util.createFormula("G  (a & X a)");
 
         EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(1);
 
         DTGRAFactory automatonFactory = new DTGRAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         ProductRabinizer dtgra = automatonFactory.constructAutomaton();
@@ -329,7 +328,7 @@ public class AutomatonClassTest {
         Formula formula = Util.createFormula("G  (a & X a) | b");
 
         EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(2);
 
         DTGRAFactory automatonFactory = new DTGRAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         ProductRabinizer dtgra = automatonFactory.constructAutomaton();

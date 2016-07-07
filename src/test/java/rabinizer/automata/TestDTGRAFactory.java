@@ -17,7 +17,7 @@ public class TestDTGRAFactory {
         Formula formula = Util.createFormula("G(a | G b)");
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory val = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory val = new BDDValuationSetFactory(2);
 
         DTGRAFactory automatonFactory = new DTGRAFactory(formula, factory, val, AutomatonClassTest.standard);
         Product dtgra = automatonFactory.constructAutomaton();

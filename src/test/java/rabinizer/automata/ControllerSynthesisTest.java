@@ -18,7 +18,7 @@ import jhoafparser.consumer.HOAIntermediateCheckValidity;
 import ltl.Formula;
 import ltl.equivalence.EquivalenceClassFactory;
 import omega_automaton.Edge;
-import omega_automaton.collections.valuationset.FactoryRegistry;
+import omega_automaton.collections.valuationset.BDDValuationSetFactory;
 import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.Util;
@@ -43,7 +43,7 @@ public class ControllerSynthesisTest {
         Formula formula = Util.createFormula("G {inf >= 0.4} a");
 
         EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(1);
 
         DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
@@ -67,7 +67,7 @@ public class ControllerSynthesisTest {
         Formula formula = Util.createFormula("G {inf >= 0.4} a");
 
         EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(1);
 
         DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
@@ -86,7 +86,7 @@ public class ControllerSynthesisTest {
         Formula formula = Util.createFormula("G {inf >= 0.4} a");
 
         EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(1);
 
         DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
@@ -99,7 +99,7 @@ public class ControllerSynthesisTest {
         Formula formula = Util.createFormula("G {inf >= 0.4} a");
 
         EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(1);
 
         DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
@@ -119,7 +119,7 @@ public class ControllerSynthesisTest {
         Formula formula = Util.createFormula("G {inf >= 0.4} a");
 
         EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(1);
 
         DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, Collections.emptySet());
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
@@ -138,7 +138,7 @@ public class ControllerSynthesisTest {
         Formula formula = Util.createFormula("G {inf >= 0.4} a");
 
         EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(1);
 
         DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
@@ -150,7 +150,7 @@ public class ControllerSynthesisTest {
         Formula formula = Util.createFormula("G {sup >= 0.6} (a | X a | X X a)");
 
         EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(1);
 
         DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
@@ -162,7 +162,7 @@ public class ControllerSynthesisTest {
         Formula formula = Util.createFormula("G {sup >= 0.6} (a | X a | X X a)");
 
         EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(1);
 
         DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
@@ -180,7 +180,7 @@ public class ControllerSynthesisTest {
         Formula formula = Util.createFormula("G {sup >= 0.11} ((X b & !a)|(a & X ! a & X X b) )");
 
         EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(2);
 
         DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
@@ -199,7 +199,7 @@ public class ControllerSynthesisTest {
         Formula formula = Util.createFormula("G {sup >= 0.11} ((X b & !a)|(a & X ! a & X X b) )");
 
         EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(2);
 
         DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
@@ -220,7 +220,7 @@ public class ControllerSynthesisTest {
         Formula formula = Util.createFormula("G {sup >= 0.11} ((X b & !a)|(a & X ! a & X X b) )");
 
         EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(2);
 
         DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
@@ -241,7 +241,7 @@ public class ControllerSynthesisTest {
     public void testRewardsAreCorrectWhenMerging() {
         Formula formula = Util.createFormula("G {sup >= 0.11} ((X b & !a)|(a & X ! a & X X b) )");
         EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
-        ValuationSetFactory valuationSetFactory = FactoryRegistry.createValuationSetFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(2);
 
         DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
