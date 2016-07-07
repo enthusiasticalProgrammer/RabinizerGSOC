@@ -287,17 +287,9 @@ public class CLIParser {
 
         if (cmd.hasOption('U')) {
             // prepare for controller synthesis
-            if (autType != AutomatonType.TGR) {
-                if (outputLevel != 0) {
-                    System.out.println(
-                            "Warning: Despite your preferences, we are outputting a transition-based generalised Rabin automaton, because Controller synthesis for MDPs only supports this.");
-                    System.out.println(
-                            "         Note that the output automaton is technically not a transition-based generalised Rabin automaton, but we have nothing better to output, because jhoafparserlibrary does not support DTMGRA");
-                }
-                autType = AutomatonType.TGR;
-            }
+            autType=AutomatonType.MDP;
 
-            optimisations = Collections.singleton(Optimisation.COMPUTE_ACC_CONDITION);
+            optimisations.retainAll(Collections.singleton(Optimisation.COMPUTE_ACC_CONDITION));
             simplification = Simplifier.Strategy.NONE;
             if (outputLevel != 0) {
                 System.out.println("Warning: Optimisations and simplification have been disabled.");
@@ -326,7 +318,7 @@ public class CLIParser {
     }
 
     public enum AutomatonType {
-        TGR, TR, SGR, SR
+        TGR, TR, SGR, SR, MDP
     }
 
     public enum Format {
