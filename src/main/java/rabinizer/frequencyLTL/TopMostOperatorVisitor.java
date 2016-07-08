@@ -3,43 +3,34 @@ package rabinizer.frequencyLTL;
 import java.util.HashSet;
 import java.util.Set;
 
-import ltl.BooleanConstant;
-import ltl.Conjunction;
-import ltl.Disjunction;
-import ltl.FOperator;
-import ltl.Formula;
-import ltl.GOperator;
-import ltl.Literal;
-import ltl.ModalOperator;
-import ltl.UOperator;
+import ltl.*;
 import ltl.visitors.Visitor;
-import ltl.XOperator;
 
-public class TopMostOperatorVisitor implements Visitor<Set<ModalOperator>> {
+public class TopMostOperatorVisitor implements Visitor<Set<UnaryModalOperator>> {
 
     @Override
-    public Set<ModalOperator> defaultAction(Formula formula) {
+    public Set<UnaryModalOperator> defaultAction(Formula formula) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Set<ModalOperator> visit(BooleanConstant b) {
+    public Set<UnaryModalOperator> visit(BooleanConstant b) {
         return new HashSet<>();
     }
 
     @Override
-    public Set<ModalOperator> visit(Conjunction conjunction) {
+    public Set<UnaryModalOperator> visit(Conjunction conjunction) {
         return conjunction.union(f -> f.accept(this));
     }
 
     @Override
-    public Set<ModalOperator> visit(Disjunction disjunction) {
+    public Set<UnaryModalOperator> visit(Disjunction disjunction) {
         return disjunction.union(f -> f.accept(this));
     }
 
     @Override
-    public Set<ModalOperator> visit(FOperator fOperator) {
-        Set<ModalOperator> result = new HashSet<>();
+    public Set<UnaryModalOperator> visit(FOperator fOperator) {
+        Set<UnaryModalOperator> result = new HashSet<>();
         if (fOperator instanceof FOperatorForMojmir) {
             result.add(fOperator);
         } else {
@@ -49,26 +40,26 @@ public class TopMostOperatorVisitor implements Visitor<Set<ModalOperator>> {
     }
 
     @Override
-    public Set<ModalOperator> visit(GOperator gOperator) {
-        Set<ModalOperator> result = new HashSet<>();
+    public Set<UnaryModalOperator> visit(GOperator gOperator) {
+        Set<UnaryModalOperator> result = new HashSet<>();
         result.add(gOperator);
         return result;
     }
 
     @Override
-    public Set<ModalOperator> visit(Literal literal) {
+    public Set<UnaryModalOperator> visit(Literal literal) {
         return new HashSet<>();
     }
 
     @Override
-    public Set<ModalOperator> visit(UOperator uOperator) {
-        Set<ModalOperator> result = uOperator.left.accept(this);
+    public Set<UnaryModalOperator> visit(UOperator uOperator) {
+        Set<UnaryModalOperator> result = uOperator.left.accept(this);
         result.addAll(uOperator.right.accept(this));
         return result;
     }
 
     @Override
-    public Set<ModalOperator> visit(XOperator xOperator) {
+    public Set<UnaryModalOperator> visit(XOperator xOperator) {
         return xOperator.operand.accept(this);
     }
 }

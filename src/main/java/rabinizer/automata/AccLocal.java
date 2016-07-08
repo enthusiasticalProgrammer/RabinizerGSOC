@@ -21,7 +21,7 @@ import com.google.common.collect.Sets;
 import ltl.Conjunction;
 import ltl.Formula;
 import ltl.GOperator;
-import ltl.ModalOperator;
+import ltl.UnaryModalOperator;
 import ltl.equivalence.EquivalenceClass;
 import ltl.equivalence.EquivalenceClassFactory;
 import omega_automaton.collections.Collections3;
@@ -37,7 +37,7 @@ import rabinizer.frequencyLTL.TopMostOperatorVisitor;
 import java.util.*;
 
 /**
- * @param <AccMaster>
+ * @param <AccMasterInput>
  *            AccMaster is always a Map
  *            <AccMasterInput,AccMasterOutput> Therefore it has to be separated
  *            into the two types AccMasterInput and AccMasterOutput
@@ -53,7 +53,7 @@ abstract class AccLocal<AccMasterInput, AccMasterOutput, AccSlaves, P extends Pr
 
     protected final ValuationSetFactory valuationSetFactory;
     protected final EquivalenceClassFactory equivalenceClassFactory;
-    protected final Map<ModalOperator, Set<ModalOperator>> topmostSlaves = new HashMap<>();
+    protected final Map<UnaryModalOperator, Set<UnaryModalOperator>> topmostSlaves = new HashMap<>();
     protected final Collection<Optimisation> optimisations;
     protected final P product;
 
@@ -63,7 +63,7 @@ abstract class AccLocal<AccMasterInput, AccMasterOutput, AccSlaves, P extends Pr
         this.equivalenceClassFactory = equivalenceFactory;
         this.optimisations = opts;
 
-        for (ModalOperator gOperator : getOverallFormula().accept(new SlaveSubformulaVisitor())) {
+        for (UnaryModalOperator gOperator : getOverallFormula().accept(new SlaveSubformulaVisitor())) {
             topmostSlaves.put(gOperator, (gOperator.operand).accept(new TopMostOperatorVisitor()));
         }
     }
@@ -71,7 +71,7 @@ abstract class AccLocal<AccMasterInput, AccMasterOutput, AccSlaves, P extends Pr
     public final Map<AccMasterInput, AccMasterOutput> computeAccMasterOptions() {
         Map<AccMasterInput, AccMasterOutput> result = new HashMap<>();
 
-        Set<Set<ModalOperator>> gSets;
+        Set<Set<UnaryModalOperator>> gSets;
 
         if (optimisations.contains(Optimisation.SKELETON)) {
             gSets = getOverallFormula().accept(new SkeletonVisitor());
@@ -79,7 +79,7 @@ abstract class AccLocal<AccMasterInput, AccMasterOutput, AccSlaves, P extends Pr
             gSets = Sets.powerSet(getOverallFormula().accept(new SlaveSubformulaVisitor()));
         }
 
-        for (Set<ModalOperator> gSet : gSets) {
+        for (Set<UnaryModalOperator> gSet : gSets) {
             computeAccMasterForASingleGSet(gSet, result);
         }
         return result;
@@ -89,23 +89,23 @@ abstract class AccLocal<AccMasterInput, AccMasterOutput, AccSlaves, P extends Pr
      * This method fills up the AccMaster-map for a certain Set of Slave
      * operators which are to be true.
      */
-    protected abstract void computeAccMasterForASingleGSet(Set<ModalOperator> gSet, Map<AccMasterInput, AccMasterOutput> result);
+    protected abstract void computeAccMasterForASingleGSet(Set<UnaryModalOperator> gSet, Map<AccMasterInput, AccMasterOutput> result);
 
-    public final Map<ModalOperator, Map<Set<ModalOperator>, AccSlaves>> getAllSlaveAcceptanceConditions() {
-        Map<ModalOperator, Map<Set<ModalOperator>, AccSlaves>> result = new HashMap<>();
-        for (ModalOperator g : product.getSecondaryAutomata().keySet()) {
+    public final Map<UnaryModalOperator, Map<Set<UnaryModalOperator>, AccSlaves>> getAllSlaveAcceptanceConditions() {
+        Map<UnaryModalOperator, Map<Set<UnaryModalOperator>, AccSlaves>> result = new HashMap<>();
+        for (UnaryModalOperator g : product.getSecondaryAutomata().keySet()) {
             result.put(g, computeAccSlavesOptions(g));
         }
 
         return result;
     }
 
-    private final Map<Set<ModalOperator>, AccSlaves> computeAccSlavesOptions(ModalOperator g) {
-        Map<Set<ModalOperator>, AccSlaves> result = new HashMap<>();
+    private final Map<Set<UnaryModalOperator>, AccSlaves> computeAccSlavesOptions(UnaryModalOperator g) {
+        Map<Set<UnaryModalOperator>, AccSlaves> result = new HashMap<>();
 
-        Set<Set<ModalOperator>> gSets = Sets.powerSet(topmostSlaves.get(g));
+        Set<Set<UnaryModalOperator>> gSets = Sets.powerSet(topmostSlaves.get(g));
 
-        for (Set<ModalOperator> gSet : gSets) {
+        for (Set<UnaryModalOperator> gSet : gSets) {
             Set<MojmirSlave.State> finalStates = new HashSet<>();
             EquivalenceClass gSetClazz = equivalenceClassFactory.createEquivalenceClass(new Conjunction(gSet));
 
@@ -120,7 +120,7 @@ abstract class AccLocal<AccMasterInput, AccMasterOutput, AccSlaves, P extends Pr
         return result;
     }
 
-    protected abstract AccSlaves getSingleSlaveAccCond(ModalOperator g, Set<State> finalStates);
+    protected abstract AccSlaves getSingleSlaveAccCond(UnaryModalOperator g, Set<State> finalStates);
 
     protected final Formula getOverallFormula() {
         return product.primaryAutomaton.getInitialState().getClazz().getRepresentative();
@@ -130,13 +130,13 @@ abstract class AccLocal<AccMasterInput, AccMasterOutput, AccSlaves, P extends Pr
      * A wrapper, which defines a ranking, which acts for
      * AccLocalControllerSynthesis as if it was not there
      */
-    protected final TranSet<ProductState<?>> computeNonAccMasterTransForStateIgoringRankings(Set<ModalOperator> gSet, ProductState<?> ps) {
-        Map<ModalOperator, Integer> ranking = new HashMap<>();
+    protected final TranSet<ProductState<?>> computeNonAccMasterTransForStateIgoringRankings(Set<UnaryModalOperator> gSet, ProductState<?> ps) {
+        Map<UnaryModalOperator, Integer> ranking = new HashMap<>();
         gSet.forEach(g -> ranking.put(g, -1));
         return computeNonAccMasterTransForState(ranking, ps);
     }
 
-    protected final TranSet<ProductState<?>> computeNonAccMasterTransForState(Map<ModalOperator, Integer> ranking, ProductState<?> ps) {
+    protected final TranSet<ProductState<?>> computeNonAccMasterTransForState(Map<UnaryModalOperator, Integer> ranking, ProductState<?> ps) {
         TranSet<ProductState<?>> result = new TranSet<>(valuationSetFactory);
 
         if (optimisations.contains(Optimisation.EAGER)) {
@@ -156,11 +156,11 @@ abstract class AccLocal<AccMasterInput, AccMasterOutput, AccSlaves, P extends Pr
         return result;
     }
 
-    private final boolean slavesEntail(ProductState<?> ps, Map<ModalOperator, Integer> ranking, BitSet valuation, EquivalenceClass consequent) {
+    private final boolean slavesEntail(ProductState<?> ps, Map<UnaryModalOperator, Integer> ranking, BitSet valuation, EquivalenceClass consequent) {
         Collection<Formula> conjunction = new ArrayList<>(3 * ranking.size());
 
-        for (Map.Entry<ModalOperator, Integer> entry : ranking.entrySet()) {
-            ModalOperator G = entry.getKey();
+        for (Map.Entry<UnaryModalOperator, Integer> entry : ranking.entrySet()) {
+            UnaryModalOperator G = entry.getKey();
             int rank = entry.getValue();
 
             conjunction.add(G);

@@ -13,7 +13,7 @@ import com.google.common.collect.Sets;
 
 import ltl.FrequencyG;
 import ltl.GOperator;
-import ltl.ModalOperator;
+import ltl.UnaryModalOperator;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
@@ -22,9 +22,9 @@ import rabinizer.frequencyLTL.FOperatorForMojmir;
 
 public class ProductControllerSynthesis extends Product {
 
-    protected final Map<ModalOperator, FrequencySelfProductSlave> secondaryAutomata;
+    protected final Map<UnaryModalOperator, FrequencySelfProductSlave> secondaryAutomata;
 
-    public ProductControllerSynthesis(Master primaryAutomaton, Map<ModalOperator, FrequencySelfProductSlave> slaves, ValuationSetFactory factory,
+    public ProductControllerSynthesis(Master primaryAutomaton, Map<UnaryModalOperator, FrequencySelfProductSlave> slaves, ValuationSetFactory factory,
             Collection<Optimisation> optimisations) {
         super(primaryAutomaton, factory, optimisations);
         this.secondaryAutomata = slaves;
@@ -36,12 +36,12 @@ public class ProductControllerSynthesis extends Product {
     }
 
     @Override
-    protected Map<ModalOperator, FrequencySelfProductSlave> getSecondaryAutomata() {
+    protected Map<UnaryModalOperator, FrequencySelfProductSlave> getSecondaryAutomata() {
         return secondaryAutomata;
     }
 
     @Override
-    protected Set<ModalOperator> getKeys() {
+    protected Set<UnaryModalOperator> getKeys() {
         return secondaryAutomata.keySet();
     }
 
@@ -67,21 +67,21 @@ public class ProductControllerSynthesis extends Product {
 
     public class State extends ProductState<FrequencySelfProductSlave.State> {
 
-        protected State(Master.State primaryState, Collection<ModalOperator> keys, Function<ModalOperator, FrequencySelfProductSlave.State> constructor) {
+        protected State(Master.State primaryState, Collection<UnaryModalOperator> keys, Function<UnaryModalOperator, FrequencySelfProductSlave.State> constructor) {
             super(primaryState, keys, constructor);
         }
 
-        protected State(Master.State primaryState, ImmutableMap<ModalOperator, FrequencySelfProductSlave.State> secondaryStates) {
+        protected State(Master.State primaryState, ImmutableMap<UnaryModalOperator, FrequencySelfProductSlave.State> secondaryStates) {
             super(primaryState, secondaryStates);
         }
 
         @Override
-        protected Map<ModalOperator, FrequencySelfProductSlave> getSecondaryAutomata() {
+        protected Map<UnaryModalOperator, FrequencySelfProductSlave> getSecondaryAutomata() {
             return secondaryAutomata;
         }
 
         @Override
-        protected State constructState(Master.State primaryState, ImmutableMap<ModalOperator, FrequencySelfProductSlave.State> secondaryStates) {
+        protected State constructState(Master.State primaryState, ImmutableMap<UnaryModalOperator, FrequencySelfProductSlave.State> secondaryStates) {
             return new State(primaryState, secondaryStates);
         }
 

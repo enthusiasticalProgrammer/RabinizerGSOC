@@ -7,7 +7,7 @@ import java.util.function.Function;
 
 import com.google.common.collect.ImmutableMap;
 
-import ltl.ModalOperator;
+import ltl.UnaryModalOperator;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.Tuple;
 import omega_automaton.collections.valuationset.ValuationSet;
@@ -15,9 +15,9 @@ import omega_automaton.collections.valuationset.ValuationSetFactory;
 
 public class ProductRabinizer extends Product {
 
-    protected final Map<ModalOperator, RabinSlave> secondaryAutomata;
+    protected final Map<UnaryModalOperator, RabinSlave> secondaryAutomata;
 
-    public ProductRabinizer(Master primaryAutomaton, Map<ModalOperator, RabinSlave> slaves, ValuationSetFactory factory, Collection<Optimisation> optimisations) {
+    public ProductRabinizer(Master primaryAutomaton, Map<UnaryModalOperator, RabinSlave> slaves, ValuationSetFactory factory, Collection<Optimisation> optimisations) {
         super(primaryAutomaton, factory, optimisations);
         secondaryAutomata = slaves;
     }
@@ -28,12 +28,12 @@ public class ProductRabinizer extends Product {
     }
 
     @Override
-    protected Map<ModalOperator, RabinSlave> getSecondaryAutomata() {
+    protected Map<UnaryModalOperator, RabinSlave> getSecondaryAutomata() {
         return secondaryAutomata;
     }
 
     @Override
-    protected Set<ModalOperator> getKeys() {
+    protected Set<UnaryModalOperator> getKeys() {
         return secondaryAutomata.keySet();
     }
 
@@ -60,11 +60,11 @@ public class ProductRabinizer extends Product {
 
     public class State extends ProductState<RabinSlave.State> {
 
-        protected State(Master.State primaryState, Collection<ModalOperator> keys, Function<ModalOperator, RabinSlave.State> constructor) {
+        protected State(Master.State primaryState, Collection<UnaryModalOperator> keys, Function<UnaryModalOperator, RabinSlave.State> constructor) {
             super(primaryState, keys, constructor);
         }
 
-        protected State(Master.State primaryState, ImmutableMap<ModalOperator, RabinSlave.State> secondaryStates) {
+        protected State(Master.State primaryState, ImmutableMap<UnaryModalOperator, RabinSlave.State> secondaryStates) {
             super(primaryState, secondaryStates);
         }
 
@@ -78,12 +78,12 @@ public class ProductRabinizer extends Product {
         }
 
         @Override
-        protected Map<ModalOperator, RabinSlave> getSecondaryAutomata() {
+        protected Map<UnaryModalOperator, RabinSlave> getSecondaryAutomata() {
             return secondaryAutomata;
         }
 
         @Override
-        protected State constructState(Master.State primaryState, ImmutableMap<ModalOperator, RabinSlave.State> secondaryStates) {
+        protected State constructState(Master.State primaryState, ImmutableMap<UnaryModalOperator, RabinSlave.State> secondaryStates) {
             return new State(primaryState, secondaryStates);
         }
 

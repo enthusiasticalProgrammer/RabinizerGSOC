@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableSet;
 
 import ltl.FrequencyG;
 import ltl.GOperator;
-import ltl.ModalOperator;
+import ltl.UnaryModalOperator;
 import ltl.equivalence.EquivalenceClassFactory;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
@@ -17,8 +17,7 @@ import rabinizer.automata.MojmirSlave.State;
 import rabinizer.automata.Product.ProductState;
 import rabinizer.frequencyLTL.FOperatorForMojmir;
 
-public class AccLocalControllerSynthesis
-extends AccLocal<Set<ModalOperator>, TranSet<Product.ProductState<?>>, Map<TranSet<Product.ProductState<?>>, Integer>, ProductControllerSynthesis> {
+public class AccLocalControllerSynthesis extends AccLocal<Set<UnaryModalOperator>, TranSet<Product.ProductState<?>>, Map<TranSet<Product.ProductState<?>>, Integer>, ProductControllerSynthesis> {
 
     public AccLocalControllerSynthesis(ProductControllerSynthesis product, ValuationSetFactory valuationSetFactory, EquivalenceClassFactory equivalenceFactory,
             Collection<Optimisation> opts) {
@@ -26,7 +25,7 @@ extends AccLocal<Set<ModalOperator>, TranSet<Product.ProductState<?>>, Map<TranS
     }
 
     @Override
-    protected void computeAccMasterForASingleGSet(Set<ModalOperator> gSet, Map<Set<ModalOperator>, TranSet<Product.ProductState<?>>> result) {
+    protected void computeAccMasterForASingleGSet(Set<UnaryModalOperator> gSet, Map<Set<UnaryModalOperator>, TranSet<Product.ProductState<?>>> result) {
 
         TranSet<Product.ProductState<?>> avoidP = new TranSet<>(valuationSetFactory);
 
@@ -40,7 +39,7 @@ extends AccLocal<Set<ModalOperator>, TranSet<Product.ProductState<?>>, Map<TranS
     }
 
     @Override
-    protected Map<TranSet<ProductState<?>>, Integer> getSingleSlaveAccCond(ModalOperator g, Set<State> finalStates) {
+    protected Map<TranSet<ProductState<?>>, Integer> getSingleSlaveAccCond(UnaryModalOperator g, Set<State> finalStates) {
         if (g instanceof FrequencyG) {
             return product.getControllerAcceptanceFrequencyG((FrequencyG) g, finalStates);
         } else if (g instanceof GOperator) {

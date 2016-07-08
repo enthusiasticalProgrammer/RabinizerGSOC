@@ -23,7 +23,7 @@ import omega_automaton.collections.TranSet;
 import omega_automaton.collections.Tuple;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import ltl.Formula;
-import ltl.ModalOperator;
+import ltl.UnaryModalOperator;
 import ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.*;
@@ -40,18 +40,18 @@ public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, ProductRa
         GeneralisedRabinAcceptance<ProductState<?>> result = new GeneralisedRabinAcceptance<>(new ArrayList<>());
         AccLocalRabinizer accLocal = new AccLocalRabinizer(product, valuationSetFactory, equivalenceClassFactory, opts);
 
-        Map<ModalOperator, Map<Set<ModalOperator>, Map<Integer, Tuple<TranSet<ProductState<?>>, TranSet<ProductState<?>>>>>> completeSlaveAcceptance = accLocal
+        Map<UnaryModalOperator, Map<Set<UnaryModalOperator>, Map<Integer, Tuple<TranSet<ProductState<?>>, TranSet<ProductState<?>>>>>> completeSlaveAcceptance = accLocal
                 .getAllSlaveAcceptanceConditions();
-        for (Entry<Map<ModalOperator, Integer>, TranSet<ProductState<?>>> entry : accLocal.computeAccMasterOptions().entrySet()) {
-            Map<ModalOperator, Integer> ranking = entry.getKey();
-            Set<ModalOperator> gSet = ranking.keySet();
+        for (Entry<Map<UnaryModalOperator, Integer>, TranSet<ProductState<?>>> entry : accLocal.computeAccMasterOptions().entrySet()) {
+            Map<UnaryModalOperator, Integer> ranking = entry.getKey();
+            Set<UnaryModalOperator> gSet = ranking.keySet();
 
             TranSet<ProductState<?>> Fin = new TranSet<>(valuationSetFactory);
             List<TranSet<ProductState<?>>> Infs = new ArrayList<>();
             Fin.addAll(entry.getValue());
 
-            for (ModalOperator g : gSet) {
-                Set<ModalOperator> localGSet = new HashSet<>(gSet);
+            for (UnaryModalOperator g : gSet) {
+                Set<UnaryModalOperator> localGSet = new HashSet<>(gSet);
                 localGSet.retainAll(accLocal.topmostSlaves.get(g));
                 Tuple<TranSet<ProductState<?>>, TranSet<ProductState<?>>> gPair;
                 gPair = completeSlaveAcceptance.get(g).get(localGSet).get(ranking.get(g));
@@ -106,7 +106,7 @@ public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, ProductRa
     }
 
     @Override
-    protected ProductRabinizer obtainProduct(Master master, Map<ModalOperator, RabinSlave> slaves) {
+    protected ProductRabinizer obtainProduct(Master master, Map<UnaryModalOperator, RabinSlave> slaves) {
         return new ProductRabinizer(master, slaves, valuationSetFactory, opts);
     }
 

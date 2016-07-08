@@ -13,7 +13,7 @@ import java.util.Set;
 import ltl.Formula;
 import ltl.FrequencyG;
 import ltl.GOperator;
-import ltl.ModalOperator;
+import ltl.UnaryModalOperator;
 import ltl.equivalence.EquivalenceClassFactory;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.Tuple;
@@ -33,13 +33,13 @@ public class DTGRMAFactory extends AbstractAutomatonFactory<FrequencySelfProduct
     protected void constructAcceptance() {
         AccLocalControllerSynthesis accLocal = new AccLocalControllerSynthesis(product, valuationSetFactory, equivalenceClassFactory, opts);
 
-        Map<ModalOperator, Map<Set<ModalOperator>, Map<TranSet<ProductState<?>>, Integer>>> completeSlaveAcceptance = accLocal.getAllSlaveAcceptanceConditions();
+        Map<UnaryModalOperator, Map<Set<UnaryModalOperator>, Map<TranSet<ProductState<?>>, Integer>>> completeSlaveAcceptance = accLocal.getAllSlaveAcceptanceConditions();
 
         List<Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>>> genRabinCondition = new ArrayList<>();
         List<Collection<BoundAndReward>> mdpCondition = new ArrayList<>();
 
-        for (Entry<Set<ModalOperator>, TranSet<ProductState<?>>> entry : accLocal.computeAccMasterOptions().entrySet()) {
-            Set<ModalOperator> gSet = entry.getKey();
+        for (Entry<Set<UnaryModalOperator>, TranSet<ProductState<?>>> entry : accLocal.computeAccMasterOptions().entrySet()) {
+            Set<UnaryModalOperator> gSet = entry.getKey();
 
             Map<FrequencyG, BoundAndReward> mdpAcceptance = new HashMap<>();
 
@@ -47,8 +47,8 @@ public class DTGRMAFactory extends AbstractAutomatonFactory<FrequencySelfProduct
             List<TranSet<ProductState<?>>> Infs = new ArrayList<>();
             Fin.addAll(entry.getValue());
 
-            for (ModalOperator g : gSet) {
-                Set<ModalOperator> localGSet = new HashSet<>(gSet);
+            for (UnaryModalOperator g : gSet) {
+                Set<UnaryModalOperator> localGSet = new HashSet<>(gSet);
                 localGSet.retainAll(accLocal.topmostSlaves.get(g));
                 Map<TranSet<ProductState<?>>, Integer> singleAccCondition = completeSlaveAcceptance.get(g).get(localGSet);
 
@@ -91,7 +91,7 @@ public class DTGRMAFactory extends AbstractAutomatonFactory<FrequencySelfProduct
     }
 
     @Override
-    protected ProductControllerSynthesis obtainProduct(Master master, Map<ModalOperator, FrequencySelfProductSlave> slaves) {
+    protected ProductControllerSynthesis obtainProduct(Master master, Map<UnaryModalOperator, FrequencySelfProductSlave> slaves) {
         return new ProductControllerSynthesis(master, slaves, valuationSetFactory, opts);
 
     }

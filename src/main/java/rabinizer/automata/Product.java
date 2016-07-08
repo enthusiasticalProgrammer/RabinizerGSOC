@@ -21,6 +21,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableMap;
 
 import jhoafparser.consumer.HOAConsumer;
+import ltl.UnaryModalOperator;
 import rabinizer.automata.MojmirSlave.State;
 import rabinizer.frequencyLTL.SlaveSubformulaVisitor;
 import omega_automaton.Automaton;
@@ -33,7 +34,6 @@ import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import omega_automaton.output.HOAConsumerExtended;
 import omega_automaton.output.HOAConsumerGeneralisedRabin;
-import ltl.ModalOperator;
 
 import java.util.*;
 import java.util.function.Function;
@@ -53,8 +53,8 @@ public abstract class Product extends Automaton<Product.ProductState<?>, General
         this.allSlaves = !optimisations.contains(Optimisation.ONLY_RELEVANT_SLAVES);
     }
 
-    protected final Set<ModalOperator> relevantSecondarySlaves(Master.State primaryState) {
-        Set<ModalOperator> keys;
+    protected final Set<UnaryModalOperator> relevantSecondarySlaves(Master.State primaryState) {
+        Set<UnaryModalOperator> keys;
         if (allSlaves) {
             keys = getKeys();
         } else {
@@ -69,9 +69,9 @@ public abstract class Product extends Automaton<Product.ProductState<?>, General
         return keys;
     }
 
-    protected abstract Set<ModalOperator> getKeys();
+    protected abstract Set<UnaryModalOperator> getKeys();
 
-    protected abstract Map<ModalOperator, ? extends AbstractSelfProductSlave<?>> getSecondaryAutomata();
+    protected abstract Map<UnaryModalOperator, ? extends AbstractSelfProductSlave<?>> getSecondaryAutomata();
 
     protected final TranSet<ProductState<?>> getFailingProductTransitions(AbstractSelfProductSlave<?> slave, Set<MojmirSlave.State> finalStates) {
         TranSet<ProductState<?>> failP = new TranSet<>(valuationSetFactory);
@@ -122,10 +122,9 @@ public abstract class Product extends Automaton<Product.ProductState<?>, General
         this.acceptance = acc;
     }
 
-    public abstract class ProductState<S extends AbstractSelfProductSlave<S>.State> extends AbstractProductState<Master.State, ModalOperator, S, ProductState<S>>
-    implements AutomatonState<ProductState<S>> {
+    public abstract class ProductState<S extends AbstractSelfProductSlave<S>.State> extends AbstractProductState<Master.State, UnaryModalOperator, S, ProductState<S>> implements AutomatonState<ProductState<S>> {
 
-        protected ProductState(Master.State primaryState, ImmutableMap<ModalOperator, S> secondaryStates) {
+        protected ProductState(Master.State primaryState, ImmutableMap<UnaryModalOperator, S> secondaryStates) {
             super(primaryState, secondaryStates);
         }
 
@@ -142,7 +141,7 @@ public abstract class Product extends Automaton<Product.ProductState<?>, General
             return fail;
         }
 
-        protected ProductState(Master.State primaryState, Collection<ModalOperator> keys, Function<ModalOperator, S> constructor) {
+        protected ProductState(Master.State primaryState, Collection<UnaryModalOperator> keys, Function<UnaryModalOperator, S> constructor) {
             super(primaryState, keys, constructor);
         }
 
@@ -157,26 +156,26 @@ public abstract class Product extends Automaton<Product.ProductState<?>, General
         }
 
         @Override
-        protected Set<ModalOperator> relevantSecondary(Master.State primaryState) {
+        protected Set<UnaryModalOperator> relevantSecondary(Master.State primaryState) {
             return relevantSecondarySlaves(primaryState);
         }
 
-        public S getSecondaryState(ModalOperator key) {
+        public S getSecondaryState(UnaryModalOperator key) {
             return this.secondaryStates.get(key);
         }
 
         @Override
-        protected Iterable<Tuple<Map<ModalOperator, S>, ValuationSet>> secondaryJointMove(Set<ModalOperator> keys, ValuationSet maxVs) {
-            ArrayDeque<Tuple<Map<ModalOperator, S>, ValuationSet>> result = new ArrayDeque<>();
+        protected Iterable<Tuple<Map<UnaryModalOperator, S>, ValuationSet>> secondaryJointMove(Set<UnaryModalOperator> keys, ValuationSet maxVs) {
+            ArrayDeque<Tuple<Map<UnaryModalOperator, S>, ValuationSet>> result = new ArrayDeque<>();
             if (this.primaryState instanceof SuspendedMaster.State) {
                 SuspendedMaster.State mine = (SuspendedMaster.State) this.primaryState;
                 if (mine.slavesSuspended) {
                     Map<Edge<Master.State>, ValuationSet> primarySuccessors = getPrimaryAutomaton().getSuccessors(primaryState);
 
                     for (Map.Entry<Edge<Master.State>, ValuationSet> entry1 : primarySuccessors.entrySet()) {
-                        Map<ModalOperator, S> map = new HashMap<>();
+                        Map<UnaryModalOperator, S> map = new HashMap<>();
                         if (!((SuspendedMaster.State) entry1.getKey().successor).slavesSuspended) {
-                            for (ModalOperator g : relevantSecondary(entry1.getKey().successor)) {
+                            for (UnaryModalOperator g : relevantSecondary(entry1.getKey().successor)) {
                                 map.put(g, getSecondaryAutomata().get(g).getInitialState());
                             }
                         }

@@ -17,6 +17,7 @@
 
 package rabinizer.automata;
 
+import ltl.UnaryModalOperator;
 import omega_automaton.Automaton;
 import omega_automaton.AutomatonState;
 import omega_automaton.Edge;
@@ -25,7 +26,6 @@ import omega_automaton.collections.TranSet;
 import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.frequencyLTL.UnfoldNoSlaveOperatorVisitor;
-import ltl.ModalOperator;
 import ltl.equivalence.EquivalenceClass;
 import ltl.equivalence.EquivalenceClassFactory;
 
@@ -37,11 +37,11 @@ import java.util.stream.Collectors;
 
 public class MojmirSlave extends Automaton<MojmirSlave.State, AllAcceptance> {
 
-    final ModalOperator label;
+    final UnaryModalOperator label;
     private final boolean eager;
     private final EquivalenceClass initialStateEquivalence;
 
-    public MojmirSlave(ModalOperator formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
+    public MojmirSlave(UnaryModalOperator formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
         super(valuationSetFactory);
         initialStateEquivalence = equivalenceClassFactory.createEquivalenceClass(formula.operand);
         eager = optimisations.contains(Optimisation.EAGER);

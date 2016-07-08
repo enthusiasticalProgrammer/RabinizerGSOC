@@ -2,16 +2,8 @@ package rabinizer.frequencyLTL;
 
 import java.util.Set;
 
+import ltl.*;
 import ltl.visitors.BinaryVisitor;
-import ltl.BooleanConstant;
-import ltl.Conjunction;
-import ltl.Disjunction;
-import ltl.FOperator;
-import ltl.GOperator;
-import ltl.Literal;
-import ltl.UOperator;
-import ltl.XOperator;
-import ltl.Formula;
 
 public class EvaluationVisitor implements BinaryVisitor<Formula, Set<Formula>> {
     @Override
@@ -55,6 +47,11 @@ public class EvaluationVisitor implements BinaryVisitor<Formula, Set<Formula>> {
     @Override
     public Formula visit(UOperator u, Set<Formula> Gs) {
         return UOperator.create(u.left.accept(this, Gs), u.right.accept(this, Gs));
+    }
+
+    @Override
+    public Formula visit(ROperator r, Set<Formula> fo) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

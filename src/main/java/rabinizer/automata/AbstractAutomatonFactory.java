@@ -10,7 +10,7 @@ import java.util.Set;
 
 import jhoafparser.consumer.HOAConsumerPrint;
 import ltl.Formula;
-import ltl.ModalOperator;
+import ltl.UnaryModalOperator;
 import ltl.equivalence.EquivalenceClassFactory;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.Tuple;
@@ -46,7 +46,7 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
     public final P constructAutomaton() {
         Master master = constructMaster();
 
-        Map<ModalOperator, T> slaves = constructSlaves();
+        Map<UnaryModalOperator, T> slaves = constructSlaves();
 
         Main.nonsilent("========================================");
         Main.nonsilent("Generating product\n");
@@ -128,7 +128,7 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
     }
 
 
-    protected abstract P obtainProduct(Master master, Map<ModalOperator, T> slaves);
+    protected abstract P obtainProduct(Master master, Map<UnaryModalOperator, T> slaves);
 
     protected abstract void doPostProcessingOptimisations();
 
@@ -152,11 +152,11 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
         return master;
     }
 
-    private final Map<ModalOperator, T> constructSlaves() {
-        Set<ModalOperator> gSubformulas = phi.accept(new SlaveSubformulaVisitor());
-        Map<ModalOperator, T> slaves = new HashMap<>();
+    private final Map<UnaryModalOperator, T> constructSlaves() {
+        Set<UnaryModalOperator> gSubformulas = phi.accept(new SlaveSubformulaVisitor());
+        Map<UnaryModalOperator, T> slaves = new HashMap<>();
 
-        for (ModalOperator f : gSubformulas) {
+        for (UnaryModalOperator f : gSubformulas) {
 
             MojmirSlave mSlave = new MojmirSlave(f, equivalenceClassFactory, valuationSetFactory, opts);
             mSlave.generate();
