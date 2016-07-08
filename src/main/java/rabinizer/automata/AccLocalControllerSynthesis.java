@@ -17,7 +17,8 @@ import rabinizer.automata.MojmirSlave.State;
 import rabinizer.automata.Product.ProductState;
 import rabinizer.frequencyLTL.FOperatorForMojmir;
 
-public class AccLocalControllerSynthesis extends AccLocal<Set<UnaryModalOperator>, TranSet<Product.ProductState<?>>, Map<TranSet<Product.ProductState<?>>, Integer>, ProductControllerSynthesis> {
+public class AccLocalControllerSynthesis extends
+AccLocal<Set<UnaryModalOperator>, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, Map<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, Integer>, FrequencySelfProductSlave.State, ProductControllerSynthesis> {
 
     public AccLocalControllerSynthesis(ProductControllerSynthesis product, ValuationSetFactory valuationSetFactory, EquivalenceClassFactory equivalenceFactory,
             Collection<Optimisation> opts) {
@@ -25,11 +26,12 @@ public class AccLocalControllerSynthesis extends AccLocal<Set<UnaryModalOperator
     }
 
     @Override
-    protected void computeAccMasterForASingleGSet(Set<UnaryModalOperator> gSet, Map<Set<UnaryModalOperator>, TranSet<Product.ProductState<?>>> result) {
+    protected void computeAccMasterForASingleGSet(Set<UnaryModalOperator> gSet,
+            Map<Set<UnaryModalOperator>, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> result) {
 
-        TranSet<Product.ProductState<?>> avoidP = new TranSet<>(valuationSetFactory);
+        TranSet<Product<FrequencySelfProductSlave.State>.ProductState> avoidP = new TranSet<>(valuationSetFactory);
 
-        for (Product.ProductState<?> ps : product.getStates()) {
+        for (Product<rabinizer.automata.FrequencySelfProductSlave.State>.ProductState ps : product.getStates()) {
             avoidP.addAll(computeNonAccMasterTransForStateIgoringRankings(gSet, ps));
         }
 
@@ -39,15 +41,15 @@ public class AccLocalControllerSynthesis extends AccLocal<Set<UnaryModalOperator
     }
 
     @Override
-    protected Map<TranSet<ProductState<?>>, Integer> getSingleSlaveAccCond(UnaryModalOperator g, Set<State> finalStates) {
+    protected Map<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, Integer> getSingleSlaveAccCond(UnaryModalOperator g, Set<MojmirSlave.State> finalStates) {
         if (g instanceof FrequencyG) {
             return product.getControllerAcceptanceFrequencyG((FrequencyG) g, finalStates);
         } else if (g instanceof GOperator) {
-            Map<TranSet<ProductState<?>>, Integer> result = new HashMap<>();
+            Map<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, Integer> result = new HashMap<>();
             result.put(product.getControllerAcceptanceG((GOperator) g, finalStates), 0);
             return result;
         } else if (g instanceof FOperatorForMojmir) {
-            Map<TranSet<ProductState<?>>, Integer> result = new HashMap<>();
+            Map<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, Integer> result = new HashMap<>();
             result.put(product.getControllerAcceptanceF((FOperatorForMojmir) g, finalStates), 0);
             return result;
         }

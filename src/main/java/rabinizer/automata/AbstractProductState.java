@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
-public abstract class AbstractProductState<P extends AutomatonState<P>, K, S extends AutomatonState<S>, T> extends ImmutableObject {
+public abstract class AbstractProductState<P extends AutomatonState<P>, K, S extends AbstractSelfProductSlave<S>.State, T> extends ImmutableObject {
 
     private static BitSet defaultBitSet = new BitSet(0);
 

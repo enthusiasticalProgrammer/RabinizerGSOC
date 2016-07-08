@@ -23,7 +23,7 @@ import rabinizer.DTGRMAAcceptance.GeneralisedRabinWithMeanPayoffAcceptance;
 import rabinizer.automata.Product.ProductState;
 import rabinizer.frequencyLTL.FOperatorForMojmir;
 
-public class DTGRMAFactory extends AbstractAutomatonFactory<FrequencySelfProductSlave, ProductControllerSynthesis> {
+public class DTGRMAFactory extends AbstractAutomatonFactory<FrequencySelfProductSlave, FrequencySelfProductSlave.State, ProductControllerSynthesis> {
 
     public DTGRMAFactory(Formula phi, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> opts) {
         super(phi, equivalenceClassFactory, valuationSetFactory, opts);
@@ -33,24 +33,25 @@ public class DTGRMAFactory extends AbstractAutomatonFactory<FrequencySelfProduct
     protected void constructAcceptance() {
         AccLocalControllerSynthesis accLocal = new AccLocalControllerSynthesis(product, valuationSetFactory, equivalenceClassFactory, opts);
 
-        Map<UnaryModalOperator, Map<Set<UnaryModalOperator>, Map<TranSet<ProductState<?>>, Integer>>> completeSlaveAcceptance = accLocal.getAllSlaveAcceptanceConditions();
+        Map<UnaryModalOperator, Map<Set<UnaryModalOperator>, Map<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, Integer>>> completeSlaveAcceptance = accLocal
+                .getAllSlaveAcceptanceConditions();
 
-        List<Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>>> genRabinCondition = new ArrayList<>();
+        List<Tuple<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, List<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>>>> genRabinCondition = new ArrayList<>();
         List<Collection<BoundAndReward>> mdpCondition = new ArrayList<>();
 
-        for (Entry<Set<UnaryModalOperator>, TranSet<ProductState<?>>> entry : accLocal.computeAccMasterOptions().entrySet()) {
+        for (Entry<Set<UnaryModalOperator>, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> entry : accLocal.computeAccMasterOptions().entrySet()) {
             Set<UnaryModalOperator> gSet = entry.getKey();
 
             Map<FrequencyG, BoundAndReward> mdpAcceptance = new HashMap<>();
 
-            TranSet<ProductState<?>> Fin = new TranSet<>(valuationSetFactory);
-            List<TranSet<ProductState<?>>> Infs = new ArrayList<>();
+            TranSet<Product<FrequencySelfProductSlave.State>.ProductState> Fin = new TranSet<>(valuationSetFactory);
+            List<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> Infs = new ArrayList<>();
             Fin.addAll(entry.getValue());
 
             for (UnaryModalOperator g : gSet) {
                 Set<UnaryModalOperator> localGSet = new HashSet<>(gSet);
                 localGSet.retainAll(accLocal.topmostSlaves.get(g));
-                Map<TranSet<ProductState<?>>, Integer> singleAccCondition = completeSlaveAcceptance.get(g).get(localGSet);
+                Map<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, Integer> singleAccCondition = completeSlaveAcceptance.get(g).get(localGSet);
 
                 if (g instanceof FrequencyG) {
                     FrequencyG freqg = (FrequencyG) g;

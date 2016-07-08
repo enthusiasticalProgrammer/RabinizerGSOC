@@ -17,6 +17,7 @@
 
 package rabinizer.automata;
 
+import omega_automaton.Automaton;
 import omega_automaton.AutomatonState;
 import omega_automaton.Edge;
 import omega_automaton.acceptance.GeneralisedRabinAcceptance;
@@ -30,10 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class EmptinessCheck {
+public class EmptinessCheck<S extends AutomatonState<S>> {
 
-    private final Product automaton;
-    private final GeneralisedRabinAcceptance<ProductState<?>> acc;
+    private final Automaton<S, ? extends GeneralisedRabinAcceptance<S>> automaton;
 
     /**
      * This method checks if the automaton is empty and it minimizes the
@@ -46,23 +46,22 @@ public class EmptinessCheck {
         if (!(p.getAcceptance() instanceof GeneralisedRabinAcceptance)) {
             throw new IllegalArgumentException("We can (yet) only perform the Emptiness-check for GeneralisedRabinAcceptance.");
         }
-        new EmptinessCheck(p, p.getAcceptance()).minimiseSCCBased();
+        new EmptinessCheck<>(p).minimiseSCCBased();
         return p.getStates().isEmpty();
     }
 
-    private EmptinessCheck(Product automaton, GeneralisedRabinAcceptance<ProductState<?>> acc) {
+    private EmptinessCheck(Automaton<S, GeneralisedRabinAcceptance<S>> automaton) {
         this.automaton = automaton;
-        this.acc = acc;
     }
 
     private void minimiseSCCBased() {
-        for (Set<ProductState<?>> SCC : SCCAnalyser.SCCsStates(automaton)) {
-            TranSet<ProductState<?>> tranSCC = SCCAnalyser.sccToTran(automaton, SCC, new TranSet<ProductState<?>>(automaton.getFactory()));
+        for (Set<S> SCC : SCCAnalyser.SCCsStates(automaton)) {
+            TranSet<S> tranSCC = SCCAnalyser.sccToTran(automaton, SCC, new TranSet<S>(automaton.getFactory()));
             removeInterSCCAccConditions(SCC);
 
             boolean sccEmpty = true;
 
-            for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> pair : acc.acceptanceCondition) {
+            for (Tuple<TranSet<S>, List<TranSet<S>>> pair : automaton.getAcceptance().acceptanceCondition) {
                 if (infAccepting(tranSCC, pair) && finAndInfAccepting(tranSCC, pair)) {
                     sccEmpty = false;
                 } else {
@@ -81,12 +80,12 @@ public class EmptinessCheck {
         }
     }
 
-    private void removeInterSCCAccConditions(Set<ProductState<?>> SCC) {
-        for (ProductState<?> state : SCC) {
-            Map<Edge<ProductState<?>>, ValuationSet> relevantTransitions = automaton.getSuccessors(state);
-            for (Map.Entry<Edge<ProductState<?>>, ValuationSet> transition : relevantTransitions.entrySet()) {
+    private void removeInterSCCAccConditions(Set<S> SCC) {
+        for (S state : SCC) {
+            Map<Edge<S>, ValuationSet> relevantTransitions = automaton.getSuccessors(state);
+            for (Map.Entry<Edge<S>, ValuationSet> transition : relevantTransitions.entrySet()) {
                 if (!SCC.contains(transition.getKey().successor)) {
-                    for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> pair : acc.acceptanceCondition) {
+                    for (Tuple<TranSet<S>, List<TranSet<S>>> pair : automaton.getAcceptance().acceptanceCondition) {
                         pair.right.forEach(inf -> inf.removeAll(state, transition.getValue()));
                         pair.left.removeAll(state, transition.getValue());
                     }
@@ -114,7 +113,7 @@ public class EmptinessCheck {
      * SCC (i.e. if this Rabin Pair can accept a word, if the automaton
      * stays infinitely long in the current SCC)
      */
-    private boolean finAndInfAccepting(TranSet<ProductState<?>> tranSCC, Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> pair) {
+    private boolean finAndInfAccepting(TranSet<S> tranSCC, Tuple<TranSet<S>, List<TranSet<S>>> pair) {
         if (tranSCC.isEmpty()) {
             return false;
         }
@@ -124,7 +123,7 @@ public class EmptinessCheck {
         }
 
         // Compute SubSCCs without Fin-edges.
-        List<TranSet<ProductState<?>>> subSCCs = SCCAnalyser.subSCCsTran(automaton, tranSCC, pair.left);
+        List<TranSet<S>> subSCCs = SCCAnalyser.subSCCsTran(automaton, tranSCC, pair.left);
         return subSCCs.stream().anyMatch(subSCC -> !subSCC.isEmpty() && infAccepting(subSCC, pair));
     }
 }

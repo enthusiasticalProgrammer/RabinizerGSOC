@@ -29,7 +29,7 @@ import rabinizer.automata.Product.ProductState;
  * @param <P>
  *            type of overall product
  */
-public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlave<?>, P extends Product> {
+public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlave<?>, ParamProduct extends AbstractSelfProductSlave<ParamProduct>.State, P extends Product<ParamProduct>> {
     protected final Formula phi;
     protected final EquivalenceClassFactory equivalenceClassFactory;
     protected final ValuationSetFactory valuationSetFactory;
@@ -80,8 +80,8 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
     }
 
     protected final void removeRedundancy() {
-        List<TranSet<ProductState<?>>> copy;
-        Collection<Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>>> toRemove = new HashSet<>();
+        List<TranSet<Product<ParamProduct>.ProductState>> copy;
+        Collection<Tuple<TranSet<Product<ParamProduct>.ProductState>, List<TranSet<Product<ParamProduct>.ProductState>>>> toRemove = new HashSet<>();
 
         product.getAcceptance().acceptanceCondition.stream().filter(pair -> product.containsAllTransitions(pair.left)).forEach(s -> toRemove.add(s));
         product.getAcceptance().remove(toRemove);
@@ -95,11 +95,11 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
 
         product.getAcceptance().acceptanceCondition.forEach(pair -> pair.right.removeIf(i -> product.containsAllTransitions(i.union(pair.left))));
 
-        Collection<Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>>> temp = new ArrayList<>();
-        for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> pair : product.getAcceptance().acceptanceCondition) {
+        Collection<Tuple<TranSet<Product<ParamProduct>.ProductState>, List<TranSet<Product<ParamProduct>.ProductState>>>> temp = new ArrayList<>();
+        for (Tuple<TranSet<Product<ParamProduct>.ProductState>, List<TranSet<Product<ParamProduct>.ProductState>>> pair : product.getAcceptance().acceptanceCondition) {
             copy = new ArrayList<>(pair.right);
-            for (TranSet<ProductState<?>> i : pair.right) {
-                for (TranSet<ProductState<?>> j : pair.right) {
+            for (TranSet<Product<ParamProduct>.ProductState> i : pair.right) {
+                for (TranSet<Product<ParamProduct>.ProductState> j : pair.right) {
                     if (!j.equals(i) && i.containsAll(j)) {
                         copy.remove(i);
                         break;
@@ -111,8 +111,8 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
         product.getAcceptance().acceptanceCondition.clear();
         product.getAcceptance().acceptanceCondition.addAll(temp);
 
-        for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> pair1 : product.getAcceptance().acceptanceCondition) {
-            for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> pair2 : product.getAcceptance().acceptanceCondition) {
+        for (Tuple<TranSet<Product<ParamProduct>.ProductState>, List<TranSet<Product<ParamProduct>.ProductState>>> pair1 : product.getAcceptance().acceptanceCondition) {
+            for (Tuple<TranSet<Product<ParamProduct>.ProductState>, List<TranSet<Product<ParamProduct>.ProductState>>> pair2 : product.getAcceptance().acceptanceCondition) {
                 if (pair1.equals(pair2)) {
                     continue;
                 }

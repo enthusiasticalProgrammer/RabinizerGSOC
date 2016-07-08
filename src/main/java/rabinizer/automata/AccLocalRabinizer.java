@@ -19,7 +19,8 @@ import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.automata.MojmirSlave.State;
 import rabinizer.frequencyLTL.SlaveSubformulaVisitor;
 
-public class AccLocalRabinizer extends AccLocal<Map<UnaryModalOperator, Integer>, TranSet<Product.ProductState<?>>, Map<Integer, Tuple<TranSet<Product.ProductState<?>>, TranSet<Product.ProductState<?>>>>, ProductRabinizer> {
+public class AccLocalRabinizer extends
+AccLocal<Map<UnaryModalOperator, Integer>, TranSet<Product<RabinSlave.State>.ProductState>, Map<Integer, Tuple<TranSet<Product<RabinSlave.State>.ProductState>, TranSet<Product<RabinSlave.State>.ProductState>>>, RabinSlave.State, ProductRabinizer> {
 
     private final Map<UnaryModalOperator, Integer> maxRank = new HashMap<>();
 
@@ -40,12 +41,12 @@ public class AccLocalRabinizer extends AccLocal<Map<UnaryModalOperator, Integer>
     }
 
     @Override
-    protected void computeAccMasterForASingleGSet(Set<UnaryModalOperator> gSet, Map<Map<UnaryModalOperator, Integer>, TranSet<ProductRabinizer.ProductState<?>>> result) {
+    protected void computeAccMasterForASingleGSet(Set<UnaryModalOperator> gSet, Map<Map<UnaryModalOperator, Integer>, TranSet<Product<RabinSlave.State>.ProductState>> result) {
         for (Map<UnaryModalOperator, Integer> ranking : powersetRanks(new ArrayDeque<>(gSet))) {
 
-            TranSet<Product.ProductState<?>> avoidP = new TranSet<>(valuationSetFactory);
+            TranSet<Product<RabinSlave.State>.ProductState> avoidP = new TranSet<>(valuationSetFactory);
 
-            for (Product.ProductState<?> ps : product.getStates()) {
+            for (Product<RabinSlave.State>.ProductState ps : product.getStates()) {
                 avoidP.addAll(computeNonAccMasterTransForState(ranking, ps));
             }
 
@@ -76,8 +77,9 @@ public class AccLocalRabinizer extends AccLocal<Map<UnaryModalOperator, Integer>
     }
 
     @Override
-    protected Map<Integer, Tuple<TranSet<Product.ProductState<?>>, TranSet<Product.ProductState<?>>>> getSingleSlaveAccCond(UnaryModalOperator g, Set<State> finalStates) {
-        Map<Integer, Tuple<TranSet<Product.ProductState<?>>, TranSet<Product.ProductState<?>>>> result = new HashMap<>();
+    protected Map<Integer, Tuple<TranSet<Product<RabinSlave.State>.ProductState>, TranSet<Product<RabinSlave.State>.ProductState>>> getSingleSlaveAccCond(UnaryModalOperator g,
+            Set<State> finalStates) {
+        Map<Integer, Tuple<TranSet<Product<RabinSlave.State>.ProductState>, TranSet<Product<RabinSlave.State>.ProductState>>> result = new HashMap<>();
         for (int rank = 1; rank <= maxRank.get(g); rank++) {
             result.put(rank, product.createRabinPair(product.secondaryAutomata.get(g), finalStates, rank));
         }

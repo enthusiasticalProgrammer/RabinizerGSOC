@@ -17,6 +17,7 @@
 
 package rabinizer.automata;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import ltl.Conjunction;
 import ltl.Formula;
@@ -49,7 +50,7 @@ import java.util.*;
  *            The type of the Product (either ProductRabinizer or
  *            ProductControllerSynthesis)
  */
-abstract class AccLocal<AccMasterInput, AccMasterOutput, AccSlaves, P extends Product> {
+abstract class AccLocal<AccMasterInput, AccMasterOutput, AccSlaves, ParamProduct extends AbstractSelfProductSlave<ParamProduct>.State, P extends Product<ParamProduct>> {
 
     protected final ValuationSetFactory valuationSetFactory;
     protected final EquivalenceClassFactory equivalenceClassFactory;
@@ -130,14 +131,15 @@ abstract class AccLocal<AccMasterInput, AccMasterOutput, AccSlaves, P extends Pr
      * A wrapper, which defines a ranking, which acts for
      * AccLocalControllerSynthesis as if it was not there
      */
-    protected final TranSet<ProductState<?>> computeNonAccMasterTransForStateIgoringRankings(Set<UnaryModalOperator> gSet, ProductState<?> ps) {
+    protected final TranSet<Product<ParamProduct>.ProductState> computeNonAccMasterTransForStateIgoringRankings(Set<UnaryModalOperator> gSet,
+            Product<ParamProduct>.ProductState ps) {
         Map<UnaryModalOperator, Integer> ranking = new HashMap<>();
         gSet.forEach(g -> ranking.put(g, -1));
         return computeNonAccMasterTransForState(ranking, ps);
     }
 
-    protected final TranSet<ProductState<?>> computeNonAccMasterTransForState(Map<UnaryModalOperator, Integer> ranking, ProductState<?> ps) {
-        TranSet<ProductState<?>> result = new TranSet<>(valuationSetFactory);
+    protected final TranSet<Product<ParamProduct>.ProductState> computeNonAccMasterTransForState(Map<UnaryModalOperator, Integer> ranking, Product<ParamProduct>.ProductState ps) {
+        TranSet<Product<ParamProduct>.ProductState> result = new TranSet<>(valuationSetFactory);
 
         if (optimisations.contains(Optimisation.EAGER)) {
             BitSet sensitiveAlphabet = ps.getSensitiveAlphabet();
@@ -156,7 +158,7 @@ abstract class AccLocal<AccMasterInput, AccMasterOutput, AccSlaves, P extends Pr
         return result;
     }
 
-    private final boolean slavesEntail(ProductState<?> ps, Map<UnaryModalOperator, Integer> ranking, BitSet valuation, EquivalenceClass consequent) {
+    private final boolean slavesEntail(Product<ParamProduct>.ProductState ps, Map<UnaryModalOperator, Integer> ranking, BitSet valuation, EquivalenceClass consequent) {
         Collection<Formula> conjunction = new ArrayList<>(3 * ranking.size());
 
         for (Map.Entry<UnaryModalOperator, Integer> entry : ranking.entrySet()) {
@@ -168,7 +170,7 @@ abstract class AccLocal<AccMasterInput, AccMasterOutput, AccSlaves, P extends Pr
                 conjunction.add(G.operand);
             }
 
-            AbstractSelfProductSlave<? extends AbstractSelfProductSlave<?>.State>.State rs = ps.secondaryStates.get(G);
+            AbstractSelfProductSlave<? extends AbstractSelfProductSlave<?>.State>.State rs = ps.getSecondaryState(G);
             if (rs != null) {
                 for (Map.Entry<MojmirSlave.State, Integer> stateEntry : rs.entrySet()) {
                     if (stateEntry.getValue() >= rank) {

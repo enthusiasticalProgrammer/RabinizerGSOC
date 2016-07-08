@@ -13,7 +13,7 @@ import omega_automaton.collections.Tuple;
 import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 
-public class ProductRabinizer extends Product {
+public class ProductRabinizer extends Product<RabinSlave.State> {
 
     protected final Map<UnaryModalOperator, RabinSlave> secondaryAutomata;
 
@@ -37,9 +37,9 @@ public class ProductRabinizer extends Product {
         return secondaryAutomata.keySet();
     }
 
-    protected final TranSet<ProductState<?>> getBuyProductTransitions(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank) {
-        TranSet<ProductState<?>> buyP = new TranSet<>(valuationSetFactory);
-        for (ProductState<?> ps : getStates()) {
+    protected final TranSet<ProductState> getBuyProductTransitions(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank) {
+        TranSet<ProductState> buyP = new TranSet<>(valuationSetFactory);
+        for (ProductState ps : getStates()) {
             State psr = (State) ps;
             RabinSlave.State rs = psr.secondaryStates.get(slave.mojmir.label);
             if (rs != null) { // relevant slave
@@ -50,15 +50,15 @@ public class ProductRabinizer extends Product {
         return buyP;
     }
 
-    Tuple<TranSet<ProductState<?>>, TranSet<ProductState<?>>> createRabinPair(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank) {
-        TranSet<ProductState<?>> failP = getFailingProductTransitions(slave, finalStates);
-        TranSet<ProductState<?>> succeedP = getSucceedingProductTransitions(slave, rank, finalStates);
-        TranSet<ProductState<?>> buyP = getBuyProductTransitions(slave, finalStates, rank);
+    Tuple<TranSet<ProductState>, TranSet<ProductState>> createRabinPair(RabinSlave slave, Set<MojmirSlave.State> finalStates, int rank) {
+        TranSet<ProductState> failP = getFailingProductTransitions(slave, finalStates);
+        TranSet<ProductState> succeedP = getSucceedingProductTransitions(slave, rank, finalStates);
+        TranSet<ProductState> buyP = getBuyProductTransitions(slave, finalStates, rank);
         failP.addAll(buyP);
         return new Tuple<>(failP, succeedP);
     }
 
-    public class State extends ProductState<RabinSlave.State> {
+    public class State extends ProductState {
 
         protected State(Master.State primaryState, Collection<UnaryModalOperator> keys, Function<UnaryModalOperator, RabinSlave.State> constructor) {
             super(primaryState, keys, constructor);

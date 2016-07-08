@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Sets;
 
 import ltl.Formula;
-import ltl.ModalOperator;
+import ltl.UnaryModalOperator;
 import ltl.parser.Parser;
 import rabinizer.frequencyLTL.SkeletonVisitor;
 
@@ -24,10 +24,10 @@ public class SkeletonVisitorTest {
     public void testSimple() {
         BiMap<String, Integer> mapping = ImmutableBiMap.of("a", 0, "b", 1);
         Formula formula = Parser.formula("G a | X G b", mapping);
-        Set<Set<ModalOperator>> newHashSet = Sets.newHashSet(Sets.newHashSet((ModalOperator) Parser.formula("G b", mapping), (ModalOperator) Parser.formula("G a", mapping)),
-                Collections.singleton((ModalOperator) Parser.formula("G a", mapping)),
-                Collections.singleton((ModalOperator) Parser.formula("G b", mapping)));
-        Set<Set<ModalOperator>> skeleton = newHashSet;
+        Set<Set<UnaryModalOperator>> newHashSet = Sets.newHashSet(
+                Sets.newHashSet((UnaryModalOperator) Parser.formula("G b", mapping), (UnaryModalOperator) Parser.formula("G a", mapping)),
+                Collections.singleton((UnaryModalOperator) Parser.formula("G a", mapping)), Collections.singleton((UnaryModalOperator) Parser.formula("G b", mapping)));
+        Set<Set<UnaryModalOperator>> skeleton = newHashSet;
         assertEquals(skeleton, formula.accept(visitor));
     }
 
@@ -35,7 +35,8 @@ public class SkeletonVisitorTest {
     public void testSimple2() {
         BiMap<String, Integer> mapping = ImmutableBiMap.of("a", 0, "b", 1);
         Formula formula = Parser.formula("G a & F G b");
-        Set<Set<ModalOperator>> skeleton = Collections.singleton(Sets.newHashSet((ModalOperator) Parser.formula("G a", mapping), (ModalOperator) Parser.formula("G b", mapping)));
+        Set<Set<UnaryModalOperator>> skeleton = Collections
+                .singleton(Sets.newHashSet((UnaryModalOperator) Parser.formula("G a", mapping), (UnaryModalOperator) Parser.formula("G b", mapping)));
         assertEquals(skeleton, formula.accept(visitor));
     }
 }

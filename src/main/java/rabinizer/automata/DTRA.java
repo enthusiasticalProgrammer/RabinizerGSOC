@@ -37,19 +37,19 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
 
     private static BitSet standardBitSet = new BitSet(0);
 
-    private final Product dtgra;
+    private final ProductRabinizer dtgra;
 
-    public DTRA(Product dtgra) {
+    public DTRA(ProductRabinizer dtgra) {
         super(dtgra.getFactory());
         if (!(dtgra.getAcceptance() instanceof GeneralisedRabinAcceptance<?>)) {
             throw new IllegalArgumentException();
         }
-        GeneralisedRabinAcceptance<ProductState<?>> acc = dtgra.getAcceptance();
+        GeneralisedRabinAcceptance<ProductRabinizer.ProductState> acc = dtgra.getAcceptance();
         this.dtgra = dtgra;
         generate();
 
         int i = 0;
-        for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> grp : acc.acceptanceCondition) {
+        for (Tuple<TranSet<ProductRabinizer.ProductState>, List<TranSet<ProductRabinizer.ProductState>>> grp : acc.acceptanceCondition) {
             TranSet<ProductDegenState> fin = new TranSet<>(valuationSetFactory);
             TranSet<ProductDegenState> inf = new TranSet<>(valuationSetFactory);
 
@@ -76,10 +76,10 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
 
     public class ProductDegenState implements AutomatonState<ProductDegenState> {
 
-        public final ProductState<?> productState;
+        public final ProductRabinizer.ProductState productState;
         public final int[] awaitedIndices;
 
-        public ProductDegenState(ProductState<?> automatonState, int... awaitedIndices) {
+        public ProductDegenState(ProductRabinizer.ProductState automatonState, int... awaitedIndices) {
             this.productState = automatonState;
             this.awaitedIndices = awaitedIndices;
         }
@@ -92,19 +92,19 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
         @Nullable
         @Override
         public Edge<ProductDegenState> getSuccessor(BitSet valuation) {
-            Edge<ProductState<?>> successor = dtgra.getSuccessor(productState, valuation);
+            Edge<ProductRabinizer.ProductState> successor = dtgra.getSuccessor(productState, valuation);
 
             if (successor == null) {
                 return null;
             }
 
-            GeneralisedRabinAcceptance<ProductState<?>> acc = dtgra.getAcceptance();
+            GeneralisedRabinAcceptance<ProductRabinizer.ProductState> acc = dtgra.getAcceptance();
 
             int[] awaitedIndices = new int[acc.acceptanceCondition.size()];
 
             // TODO: Use listIterator
             int i = 0;
-            for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> grp : acc.acceptanceCondition) {
+            for (Tuple<TranSet<ProductRabinizer.ProductState>, List<TranSet<ProductRabinizer.ProductState>>> grp : acc.acceptanceCondition) {
 
                 int awaited = this.awaitedIndices[i];
 
