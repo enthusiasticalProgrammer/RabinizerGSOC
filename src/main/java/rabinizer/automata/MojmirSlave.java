@@ -118,5 +118,10 @@ public class MojmirSlave extends Automaton<MojmirSlave.State, AllAcceptance> {
             }
             return succeed;
         }
+
+        @Override
+        public ValuationSetFactory getFactory() {
+            return valuationSetFactory;
+        }
     }
 }
