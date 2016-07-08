@@ -12,7 +12,7 @@ import ltl.GOperator;
 import ltl.Literal;
 import ltl.ModalOperator;
 import ltl.UOperator;
-import ltl.Visitor;
+import ltl.visitors.Visitor;
 import ltl.XOperator;
 
 public class TopMostOperatorVisitor implements Visitor<Set<ModalOperator>> {

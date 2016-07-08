@@ -7,7 +7,7 @@ import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.frequencyLTL.UnfoldNoSlaveOperatorVisitor;
 import ltl.Formula;
-import ltl.RelevantGFormulaeWithSlaveSuspension;
+import rabinizer.visitors.RelevantGFormulaeWithSlaveSuspension;
 import ltl.equivalence.EquivalenceClass;
 import ltl.equivalence.EquivalenceClassFactory;
 

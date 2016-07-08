@@ -2,7 +2,7 @@ package rabinizer.frequencyLTL;
 
 import java.util.Set;
 
-import ltl.BinaryVisitor;
+import ltl.visitors.BinaryVisitor;
 import ltl.BooleanConstant;
 import ltl.Conjunction;
 import ltl.Disjunction;

@@ -26,7 +26,7 @@ import ltl.Formula;
 import ltl.GOperator;
 import ltl.ModalOperator;
 import ltl.UOperator;
-import ltl.Visitor;
+import ltl.visitors.Visitor;
 import ltl.XOperator;
 
 import java.util.Collections;

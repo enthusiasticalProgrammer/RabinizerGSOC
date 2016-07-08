@@ -21,7 +21,7 @@ import com.google.common.collect.BiMap;
 import org.apache.commons.cli.*;
 import rabinizer.automata.Optimisation;
 import rabinizer.frequencyLTL.MojmirOperatorVisitor;
-import ltl.ContainsVisitor;
+import ltl.visitors.ContainsVisitor;
 import ltl.Formula;
 import ltl.FrequencyG;
 import ltl.GOperator;

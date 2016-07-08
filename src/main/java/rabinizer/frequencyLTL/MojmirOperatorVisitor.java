@@ -1,6 +1,6 @@
 package rabinizer.frequencyLTL;
 
-import ltl.DefaultConverter;
+import ltl.visitors.DefaultConverter;
 import ltl.FOperator;
 
 /**

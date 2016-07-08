@@ -1,7 +1,7 @@
 package rabinizer.frequencyLTL;
 
 import ltl.Conjunction;
-import ltl.DefaultConverter;
+import ltl.visitors.DefaultConverter;
 import ltl.Disjunction;
 import ltl.FOperator;
 import ltl.Formula;
