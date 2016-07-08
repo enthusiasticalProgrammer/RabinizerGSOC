@@ -20,7 +20,7 @@ import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.automata.MojmirSlave.State;
 import rabinizer.frequencyLTL.FOperatorForMojmir;
 
-public class ProductControllerSynthesis extends Product {
+public class ProductControllerSynthesis extends Product<FrequencySelfProductSlave.State> {
 
     protected final Map<UnaryModalOperator, FrequencySelfProductSlave> secondaryAutomata;
 
@@ -45,19 +45,19 @@ public class ProductControllerSynthesis extends Product {
         return secondaryAutomata.keySet();
     }
 
-    public TranSet<ProductState<?>> getControllerAcceptanceF(FOperatorForMojmir f, Set<MojmirSlave.State> finalStates) {
+    public TranSet<ProductState> getControllerAcceptanceF(FOperatorForMojmir f, Set<MojmirSlave.State> finalStates) {
         return getSucceedingProductTransitions(secondaryAutomata.get(f), -1, finalStates);
     }
 
-    public TranSet<ProductState<?>> getControllerAcceptanceG(GOperator g, Set<MojmirSlave.State> finalStates) {
+    public TranSet<ProductState> getControllerAcceptanceG(GOperator g, Set<MojmirSlave.State> finalStates) {
         return getFailingProductTransitions(secondaryAutomata.get(g), finalStates);
     }
 
-    public Map<TranSet<ProductState<?>>, Integer> getControllerAcceptanceFrequencyG(FrequencyG g, Set<MojmirSlave.State> finalStates) {
-        Map<TranSet<ProductState<?>>, Integer> result = new HashMap<>();
+    public Map<TranSet<ProductState>, Integer> getControllerAcceptanceFrequencyG(FrequencyG g, Set<MojmirSlave.State> finalStates) {
+        Map<TranSet<ProductState>, Integer> result = new HashMap<>();
         int maxTokenNumber = secondaryAutomata.get(g).mojmir.size();
         for (int i = 0; i <= maxTokenNumber; i++) {
-            TranSet<ProductState<?>> relevantTransitions = getSucceedingProductTransitions(secondaryAutomata.get(g), i, finalStates);
+            TranSet<ProductState> relevantTransitions = getSucceedingProductTransitions(secondaryAutomata.get(g), i, finalStates);
             if (!relevantTransitions.isEmpty()) {
                 result.put(relevantTransitions, i);
             }
@@ -65,7 +65,7 @@ public class ProductControllerSynthesis extends Product {
         return result;
     }
 
-    public class State extends ProductState<FrequencySelfProductSlave.State> {
+    public class State extends Product<FrequencySelfProductSlave.State>.ProductState {
 
         protected State(Master.State primaryState, Collection<UnaryModalOperator> keys, Function<UnaryModalOperator, FrequencySelfProductSlave.State> constructor) {
             super(primaryState, keys, constructor);

@@ -10,6 +10,7 @@ import java.util.Set;
 import ltl.FrequencyG;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
+import rabinizer.automata.FrequencySelfProductSlave;
 import rabinizer.automata.Product;
 import rabinizer.automata.Product.ProductState;
 
@@ -22,7 +23,7 @@ public class BoundAndReward {
 
     private final ValuationSetFactory valuationSetFactory;
     protected final FrequencyG GOp;
-    private final Map<Integer, TranSet<Product.ProductState<?>>> reward;
+    private final Map<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> reward;
 
     public BoundAndReward(FrequencyG GOp, ValuationSetFactory valuationSetFactory) {
         this.GOp = GOp;
@@ -30,7 +31,7 @@ public class BoundAndReward {
         this.valuationSetFactory = valuationSetFactory;
     }
 
-    public void increaseRewards(Map<TranSet<ProductState<?>>, Integer> transitionRewards) {
+    public void increaseRewards(Map<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, Integer> transitionRewards) {
         transitionRewards.entrySet().forEach(entry -> {
             if (!entry.getValue().equals(0))
                 addRewards(entry.getKey(), entry.getValue());
@@ -40,15 +41,15 @@ public class BoundAndReward {
     /**
      * Increases the reward of the input-transitions by <amount>.
      */
-    private void addRewards(TranSet<ProductState<?>> trans, int amount) {
-        Set<TranSet<ProductState<?>>> transitionSplitted = splitIntoRelevantJunks(trans);
-        Map<Integer, TranSet<ProductState<?>>> toRemove = new HashMap<>();
-        Map<Integer, TranSet<ProductState<?>>> toAdd = new HashMap<>();
+    private void addRewards(TranSet<Product<FrequencySelfProductSlave.State>.ProductState> trans, int amount) {
+        Set<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> transitionSplitted = splitIntoRelevantJunks(trans);
+        Map<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> toRemove = new HashMap<>();
+        Map<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> toAdd = new HashMap<>();
 
         // find out the new rewards
-        for (TranSet<ProductState<?>> singleSet : transitionSplitted) {
+        for (TranSet<Product<FrequencySelfProductSlave.State>.ProductState> singleSet : transitionSplitted) {
             reward.put(0, singleSet);
-            for (Map.Entry<Integer, TranSet<ProductState<?>>> entry : reward.entrySet()) {
+            for (Map.Entry<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> entry : reward.entrySet()) {
                 if (entry.getValue().containsAll(singleSet)) {
                     if (entry.getKey() != 0) {
                         toRemove.put(entry.getKey(), singleSet);
@@ -62,13 +63,13 @@ public class BoundAndReward {
         }
 
         // adjust the rewards
-        for (Entry<Integer, TranSet<ProductState<?>>> entry : toRemove.entrySet()) {
-            TranSet<ProductState<?>> temporary = reward.get(entry.getKey());
+        for (Entry<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> entry : toRemove.entrySet()) {
+            TranSet<Product<FrequencySelfProductSlave.State>.ProductState> temporary = reward.get(entry.getKey());
             temporary.removeAll(entry.getValue());
             reward.put(entry.getKey(), temporary);
         }
-        for (Entry<Integer, TranSet<ProductState<?>>> entry : toAdd.entrySet()) {
-            TranSet<ProductState<?>> temporary = reward.get(entry.getKey());
+        for (Entry<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> entry : toAdd.entrySet()) {
+            TranSet<Product<FrequencySelfProductSlave.State>.ProductState> temporary = reward.get(entry.getKey());
             if (temporary == null) {
                 reward.put(entry.getKey(), entry.getValue());
             } else {
@@ -78,11 +79,11 @@ public class BoundAndReward {
         }
     }
 
-    private Set<TranSet<ProductState<?>>> splitIntoRelevantJunks(TranSet<ProductState<?>> trans) {
-        Set<TranSet<ProductState<?>>> result = new HashSet<>();
-        for (Entry<Integer, TranSet<ProductState<?>>> entry : reward.entrySet()) {
+    private Set<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> splitIntoRelevantJunks(TranSet<Product<FrequencySelfProductSlave.State>.ProductState> trans) {
+        Set<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> result = new HashSet<>();
+        for (Entry<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> entry : reward.entrySet()) {
             if (entry.getValue().intersects(trans)) {
-                TranSet<ProductState<?>> temp = new TranSet<>(valuationSetFactory);
+                TranSet<Product<FrequencySelfProductSlave.State>.ProductState> temp = new TranSet<>(valuationSetFactory);
                 entry.getValue().forEach(singleState -> {
                     if (trans.asMap().containsKey(singleState)) {
                         temp.addAll(singleState.getKey(), singleState.getValue().intersect(trans.asMap().get(singleState.getKey())));
@@ -106,8 +107,8 @@ public class BoundAndReward {
         return reward.keySet().size();
     }
 
-    public Set<Entry<Integer, TranSet<ProductState<?>>>> relevantEntries() {
-        HashMap<Integer, TranSet<Product.ProductState<?>>> result = new HashMap<>(reward);
+    public Set<Entry<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>>> relevantEntries() {
+        HashMap<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> result = new HashMap<>(reward);
         return result.entrySet();
     }
 

@@ -25,7 +25,6 @@ import rabinizer.Util;
 import rabinizer.DTGRMAAcceptance.BoundAndReward;
 import rabinizer.DTGRMAAcceptance.GeneralisedRabinWithMeanPayoffAcceptance;
 import rabinizer.automata.Master.State;
-import rabinizer.automata.Product.ProductState;
 import rabinizer.exec.Main;
 
 public class ControllerSynthesisTest {
@@ -73,8 +72,8 @@ public class ControllerSynthesisTest {
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
 
         ValuationSet valu = valuationSetFactory.createEmptyValuationSet();
-        Map<Edge<ProductState<?>>, ValuationSet> map = dtgra.getSuccessors(dtgra.getInitialState());
-        for (Entry<Edge<ProductState<?>>, ValuationSet> entry : map.entrySet()) {
+        Map<Edge<Product<FrequencySelfProductSlave.State>.ProductState>, ValuationSet> map = dtgra.getSuccessors(dtgra.getInitialState());
+        for (Entry<Edge<Product<FrequencySelfProductSlave.State>.ProductState>, ValuationSet> entry : map.entrySet()) {
             valu.addAll(entry.getValue());
         }
 
@@ -125,8 +124,8 @@ public class ControllerSynthesisTest {
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
 
         ValuationSet valu = valuationSetFactory.createEmptyValuationSet();
-        Map<Edge<ProductState<?>>, ValuationSet> map = dtgra.getSuccessors(dtgra.getInitialState());
-        for (Entry<Edge<ProductState<?>>, ValuationSet> entry : map.entrySet()) {
+        Map<Edge<Product<FrequencySelfProductSlave.State>.ProductState>, ValuationSet> map = dtgra.getSuccessors(dtgra.getInitialState());
+        for (Entry<Edge<Product<FrequencySelfProductSlave.State>.ProductState>, ValuationSet> entry : map.entrySet()) {
             valu.addAll(entry.getValue());
         }
 
@@ -185,9 +184,9 @@ public class ControllerSynthesisTest {
         DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
 
-        for (ProductState<?> state : dtgra.getStates()) {
+        for (Product<FrequencySelfProductSlave.State>.ProductState state : dtgra.getStates()) {
             ValuationSet valu = valuationSetFactory.createEmptyValuationSet();
-            for (Entry<Edge<ProductState<?>>, ValuationSet> edge : dtgra.getSuccessors(state).entrySet()) {
+            for (Entry<Edge<Product<FrequencySelfProductSlave.State>.ProductState>, ValuationSet> edge : dtgra.getSuccessors(state).entrySet()) {
                 assertFalse(valu.intersects(edge.getValue()));
                 valu.addAll(edge.getValue());
             }

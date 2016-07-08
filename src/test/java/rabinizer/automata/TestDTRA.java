@@ -19,7 +19,7 @@ public class TestDTRA {
         ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(0);
 
         DTGRAFactory automatonFactory = new DTGRAFactory(formula, equivalenceClassFactory, valuationSetFactory, AutomatonClassTest.standard);
-        Product dtgra = automatonFactory.constructAutomaton();
+        ProductRabinizer dtgra = automatonFactory.constructAutomaton();
         DTRA dtra = new DTRA(dtgra);
         assertTrue(dtra.getStates().size() < 10);
     }

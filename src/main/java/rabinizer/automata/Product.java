@@ -38,7 +38,7 @@ import omega_automaton.output.HOAConsumerGeneralisedRabin;
 import java.util.*;
 import java.util.function.Function;
 
-public abstract class Product extends Automaton<Product.ProductState<?>, GeneralisedRabinAcceptance<Product.ProductState<?>>> {
+public abstract class Product<S extends AbstractSelfProductSlave<S>.State> extends Automaton<Product<S>.ProductState, GeneralisedRabinAcceptance<Product<S>.ProductState>> {
 
     protected final Master primaryAutomaton;
 
@@ -73,9 +73,9 @@ public abstract class Product extends Automaton<Product.ProductState<?>, General
 
     protected abstract Map<UnaryModalOperator, ? extends AbstractSelfProductSlave<?>> getSecondaryAutomata();
 
-    protected final TranSet<ProductState<?>> getFailingProductTransitions(AbstractSelfProductSlave<?> slave, Set<MojmirSlave.State> finalStates) {
-        TranSet<ProductState<?>> failP = new TranSet<>(valuationSetFactory);
-        for (ProductState<?> ps : getStates()) {
+    protected final TranSet<ProductState> getFailingProductTransitions(AbstractSelfProductSlave<?> slave, Set<MojmirSlave.State> finalStates) {
+        TranSet<ProductState> failP = new TranSet<>(valuationSetFactory);
+        for (ProductState ps : getStates()) {
             failP.addAll(ps.getFailTransitions(slave.mojmir, finalStates));
 
         }
@@ -89,9 +89,9 @@ public abstract class Product extends Automaton<Product.ProductState<?>, General
      *            states rank=-1 means that the rank does not matter (used for
      *            ProductControllerSynthesis, F-slave).
      **/
-    protected final TranSet<ProductState<?>> getSucceedingProductTransitions(AbstractSelfProductSlave<?> slave, int rank, Set<MojmirSlave.State> finalStates) {
-        TranSet<ProductState<?>> succeedP = new TranSet<>(valuationSetFactory);
-        for (ProductState<?> ps : getStates()) {
+    protected final TranSet<ProductState> getSucceedingProductTransitions(AbstractSelfProductSlave<?> slave, int rank, Set<MojmirSlave.State> finalStates) {
+        TranSet<ProductState> succeedP = new TranSet<>(valuationSetFactory);
+        for (ProductState ps : getStates()) {
             succeedP.addAll(ps, ps.getSucceedTransitions(slave.mojmir, rank, finalStates));
         }
         return succeedP;
@@ -99,7 +99,7 @@ public abstract class Product extends Automaton<Product.ProductState<?>, General
 
     @Override
     public final void toHOABody(HOAConsumerExtended hoa) {
-        for (ProductState<?> s : getStates()) {
+        for (ProductState s : getStates()) {
             hoa.addState(s);
             getSuccessors(s).forEach((k, v) -> hoa.addEdge(v, k.successor));
             toHOABodyEdge(s, hoa);
@@ -118,11 +118,11 @@ public abstract class Product extends Automaton<Product.ProductState<?>, General
      * This method is important, because currently the acceptance is computed
      * after the product is constructed.
      */
-    protected void setAcceptance(GeneralisedRabinAcceptance<ProductState<?>> acc) {
+    protected void setAcceptance(GeneralisedRabinAcceptance<ProductState> acc) {
         this.acceptance = acc;
     }
 
-    public abstract class ProductState<S extends AbstractSelfProductSlave<S>.State> extends AbstractProductState<Master.State, UnaryModalOperator, S, ProductState<S>> implements AutomatonState<ProductState<S>> {
+    public abstract class ProductState extends AbstractProductState<Master.State, UnaryModalOperator, S, ProductState> implements AutomatonState<ProductState> {
 
         protected ProductState(Master.State primaryState, ImmutableMap<UnaryModalOperator, S> secondaryStates) {
             super(primaryState, secondaryStates);
@@ -130,8 +130,8 @@ public abstract class Product extends Automaton<Product.ProductState<?>, General
 
         public abstract ValuationSet getSucceedTransitions(MojmirSlave mojmir, int rank, Set<State> finalStates);
 
-        public TranSet<ProductState<?>> getFailTransitions(MojmirSlave mojmir, Set<State> finalStates) {
-            TranSet<ProductState<?>> fail = new TranSet<>(valuationSetFactory);
+        public TranSet<ProductState> getFailTransitions(MojmirSlave mojmir, Set<State> finalStates) {
+            TranSet<ProductState> fail = new TranSet<>(valuationSetFactory);
             S rs = secondaryStates.get(mojmir.label);
             if (rs != null) { // relevant slave
                 for (MojmirSlave.State fs : rs.keySet()) {

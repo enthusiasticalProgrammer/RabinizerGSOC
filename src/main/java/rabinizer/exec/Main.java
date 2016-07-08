@@ -116,18 +116,18 @@ public class Main {
 
         ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(mapping.values().size());
 
-        AbstractAutomatonFactory<?, ?> automataFactory;
+        AbstractAutomatonFactory<?, ?, ?> automataFactory;
         if (type == AutomatonType.MDP) {
             automataFactory = new DTGRMAFactory(inputFormula, factory, valuationSetFactory, opts);
         } else {
             automataFactory = new DTGRAFactory(inputFormula, factory, valuationSetFactory, opts);
         }
-        Product dtgra = automataFactory.constructAutomaton();
+        Product<?> dtgra = automataFactory.constructAutomaton();
 
         switch (type) {
             case SR:
             case TR:
-                return new DTRA(dtgra);
+                return new DTRA((ProductRabinizer) dtgra);
 
             case SGR:
             case TGR:

@@ -29,7 +29,7 @@ import ltl.equivalence.EquivalenceClassFactory;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, ProductRabinizer> {
+public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, RabinSlave.State, ProductRabinizer> {
 
     public DTGRAFactory(Formula phi, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> opts) {
         super(phi, equivalenceClassFactory, valuationSetFactory, opts);
@@ -37,23 +37,23 @@ public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, ProductRa
 
     @Override
     protected void constructAcceptance() {
-        GeneralisedRabinAcceptance<ProductState<?>> result = new GeneralisedRabinAcceptance<>(new ArrayList<>());
+        GeneralisedRabinAcceptance<Product<RabinSlave.State>.ProductState> result = new GeneralisedRabinAcceptance<>(new ArrayList<>());
         AccLocalRabinizer accLocal = new AccLocalRabinizer(product, valuationSetFactory, equivalenceClassFactory, opts);
 
-        Map<UnaryModalOperator, Map<Set<UnaryModalOperator>, Map<Integer, Tuple<TranSet<ProductState<?>>, TranSet<ProductState<?>>>>>> completeSlaveAcceptance = accLocal
+        Map<UnaryModalOperator, Map<Set<UnaryModalOperator>, Map<Integer, Tuple<TranSet<Product<RabinSlave.State>.ProductState>, TranSet<Product<RabinSlave.State>.ProductState>>>>> completeSlaveAcceptance = accLocal
                 .getAllSlaveAcceptanceConditions();
-        for (Entry<Map<UnaryModalOperator, Integer>, TranSet<ProductState<?>>> entry : accLocal.computeAccMasterOptions().entrySet()) {
+        for (Entry<Map<UnaryModalOperator, Integer>, TranSet<Product<RabinSlave.State>.ProductState>> entry : accLocal.computeAccMasterOptions().entrySet()) {
             Map<UnaryModalOperator, Integer> ranking = entry.getKey();
             Set<UnaryModalOperator> gSet = ranking.keySet();
 
-            TranSet<ProductState<?>> Fin = new TranSet<>(valuationSetFactory);
-            List<TranSet<ProductState<?>>> Infs = new ArrayList<>();
+            TranSet<Product<RabinSlave.State>.ProductState> Fin = new TranSet<>(valuationSetFactory);
+            List<TranSet<Product<RabinSlave.State>.ProductState>> Infs = new ArrayList<>();
             Fin.addAll(entry.getValue());
 
             for (UnaryModalOperator g : gSet) {
                 Set<UnaryModalOperator> localGSet = new HashSet<>(gSet);
                 localGSet.retainAll(accLocal.topmostSlaves.get(g));
-                Tuple<TranSet<ProductState<?>>, TranSet<ProductState<?>>> gPair;
+                Tuple<TranSet<Product<RabinSlave.State>.ProductState>, TranSet<Product<RabinSlave.State>.ProductState>> gPair;
                 gPair = completeSlaveAcceptance.get(g).get(localGSet).get(ranking.get(g));
 
                 Fin.addAll(gPair.left);
@@ -81,8 +81,8 @@ public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, ProductRa
     }
 
     public void removeRedundancyLightAfterEmptinessCheck() {
-        Collection<Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>>> toRemove = new HashSet<>();
-        for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> pair : product.getAcceptance().acceptanceCondition) {
+        Collection<Tuple<TranSet<Product<RabinSlave.State>.ProductState>, List<TranSet<Product<RabinSlave.State>.ProductState>>>> toRemove = new HashSet<>();
+        for (Tuple<TranSet<Product<RabinSlave.State>.ProductState>, List<TranSet<Product<RabinSlave.State>.ProductState>>> pair : product.getAcceptance().acceptanceCondition) {
             if (pair.right.stream().anyMatch(TranSet::isEmpty)) {
                 toRemove.add(pair);
             }
@@ -90,8 +90,9 @@ public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, ProductRa
         product.getAcceptance().acceptanceCondition.removeAll(toRemove);
 
         toRemove.clear();
-        for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> pair1 : product.getAcceptance().acceptanceCondition) {
-            for (Tuple<TranSet<ProductState<?>>, List<TranSet<ProductState<?>>>> pair2 : product.getAcceptance().acceptanceCondition) {
+        for (Tuple<TranSet<Product<RabinSlave.State>.ProductState>, List<TranSet<Product<RabinSlave.State>.ProductState>>> pair1 : product.getAcceptance().acceptanceCondition) {
+            for (Tuple<TranSet<Product<RabinSlave.State>.ProductState>, List<TranSet<Product<RabinSlave.State>.ProductState>>> pair2 : product
+                    .getAcceptance().acceptanceCondition) {
                 if (pair1.equals(pair2)) {
                     continue;
                 }

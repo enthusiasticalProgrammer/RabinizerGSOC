@@ -20,7 +20,7 @@ public class TestDTGRAFactory {
         ValuationSetFactory val = new BDDValuationSetFactory(2);
 
         DTGRAFactory automatonFactory = new DTGRAFactory(formula, factory, val, AutomatonClassTest.standard);
-        Product dtgra = automatonFactory.constructAutomaton();
+        ProductRabinizer dtgra = automatonFactory.constructAutomaton();
         assertTrue(dtgra.getAcceptance().acceptanceCondition.stream().allMatch(pair -> pair.right.stream().allMatch(p -> !p.isEmpty())));
     }
 
