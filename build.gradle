@@ -31,11 +31,11 @@ dependencies {
     compile 'com.google.guava:guava:19.0'
     compile 'com.google.code.findbugs:jsr305:3.0.1'
     compile 'it.unimi.dsi:fastutil:7.0.12'
-    compile 'de.tum.in:ltl-lib:0.0.9'
+    compile 'de.tum.in:ltl-lib:0.0.10'
     compile 'de.tum.in:omega-automaton-lib:0.0.8'
     compile files('lib/jhoafparser-1.1.1.jar')
     testCompile 'junit:junit:4+'
-    runtime 'jdd:jdd:107-lite'
+    runtime 'jdd:jdd:108'
 }
 
 // If a user file is present, include it.

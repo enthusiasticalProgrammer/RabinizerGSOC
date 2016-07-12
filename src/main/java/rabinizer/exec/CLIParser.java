@@ -18,6 +18,7 @@
 package rabinizer.exec;
 
 import com.google.common.collect.BiMap;
+import ltl.visitors.Collector;
 import org.apache.commons.cli.*;
 import rabinizer.automata.Optimisation;
 import rabinizer.frequencyLTL.MojmirOperatorVisitor;
@@ -296,7 +297,9 @@ public class CLIParser {
             }
 
             inputFormula = inputFormula.accept(new MojmirOperatorVisitor());
-            Set<GOperator> gSubformulae = inputFormula.gSubformulas();
+            Collector collector = new Collector(GOperator.class::isInstance);
+            inputFormula.accept(collector);
+            Set<Formula> gSubformulae = collector.getCollection();
             if (gSubformulae.stream().anyMatch(g -> g.accept(new ContainsVisitor(UOperator.class)))) {
                 throw new ParseException("The controller synthesis construction works only for fLTL\\GU."
                         + "If your formula contains no frequency-G, then maybe you want to drop the -U option to use the Rabinizer construction, which can cope with LTL");
