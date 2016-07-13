@@ -12,6 +12,6 @@ ltlcross:
     paths:
     - debug.ltl
   script:
-    - ./gradlew assemble
-    - tar xvf build/distributions/rabinizer-3.5-SNAPSHOT.tar
+    - ./gradlew distTar
+    - tar xfv build/distributions/rabinizer-3.5-SNAPSHOT.tar
     - ltlcross --timeout=600 --grind=debug.ltl -F "formulas/check.ltl" '{spot} ltl2tgba -H -f %f >%O' '{rabinizer} rabinizer-3.5-SNAPSHOT/bin/rabinizer -o 0 -f %f >%O'
