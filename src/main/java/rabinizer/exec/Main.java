@@ -22,6 +22,7 @@ import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerPrint;
 import jhoafparser.consumer.HOAIntermediateStoreAndManipulate;
 import jhoafparser.transformations.ToStateAcceptance;
+import ltl.visitors.RestrictToFGXU;
 import rabinizer.automata.*;
 import rabinizer.exec.CLIParser.AutomatonType;
 import omega_automaton.Automaton;
@@ -106,6 +107,7 @@ public class Main {
             ltl.equivalence.FactoryRegistry.Backend backend, Set<Optimisation> opts, BiMap<String, Integer> mapping) {
         nonsilent("Formula unsimplified: " + inputFormula);
 
+        inputFormula = inputFormula.accept(new RestrictToFGXU());
         inputFormula = Simplifier.simplify(inputFormula, simplify);
         if (opts.contains(Optimisation.SLAVE_SUSPENSION)) {
             inputFormula = Simplifier.simplify(inputFormula, Simplifier.Strategy.PULLUP_X);
