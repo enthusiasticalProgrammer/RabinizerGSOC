@@ -19,6 +19,7 @@ package rabinizer.exec;
 
 import com.google.common.collect.BiMap;
 import ltl.visitors.Collector;
+import ltl.visitors.RestrictToFGXU;
 import org.apache.commons.cli.*;
 import rabinizer.automata.Optimisation;
 import rabinizer.frequencyLTL.MojmirOperatorVisitor;
@@ -279,6 +280,8 @@ public class CLIParser {
                     "Error: either you gave me a formula in a file and one via command line and I don't know which one to choose, or you gave me neither nor. Maybe you want to take a look at the --help options below");
             throw new ParseException();
         }
+
+        inputFormula = inputFormula.accept(new RestrictToFGXU());
 
         if (cmd.hasOption('z')) {
             optimisations.remove(Optimisation.COMPUTE_ACC_CONDITION);

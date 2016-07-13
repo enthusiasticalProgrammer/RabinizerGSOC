@@ -107,7 +107,6 @@ public class Main {
             ltl.equivalence.FactoryRegistry.Backend backend, Set<Optimisation> opts, BiMap<String, Integer> mapping) {
         nonsilent("Formula unsimplified: " + inputFormula);
 
-        inputFormula = inputFormula.accept(new RestrictToFGXU());
         inputFormula = Simplifier.simplify(inputFormula, simplify);
         if (opts.contains(Optimisation.SLAVE_SUSPENSION)) {
             inputFormula = Simplifier.simplify(inputFormula, Simplifier.Strategy.PULLUP_X);
