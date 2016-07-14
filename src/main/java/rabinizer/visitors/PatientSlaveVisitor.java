@@ -24,7 +24,7 @@ import ltl.Formula;
 import ltl.XOperator;
 import ltl.visitors.Visitor;
 
-public class PatientSlaveVisitor implements Visitor<Boolean> {
+class PatientSlaveVisitor implements Visitor<Boolean> {
 
     @Override
     public Boolean visit(XOperator x) {

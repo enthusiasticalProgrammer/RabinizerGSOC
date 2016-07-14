@@ -80,11 +80,13 @@ public class SkeletonVisitor implements Visitor<Set<Set<UnaryModalOperator>>> {
     @Override
     public Set<Set<UnaryModalOperator>> visit(FOperator fOperator) {
         Set<Set<UnaryModalOperator>> result = fOperator.operand.accept(this);
+
         if (fOperator instanceof FOperatorForMojmir) {
             Set<UnaryModalOperator> singleton = new HashSet<>();
             singleton.add(fOperator);
             result.add(singleton);
         }
+
         return result;
     }
 

@@ -64,6 +64,7 @@ public abstract class AbstractFormulaState {
         BitSet letters = new BitSet();
 
         Collection<Formula> literals;
+
         if(unfoldG){
             literals = clazz.unfold().getSupport();
         }else{

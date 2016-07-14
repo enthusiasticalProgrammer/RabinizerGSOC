@@ -20,6 +20,7 @@ public class UnfoldNoSlaveOperatorVisitor extends DefaultConverter {
     public Formula visit(XOperator x) {
         return x;
     }
+
     @Override
     public Formula visit(FOperator fOperator) {
         if (fOperator instanceof FOperatorForMojmir) {
