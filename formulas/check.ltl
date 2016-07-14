@@ -1,5 +1,4 @@
 0
-1
 a
 F a
 G a
@@ -30,9 +29,6 @@ Fb & Fc
 F(Ga | GFb)
 F(Ga | GFb) & F(Gc | GFd)
 F(Ga | GFb) & F(Gc | GFd) & F(Gh | GFk)
-F(Ga | Gb | Gc | Gh | GFk | Gd)
-GF(a | GFb)
-GF(a | GFb)
 GF(a | GFb)
 Fp U Gq
 Gp U q
