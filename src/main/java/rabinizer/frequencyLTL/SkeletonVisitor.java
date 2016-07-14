@@ -60,21 +60,26 @@ public class SkeletonVisitor implements Visitor<Set<Set<UnaryModalOperator>>> {
 
     @Override
     public Set<Set<UnaryModalOperator>> visit(Disjunction disjunction) {
-        Set<Set<UnaryModalOperator>> skeleton = new HashSet<>();
-        disjunction.children.forEach(e -> skeleton.addAll(e.accept(this)));
-        final Set<Set<Set<UnaryModalOperator>>> result = Sets.powerSet(skeleton);
+        Set<Set<UnaryModalOperator>> current = new HashSet<>();
+        Set<Set<UnaryModalOperator>> next = new HashSet<>();
 
-        Set<Set<UnaryModalOperator>> finalResult = new HashSet<>();
-        for (Set<Set<UnaryModalOperator>> s : result) {
-            if (s.isEmpty()) {
-                continue;
+        for (Formula child : disjunction.children) {
+            Set<Set<UnaryModalOperator>> skeleton = child.accept(this);
+
+            next.addAll(current);
+            next.addAll(skeleton);
+
+            for (Set<UnaryModalOperator> set1 : skeleton) {
+                for (Set<UnaryModalOperator> set2 : current) {
+                    next.add(new HashSet<>(Sets.union(set1, set2)));
+                }
             }
 
-            Set<UnaryModalOperator> union = new HashSet<>();
-            s.stream().forEach(union::addAll);
-            finalResult.add(union);
+            current = next;
+            next = new HashSet<>(current.size());
         }
-        return finalResult;
+
+        return current;
     }
 
     @Override
