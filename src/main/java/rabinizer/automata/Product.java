@@ -62,10 +62,6 @@ public abstract class Product<S extends AbstractSelfProductSlave<S>.State> exten
             primaryState.getClazz().getSupport().forEach(f -> keys.addAll(f.accept(new SlaveSubformulaVisitor())));
         }
 
-        if (primaryState instanceof SuspendedMaster.State && ((SuspendedMaster.State) primaryState).slavesSuspended) {
-            return Collections.emptySet();
-        }
-
         return keys;
     }
 
@@ -162,33 +158,6 @@ public abstract class Product<S extends AbstractSelfProductSlave<S>.State> exten
 
         public S getSecondaryState(UnaryModalOperator key) {
             return this.secondaryStates.get(key);
-        }
-
-        @Override
-        protected Iterable<Tuple<Map<UnaryModalOperator, S>, ValuationSet>> secondaryJointMove(Set<UnaryModalOperator> keys, ValuationSet maxVs) {
-            ArrayDeque<Tuple<Map<UnaryModalOperator, S>, ValuationSet>> result = new ArrayDeque<>();
-            if (this.primaryState instanceof SuspendedMaster.State) {
-                SuspendedMaster.State mine = (SuspendedMaster.State) this.primaryState;
-                if (mine.slavesSuspended) {
-                    Map<Edge<Master.State>, ValuationSet> primarySuccessors = getPrimaryAutomaton().getSuccessors(primaryState);
-
-                    for (Map.Entry<Edge<Master.State>, ValuationSet> entry1 : primarySuccessors.entrySet()) {
-                        Map<UnaryModalOperator, S> map = new HashMap<>();
-                        if (!((SuspendedMaster.State) entry1.getKey().successor).slavesSuspended) {
-                            for (UnaryModalOperator g : relevantSecondary(entry1.getKey().successor)) {
-                                map.put(g, getSecondaryAutomata().get(g).getInitialState());
-                            }
-                        }
-                        ValuationSet valu = entry1.getValue().intersect(maxVs);
-                        if (!valu.isEmpty()) {
-                            result.add(new Tuple<>(map, valu));
-                        }
-                    }
-                    return result;
-                }
-            }
-
-            return super.secondaryJointMove(keys, maxVs);
         }
     }
 }

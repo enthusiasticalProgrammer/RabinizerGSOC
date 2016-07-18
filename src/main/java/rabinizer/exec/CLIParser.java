@@ -23,11 +23,14 @@ import ltl.visitors.RestrictToFGXU;
 import org.apache.commons.cli.*;
 import rabinizer.automata.Optimisation;
 import rabinizer.frequencyLTL.MojmirOperatorVisitor;
+import rabinizer.frequencyLTL.TopMostOperatorVisitor;
 import ltl.visitors.ContainsVisitor;
+import ltl.visitors.RestrictToFGXU;
 import ltl.Formula;
 import ltl.FrequencyG;
 import ltl.GOperator;
 import ltl.UOperator;
+import ltl.UnaryModalOperator;
 import ltl.equivalence.FactoryRegistry;
 import ltl.parser.Parser;
 import ltl.parser.ParseException;
@@ -52,7 +55,7 @@ public class CLIParser {
         result.addOption("m", "format", true,
                 "The format in which the automaton is stored. Possible values are hoa (default), dot for the dot syntax.");
         result.addOption("p", "optimisations", true,
-                "This option defines, if optimisations are to be used or not. Possible values are on, off, and experimental (meaning that the experimental slave-suspension is used and all other optimisations too). The default is on");
+                "This option defines, if optimisations are to be used or not. Possible values are on and off. The default is on");
         result.addOption("e", "eager", false,
                 "This option defines, if eager unfolding is done. Per default it is on if the optimisation flag is on.");
         result.addOption("s", "skeleton", false,
@@ -63,8 +66,6 @@ public class CLIParser {
                 "This option defines, if the initial state of the Rabin-slaves is to be optimised. Per default it is on if the optimisation flag is set to on.");
         result.addOption("t", "emptiness-check", false,
                 "This option defines, if at the end of the construction, and emptiness-check is done and all nonaccepting SCCs are removed, and some acceptance conditions are diminished. Per default it is enabled if the optimisation flag is set to on.");
-        result.addOption("l", "slave-suspension", false,
-                "This option defines, if the slaves can wait until they are useful. This feature is yet experimental and may produce errors (in around 1 out of 1000 formulae).Per default it is on if the optimisation flag is experimental. This requires a simplify-formula level of 2.");
         result.addOption("y", "simplify-formula", true,
                 "This defines the level of simplification which is used on the formula. Possible values are 0 for only propositional simplification, 1 for modal simplification, and 2 for aggressive simplification. The default is 0, if optimisation is off , and 2 if optimisation is on.");
         result.addOption("u", "output-file", true, "The name of the file, in which the automaton has to be printed. Per default the automaton gets printed on the terminal");
@@ -86,7 +87,6 @@ public class CLIParser {
         Format format = Format.HOA;
 
         Set<Optimisation> optimisations = EnumSet.allOf(Optimisation.class);
-        optimisations.remove(Optimisation.SLAVE_SUSPENSION);
 
         Simplifier.Strategy simplification = Simplifier.Strategy.NONE;
         OutputStream writer = System.out;
@@ -110,9 +110,6 @@ public class CLIParser {
                     optimisations.clear();
                     break;
                 case "on":
-                    break;
-                case "experimental":
-                    optimisations.add(Optimisation.SLAVE_SUSPENSION);
                     break;
                 default:
                     System.out.println("wrong optimisations-argument. Look at the help printed below.");
@@ -188,10 +185,6 @@ public class CLIParser {
             optimisations.add(Optimisation.ONLY_RELEVANT_SLAVES);
         }
 
-        if (cmd.hasOption('l')) {
-            optimisations.add(Optimisation.SLAVE_SUSPENSION);
-        }
-
         if (cmd.hasOption('i')) {
             optimisations.add(Optimisation.OPTIMISE_INITIAL_STATE);
         }
@@ -204,21 +197,14 @@ public class CLIParser {
             try {
                 switch (Integer.parseInt(cmd.getOptionValue('y'))) {
                     case 0:
-                        if (optimisations.contains(Optimisation.SLAVE_SUSPENSION)) {
-                            System.out.println("You cannot slave suspension at a simplify-formula-level below 2.");
-                            throw new ParseException();
-                        } else if (optimisations.contains(Optimisation.SKELETON) && outputLevel != 0) {
+                        if (optimisations.contains(Optimisation.SKELETON) && outputLevel != 0) {
                             System.out.println(
                                     "It is rather bad to use skeleton together with a simplify-formula level below 1. You can continue, but don't be astonished if an exception is raised during the computation.");
                         }
-
+                        simplification = Simplifier.Strategy.NONE;
                         break;
 
                     case 1:
-                        if (optimisations.contains(Optimisation.SLAVE_SUSPENSION)) {
-                            System.out.println("You cannot slave suspension at a simplify-formula-level below 2.");
-                            throw new ParseException();
-                        }
                         simplification = Simplifier.Strategy.MODAL;
                         break;
 
@@ -298,12 +284,9 @@ public class CLIParser {
             if (outputLevel != 0) {
                 System.out.println("Warning: Optimisations and simplification have been disabled.");
             }
-
             inputFormula = inputFormula.accept(new MojmirOperatorVisitor());
-            Collector collector = new Collector(GOperator.class::isInstance);
-            inputFormula.accept(collector);
-            Set<Formula> gSubformulae = collector.getCollection();
-            if (gSubformulae.stream().anyMatch(g -> g.accept(new ContainsVisitor(UOperator.class)))) {
+            Set<UnaryModalOperator> gSubformulae = inputFormula.accept(new TopMostOperatorVisitor());
+            if (gSubformulae.stream().filter(op -> op instanceof GOperator).anyMatch(g -> g.accept(new ContainsVisitor(UOperator.class)))) {
                 throw new ParseException("The controller synthesis construction works only for fLTL\\GU."
                         + "If your formula contains no frequency-G, then maybe you want to drop the -U option to use the Rabinizer construction, which can cope with LTL");
             }

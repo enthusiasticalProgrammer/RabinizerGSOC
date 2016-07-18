@@ -137,13 +137,7 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
     final Master constructMaster() {
         Main.nonsilent("========================================");
         Main.nonsilent("Generating primaryAutomaton:\n");
-        Master master;
-
-        if (opts.contains(Optimisation.SLAVE_SUSPENSION)) {
-            master = new SuspendedMaster(phi, equivalenceClassFactory, valuationSetFactory, opts);
-        } else {
-            master = new Master(phi, equivalenceClassFactory, valuationSetFactory, opts);
-        }
+        Master master = new Master(phi, equivalenceClassFactory, valuationSetFactory, opts);
         master.generate();
         if (!Main.silent) {
             HOAConsumerPrint hoa = new HOAConsumerPrint(System.out);

@@ -108,9 +108,6 @@ public class Main {
         nonsilent("Formula unsimplified: " + inputFormula);
 
         inputFormula = Simplifier.simplify(inputFormula, simplify);
-        if (opts.contains(Optimisation.SLAVE_SUSPENSION)) {
-            inputFormula = Simplifier.simplify(inputFormula, Simplifier.Strategy.PULLUP_X);
-        }
         nonsilent("Formula simplified:" + inputFormula);
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(backend, inputFormula);
