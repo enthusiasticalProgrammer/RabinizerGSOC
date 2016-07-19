@@ -26,11 +26,11 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Objects;
 
-public abstract class AbstractFormulaState {
+abstract class AbstractFormulaState {
 
-    protected final EquivalenceClass clazz;
+    final EquivalenceClass clazz;
 
-    protected AbstractFormulaState(EquivalenceClass clazz) {
+    AbstractFormulaState(EquivalenceClass clazz) {
         this.clazz = clazz;
     }
 

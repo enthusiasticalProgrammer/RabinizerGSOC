@@ -40,9 +40,8 @@ import java.util.function.Function;
 
 public abstract class Product<S extends AbstractSelfProductSlave<S>.State> extends Automaton<Product<S>.ProductState, GeneralisedRabinAcceptance<Product<S>.ProductState>> {
 
-    protected final Master primaryAutomaton;
-
-    protected final boolean allSlaves;
+    final Master primaryAutomaton;
+    final boolean allSlaves;
 
     public Product(Master primaryAutomaton, ValuationSetFactory factory, Collection<Optimisation> optimisations) {
         super(factory);

@@ -30,23 +30,19 @@ import javax.annotation.Nullable;
 import java.util.BitSet;
 import java.util.Collection;
 
-public class Master extends Automaton<Master.State, AllAcceptance> {
+class Master extends Automaton<Master.State, AllAcceptance> {
 
     final boolean eager;
     @Nullable
     final EquivalenceClass initialClazz;
 
-    public Master(@Nullable EquivalenceClass clazz, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
+    Master(@Nullable EquivalenceClass clazz, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
         super(valuationSetFactory);
         initialClazz = clazz;
         eager = optimisations.contains(Optimisation.EAGER);
     }
 
-    public Master(ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
-        this(null, valuationSetFactory, optimisations);
-    }
-
-    public Master(Formula formula, EquivalenceClassFactory equivalenceClassFactory,
+    Master(Formula formula, EquivalenceClassFactory equivalenceClassFactory,
                   ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
         this(equivalenceClassFactory.createEquivalenceClass(formula), valuationSetFactory, optimisations);
     }
@@ -76,10 +72,6 @@ public class Master extends Automaton<Master.State, AllAcceptance> {
         }
     }
 
-    protected boolean suppressEdge(EquivalenceClass current, EquivalenceClass successor) {
-        return successor.isFalse();
-    }
-
     public class State extends AbstractFormulaState implements AutomatonState<State> {
 
         public State(EquivalenceClass clazz) {
@@ -91,7 +83,7 @@ public class Master extends Automaton<Master.State, AllAcceptance> {
         public Edge<State> getSuccessor(BitSet valuation) {
             EquivalenceClass successor = step(clazz, valuation);
 
-            if (suppressEdge(clazz, successor)) {
+            if (successor.isFalse()) {
                 return null;
             }
 

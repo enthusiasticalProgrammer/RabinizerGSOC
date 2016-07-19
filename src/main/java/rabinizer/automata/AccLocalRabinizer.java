@@ -19,8 +19,7 @@ import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.automata.MojmirSlave.State;
 import rabinizer.frequencyLTL.SlaveSubformulaVisitor;
 
-public class AccLocalRabinizer extends
-AccLocal<Map<UnaryModalOperator, Integer>, TranSet<Product<RabinSlave.State>.ProductState>, Map<Integer, Tuple<TranSet<Product<RabinSlave.State>.ProductState>, TranSet<Product<RabinSlave.State>.ProductState>>>, RabinSlave.State, ProductRabinizer> {
+class AccLocalRabinizer extends AccLocal<Map<UnaryModalOperator, Integer>, TranSet<Product<RabinSlave.State>.ProductState>, Map<Integer, Tuple<TranSet<Product<RabinSlave.State>.ProductState>, TranSet<Product<RabinSlave.State>.ProductState>>>, RabinSlave.State, ProductRabinizer> {
 
     private final Map<UnaryModalOperator, Integer> maxRank = new HashMap<>();
 
