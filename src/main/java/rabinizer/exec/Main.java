@@ -103,7 +103,7 @@ public class Main {
         arguments.writer.close();
     }
 
-    public static Automaton<?, ?> computeAutomaton(Formula inputFormula, CLIParser.AutomatonType type, Simplifier.Strategy simplify,
+    private static Automaton<?, ?> computeAutomaton(Formula inputFormula, CLIParser.AutomatonType type, Simplifier.Strategy simplify,
             ltl.equivalence.FactoryRegistry.Backend backend, Set<Optimisation> opts, BiMap<String, Integer> mapping) {
         nonsilent("Formula unsimplified: " + inputFormula);
 
@@ -115,11 +115,13 @@ public class Main {
         ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(mapping.values().size());
 
         AbstractAutomatonFactory<?, ?, ?> automataFactory;
+
         if (type == AutomatonType.MDP) {
             automataFactory = new DTGRMAFactory(inputFormula, factory, valuationSetFactory, opts);
         } else {
             automataFactory = new DTGRAFactory(inputFormula, factory, valuationSetFactory, opts);
         }
+
         Product<?> dtgra = automataFactory.constructAutomaton();
 
         switch (type) {

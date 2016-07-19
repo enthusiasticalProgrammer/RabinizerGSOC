@@ -41,11 +41,11 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
-public class CLIParser {
+class CLIParser {
 
-    public static final Options opts = makeOptions();
+    private static final Options opts = makeOptions();
 
-    public static Options makeOptions() {
+    private static Options makeOptions() {
         Options result = new Options();
         result.addOption("h", "help", false, "prints this help and exits.");
         result.addOption("o", "output-level", true,
@@ -78,7 +78,7 @@ public class CLIParser {
         return result;
     }
 
-    public static CmdArguments parseArgs(String... args) throws ParseException {
+    static CmdArguments parseArgs(String... args) throws ParseException {
         CommandLineParser lvParser = new DefaultParser();
         CommandLine cmd;
 
