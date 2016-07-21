@@ -11,7 +11,7 @@ ltlcross:
   script:
     - ./gradlew distTar
     - tar xvf build/distributions/Rabinizer-3.5-SNAPSHOT.tar
-    - ltlcross --stop-on-error --timeout=300 -F "formulas/all.ltl" '{spot} ltl2tgba -H -f %f >%O' '{rabinizer} Rabinizer-3.5-SNAPSHOT/bin/Rabinizer -o 0 -p off -f %f >%O'
+    - ltlcross --stop-on-error --timeout=300 -F "formulas/small.ltl" '{spot} ltl2tgba -H -f %f >%O' '{rabinizer} Rabinizer-3.5-SNAPSHOT/bin/Rabinizer -o 0 -p off -f %f >%O'
 
 ltlcross-optimisations:
   stage: test
