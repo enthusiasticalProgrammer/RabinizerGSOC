@@ -106,17 +106,29 @@ public class ProductControllerSynthesis extends Product<FrequencySelfProductSlav
 
                     for (Set<MojmirSlave.State> stateSet : Sets.powerSet(succeedingTransitions.keySet())) {
                         if (stateSet.stream().mapToInt(s -> rs.get(s)).sum() == rank) {
-                            ValuationSet succeeder = valuationSetFactory.createUniverseValuationSet();
+                            ValuationSet successor = valuationSetFactory.createUniverseValuationSet();
                             for (MojmirSlave.State state : stateSet) {
-                                succeeder.retainAll(succeedingTransitions.get(state));
+                                successor.retainAll(succeedingTransitions.get(state));
                             }
-                            succeed.addAll(succeeder);
+                            removeAllTransitionsCoveredByALargerRank(rank, rs, succeedingTransitions, successor);
+                            succeed.addAll(successor);
                         }
                     }
                 }
             }
 
             return succeed;
+        }
+
+        private void removeAllTransitionsCoveredByALargerRank(int rank, FrequencySelfProductSlave.State rs, Map<MojmirSlave.State, ValuationSet> succeedingTransitions,
+                ValuationSet successor) {
+            for (Set<MojmirSlave.State> set : Sets.powerSet(succeedingTransitions.keySet())) {
+                if (set.stream().mapToInt(s -> rs.get(s)).sum() > rank) {
+                    for (MojmirSlave.State state : set) {
+                        successor.removeAll(succeedingTransitions.get(state));
+                    }
+                }
+            }
         }
 
     }
