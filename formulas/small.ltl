@@ -32,7 +32,6 @@ Gp U q
 Gq | ((p | q) U p)
 G(!p | Fq)
 G((q | XGp) & (r | XG!p))
-F(Gb | GF(a & XXb)) & FG(c | X(a & Xb))
 G(F(c & XXa) & F(a & Xb))
 F(Gb | GFa) & F(GFc | G(d | Xe))
 F(Gb | GF(a & XXc)) & F(GFc | G(d | X(a & Xb)))
