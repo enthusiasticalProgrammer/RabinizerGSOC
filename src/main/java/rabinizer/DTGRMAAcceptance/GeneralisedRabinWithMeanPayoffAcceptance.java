@@ -36,7 +36,7 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
 
     @Override
     public String getName() {
-        return ""; // HOA does not support our acceptance type
+        return null; // HOA does not support our acceptance type
     }
 
     @Override
