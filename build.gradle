@@ -16,20 +16,22 @@
  */
 
 apply plugin: 'java'
+apply plugin: 'findbugs'
 apply plugin: 'application'
 
 version = '3.5-SNAPSHOT'
 mainClassName = 'rabinizer.exec.Main'
 
 repositories {
-    maven {url 'https://www7.in.tum.de/~sickert/maven/'}
+    maven { url 'https://www7.in.tum.de/~sickert/maven/' }
     mavenCentral()
 }
 
 dependencies {
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.1'
+    compileOnly 'com.google.code.findbugs:annotations:3.0.1'
     compile 'commons-cli:commons-cli:1.3'
     compile 'com.google.guava:guava:19.0'
-    compile 'com.google.code.findbugs:jsr305:3.0.1'
     compile 'it.unimi.dsi:fastutil:7.0.12'
     compile 'de.tum.in:ltl-lib:0.0.11'
     compile 'de.tum.in:omega-automaton-lib:0.0.9'
