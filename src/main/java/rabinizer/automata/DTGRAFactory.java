@@ -17,7 +17,6 @@
 
 package rabinizer.automata;
 
-import rabinizer.automata.Product.ProductState;
 import omega_automaton.acceptance.GeneralisedRabinAcceptance;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.Tuple;
