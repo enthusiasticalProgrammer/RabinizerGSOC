@@ -5,6 +5,10 @@ build:
   stage: build
   script:
     - ./gradlew build
+  artifacts:
+    paths:
+    - build/reports/
+    when: on_failure
 
 ltlcross:
   stage: test
