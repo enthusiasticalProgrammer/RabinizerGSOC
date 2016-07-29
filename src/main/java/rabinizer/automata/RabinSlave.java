@@ -92,8 +92,8 @@ public final class RabinSlave extends AbstractSelfProductSlave<RabinSlave.State>
                 if (stateIntegerEntry.getValue() < rank) {
                     for (MojmirSlave.State fs : keySet()) {
                         for (MojmirSlave.State succ : mojmir.getStates()) {
-                            ValuationSet vs1 = mojmir.getSuccessors(stateIntegerEntry.getKey()).get(succ);
-                            ValuationSet vs2 = mojmir.getSuccessors(fs).get(succ);
+                            ValuationSet vs1 = getValuationForBuyTrans(stateIntegerEntry.getKey(), succ);
+                            ValuationSet vs2 = getValuationForBuyTrans(fs, succ);
                             if (!finalStates.contains(succ) && vs1 != null && vs2 != null) {
                                 if (!stateIntegerEntry.getKey().equals(fs)) {
                                     vs1 = vs1.clone();
@@ -109,6 +109,17 @@ public final class RabinSlave extends AbstractSelfProductSlave<RabinSlave.State>
                 }
             }
             return buy;
+        }
+
+        private ValuationSet getValuationForBuyTrans(MojmirSlave.State precessor, MojmirSlave.State successor) {
+            Map<Edge<MojmirSlave.State>, ValuationSet> successors = mojmir.getSuccessors(precessor);
+            ValuationSet result = valuationSetFactory.createEmptyValuationSet();
+            for (Entry<Edge<MojmirSlave.State>, ValuationSet> entry : successors.entrySet()) {
+                if (entry.getKey().successor.equals(successor)) {
+                    result.addAll(entry.getValue());
+                }
+            }
+            return result;
         }
     }
 }
