@@ -35,6 +35,8 @@ import ltl.parser.ParseException;
 import ltl.simplifier.Simplifier;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.Set;
 
 public class Main {
@@ -93,7 +95,7 @@ public class Main {
 
         nonsilent("Done!");
 
-        HOAConsumer outputPipeline = arguments.format == CLIParser.Format.DOT ? new omega_automaton.output.DotPrinter(arguments.writer) : new HOAConsumerPrint(arguments.writer);
+        HOAConsumer outputPipeline = arguments.format == CLIParser.Format.DOT ? new omega_automaton.output.DotPrinter(new PrintWriter(arguments.writer)) : new HOAConsumerPrint(arguments.writer);
 
         if (arguments.autType == CLIParser.AutomatonType.SGR || arguments.autType == CLIParser.AutomatonType.SR) {
             outputPipeline = new HOAIntermediateStoreAndManipulate(outputPipeline, new ToStateAcceptance());

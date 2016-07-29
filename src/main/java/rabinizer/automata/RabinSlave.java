@@ -94,7 +94,7 @@ final class RabinSlave extends AbstractSelfProductSlave<RabinSlave.State> {
                             ValuationSet vs2 = getValuationForBuyTrans(fs, succ);
                             if (!finalStates.contains(succ) && vs1 != null && vs2 != null) {
                                 if (!stateIntegerEntry.getKey().equals(fs)) {
-                                    vs1 = vs1.clone();
+                                    vs1 = vs1.copy();
                                     vs1.retainAll(vs2);
                                     buy.addAll(vs1);
                                 } else if (succ.equals(mojmir.getInitialState())) {

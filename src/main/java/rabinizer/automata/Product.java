@@ -26,10 +26,8 @@ import rabinizer.automata.MojmirSlave.State;
 import rabinizer.frequencyLTL.SlaveSubformulaVisitor;
 import omega_automaton.Automaton;
 import omega_automaton.AutomatonState;
-import omega_automaton.Edge;
 import omega_automaton.acceptance.GeneralisedRabinAcceptance;
 import omega_automaton.collections.TranSet;
-import omega_automaton.collections.Tuple;
 import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import omega_automaton.output.HOAConsumerExtended;
@@ -62,6 +60,10 @@ public abstract class Product<S extends AbstractSelfProductSlave<S>.State> exten
         }
 
         return keys;
+    }
+
+    boolean containsAllTransitions(TranSet<ProductState> trans) {
+        return transitions.entrySet().stream().allMatch(entry -> entry.getValue().entrySet().stream().allMatch(succ -> trans.containsAll(entry.getKey(), succ.getValue())));
     }
 
     protected abstract Set<UnaryModalOperator> getKeys();

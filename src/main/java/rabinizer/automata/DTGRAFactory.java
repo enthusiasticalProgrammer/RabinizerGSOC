@@ -56,7 +56,7 @@ public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, RabinSlav
                 gPair = completeSlaveAcceptance.get(g).get(localGSet).get(ranking.get(g));
 
                 Fin.addAll(gPair.left);
-                Infs.add(gPair.right.clone());
+                Infs.add(gPair.right.copy());
             }
             result.acceptanceCondition.add(new Tuple<>(Fin, Infs));
         }
@@ -64,15 +64,15 @@ public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, RabinSlav
         product.setAcceptance(result);
     }
 
+    /**
+     * Side effect: empty sink-SCCs get deleted, acceptance condition gets
+     * reduced when possible
+     *
+     * @return true if automaton together witch acceptance condition is
+     *         empty
+     */
     @Override
     protected void doPostProcessingOptimisations() {
-        /**
-         * Side effect: empty sink-SCCs get deleted, acceptance condition gets
-         * reduced when possible
-         *
-         * @return true if automaton together witch acceptance condition is
-         *         empty
-         */
         if (opts.contains(Optimisation.EMPTINESS_CHECK)) {
             EmptinessCheck.checkEmptinessAndMinimiseSCCBasedProduct(product);
             removeRedundancyLightAfterEmptinessCheck();
