@@ -9,6 +9,7 @@ build:
     paths:
     - build/reports/
     when: on_failure
+    expire_in: 1 week
 
 ltlcross:
   stage: test
