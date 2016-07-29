@@ -41,7 +41,7 @@ import java.util.function.Function;
 public abstract class Product<S extends AbstractSelfProductSlave<S>.State> extends Automaton<Product<S>.ProductState, GeneralisedRabinAcceptance<Product<S>.ProductState>> {
 
     final Master primaryAutomaton;
-    final boolean allSlaves;
+    private final boolean allSlaves;
 
     public Product(Master primaryAutomaton, ValuationSetFactory factory, Collection<Optimisation> optimisations) {
         super(factory);
@@ -155,7 +155,7 @@ public abstract class Product<S extends AbstractSelfProductSlave<S>.State> exten
             return relevantSecondarySlaves(primaryState);
         }
 
-        public S getSecondaryState(UnaryModalOperator key) {
+        S getSecondaryState(UnaryModalOperator key) {
             return this.secondaryStates.get(key);
         }
     }

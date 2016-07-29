@@ -31,19 +31,19 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
-public abstract class AbstractProductState<P extends AutomatonState<P>, K, S extends AbstractSelfProductSlave<S>.State, T> extends ImmutableObject {
+abstract class AbstractProductState<P extends AutomatonState<P>, K, S extends AbstractSelfProductSlave<S>.State, T> extends ImmutableObject {
 
-    private static BitSet defaultBitSet = new BitSet(0);
+    private static final BitSet defaultBitSet = new BitSet(0);
 
-    protected final P primaryState;
-    protected final ImmutableMap<K, S> secondaryStates;
+    final P primaryState;
+    final ImmutableMap<K, S> secondaryStates;
 
-    protected AbstractProductState(P primaryState, ImmutableMap<K, S> secondaryStates) {
+    AbstractProductState(P primaryState, ImmutableMap<K, S> secondaryStates) {
         this.primaryState = primaryState;
         this.secondaryStates = secondaryStates;
     }
 
-    protected AbstractProductState(P primaryState, Iterable<K> keys, Function<K, S> constructor) {
+    AbstractProductState(P primaryState, Iterable<K> keys, Function<K, S> constructor) {
         this.primaryState = primaryState;
 
         ImmutableMap.Builder<K, S> builder = ImmutableMap.builder();
@@ -145,7 +145,7 @@ public abstract class AbstractProductState<P extends AutomatonState<P>, K, S ext
 
     protected abstract T constructState(P primaryState, ImmutableMap<K, S> secondaryStates);
 
-    protected Iterable<Tuple<Map<K, S>, ValuationSet>> secondaryJointMove(Set<K> keys, ValuationSet maxVs) {
+    private Iterable<Tuple<Map<K, S>, ValuationSet>> secondaryJointMove(Set<K> keys, ValuationSet maxVs) {
         Map<K, ? extends Automaton<S, ?>> secondary = getSecondaryAutomata();
 
         Deque<Tuple<Map<K, S>, ValuationSet>> current = new ArrayDeque<>();

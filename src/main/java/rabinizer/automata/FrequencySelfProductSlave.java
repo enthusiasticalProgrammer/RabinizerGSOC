@@ -40,8 +40,8 @@ public final class FrequencySelfProductSlave extends AbstractSelfProductSlave<Fr
 
         @Override
         public Edge<State> getSuccessor(BitSet valuation) {
+            State successor = new State();
 
-            State succ = new State();
             // Move tokens, make use of acyclicity:
             List<Set<MojmirSlave.State>> SCCStates = SCCAnalyser.SCCsStates(mojmir);
             SCCStates.stream().forEach(set -> set.removeIf(state -> mojmir.isSink(state)));
@@ -51,20 +51,18 @@ public final class FrequencySelfProductSlave extends AbstractSelfProductSlave<Fr
                 if (stateSet.size() != 1) {
                     throw new RuntimeException("The size of this set is not one. This means that the MojmirSlave is not acyclic, which means that there is a bug.");
                 }
-                stateSet.stream().forEach(s->{
-                    MojmirSlave.State succMojmir=s.getSuccessor(valuation).successor;
+                stateSet.stream().forEach(s -> {
+                    MojmirSlave.State succMojmir = s.getSuccessor(valuation).successor;
                     if(!mojmir.isSink(succMojmir)){
-                        succ.put(succMojmir, (this.get(s) == null ? 0 : this.get(s)) + (succ.get(succMojmir) == null ? 0 : succ.get(succMojmir)));
+                        successor.put(succMojmir, (this.get(s) == null ? 0 : this.get(s)) + (successor.get(succMojmir) == null ? 0 : successor.get(succMojmir)));
                     }
-                    succ.put(s, 0);
+                    successor.put(s, 0);
                 });
             }
 
             // add initial token
-            succ.put(mojmir.getInitialState(), 1 + (succ.get(mojmir.getInitialState()) == null ? 0 : succ.get(mojmir.getInitialState())));
-            return new Edge<>(succ, new BitSet(0));
+            successor.put(mojmir.getInitialState(), 1 + (successor.get(mojmir.getInitialState()) == null ? 0 : successor.get(mojmir.getInitialState())));
+            return new Edge<>(successor, new BitSet(0));
         }
-
     }
-
 }

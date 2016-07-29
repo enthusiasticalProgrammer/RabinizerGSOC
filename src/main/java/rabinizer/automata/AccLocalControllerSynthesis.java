@@ -17,10 +17,10 @@ import rabinizer.automata.MojmirSlave.State;
 import rabinizer.automata.Product.ProductState;
 import rabinizer.frequencyLTL.FOperatorForMojmir;
 
-public class AccLocalControllerSynthesis extends
+class AccLocalControllerSynthesis extends
 AccLocal<Set<UnaryModalOperator>, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, Map<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, Integer>, FrequencySelfProductSlave.State, ProductControllerSynthesis> {
 
-    public AccLocalControllerSynthesis(ProductControllerSynthesis product, ValuationSetFactory valuationSetFactory, EquivalenceClassFactory equivalenceFactory,
+    AccLocalControllerSynthesis(ProductControllerSynthesis product, ValuationSetFactory valuationSetFactory, EquivalenceClassFactory equivalenceFactory,
             Collection<Optimisation> opts) {
         super(product, valuationSetFactory, equivalenceFactory, opts);
     }
