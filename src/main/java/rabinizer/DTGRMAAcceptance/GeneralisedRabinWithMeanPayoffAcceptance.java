@@ -72,8 +72,9 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
                 BooleanExpression<AtomAcceptance> newSet = new BooleanExpression<>(new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_INF, getTranSetId(entry.getValue()), false));
                 disjunction = (disjunction == null ? newSet : disjunction.or(newSet));
             }
-
-            conjunction = conjunction.and(disjunction);
+            if (disjunction != null) {
+                conjunction = conjunction.and(disjunction);
+            }
         }
         return conjunction;
 
