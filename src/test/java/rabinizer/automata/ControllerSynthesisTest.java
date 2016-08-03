@@ -255,4 +255,16 @@ public class ControllerSynthesisTest {
             });
         });
     }
+
+    @Test
+    public void testNoNPEOccurring() {
+        Formula formula = Util.createFormula("G {sup >= 0.11} false");
+        EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(0);
+
+        DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
+        ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
+
+        dtgra.toHOA(new HOAIntermediateCheckValidity(new HOAConsumerNull()), null);
+    }
 }
