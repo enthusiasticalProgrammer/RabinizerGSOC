@@ -40,6 +40,13 @@ public class SlaveSubformulaVisitor implements Visitor<Set<UnaryModalOperator>> 
     }
 
     @Override
+    public Set<UnaryModalOperator> visit(FrequencyG gOperator) {
+        Set<UnaryModalOperator> result = gOperator.operand.accept(this);
+        result.add(gOperator);
+        return result;
+    }
+
+    @Override
     public Set<UnaryModalOperator> visit(UOperator uOperator) {
         Set<UnaryModalOperator> result = uOperator.left.accept(this);
         result.addAll(uOperator.right.accept(this));
