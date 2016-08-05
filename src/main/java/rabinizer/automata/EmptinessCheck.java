@@ -42,7 +42,7 @@ public class EmptinessCheck<S extends AutomatonState<S>> {
      * @param automaton
      * @return true if the automaton accepts no words
      */
-    public static boolean checkEmptinessAndMinimiseSCCBasedProduct(Product p) {
+    public static boolean checkEmptinessAndMinimiseSCCBasedProduct(Product<?> p) {
         if (!(p.getAcceptance() instanceof GeneralisedRabinAcceptance)) {
             throw new IllegalArgumentException("We can (yet) only perform the Emptiness-check for GeneralisedRabinAcceptance.");
         }
