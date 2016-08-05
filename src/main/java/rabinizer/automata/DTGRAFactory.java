@@ -28,6 +28,7 @@ import ltl.equivalence.EquivalenceClassFactory;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.IntStream;
 
 public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, RabinSlave.State, ProductRabinizer> {
 
@@ -84,29 +85,25 @@ public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, RabinSlav
     }
 
     public void removeRedundancyLightAfterEmptinessCheck() {
-        Collection<Tuple<TranSet<Product<RabinSlave.State>.ProductState>, List<TranSet<Product<RabinSlave.State>.ProductState>>>> toRemove = new HashSet<>();
-        for (Tuple<TranSet<Product<RabinSlave.State>.ProductState>, List<TranSet<Product<RabinSlave.State>.ProductState>>> pair : product.getAcceptance().acceptanceCondition) {
-            if (pair.right.stream().anyMatch(TranSet::isEmpty)) {
-                toRemove.add(pair);
-            }
-        }
-        product.getAcceptance().acceptanceCondition.removeAll(toRemove);
+        Set<Integer> toRemove = new HashSet<>();
+        IntStream.range(0, product.getAcceptance().acceptanceCondition.size())
+        .filter(i -> product.getAcceptance().acceptanceCondition.get(i).right.stream().anyMatch(TranSet::isEmpty)).forEach(toRemove::add);
+        product.getAcceptance().removeIndices(toRemove);
+        toRemove.clear();
 
         toRemove.clear();
-        for (Tuple<TranSet<Product<RabinSlave.State>.ProductState>, List<TranSet<Product<RabinSlave.State>.ProductState>>> pair1 : product.getAcceptance().acceptanceCondition) {
-            for (Tuple<TranSet<Product<RabinSlave.State>.ProductState>, List<TranSet<Product<RabinSlave.State>.ProductState>>> pair2 : product
-                    .getAcceptance().acceptanceCondition) {
-                if (pair1.equals(pair2)) {
+        for (int i = 0; i < product.getAcceptance().acceptanceCondition.size(); i++) {
+            for (int j = 0; j < product.getAcceptance().acceptanceCondition.size(); j++) {
+                if (i == j) {
                     continue;
                 }
-
-                if (product.getAcceptance().implies(pair2, pair1) && !toRemove.contains(pair1)) {
-                    toRemove.add(pair2);
+                if (product.getAcceptance().implies(i, j) && !toRemove.contains(j)) {
+                    toRemove.add(i);
                     break;
                 }
             }
         }
-        product.getAcceptance().acceptanceCondition.removeAll(toRemove);
+        product.getAcceptance().removeIndices(toRemove);
     }
 
     @Override

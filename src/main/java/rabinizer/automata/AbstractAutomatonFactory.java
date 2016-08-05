@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import jhoafparser.consumer.HOAConsumerPrint;
 import ltl.Formula;
@@ -35,7 +36,6 @@ import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.Main;
 import rabinizer.frequencyLTL.SlaveSubformulaVisitor;
 import rabinizer.automata.Optimisation;
-import rabinizer.automata.Product.ProductState;
 
 /**
  * This class contains the behaviour, which belongs to both constructions:
@@ -101,16 +101,18 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
 
     protected final void removeRedundancy() {
         List<TranSet<Product<ParamProduct>.ProductState>> copy;
-        Collection<Tuple<TranSet<Product<ParamProduct>.ProductState>, List<TranSet<Product<ParamProduct>.ProductState>>>> toRemove = new HashSet<>();
+        Set<Integer> toRemove = new HashSet<>();
 
-        product.getAcceptance().acceptanceCondition.stream().filter(pair -> product.containsAllTransitions(pair.left)).forEach(s -> toRemove.add(s));
-        product.getAcceptance().remove(toRemove);
+        IntStream.range(0, product.getAcceptance().acceptanceCondition.size()).filter(i -> product.containsAllTransitions(product.getAcceptance().acceptanceCondition.get(i).left))
+        .forEach(toRemove::add);
+        product.getAcceptance().removeIndices(toRemove);
         toRemove.clear();
 
         product.getAcceptance().acceptanceCondition.forEach(pair -> pair.right.forEach(inf -> inf.removeAll(pair.left)));
 
-        product.getAcceptance().acceptanceCondition.stream().filter(pair -> pair.right.stream().anyMatch(TranSet::isEmpty)).forEach(s -> toRemove.add(s));
-        product.getAcceptance().remove(toRemove);
+        IntStream.range(0, product.getAcceptance().acceptanceCondition.size())
+        .filter(i -> product.getAcceptance().acceptanceCondition.get(i).right.stream().anyMatch(TranSet::isEmpty)).forEach(toRemove::add);
+        product.getAcceptance().removeIndices(toRemove);
         toRemove.clear();
 
         product.getAcceptance().acceptanceCondition.forEach(pair -> pair.right.removeIf(i -> product.containsAllTransitions(i.union(pair.left))));
@@ -118,10 +120,10 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
         Collection<Tuple<TranSet<Product<ParamProduct>.ProductState>, List<TranSet<Product<ParamProduct>.ProductState>>>> temp = new ArrayList<>();
         for (Tuple<TranSet<Product<ParamProduct>.ProductState>, List<TranSet<Product<ParamProduct>.ProductState>>> pair : product.getAcceptance().acceptanceCondition) {
             copy = new ArrayList<>(pair.right);
-            for (TranSet<Product<ParamProduct>.ProductState> i : pair.right) {
-                for (TranSet<Product<ParamProduct>.ProductState> j : pair.right) {
-                    if (!j.equals(i) && i.containsAll(j)) {
-                        copy.remove(i);
+            for (TranSet<Product<ParamProduct>.ProductState> inf : pair.right) {
+                for (TranSet<Product<ParamProduct>.ProductState> inf2 : pair.right) {
+                    if (!inf2.equals(inf) && inf.containsAll(inf2)) {
+                        copy.remove(inf);
                         break;
                     }
                 }
@@ -131,20 +133,20 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
         product.getAcceptance().acceptanceCondition.clear();
         product.getAcceptance().acceptanceCondition.addAll(temp);
 
-        for (Tuple<TranSet<Product<ParamProduct>.ProductState>, List<TranSet<Product<ParamProduct>.ProductState>>> pair1 : product.getAcceptance().acceptanceCondition) {
-            for (Tuple<TranSet<Product<ParamProduct>.ProductState>, List<TranSet<Product<ParamProduct>.ProductState>>> pair2 : product.getAcceptance().acceptanceCondition) {
-                if (pair1.equals(pair2)) {
+        toRemove.clear();
+        for (int i = 0; i < product.getAcceptance().acceptanceCondition.size(); i++) {
+            for (int j = 0; j < product.getAcceptance().acceptanceCondition.size(); j++) {
+                if (i == j) {
                     continue;
                 }
-
-                if (product.getAcceptance().implies(pair2, pair1) && !toRemove.contains(pair1)) {
-                    toRemove.add(pair2);
+                if (product.getAcceptance().implies(i, j) && !toRemove.contains(j)) {
+                    toRemove.add(i);
                     break;
                 }
             }
         }
 
-        product.getAcceptance().remove(toRemove);
+        product.getAcceptance().removeIndices(toRemove);
     }
 
 
