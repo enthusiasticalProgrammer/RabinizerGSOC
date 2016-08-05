@@ -18,10 +18,8 @@
 package rabinizer.automata;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -34,7 +32,6 @@ import ltl.UnaryModalOperator;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
-import rabinizer.automata.MojmirSlave.State;
 import rabinizer.frequencyLTL.FOperatorForMojmir;
 
 public class ProductControllerSynthesis extends Product<FrequencySelfProductSlave.State> {

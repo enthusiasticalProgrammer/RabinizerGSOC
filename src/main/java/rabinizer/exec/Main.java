@@ -22,7 +22,6 @@ import jhoafparser.consumer.HOAConsumer;
 import jhoafparser.consumer.HOAConsumerPrint;
 import jhoafparser.consumer.HOAIntermediateStoreAndManipulate;
 import jhoafparser.transformations.ToStateAcceptance;
-import ltl.visitors.RestrictToFGXU;
 import rabinizer.automata.*;
 import rabinizer.exec.CLIParser.AutomatonType;
 import omega_automaton.Automaton;

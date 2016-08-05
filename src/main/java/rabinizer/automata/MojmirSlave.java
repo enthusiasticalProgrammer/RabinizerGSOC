@@ -22,7 +22,6 @@ import omega_automaton.Automaton;
 import omega_automaton.AutomatonState;
 import omega_automaton.Edge;
 import omega_automaton.acceptance.AllAcceptance;
-import omega_automaton.collections.TranSet;
 import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.frequencyLTL.UnfoldNoSlaveOperatorVisitor;
@@ -33,7 +32,6 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class MojmirSlave extends Automaton<MojmirSlave.State, AllAcceptance> {
 

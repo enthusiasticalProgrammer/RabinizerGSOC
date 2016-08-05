@@ -17,7 +17,6 @@
 
 package rabinizer.automata;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import ltl.Conjunction;
 import ltl.Formula;
@@ -29,7 +28,6 @@ import omega_automaton.collections.Collections3;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.automata.MojmirSlave.State;
-import rabinizer.automata.Product.ProductState;
 import rabinizer.frequencyLTL.FOperatorForMojmir;
 import rabinizer.frequencyLTL.SkeletonVisitor;
 import rabinizer.frequencyLTL.SlaveSubformulaVisitor;

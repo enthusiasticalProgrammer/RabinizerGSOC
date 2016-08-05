@@ -29,7 +29,6 @@ import omega_automaton.collections.TranSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.automata.FrequencySelfProductSlave;
 import rabinizer.automata.Product;
-import rabinizer.automata.Product.ProductState;
 
 /**
  * This class aims to store a bound and the transition, which have a reward

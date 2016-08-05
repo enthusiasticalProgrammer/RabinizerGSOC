@@ -17,15 +17,12 @@
 
 package rabinizer.automata;
 
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 
 import omega_automaton.Automaton;
 import omega_automaton.AutomatonState;
-import omega_automaton.Edge;
 import omega_automaton.acceptance.AllAcceptance;
-import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 
 public abstract class AbstractSelfProductSlave<S extends AutomatonState<S>> extends Automaton<S, AllAcceptance> {
