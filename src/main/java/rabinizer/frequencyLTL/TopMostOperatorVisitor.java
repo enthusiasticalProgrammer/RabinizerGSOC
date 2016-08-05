@@ -64,6 +64,13 @@ public class TopMostOperatorVisitor implements Visitor<Set<UnaryModalOperator>> 
     }
 
     @Override
+    public Set<UnaryModalOperator> visit(FrequencyG freq) {
+        Set<UnaryModalOperator> result = new HashSet<>();
+        result.add(freq);
+        return result;
+    }
+
+    @Override
     public Set<UnaryModalOperator> visit(Literal literal) {
         return new HashSet<>();
     }
