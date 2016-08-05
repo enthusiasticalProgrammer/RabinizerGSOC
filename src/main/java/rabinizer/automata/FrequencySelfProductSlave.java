@@ -21,14 +21,11 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import omega_automaton.Edge;
 import omega_automaton.algorithms.SCCAnalyser;
-import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import omega_automaton.output.HOAConsumerExtended;
-import rabinizer.automata.Product.ProductState;
 
 public final class FrequencySelfProductSlave extends AbstractSelfProductSlave<FrequencySelfProductSlave.State> {
 

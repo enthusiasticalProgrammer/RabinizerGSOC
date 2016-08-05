@@ -25,7 +25,6 @@ import omega_automaton.algorithms.SCCAnalyser;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.Tuple;
 import omega_automaton.collections.valuationset.ValuationSet;
-import rabinizer.automata.Product.ProductState;
 
 import java.util.List;
 import java.util.Map;

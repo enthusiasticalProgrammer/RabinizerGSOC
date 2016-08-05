@@ -34,6 +34,7 @@ import jhoafparser.consumer.HOAConsumerNull;
 import jhoafparser.consumer.HOAIntermediateCheckValidity;
 import ltl.Formula;
 import ltl.equivalence.EquivalenceClassFactory;
+import ltl.equivalence.FactoryRegistry.Backend;
 import omega_automaton.Edge;
 import omega_automaton.collections.valuationset.BDDValuationSetFactory;
 import omega_automaton.collections.valuationset.ValuationSet;
@@ -43,6 +44,7 @@ import rabinizer.DTGRMAAcceptance.BoundAndReward;
 import rabinizer.DTGRMAAcceptance.GeneralisedRabinWithMeanPayoffAcceptance;
 import rabinizer.automata.Master.State;
 import rabinizer.exec.Main;
+import rabinizer.frequencyLTL.MojmirOperatorVisitor;
 
 public class ControllerSynthesisTest {
     static final Set<Optimisation> standard = EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION);
@@ -283,5 +285,31 @@ public class ControllerSynthesisTest {
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
 
         dtgra.toHOA(new HOAIntermediateCheckValidity(new HOAConsumerNull()), null);
+    }
+
+    @Test
+    public void testNoEmptyInfSet() {
+        Formula formula = Util.createFormula("(F G {inf>=0.5} a)| (F G {inf>=0.09999999999999998} !b)");
+        formula = formula.accept(new MojmirOperatorVisitor());
+        EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(2);
+
+        DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
+        ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
+
+        assertTrue(dtgra.getAcceptance().acceptanceCondition.stream().allMatch(pair -> pair.right.stream().allMatch(inf -> !inf.isEmpty())));
+    }
+
+    @Test
+    public void testOnlyOnePair() {
+        Formula formula = Util.createFormula("(F G {inf>=0.5} a)");
+        formula = formula.accept(new MojmirOperatorVisitor());
+        EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(2);
+
+        DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
+        ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
+
+        assertEquals(1, dtgra.getAcceptance().acceptanceCondition.size());
     }
 }
