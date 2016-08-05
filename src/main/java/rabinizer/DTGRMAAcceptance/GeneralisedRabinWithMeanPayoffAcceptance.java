@@ -83,8 +83,8 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
     @Override
     public Map<String, List<Object>> miscellaneousAnnotations() {
         Map<String, List<Object>> result = new HashMap<>();
+        int i = 0;
         for (Collection<BoundAndReward> set : acceptanceMDP) {
-            int i = 0;
             for (BoundAndReward bound : set) {
                 String name = "boundary" + i++;
                 List<Object> attributes = new ArrayList<>();
