@@ -60,7 +60,9 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
 
     @Override
     public String getName() {
-        return null; // HOA does not support our acceptance type
+        return "generalized-Rabin"; // HOA does not support our acceptance type
+                                    // but this comes closest and it may help
+                                    // testing formulae without frequency-Gs by ltlcross
     }
 
     @Override
