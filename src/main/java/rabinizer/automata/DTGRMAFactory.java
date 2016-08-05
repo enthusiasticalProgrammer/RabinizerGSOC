@@ -20,7 +20,6 @@ import omega_automaton.collections.Tuple;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.DTGRMAAcceptance.BoundAndReward;
 import rabinizer.DTGRMAAcceptance.GeneralisedRabinWithMeanPayoffAcceptance;
-import rabinizer.automata.Product.ProductState;
 import rabinizer.frequencyLTL.FOperatorForMojmir;
 
 public class DTGRMAFactory extends AbstractAutomatonFactory<FrequencySelfProductSlave, FrequencySelfProductSlave.State, ProductControllerSynthesis> {

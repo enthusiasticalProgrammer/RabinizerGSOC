@@ -13,8 +13,6 @@ import ltl.UnaryModalOperator;
 import ltl.equivalence.EquivalenceClassFactory;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
-import rabinizer.automata.MojmirSlave.State;
-import rabinizer.automata.Product.ProductState;
 import rabinizer.frequencyLTL.FOperatorForMojmir;
 
 class AccLocalControllerSynthesis extends

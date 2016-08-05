@@ -26,7 +26,6 @@ import omega_automaton.collections.TranSet;
 import omega_automaton.collections.Tuple;
 import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
-import rabinizer.automata.Product.ProductState;
 
 import javax.annotation.Nullable;
 
