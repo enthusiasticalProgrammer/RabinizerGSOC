@@ -31,6 +31,9 @@ import java.util.Map.Entry;
 
 public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, RabinSlave.State, ProductRabinizer> {
 
+    /**
+     * Used by Prism
+     */
     public DTGRAFactory(Formula phi, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> opts) {
         super(phi, equivalenceClassFactory, valuationSetFactory, opts);
     }

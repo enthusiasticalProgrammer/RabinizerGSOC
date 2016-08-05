@@ -60,6 +60,9 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
         this.opts = opts;
     }
 
+    /**
+     * Used by Prism
+     */
     public final P constructAutomaton() {
         Master master = constructMaster();
 

@@ -51,6 +51,13 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
         this.acceptanceMDP = acceptanceMDP;
     }
 
+    /**
+     * Used by Prism
+     */
+    public List<Collection<BoundAndReward>> getUnmodifiableAcceptanceMDP() {
+        return Collections.unmodifiableList(acceptanceMDP);
+    }
+
     @Override
     public String getName() {
         return null; // HOA does not support our acceptance type

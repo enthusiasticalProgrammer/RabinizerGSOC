@@ -38,7 +38,11 @@ import rabinizer.automata.Product;
 public class BoundAndReward {
 
     private final ValuationSetFactory valuationSetFactory;
-    protected final FrequencyG GOp;
+
+    /**
+     * Both of the following attributes are used by Prism
+     */
+    public final FrequencyG GOp;
     private final Map<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> reward;
 
     public BoundAndReward(FrequencyG GOp, ValuationSetFactory valuationSetFactory) {

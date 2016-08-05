@@ -41,6 +41,9 @@ import rabinizer.frequencyLTL.FOperatorForMojmir;
 
 public class DTGRMAFactory extends AbstractAutomatonFactory<FrequencySelfProductSlave, FrequencySelfProductSlave.State, ProductControllerSynthesis> {
 
+    /**
+     * Used by Prism
+     */
     public DTGRMAFactory(Formula phi, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> opts) {
         super(phi, equivalenceClassFactory, valuationSetFactory, opts);
     }
