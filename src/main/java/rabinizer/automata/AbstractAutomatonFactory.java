@@ -71,7 +71,7 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
         product = obtainProduct(master, slaves);
         product.generate();
 
-        if (!Main.silent) {
+        if (!Main.isSilent()) {
             HOAConsumerPrint hoa = new HOAConsumerPrint(System.out);
             product.toHOA(hoa, null);
         }
@@ -156,7 +156,7 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
         Main.nonsilent("Generating primaryAutomaton:\n");
         Master master = new Master(phi, equivalenceClassFactory, valuationSetFactory, opts);
         master.generate();
-        if (!Main.silent) {
+        if (!Main.isSilent()) {
             HOAConsumerPrint hoa = new HOAConsumerPrint(System.out);
             master.toHOA(hoa, null);
         }
@@ -172,7 +172,7 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
             MojmirSlave mSlave = new MojmirSlave(f, equivalenceClassFactory, valuationSetFactory, opts);
             mSlave.generate();
 
-            if (Main.verbose) {
+            if (Main.isVerbose()) {
                 HOAConsumerPrint hoa = new HOAConsumerPrint(System.out);
                 Main.verboseln("Mojmir Slave: ");
                 mSlave.toHOA(hoa, null);
@@ -185,7 +185,7 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
 
             slaves.put(f, rSlave);
 
-            if (Main.verbose) {
+            if (Main.isVerbose()) {
                 HOAConsumerPrint hoa = new HOAConsumerPrint(System.out);
                 Main.verboseln("\nRabin Slave: ");
                 rSlave.toHOA(hoa, null);

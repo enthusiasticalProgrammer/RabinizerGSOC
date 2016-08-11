@@ -40,18 +40,32 @@ import java.util.Set;
 
 public class Main {
 
-    public static boolean verbose;
-    public static boolean silent;
+    private static OutputLevel output = OutputLevel.SILENT;
     private static long clock2;
 
+    /**
+     * This sets the desired output level, 0 for silent, 1 for normal or 2 for verbose
+     */
+    public static void setOutputLevel(OutputLevel outputLevel) {
+        output = outputLevel;
+    }
+
+    public static boolean isVerbose() {
+        return output == OutputLevel.VERBOSE;
+    }
+
+    public static boolean isSilent() {
+        return output == OutputLevel.SILENT;
+    }
+
     public static void verboseln(String s) {
-        if (verbose) {
+        if (isVerbose()) {
             System.out.println(s);
         }
     }
 
     public static void nonsilent(String s) {
-        if (!silent) {
+        if (!isSilent()) {
             System.out.println(s);
         }
     }
@@ -72,10 +86,7 @@ public class Main {
         } catch (ParseException e1) {
             return;
         }
-
-        silent = arguments.outputLevel == 0;
-        verbose = arguments.outputLevel == 2;
-
+        setOutputLevel(OutputLevel.getOutputLevel(arguments.outputLevel));
 
         nonsilent("\n******************************************************************************\n"
                 + "* Rabinizer 3.1.0 by Jan Kretinsky                                           *\n"

@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import jhoafparser.consumer.HOAConsumerNull;
@@ -43,16 +42,10 @@ import rabinizer.Util;
 import rabinizer.DTGRMAAcceptance.BoundAndReward;
 import rabinizer.DTGRMAAcceptance.GeneralisedRabinWithMeanPayoffAcceptance;
 import rabinizer.automata.Master.State;
-import rabinizer.exec.Main;
 import rabinizer.frequencyLTL.MojmirOperatorVisitor;
 
 public class ControllerSynthesisTest {
     static final Set<Optimisation> standard = EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION);
-
-    @Before
-    public final void setUp() {
-        Main.silent = true;
-    }
 
     // First of all the trivial tests:
 
