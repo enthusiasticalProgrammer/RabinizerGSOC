@@ -19,7 +19,6 @@ package rabinizer.automata;
 
 import java.util.EnumSet;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import rabinizer.Util;
@@ -32,7 +31,6 @@ import ltl.equivalence.FactoryRegistry.Backend;
 import omega_automaton.Edge;
 import omega_automaton.algorithms.SCCAnalyser;
 import omega_automaton.collections.valuationset.*;
-import rabinizer.exec.Main;
 import ltl.*;
 
 import java.util.Collections;
@@ -46,11 +44,6 @@ public class AutomatonClassTest {
 
     static final Set<Optimisation> standard = EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION);
     static final Set<Optimisation> standardWithEmpty = EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION, Optimisation.EMPTINESS_CHECK);
-
-    @Before
-    public final void setUp() {
-        Main.silent = true;
-    }
 
     @Test
     public void testMasterFoldedNew() {
