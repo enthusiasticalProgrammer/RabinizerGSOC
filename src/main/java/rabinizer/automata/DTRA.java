@@ -49,7 +49,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
         generate();
 
         int i = 0;
-        for (Tuple<TranSet<ProductRabinizer.ProductState>, List<TranSet<ProductRabinizer.ProductState>>> grp : acc.acceptanceCondition) {
+        for (Tuple<TranSet<ProductRabinizer.ProductState>, List<TranSet<ProductRabinizer.ProductState>>> grp : acc.unmodifiableCopyOfAcceptanceCondition()) {
             TranSet<ProductDegenState> fin = new TranSet<>(valuationSetFactory);
             TranSet<ProductDegenState> inf = new TranSet<>(valuationSetFactory);
 
@@ -71,7 +71,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
 
     @Override
     protected ProductDegenState generateInitialState() {
-        return new ProductDegenState(dtgra.getInitialState(), new int[dtgra.getAcceptance().acceptanceCondition.size()]);
+        return new ProductDegenState(dtgra.getInitialState(), new int[dtgra.getAcceptance().unmodifiableCopyOfAcceptanceCondition().size()]);
     }
 
     public class ProductDegenState implements AutomatonState<ProductDegenState> {
@@ -100,11 +100,11 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
 
             GeneralisedRabinAcceptance<ProductRabinizer.ProductState> acc = dtgra.getAcceptance();
 
-            int[] awaitedIndices = new int[acc.acceptanceCondition.size()];
+            int[] awaitedIndices = new int[acc.unmodifiableCopyOfAcceptanceCondition().size()];
 
             // TODO: Use listIterator
             int i = 0;
-            for (Tuple<TranSet<ProductRabinizer.ProductState>, List<TranSet<ProductRabinizer.ProductState>>> grp : acc.acceptanceCondition) {
+            for (Tuple<TranSet<ProductRabinizer.ProductState>, List<TranSet<ProductRabinizer.ProductState>>> grp : acc.unmodifiableCopyOfAcceptanceCondition()) {
 
                 int awaited = this.awaitedIndices[i];
 

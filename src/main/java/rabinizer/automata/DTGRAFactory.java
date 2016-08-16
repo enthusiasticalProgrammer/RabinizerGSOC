@@ -59,7 +59,7 @@ public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, RabinSlav
                 Fin.addAll(gPair.left);
                 Infs.add(gPair.right.copy());
             }
-            result.acceptanceCondition.add(new Tuple<>(Fin, Infs));
+            result.addPair(new Tuple<>(Fin, Infs));
         }
 
         product.setAcceptance(result);
