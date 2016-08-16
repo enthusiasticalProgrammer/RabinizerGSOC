@@ -73,16 +73,13 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
     }
 
     @Override
-    protected BooleanExpression<AtomAcceptance> addInfiniteSetsToConjunction(BooleanExpression<AtomAcceptance> conjunction,
-            Tuple<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, List<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>>> pair) {
-        conjunction = super.addInfiniteSetsToConjunction(conjunction, pair);
-
+    protected BooleanExpression<AtomAcceptance> addInfiniteSetsToConjunction(BooleanExpression<AtomAcceptance> conjunction, int offset) {
+        conjunction = super.addInfiniteSetsToConjunction(conjunction, offset);
         // add some information about acceptanceMDP to the conjunction
         // the information, which we add here are necessary but not sufficient
         // for the real acceptance condition, which the hoa-Format does not
         // currently support.
 
-        int offset = acceptanceCondition.indexOf(pair);
         for (BoundAndReward reward : acceptanceMDP.get(offset)) {
             BooleanExpression<AtomAcceptance> disjunction = null;
             for (Entry<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> entry : reward.relevantEntries()) {
@@ -130,10 +127,7 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
     }
 
     @Override
-    public boolean implies(Tuple<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, List<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>>> premisse,
-            Tuple<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, List<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>>> conclusion) {
-        int offsetPremisse = acceptanceCondition.indexOf(premisse);
-        int offsetConclusion = acceptanceCondition.indexOf(conclusion);
-        return super.implies(premisse, conclusion) && acceptanceMDP.get(offsetPremisse).containsAll(acceptanceMDP.get(offsetConclusion));
+    public boolean implies(int premiseIndex, int conclusionIndex) {
+        return super.implies(premiseIndex, conclusionIndex) && acceptanceMDP.get(premiseIndex).containsAll(acceptanceMDP.get(conclusionIndex));
     }
 }
