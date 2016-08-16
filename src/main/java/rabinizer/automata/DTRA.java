@@ -39,7 +39,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
     private final ProductRabinizer dtgra;
 
     public DTRA(ProductRabinizer dtgra) {
-        super(dtgra.getFactory());
+        super(null, dtgra.getFactory());
         this.acceptance = new RabinAcceptance<DTRA.ProductDegenState>(new ArrayList<>());
         if (!(dtgra.getAcceptance() instanceof GeneralisedRabinAcceptance<?>)) {
             throw new IllegalArgumentException();

@@ -29,7 +29,7 @@ public abstract class AbstractSelfProductSlave<S extends AutomatonState<S>> exte
     protected final MojmirSlave mojmir;
 
     protected AbstractSelfProductSlave(MojmirSlave mojmir, ValuationSetFactory factory) {
-        super(factory);
+        super(null, factory);
         this.mojmir = mojmir;
     }
 

@@ -42,7 +42,7 @@ public abstract class Product<S extends AbstractSelfProductSlave<S>.State> exten
     private final boolean allSlaves;
 
     public Product(Master primaryAutomaton, ValuationSetFactory factory, Collection<Optimisation> optimisations) {
-        super(factory);
+        super(null, factory);
         // relevant secondaryAutomata dynamically
         // computed from primaryAutomaton formula
         // master formula
