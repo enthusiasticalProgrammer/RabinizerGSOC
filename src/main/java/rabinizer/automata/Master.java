@@ -37,7 +37,7 @@ class Master extends Automaton<Master.State, AllAcceptance> {
     final EquivalenceClass initialClazz;
 
     Master(@Nullable EquivalenceClass clazz, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
-        super(valuationSetFactory);
+        super(null, valuationSetFactory);
         initialClazz = clazz;
         eager = optimisations.contains(Optimisation.EAGER);
     }

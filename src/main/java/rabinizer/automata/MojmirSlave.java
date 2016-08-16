@@ -40,7 +40,7 @@ public class MojmirSlave extends Automaton<MojmirSlave.State, AllAcceptance> {
     private final EquivalenceClass initialStateEquivalence;
 
     public MojmirSlave(UnaryModalOperator formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
-        super(valuationSetFactory);
+        super(null, valuationSetFactory);
         initialStateEquivalence = equivalenceClassFactory.createEquivalenceClass(formula.operand);
         eager = optimisations.contains(Optimisation.EAGER);
         label = formula;
