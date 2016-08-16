@@ -51,15 +51,10 @@ public abstract class Product<S extends AbstractSelfProductSlave<S>.State> exten
     }
 
     protected final Set<UnaryModalOperator> relevantSecondarySlaves(Master.State primaryState) {
-        Set<UnaryModalOperator> keys;
-        if (allSlaves) {
-            keys = getKeys();
-        } else {
-            keys = new HashSet<>();
-            primaryState.getClazz().getSupport().forEach(f -> keys.addAll(f.accept(new SlaveSubformulaVisitor())));
+        if (this.allSlaves) {
+            return getKeys();
         }
-
-        return keys;
+        return primaryState.clazz.getRepresentative().accept(new SlaveSubformulaVisitor());
     }
 
     boolean containsAllTransitions(TranSet<ProductState> trans) {
