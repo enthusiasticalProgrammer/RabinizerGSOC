@@ -60,7 +60,7 @@ public class EmptinessCheck<S extends AutomatonState<S>> {
 
             boolean sccEmpty = true;
 
-            for (Tuple<TranSet<S>, List<TranSet<S>>> pair : automaton.getAcceptance().acceptanceCondition) {
+            for (Tuple<TranSet<S>, List<TranSet<S>>> pair : automaton.getAcceptance().unmodifiableCopyOfAcceptanceCondition()) {
                 if (infAccepting(tranSCC, pair) && finAndInfAccepting(tranSCC, pair)) {
                     sccEmpty = false;
                 } else {
@@ -84,7 +84,7 @@ public class EmptinessCheck<S extends AutomatonState<S>> {
             Map<Edge<S>, ValuationSet> relevantTransitions = automaton.getSuccessors(state);
             for (Map.Entry<Edge<S>, ValuationSet> transition : relevantTransitions.entrySet()) {
                 if (!SCC.contains(transition.getKey().successor)) {
-                    for (Tuple<TranSet<S>, List<TranSet<S>>> pair : automaton.getAcceptance().acceptanceCondition) {
+                    for (Tuple<TranSet<S>, List<TranSet<S>>> pair : automaton.getAcceptance().unmodifiableCopyOfAcceptanceCondition()) {
                         pair.right.forEach(inf -> inf.removeAll(state, transition.getValue()));
                         pair.left.removeAll(state, transition.getValue());
                     }
