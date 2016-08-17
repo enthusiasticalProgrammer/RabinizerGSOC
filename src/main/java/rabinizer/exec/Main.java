@@ -38,21 +38,7 @@ import java.util.Set;
 
 public class Main {
 
-    public static boolean verbose;
-    public static boolean silent;
     private static long clock2;
-
-    public static void verboseln(String s) {
-        if (verbose) {
-            System.out.println(s);
-        }
-    }
-
-    public static void nonsilent(String s) {
-        if (!silent) {
-            System.out.println(s);
-        }
-    }
 
     public static double stopwatchLocal() {
         long start = clock2;
@@ -60,7 +46,7 @@ public class Main {
         return (clock2 - start) / 1000.0;
     }
 
-        // Parsing arguments
+    // Parsing arguments
     public static void main(String... args) throws IOException {
 
         CLIParser.CmdArguments arguments;
@@ -70,12 +56,9 @@ public class Main {
         } catch (ParseException e1) {
             return;
         }
+        OutputLevel.setOutputLevel(OutputLevel.getOutputLevel(arguments.outputLevel));
 
-        silent = arguments.outputLevel == 0;
-        verbose = arguments.outputLevel == 2;
-
-
-        nonsilent("\n******************************************************************************\n"
+        OutputLevel.nonsilent("\n******************************************************************************\n"
                 + "* Rabinizer 3.1.0 by Jan Kretinsky                                           *\n"
                 + "******************************************************************************\n"
                 + "* Translator of LTL to deterministic automata                                *\n"
@@ -90,7 +73,7 @@ public class Main {
         Automaton<?, ?> automaton = computeAutomaton(arguments.inputFormula, arguments.autType, arguments.simplification, arguments.backend, arguments.optimisations,
                 arguments.mapping);
 
-        nonsilent("Done!");
+        OutputLevel.nonsilent("Done!");
 
         HOAConsumer outputPipeline = arguments.format == CLIParser.Format.DOT ? new omega_automaton.output.DotPrinter(arguments.writer) : new HOAConsumerPrint(arguments.writer);
 
@@ -104,10 +87,10 @@ public class Main {
 
     private static Automaton<?, ?> computeAutomaton(Formula inputFormula, CLIParser.AutomatonType type, Simplifier.Strategy simplify,
             ltl.equivalence.FactoryRegistry.Backend backend, Set<Optimisation> opts, BiMap<String, Integer> mapping) {
-        nonsilent("Formula unsimplified: " + inputFormula);
+        OutputLevel.nonsilent("Formula unsimplified: " + inputFormula);
 
         inputFormula = Simplifier.simplify(inputFormula, simplify);
-        nonsilent("Formula simplified:" + inputFormula);
+        OutputLevel.nonsilent("Formula simplified:" + inputFormula);
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(backend, inputFormula);
 

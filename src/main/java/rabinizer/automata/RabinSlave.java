@@ -20,7 +20,7 @@ package rabinizer.automata;
 import omega_automaton.Edge;
 import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
-import rabinizer.exec.Main;
+import rabinizer.exec.OutputLevel;
 
 import java.util.*;
 
@@ -30,8 +30,8 @@ public final class RabinSlave extends AbstractSelfProductSlave<RabinSlave.State>
         super(mojmir, factory);
     }
 
-    public void optimizeInitialState() {
-        Main.verboseln("Optimizing initial states");
+    void optimizeInitialState() {
+        OutputLevel.verboseln("Optimizing initial states");
         while (hasSuccessors(initialState)
                 && transitions.values().stream().allMatch(map -> !map.keySet().stream().map(edge -> edge.successor).anyMatch(state -> state.equals(initialState)))) {
             State oldInit = initialState;
