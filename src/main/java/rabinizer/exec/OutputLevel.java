@@ -20,5 +20,35 @@ public enum OutputLevel {
         }
         return VERBOSE;
     }
+
+    private static OutputLevel output = OutputLevel.SILENT;
+
+    /**
+     * This sets the desired output level, 0 for silent, 1 for normal or 2 for
+     * verbose
+     */
+    public static void setOutputLevel(OutputLevel outputLevel) {
+        output = outputLevel;
+    }
+
+    public static boolean isVerbose() {
+        return output == OutputLevel.VERBOSE;
+    }
+
+    public static boolean isSilent() {
+        return output == OutputLevel.SILENT;
+    }
+
+    public static void verboseln(String s) {
+        if (isVerbose()) {
+            System.out.println(s);
+        }
+    }
+
+    public static void nonsilent(String s) {
+        if (!isSilent()) {
+            System.out.println(s);
+        }
+    }
 }
 
