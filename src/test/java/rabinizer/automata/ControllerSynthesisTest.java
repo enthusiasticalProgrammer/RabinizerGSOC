@@ -20,9 +20,11 @@ package rabinizer.automata;
 import static org.junit.Assert.*;
 
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -63,9 +65,10 @@ public class ControllerSynthesisTest {
 
         GeneralisedRabinWithMeanPayoffAcceptance acc = (GeneralisedRabinWithMeanPayoffAcceptance) dtgra.getAcceptance();
 
-        assertEquals(1, acc.acceptanceMDP.size());
+        List<Collection<BoundAndReward>> unmodifiableMDP = acc.getUnmodifiableAcceptanceMDP();
+        assertEquals(1, unmodifiableMDP.size());
 
-        Set<BoundAndReward> accMDP = new HashSet<>(acc.acceptanceMDP.get(0));
+        Set<BoundAndReward> accMDP = new HashSet<>(unmodifiableMDP.get(0));
         assertEquals(1, accMDP.size());
 
         for (BoundAndReward reward : accMDP) {
@@ -179,9 +182,10 @@ public class ControllerSynthesisTest {
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
         GeneralisedRabinWithMeanPayoffAcceptance acc = (GeneralisedRabinWithMeanPayoffAcceptance) dtgra.getAcceptance();
 
-        assertEquals(1, acc.acceptanceMDP.get(0).size());
+        List<Collection<BoundAndReward>> accMDP = acc.getUnmodifiableAcceptanceMDP();
+        assertEquals(1, accMDP.get(0).size());
 
-        acc.acceptanceMDP.get(0).forEach(bound -> {
+        accMDP.get(0).forEach(bound -> {
             assertEquals(3, bound.getNumberOfRewardSets());
         });
     }
@@ -259,7 +263,7 @@ public class ControllerSynthesisTest {
 
         GeneralisedRabinWithMeanPayoffAcceptance acc = (GeneralisedRabinWithMeanPayoffAcceptance) dtgra.getAcceptance();
 
-        acc.acceptanceMDP.stream().forEach(set -> {
+        acc.getUnmodifiableAcceptanceMDP().stream().forEach(set -> {
             set.forEach(reward -> {
                 reward.relevantEntries().forEach(entry -> {
                     assertTrue(entry.getKey().equals(2) || entry.getKey().equals(1));
@@ -290,7 +294,7 @@ public class ControllerSynthesisTest {
         DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
 
-        assertTrue(dtgra.getAcceptance().acceptanceCondition.stream().allMatch(pair -> pair.right.stream().allMatch(inf -> !inf.isEmpty())));
+        assertTrue(dtgra.getAcceptance().unmodifiableCopyOfAcceptanceCondition().stream().allMatch(pair -> pair.right.stream().allMatch(inf -> !inf.isEmpty())));
     }
 
     @Test
@@ -303,6 +307,6 @@ public class ControllerSynthesisTest {
         DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
 
-        assertEquals(1, dtgra.getAcceptance().acceptanceCondition.size());
+        assertEquals(1, dtgra.getAcceptance().unmodifiableCopyOfAcceptanceCondition().size());
     }
 }
