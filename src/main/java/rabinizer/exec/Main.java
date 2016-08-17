@@ -40,35 +40,7 @@ import java.util.Set;
 
 public class Main {
 
-    private static OutputLevel output = OutputLevel.SILENT;
     private static long clock2;
-
-    /**
-     * This sets the desired output level, 0 for silent, 1 for normal or 2 for verbose
-     */
-    public static void setOutputLevel(OutputLevel outputLevel) {
-        output = outputLevel;
-    }
-
-    public static boolean isVerbose() {
-        return output == OutputLevel.VERBOSE;
-    }
-
-    public static boolean isSilent() {
-        return output == OutputLevel.SILENT;
-    }
-
-    public static void verboseln(String s) {
-        if (isVerbose()) {
-            System.out.println(s);
-        }
-    }
-
-    public static void nonsilent(String s) {
-        if (!isSilent()) {
-            System.out.println(s);
-        }
-    }
 
     public static double stopwatchLocal() {
         long start = clock2;
@@ -76,7 +48,7 @@ public class Main {
         return (clock2 - start) / 1000.0;
     }
 
-        // Parsing arguments
+    // Parsing arguments
     public static void main(String... args) throws IOException {
 
         CLIParser.CmdArguments arguments;
@@ -89,9 +61,9 @@ public class Main {
             System.err.println("Rabinizer aborted");
             return;
         }
-        setOutputLevel(OutputLevel.getOutputLevel(arguments.outputLevel));
+        OutputLevel.setOutputLevel(OutputLevel.getOutputLevel(arguments.outputLevel));
 
-        nonsilent("\n******************************************************************************\n"
+        OutputLevel.nonsilent("\n******************************************************************************\n"
                 + "* Rabinizer 3.1.0 by Jan Kretinsky                                           *\n"
                 + "******************************************************************************\n"
                 + "* Translator of LTL to deterministic automata                                *\n"
@@ -106,7 +78,7 @@ public class Main {
         Automaton<?, ?> automaton = computeAutomaton(arguments.inputFormula, arguments.autType, arguments.simplification, arguments.backend, arguments.optimisations,
                 arguments.mapping);
 
-        nonsilent("Done!");
+        OutputLevel.nonsilent("Done!");
 
         HOAConsumer outputPipeline;
         FileOutputStream ops = null;
@@ -133,10 +105,10 @@ public class Main {
 
     private static Automaton<?, ?> computeAutomaton(Formula inputFormula, CLIParser.AutomatonType type, Simplifier.Strategy simplify,
             ltl.equivalence.FactoryRegistry.Backend backend, Set<Optimisation> opts, BiMap<String, Integer> mapping) {
-        nonsilent("Formula unsimplified: " + inputFormula);
+        OutputLevel.nonsilent("Formula unsimplified: " + inputFormula);
 
         inputFormula = Simplifier.simplify(inputFormula, simplify);
-        nonsilent("Formula simplified:" + inputFormula);
+        OutputLevel.nonsilent("Formula simplified:" + inputFormula);
 
         EquivalenceClassFactory factory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(backend, inputFormula);
 

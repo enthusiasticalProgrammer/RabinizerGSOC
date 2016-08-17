@@ -34,9 +34,9 @@ import omega_automaton.collections.TranSet;
 import omega_automaton.collections.Tuple;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.exec.Main;
+import rabinizer.exec.OutputLevel;
 import rabinizer.frequencyLTL.SlaveSubformulaVisitor;
 import rabinizer.automata.Optimisation;
-import rabinizer.automata.Product.ProductState;
 
 /**
  * This class contains the behaviour, which belongs to both constructions:
@@ -66,30 +66,30 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
 
         Map<UnaryModalOperator, T> slaves = constructSlaves();
 
-        Main.nonsilent("========================================");
-        Main.nonsilent("Generating product\n");
+        OutputLevel.nonsilent("========================================");
+        OutputLevel.nonsilent("Generating product\n");
 
         product = obtainProduct(master, slaves);
         product.generate();
 
-        if (!Main.isSilent()) {
+        if (!OutputLevel.isSilent()) {
             HOAConsumerPrint hoa = new HOAConsumerPrint(System.out);
             product.toHOA(hoa, null);
         }
 
         if (opts.contains(Optimisation.COMPUTE_ACC_CONDITION)) {
-            Main.nonsilent("========================================");
-            Main.nonsilent("Generating acceptance condition\n");
+            OutputLevel.nonsilent("========================================");
+            OutputLevel.nonsilent("Generating acceptance condition\n");
 
             constructAcceptance();
 
-            Main.nonsilent("========================================");
-            Main.nonsilent("Remove some redundancy of Acceptance Condition\n");
+            OutputLevel.nonsilent("========================================");
+            OutputLevel.nonsilent("Remove some redundancy of Acceptance Condition\n");
 
             removeRedundancy();
 
-            Main.nonsilent("========================================");
-            Main.nonsilent("Doing post-processing optimisations\n");
+            OutputLevel.nonsilent("========================================");
+            OutputLevel.nonsilent("Doing post-processing optimisations\n");
 
             doPostProcessingOptimisations();
         }
@@ -158,11 +158,11 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
     protected abstract void constructAcceptance();
 
     final Master constructMaster() {
-        Main.nonsilent("========================================");
-        Main.nonsilent("Generating primaryAutomaton:\n");
+        OutputLevel.nonsilent("========================================");
+        OutputLevel.nonsilent("Generating primaryAutomaton:\n");
         Master master = new Master(phi, equivalenceClassFactory, valuationSetFactory, opts);
         master.generate();
-        if (!Main.isSilent()) {
+        if (!OutputLevel.isSilent()) {
             HOAConsumerPrint hoa = new HOAConsumerPrint(System.out);
             master.toHOA(hoa, null);
         }
@@ -178,9 +178,9 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
             MojmirSlave mSlave = new MojmirSlave(f, equivalenceClassFactory, valuationSetFactory, opts);
             mSlave.generate();
 
-            if (Main.isVerbose()) {
+            if (OutputLevel.isVerbose()) {
                 HOAConsumerPrint hoa = new HOAConsumerPrint(System.out);
-                Main.verboseln("Mojmir Slave: ");
+                OutputLevel.verboseln("Mojmir Slave: ");
                 mSlave.toHOA(hoa, null);
             }
 
@@ -191,9 +191,9 @@ public abstract class AbstractAutomatonFactory<T extends AbstractSelfProductSlav
 
             slaves.put(f, rSlave);
 
-            if (Main.isVerbose()) {
+            if (OutputLevel.isVerbose()) {
                 HOAConsumerPrint hoa = new HOAConsumerPrint(System.out);
-                Main.verboseln("\nRabin Slave: ");
+                OutputLevel.verboseln("\nRabin Slave: ");
                 rSlave.toHOA(hoa, null);
             }
         }
