@@ -72,8 +72,8 @@ class AccLocalRabinizer extends AccLocal<Map<UnaryModalOperator, Integer>, TranS
         }
     }
 
-    private final Collection<Map<UnaryModalOperator, Integer>> powersetRanks(Deque<UnaryModalOperator> gSet) {
-        UnaryModalOperator next = gSet.pollLast();
+    private final Collection<Map<UnaryModalOperator, Integer>> powersetRanks(Deque<UnaryModalOperator> gDeque) {
+        UnaryModalOperator next = gDeque.pollLast();
 
         if (next == null) {
             return Collections.singleton(Collections.emptyMap());
@@ -81,7 +81,7 @@ class AccLocalRabinizer extends AccLocal<Map<UnaryModalOperator, Integer>, TranS
 
         Collection<Map<UnaryModalOperator, Integer>> result = new ArrayList<>();
 
-        for (Map<UnaryModalOperator, Integer> ranking : powersetRanks(gSet)) {
+        for (Map<UnaryModalOperator, Integer> ranking : powersetRanks(gDeque)) {
             for (int rank = 1; rank <= maxRank.get(next); rank++) {
                 Map<UnaryModalOperator, Integer> rankingNew = new HashMap<>(ranking);
                 rankingNew.put(next, rank);
