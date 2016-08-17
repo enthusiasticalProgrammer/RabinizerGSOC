@@ -28,14 +28,14 @@ import omega_automaton.Automaton;
 import omega_automaton.collections.valuationset.BDDValuationSetFactory;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import ltl.Formula;
-import ltl.Literal;
 import ltl.equivalence.EquivalenceClassFactory;
-import ltl.parser.ParseException;
 import ltl.simplifier.Simplifier;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 public class Main {
@@ -83,7 +83,10 @@ public class Main {
 
         try {
             arguments = CLIParser.parseArgs(args);
-        } catch (ParseException e1) {
+        } catch (ParserWrapperException e1) {
+            System.err.println("the following Exception occurred during parsing: ");
+            System.err.println(e1.getMessage());
+            System.err.println("Rabinizer aborted");
             return;
         }
         setOutputLevel(OutputLevel.getOutputLevel(arguments.outputLevel));
@@ -105,14 +108,27 @@ public class Main {
 
         nonsilent("Done!");
 
-        HOAConsumer outputPipeline = arguments.format == CLIParser.Format.DOT ? new omega_automaton.output.DotPrinter(new PrintWriter(arguments.writer)) : new HOAConsumerPrint(arguments.writer);
+        HOAConsumer outputPipeline;
+        FileOutputStream ops = null;
+        if (arguments.outputFile == null) {
+            outputPipeline = arguments.format == CLIParser.Format.DOT
+                    ? new omega_automaton.output.DotPrinter(new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8))) : new HOAConsumerPrint(System.out);
+        } else {
+            ops = new FileOutputStream(arguments.outputFile);
+            if (arguments.format == CLIParser.Format.DOT)
+                outputPipeline = new omega_automaton.output.DotPrinter(new PrintWriter(new OutputStreamWriter(ops, StandardCharsets.UTF_8)));
+            else
+                outputPipeline = new HOAConsumerPrint(ops);
+        }
 
         if (arguments.autType == CLIParser.AutomatonType.SGR || arguments.autType == CLIParser.AutomatonType.SR) {
             outputPipeline = new HOAIntermediateStoreAndManipulate(outputPipeline, new ToStateAcceptance());
         }
 
         automaton.toHOA(outputPipeline, arguments.mapping);
-        arguments.writer.close();
+        if (ops != null) {
+            ops.close();
+        }
     }
 
     private static Automaton<?, ?> computeAutomaton(Formula inputFormula, CLIParser.AutomatonType type, Simplifier.Strategy simplify,
