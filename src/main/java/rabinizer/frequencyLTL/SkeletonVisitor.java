@@ -19,6 +19,7 @@ package rabinizer.frequencyLTL;
 
 import com.google.common.collect.Sets;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import ltl.*;
 import ltl.visitors.Visitor;
 
@@ -26,6 +27,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+@SuppressFBWarnings("dsoc")
 public class SkeletonVisitor implements Visitor<Set<Set<UnaryModalOperator>>> {
 
     public SkeletonVisitor() {
