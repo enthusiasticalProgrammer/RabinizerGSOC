@@ -42,6 +42,7 @@ public class SkeletonVisitorTest {
         BiMap<String, Integer> mapping = ImmutableBiMap.of("a", 0, "b", 1);
         Formula formula = Parser.formula("G a | X G b", mapping);
         Set<Set<UnaryModalOperator>> newHashSet = Sets.newHashSet(
+                Sets.newHashSet((UnaryModalOperator) Parser.formula("G b", mapping), (UnaryModalOperator) Parser.formula("G a", mapping)),
                 Collections.singleton((UnaryModalOperator) Parser.formula("G a", mapping)), Collections.singleton((UnaryModalOperator) Parser.formula("G b", mapping)));
         Set<Set<UnaryModalOperator>> skeleton = newHashSet;
         assertEquals(skeleton, formula.accept(visitor));
