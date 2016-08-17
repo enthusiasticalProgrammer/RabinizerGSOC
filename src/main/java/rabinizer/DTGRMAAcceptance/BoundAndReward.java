@@ -26,8 +26,10 @@ import java.util.Set;
 
 import ltl.FrequencyG;
 import omega_automaton.collections.TranSet;
+import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.automata.FrequencySelfProductSlave;
+import rabinizer.automata.FrequencySelfProductSlave.State;
 import rabinizer.automata.Product;
 
 /**
@@ -101,8 +103,9 @@ public class BoundAndReward {
             if (entry.getValue().intersects(trans)) {
                 TranSet<Product<FrequencySelfProductSlave.State>.ProductState> temp = new TranSet<>(valuationSetFactory);
                 entry.getValue().forEach(singleState -> {
-                    if (trans.asMap().containsKey(singleState)) {
-                        temp.addAll(singleState.getKey(), singleState.getValue().intersect(trans.asMap().get(singleState.getKey())));
+                    Map<Product<State>.ProductState, ValuationSet> transitionMap = trans.asMap();
+                    if (transitionMap.containsKey(singleState)) {
+                        temp.addAll(singleState.getKey(), singleState.getValue().intersect(transitionMap.get(singleState.getKey())));
                     }
 
                 });
