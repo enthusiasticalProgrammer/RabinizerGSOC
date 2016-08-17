@@ -153,6 +153,7 @@ abstract class AbstractProductState<P extends AutomatonState<P>, K, S extends Ab
 
         current.add(new Tuple<>(Collections.emptyMap(), maxVs));
 
+        Map<S, ValuationSet> secondarySuccessors = new HashMap<>();
         for (K key : keys) {
             S state = secondaryStates.get(key);
 
@@ -160,7 +161,7 @@ abstract class AbstractProductState<P extends AutomatonState<P>, K, S extends Ab
                 state = getSecondaryAutomata().get(key).getInitialState();
             }
 
-            Map<S, ValuationSet> secondarySuccessors = new HashMap<>();
+            secondarySuccessors.clear();
             for (Map.Entry<Edge<S>, ValuationSet> entry : secondary.get(key).getSuccessors(state).entrySet()) {
                 secondarySuccessors.put(entry.getKey().successor, entry.getValue());
             }

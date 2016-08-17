@@ -50,11 +50,11 @@ public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, RabinSlav
             List<TranSet<Product<RabinSlave.State>.ProductState>> Infs = new ArrayList<>();
             Fin.addAll(entry.getValue());
 
-            for (UnaryModalOperator g : gSet) {
+            for (Entry<UnaryModalOperator, Integer> rankingEntry : ranking.entrySet()) {
                 Set<UnaryModalOperator> localGSet = new HashSet<>(gSet);
-                localGSet.retainAll(accLocal.topmostSlaves.get(g));
+                localGSet.retainAll(accLocal.topmostSlaves.get(rankingEntry.getKey()));
                 Tuple<TranSet<Product<RabinSlave.State>.ProductState>, TranSet<Product<RabinSlave.State>.ProductState>> gPair;
-                gPair = completeSlaveAcceptance.get(g).get(localGSet).get(ranking.get(g));
+                gPair = completeSlaveAcceptance.get(rankingEntry.getKey()).get(localGSet).get(ranking.get(rankingEntry.getKey()));
 
                 Fin.addAll(gPair.left);
                 Infs.add(gPair.right.copy());

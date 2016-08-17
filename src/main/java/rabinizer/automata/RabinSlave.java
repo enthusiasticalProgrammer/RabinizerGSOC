@@ -53,11 +53,11 @@ final class RabinSlave extends AbstractSelfProductSlave<RabinSlave.State> {
             State succ = new State();
 
             // move tokens, keeping the lowest only
-            for (MojmirSlave.State currMojmir : keySet()) {
-                Edge<MojmirSlave.State> succMojmir = currMojmir.getSuccessor(valuation);
+            for (Entry<MojmirSlave.State, Integer> currRank : entrySet()) {
+                Edge<MojmirSlave.State> succMojmir = currRank.getKey().getSuccessor(valuation);
                 if (!mojmir.isSink(succMojmir.successor)) {
-                    if (((succ.get(succMojmir.successor) == null) || (succ.get(succMojmir.successor) > get(currMojmir)))) {
-                        succ.put(succMojmir.successor, get(currMojmir));
+                    if (((succ.get(succMojmir.successor) == null) || (succ.get(succMojmir.successor) > get(currRank.getKey())))) {
+                        succ.put(succMojmir.successor, get(currRank.getKey()));
                     }
                 }
             }
