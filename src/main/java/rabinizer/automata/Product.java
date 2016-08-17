@@ -20,6 +20,7 @@ package rabinizer.automata;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableMap;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jhoafparser.consumer.HOAConsumer;
 import ltl.UnaryModalOperator;
 import rabinizer.automata.MojmirSlave.State;
@@ -114,6 +115,7 @@ public abstract class Product<S extends AbstractSelfProductSlave<S>.State> exten
         this.acceptance = acc;
     }
 
+    @SuppressFBWarnings("ocp")
     public abstract class ProductState extends AbstractProductState<Master.State, UnaryModalOperator, S, ProductState> implements AutomatonState<ProductState> {
 
         protected ProductState(Master.State primaryState, ImmutableMap<UnaryModalOperator, S> secondaryStates) {
