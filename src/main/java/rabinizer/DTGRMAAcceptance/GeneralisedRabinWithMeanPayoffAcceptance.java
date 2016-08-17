@@ -42,7 +42,7 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
      * that each "Rabin pair" of this class has also a list of MDP-rewards,
      * which are to be fullfilled.
      */
-    public List<Collection<BoundAndReward>> acceptanceMDP;
+    List<Collection<BoundAndReward>> acceptanceMDP;
 
     public GeneralisedRabinWithMeanPayoffAcceptance(
             List<Tuple<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, List<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>>>> acceptance,
@@ -133,5 +133,9 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
     @Override
     public boolean implies(int premiseIndex, int conclusionIndex) {
         return super.implies(premiseIndex, conclusionIndex) && acceptanceMDP.get(premiseIndex).containsAll(acceptanceMDP.get(conclusionIndex));
+    }
+
+    public List<Collection<BoundAndReward>> getUnmodifiableAcceptanceMDP() {
+        return Collections.unmodifiableList(this.acceptanceMDP);
     }
 }
