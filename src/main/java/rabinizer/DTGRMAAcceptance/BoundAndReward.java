@@ -58,24 +58,24 @@ public class BoundAndReward {
      * Increases the reward of the input-transitions by <amount>.
      */
     private void addRewards(TranSet<Product<FrequencySelfProductSlave.State>.ProductState> trans, int amount) {
+        final Integer zero = Integer.valueOf(0);
         Set<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> transitionSplitted = splitIntoRelevantJunks(trans);
         Map<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> toRemove = new HashMap<>();
         Map<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> toAdd = new HashMap<>();
 
         // find out the new rewards
         for (TranSet<Product<FrequencySelfProductSlave.State>.ProductState> singleSet : transitionSplitted) {
-            reward.put(0, singleSet);
+            reward.put(zero, singleSet);
             for (Map.Entry<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> entry : reward.entrySet()) {
                 if (entry.getValue().containsAll(singleSet)) {
-                    if (entry.getKey() != 0) {
+                    if (!entry.getKey().equals(zero)) {
                         toRemove.put(entry.getKey(), singleSet);
                     }
                     toAdd.put(entry.getKey() + amount, singleSet);
                     break;
                 }
             }
-            reward.remove(0);
-
+            reward.remove(zero);
         }
 
         // adjust the rewards
