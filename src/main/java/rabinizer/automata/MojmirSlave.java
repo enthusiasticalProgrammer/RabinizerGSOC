@@ -19,7 +19,6 @@ package rabinizer.automata;
 
 import ltl.UnaryModalOperator;
 import omega_automaton.Automaton;
-import omega_automaton.AutomatonState;
 import omega_automaton.Edge;
 import omega_automaton.acceptance.AllAcceptance;
 import omega_automaton.collections.valuationset.ValuationSet;
@@ -55,7 +54,7 @@ public class MojmirSlave extends Automaton<MojmirSlave.State, AllAcceptance> {
         }
     }
 
-    public final class State extends AbstractFormulaState implements AutomatonState<State> {
+    public final class State extends AbstractFormulaState<State> {
         State(EquivalenceClass clazz) {
             super(clazz);
         }

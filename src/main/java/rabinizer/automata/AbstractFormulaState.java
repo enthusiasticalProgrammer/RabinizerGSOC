@@ -20,13 +20,14 @@ package rabinizer.automata;
 import ltl.Formula;
 import ltl.Literal;
 import ltl.equivalence.EquivalenceClass;
+import omega_automaton.AutomatonState;
 import rabinizer.frequencyLTL.UnfoldNoSlaveOperatorVisitor;
 
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Objects;
 
-abstract class AbstractFormulaState {
+abstract class AbstractFormulaState<S> implements AutomatonState<S> {
 
     final EquivalenceClass clazz;
 
@@ -45,7 +46,7 @@ abstract class AbstractFormulaState {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        AbstractFormulaState that = (AbstractFormulaState) o;
+        AbstractFormulaState<?> that = (AbstractFormulaState<?>) o;
         return Objects.equals(clazz, that.clazz) && Objects.equals(this.getOuter(), that.getOuter());
     }
 
@@ -78,5 +79,10 @@ abstract class AbstractFormulaState {
         }
 
         return letters;
+    }
+
+    @Override
+    public void free() {
+        clazz.free();
     }
 }

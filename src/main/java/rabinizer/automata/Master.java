@@ -21,7 +21,6 @@ import ltl.Formula;
 import ltl.equivalence.EquivalenceClass;
 import ltl.equivalence.EquivalenceClassFactory;
 import omega_automaton.Automaton;
-import omega_automaton.AutomatonState;
 import omega_automaton.Edge;
 import omega_automaton.acceptance.AllAcceptance;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
@@ -72,7 +71,7 @@ class Master extends Automaton<Master.State, AllAcceptance> {
         }
     }
 
-    public class State extends AbstractFormulaState implements AutomatonState<State> {
+    public class State extends AbstractFormulaState<State> {
 
         public State(EquivalenceClass clazz) {
             super(clazz);
