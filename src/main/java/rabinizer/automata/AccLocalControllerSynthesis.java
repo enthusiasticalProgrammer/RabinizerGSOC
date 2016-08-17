@@ -24,6 +24,7 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import ltl.FrequencyG;
 import ltl.GOperator;
 import ltl.UnaryModalOperator;
@@ -55,6 +56,7 @@ AccLocal<Set<UnaryModalOperator>, TranSet<Product<FrequencySelfProductSlave.Stat
         }
     }
 
+    @SuppressFBWarnings("prmc")
     @Override
     protected Map<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, Integer> getSingleSlaveAccCond(UnaryModalOperator g, Set<MojmirSlave.State> finalStates) {
         if (g instanceof FrequencyG) {
