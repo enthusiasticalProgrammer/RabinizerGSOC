@@ -26,6 +26,7 @@ import omega_automaton.collections.TranSet;
 import omega_automaton.collections.Tuple;
 import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
+import rabinizer.automata.RabinSlave.State;
 
 import javax.annotation.Nullable;
 
@@ -99,12 +100,14 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
             }
 
             GeneralisedRabinAcceptance<ProductRabinizer.ProductState> acc = dtgra.getAcceptance();
+            List<Tuple<TranSet<Product<State>.ProductState>, List<TranSet<Product<State>.ProductState>>>> accList = acc.unmodifiableCopyOfAcceptanceCondition();
 
-            int[] awaitedIndices = new int[acc.unmodifiableCopyOfAcceptanceCondition().size()];
+            int[] awaitedIndices = new int[accList.size()];
 
             // TODO: Use listIterator
-            int i = 0;
-            for (Tuple<TranSet<ProductRabinizer.ProductState>, List<TranSet<ProductRabinizer.ProductState>>> grp : acc.unmodifiableCopyOfAcceptanceCondition()) {
+
+            for (int i = 0; i < accList.size(); i++) {
+                Tuple<TranSet<Product<State>.ProductState>, List<TranSet<Product<State>.ProductState>>> grp = accList.get(i);
 
                 int awaited = this.awaitedIndices[i];
 
@@ -112,10 +115,14 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
                     awaited = 0;
                 }
                 // TODO if we could rewrite it the routine in a way such that we
-                // do not need grp.right.get(), then
+                // do not need the position at the list, then
                 // we could use for the right side of GeneralisedRabinAcceptance
                 // Collection instead of List'
-                while (awaited < grp.right.size() && grp.right.get(awaited).contains(productState, valuation)) {
+                Iterator<TranSet<Product<State>.ProductState>> infIterator = grp.right.iterator();
+                while (infIterator.hasNext()) {
+                    if (!infIterator.next().contains(productState, valuation)) {
+                        break;
+                    }
                     awaited++;
                 }
 
