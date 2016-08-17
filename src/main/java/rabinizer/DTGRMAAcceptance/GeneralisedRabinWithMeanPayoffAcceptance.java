@@ -102,7 +102,11 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
             for (BoundAndReward bound : set) {
                 String name = "boundary" + i++;
                 List<Object> attributes = new ArrayList<>();
-                attributes.add(bound.GOp.limes.toString() + bound.GOp.cmp.toString() + bound.GOp.bound);
+                StringBuilder attributeBuilder = new StringBuilder();
+                attributeBuilder.append(bound.GOp.limes);
+                attributeBuilder.append(bound.GOp.cmp);
+                attributeBuilder.append(bound.GOp.bound);
+                attributes.add(attributeBuilder.toString());
                 attributes.add("   In this context, the following sets have rewards. ");
                 Set<Entry<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>>> entries = bound.relevantEntries();
                 for (Entry<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> entry : entries) {

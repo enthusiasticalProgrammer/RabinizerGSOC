@@ -57,11 +57,11 @@ public abstract class AbstractSelfProductSlave<S extends AutomatonState<S>> exte
 
         @Override
         public String toString() {
-            StringBuilder result = new StringBuilder("");
+            StringBuilder result = new StringBuilder();
             for (Entry<MojmirSlave.State, Integer> entry : entrySet()) {
-                result.append(" ");
+                result.append(' ');
                 result.append(entry.getKey());
-                result.append("=");
+                result.append('=');
                 result.append(entry.getValue());
             }
             return result.toString();
