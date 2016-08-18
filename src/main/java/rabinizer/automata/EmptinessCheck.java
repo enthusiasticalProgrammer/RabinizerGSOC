@@ -60,7 +60,7 @@ public class EmptinessCheck<S extends AutomatonState<S>> {
 
             boolean sccEmpty = true;
 
-            for (Tuple<TranSet<S>, List<TranSet<S>>> pair : automaton.getAcceptance().acceptanceCondition) {
+            for (Tuple<TranSet<S>, List<TranSet<S>>> pair : automaton.getAcceptance().unmodifiableCopyOfAcceptanceCondition()) {
                 if (infAccepting(tranSCC, pair) && finAndInfAccepting(tranSCC, pair)) {
                     sccEmpty = false;
                 } else {
@@ -84,7 +84,7 @@ public class EmptinessCheck<S extends AutomatonState<S>> {
             Map<Edge<S>, ValuationSet> relevantTransitions = automaton.getSuccessors(state);
             for (Map.Entry<Edge<S>, ValuationSet> transition : relevantTransitions.entrySet()) {
                 if (!SCC.contains(transition.getKey().successor)) {
-                    for (Tuple<TranSet<S>, List<TranSet<S>>> pair : automaton.getAcceptance().acceptanceCondition) {
+                    for (Tuple<TranSet<S>, List<TranSet<S>>> pair : automaton.getAcceptance().unmodifiableCopyOfAcceptanceCondition()) {
                         pair.right.forEach(inf -> inf.removeAll(state, transition.getValue()));
                         pair.left.removeAll(state, transition.getValue());
                     }
@@ -94,9 +94,10 @@ public class EmptinessCheck<S extends AutomatonState<S>> {
     }
 
     /**
-     * @param scc: SCC for which the function is applied
+     * @param scc:
+     *            SCC for which the function is applied
      * @return true if for all inf-sets of the Rabin Pair, the SCC has a
-     * transition in the inf-set
+     *         transition in the inf-set
      */
     private static <S extends AutomatonState<S>> boolean infAccepting(TranSet<S> scc, Tuple<TranSet<S>, List<TranSet<S>>> pair) {
         return pair.right.stream().allMatch(inf -> inf.intersects(scc));
@@ -106,11 +107,13 @@ public class EmptinessCheck<S extends AutomatonState<S>> {
      * Precondition: allInfSetsOfRabinPairPresentInSCC with the same arguments
      * has to be true
      *
-     * @param scc:  current SCC
-     * @param pair: current Rabin Pair
+     * @param scc:
+     *            current SCC
+     * @param pair:
+     *            current Rabin Pair
      * @return true if automaton accepts regarding this Rabin Pair & the current
-     * SCC (i.e. if this Rabin Pair can accept a word, if the automaton
-     * stays infinitely long in the current SCC)
+     *         SCC (i.e. if this Rabin Pair can accept a word, if the automaton
+     *         stays infinitely long in the current SCC)
      */
     private boolean finAndInfAccepting(TranSet<S> tranSCC, Tuple<TranSet<S>, List<TranSet<S>>> pair) {
         if (tranSCC.isEmpty()) {

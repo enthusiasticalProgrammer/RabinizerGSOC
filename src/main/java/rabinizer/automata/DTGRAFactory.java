@@ -17,7 +17,6 @@
 
 package rabinizer.automata;
 
-import rabinizer.automata.Product.ProductState;
 import omega_automaton.acceptance.GeneralisedRabinAcceptance;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.Tuple;
@@ -54,16 +53,16 @@ public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, RabinSlav
             List<TranSet<Product<RabinSlave.State>.ProductState>> Infs = new ArrayList<>();
             Fin.addAll(entry.getValue());
 
-            for (UnaryModalOperator g : gSet) {
+            for (Entry<UnaryModalOperator, Integer> rankingEntry : ranking.entrySet()) {
                 Set<UnaryModalOperator> localGSet = new HashSet<>(gSet);
-                localGSet.retainAll(accLocal.topmostSlaves.get(g));
+                localGSet.retainAll(accLocal.topmostSlaves.get(rankingEntry.getKey()));
                 Tuple<TranSet<Product<RabinSlave.State>.ProductState>, TranSet<Product<RabinSlave.State>.ProductState>> gPair;
-                gPair = completeSlaveAcceptance.get(g).get(localGSet).get(ranking.get(g));
+                gPair = completeSlaveAcceptance.get(rankingEntry.getKey()).get(localGSet).get(ranking.get(rankingEntry.getKey()));
 
                 Fin.addAll(gPair.left);
-                Infs.add(gPair.right.clone());
+                Infs.add(gPair.right.copy());
             }
-            result.acceptanceCondition.add(new Tuple<>(Fin, Infs));
+            result.addPair(new Tuple<>(Fin, Infs));
         }
 
         product.setAcceptance(result);
@@ -86,17 +85,18 @@ public class DTGRAFactory extends AbstractAutomatonFactory<RabinSlave, RabinSlav
 
     public void removeRedundancyLightAfterEmptinessCheck() {
         Set<Integer> toRemove = new HashSet<>();
-        IntStream.range(0, product.getAcceptance().acceptanceCondition.size())
-        .filter(i -> product.getAcceptance().acceptanceCondition.get(i).right.stream().anyMatch(TranSet::isEmpty)).forEach(toRemove::add);
+        IntStream.range(0, product.getAcceptance().unmodifiableCopyOfAcceptanceCondition().size())
+        .filter(i -> product.getAcceptance().unmodifiableCopyOfAcceptanceCondition().get(i).right.stream().anyMatch(TranSet::isEmpty)).forEach(toRemove::add);
         product.getAcceptance().removeIndices(toRemove);
         toRemove.clear();
 
         toRemove.clear();
-        for (int i = 0; i < product.getAcceptance().acceptanceCondition.size(); i++) {
-            for (int j = 0; j < product.getAcceptance().acceptanceCondition.size(); j++) {
+        for (int i = 0; i < product.getAcceptance().unmodifiableCopyOfAcceptanceCondition().size(); i++) {
+            for (int j = 0; j < product.getAcceptance().unmodifiableCopyOfAcceptanceCondition().size(); j++) {
                 if (i == j) {
                     continue;
                 }
+
                 if (product.getAcceptance().implies(i, j) && !toRemove.contains(j)) {
                     toRemove.add(i);
                     break;

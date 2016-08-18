@@ -20,16 +20,15 @@ package rabinizer.automata;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableMap;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jhoafparser.consumer.HOAConsumer;
 import ltl.UnaryModalOperator;
 import rabinizer.automata.MojmirSlave.State;
 import rabinizer.frequencyLTL.SlaveSubformulaVisitor;
 import omega_automaton.Automaton;
 import omega_automaton.AutomatonState;
-import omega_automaton.Edge;
 import omega_automaton.acceptance.GeneralisedRabinAcceptance;
 import omega_automaton.collections.TranSet;
-import omega_automaton.collections.Tuple;
 import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import omega_automaton.output.HOAConsumerExtended;
@@ -41,10 +40,10 @@ import java.util.function.Function;
 public abstract class Product<S extends AbstractSelfProductSlave<S>.State> extends Automaton<Product<S>.ProductState, GeneralisedRabinAcceptance<Product<S>.ProductState>> {
 
     final Master primaryAutomaton;
-    final boolean allSlaves;
+    private final boolean allSlaves;
 
     public Product(Master primaryAutomaton, ValuationSetFactory factory, Collection<Optimisation> optimisations) {
-        super(factory);
+        super(null, factory);
         // relevant secondaryAutomata dynamically
         // computed from primaryAutomaton formula
         // master formula
@@ -53,15 +52,14 @@ public abstract class Product<S extends AbstractSelfProductSlave<S>.State> exten
     }
 
     protected final Set<UnaryModalOperator> relevantSecondarySlaves(Master.State primaryState) {
-        Set<UnaryModalOperator> keys;
-        if (allSlaves) {
-            keys = getKeys();
-        } else {
-            keys = new HashSet<>();
-            primaryState.getClazz().getSupport().forEach(f -> keys.addAll(f.accept(new SlaveSubformulaVisitor())));
+        if (this.allSlaves) {
+            return getKeys();
         }
+        return primaryState.clazz.getRepresentative().accept(new SlaveSubformulaVisitor());
+    }
 
-        return keys;
+    boolean containsAllTransitions(TranSet<ProductState> trans) {
+        return transitions.entrySet().stream().allMatch(entry -> entry.getValue().entrySet().stream().allMatch(succ -> trans.containsAll(entry.getKey(), succ.getValue())));
     }
 
     protected abstract Set<UnaryModalOperator> getKeys();
@@ -96,10 +94,14 @@ public abstract class Product<S extends AbstractSelfProductSlave<S>.State> exten
     public final void toHOABody(HOAConsumerExtended hoa) {
         for (ProductState s : getStates()) {
             hoa.addState(s);
-            getSuccessors(s).forEach((k, v) -> hoa.addEdge(v, k.successor));
             toHOABodyEdge(s, hoa);
             hoa.stateDone();
         }
+    }
+
+    @Override
+    protected void toHOABodyEdge(Product<S>.ProductState state, HOAConsumerExtended hoa) {
+        this.getSuccessors(state).forEach((k, v) -> hoa.addEdge(v, k.successor));
     }
 
     @Override
@@ -117,6 +119,7 @@ public abstract class Product<S extends AbstractSelfProductSlave<S>.State> exten
         this.acceptance = acc;
     }
 
+    @SuppressFBWarnings("ocp")
     public abstract class ProductState extends AbstractProductState<Master.State, UnaryModalOperator, S, ProductState> implements AutomatonState<ProductState> {
 
         protected ProductState(Master.State primaryState, ImmutableMap<UnaryModalOperator, S> secondaryStates) {
@@ -155,7 +158,7 @@ public abstract class Product<S extends AbstractSelfProductSlave<S>.State> exten
             return relevantSecondarySlaves(primaryState);
         }
 
-        public S getSecondaryState(UnaryModalOperator key) {
+        S getSecondaryState(UnaryModalOperator key) {
             return this.secondaryStates.get(key);
         }
     }

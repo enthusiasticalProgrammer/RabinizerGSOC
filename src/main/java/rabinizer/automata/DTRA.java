@@ -26,6 +26,7 @@ import omega_automaton.collections.TranSet;
 import omega_automaton.collections.Tuple;
 import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
+import rabinizer.automata.RabinSlave.State;
 
 import javax.annotation.Nullable;
 
@@ -39,7 +40,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
     private final ProductRabinizer dtgra;
 
     public DTRA(ProductRabinizer dtgra) {
-        super(dtgra.getFactory());
+        super(null, dtgra.getFactory());
         this.acceptance = new RabinAcceptance<DTRA.ProductDegenState>(new ArrayList<>());
         if (!(dtgra.getAcceptance() instanceof GeneralisedRabinAcceptance<?>)) {
             throw new IllegalArgumentException();
@@ -49,7 +50,7 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
         generate();
 
         int i = 0;
-        for (Tuple<TranSet<ProductRabinizer.ProductState>, List<TranSet<ProductRabinizer.ProductState>>> grp : acc.acceptanceCondition) {
+        for (Tuple<TranSet<ProductRabinizer.ProductState>, List<TranSet<ProductRabinizer.ProductState>>> grp : acc.unmodifiableCopyOfAcceptanceCondition()) {
             TranSet<ProductDegenState> fin = new TranSet<>(valuationSetFactory);
             TranSet<ProductDegenState> inf = new TranSet<>(valuationSetFactory);
 
@@ -64,14 +65,13 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
                 }
             }
             i++;
-
             acceptance.addRabinPair(fin, inf);
         }
     }
 
     @Override
     protected ProductDegenState generateInitialState() {
-        return new ProductDegenState(dtgra.getInitialState(), new int[dtgra.getAcceptance().acceptanceCondition.size()]);
+        return new ProductDegenState(dtgra.getInitialState(), new int[dtgra.getAcceptance().unmodifiableCopyOfAcceptanceCondition().size()]);
     }
 
     public class ProductDegenState implements AutomatonState<ProductDegenState> {
@@ -99,12 +99,14 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
             }
 
             GeneralisedRabinAcceptance<ProductRabinizer.ProductState> acc = dtgra.getAcceptance();
+            List<Tuple<TranSet<Product<State>.ProductState>, List<TranSet<Product<State>.ProductState>>>> accList = acc.unmodifiableCopyOfAcceptanceCondition();
 
-            int[] awaitedIndices = new int[acc.acceptanceCondition.size()];
+            int[] awaitedIndices = new int[accList.size()];
 
             // TODO: Use listIterator
-            int i = 0;
-            for (Tuple<TranSet<ProductRabinizer.ProductState>, List<TranSet<ProductRabinizer.ProductState>>> grp : acc.acceptanceCondition) {
+
+            for (int i = 0; i < accList.size(); i++) {
+                Tuple<TranSet<Product<State>.ProductState>, List<TranSet<Product<State>.ProductState>>> grp = accList.get(i);
 
                 int awaited = this.awaitedIndices[i];
 
@@ -112,14 +114,18 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
                     awaited = 0;
                 }
                 // TODO if we could rewrite it the routine in a way such that we
-                // do not need grp.right.get(), then
+                // do not need the position at the list, then
                 // we could use for the right side of GeneralisedRabinAcceptance
                 // Collection instead of List'
-                while (awaited < grp.right.size() && grp.right.get(awaited).contains(productState, valuation)) {
+                Iterator<TranSet<Product<State>.ProductState>> infIterator = grp.right.iterator();
+                while (infIterator.hasNext()) {
+                    if (!infIterator.next().contains(productState, valuation)) {
+                        break;
+                    }
                     awaited++;
                 }
 
-                awaitedIndices[i] = grp.right.stream().filter(inf -> inf.contains(productState,valuation)).collect(Collectors.toList()).size();
+                awaitedIndices[i] = grp.right.stream().filter(inf -> inf.contains(productState, valuation)).collect(Collectors.toList()).size();
                 i++;
             }
 
@@ -138,11 +144,12 @@ public class DTRA extends Automaton<DTRA.ProductDegenState, RabinAcceptance<DTRA
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
             ProductDegenState state = (ProductDegenState) o;
-            return Objects.equals(productState, state.productState) &&
-                    Arrays.equals(awaitedIndices, state.awaitedIndices);
+            return Objects.equals(productState, state.productState) && Arrays.equals(awaitedIndices, state.awaitedIndices);
         }
 
         @Override

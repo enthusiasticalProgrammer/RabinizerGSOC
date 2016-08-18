@@ -24,9 +24,9 @@ import rabinizer.exec.OutputLevel;
 
 import java.util.*;
 
-public final class RabinSlave extends AbstractSelfProductSlave<RabinSlave.State> {
+final class RabinSlave extends AbstractSelfProductSlave<RabinSlave.State> {
 
-    public RabinSlave(MojmirSlave mojmir, ValuationSetFactory factory) {
+    RabinSlave(MojmirSlave mojmir, ValuationSetFactory factory) {
         super(mojmir, factory);
     }
 
@@ -47,18 +47,17 @@ public final class RabinSlave extends AbstractSelfProductSlave<RabinSlave.State>
         return s;
     }
 
-    public class State extends AbstractSelfProductSlave<State>.State
-    {
+    public class State extends AbstractSelfProductSlave<State>.State {
         @Override
         public Edge<State> getSuccessor(BitSet valuation) {
             State succ = new State();
 
             // move tokens, keeping the lowest only
-            for (MojmirSlave.State currMojmir : keySet()) {
-                Edge<MojmirSlave.State> succMojmir = currMojmir.getSuccessor(valuation);
+            for (Entry<MojmirSlave.State, Integer> currRank : entrySet()) {
+                Edge<MojmirSlave.State> succMojmir = currRank.getKey().getSuccessor(valuation);
                 if (!mojmir.isSink(succMojmir.successor)) {
-                    if (((succ.get(succMojmir.successor) == null) || (succ.get(succMojmir.successor) > get(currMojmir)))) {
-                        succ.put(succMojmir.successor, get(currMojmir));
+                    if (((succ.get(succMojmir.successor) == null) || (succ.get(succMojmir.successor) > get(currRank.getKey())))) {
+                        succ.put(succMojmir.successor, get(currRank.getKey()));
                     }
                 }
             }
@@ -83,10 +82,9 @@ public final class RabinSlave extends AbstractSelfProductSlave<RabinSlave.State>
             }
 
             return new Edge<>(succ, new BitSet(0));
-
         }
 
-        protected ValuationSet getBuyTrans(int rank, Set<MojmirSlave.State> finalStates) {
+        ValuationSet getBuyTrans(int rank, Set<MojmirSlave.State> finalStates) {
             ValuationSet buy = valuationSetFactory.createEmptyValuationSet();
             for (Map.Entry<MojmirSlave.State, Integer> stateIntegerEntry : entrySet()) {
                 if (stateIntegerEntry.getValue() < rank) {
@@ -96,13 +94,12 @@ public final class RabinSlave extends AbstractSelfProductSlave<RabinSlave.State>
                             ValuationSet vs2 = getValuationForBuyTrans(fs, succ);
                             if (!finalStates.contains(succ) && vs1 != null && vs2 != null) {
                                 if (!stateIntegerEntry.getKey().equals(fs)) {
-                                    vs1 = vs1.clone();
+                                    vs1 = vs1.copy();
                                     vs1.retainAll(vs2);
                                     buy.addAll(vs1);
                                 } else if (succ.equals(mojmir.getInitialState())) {
                                     buy.addAll(vs1);
                                 }
-
                             }
                         }
                     }
@@ -111,14 +108,16 @@ public final class RabinSlave extends AbstractSelfProductSlave<RabinSlave.State>
             return buy;
         }
 
-        private ValuationSet getValuationForBuyTrans(MojmirSlave.State precessor, MojmirSlave.State successor) {
-            Map<Edge<MojmirSlave.State>, ValuationSet> successors = mojmir.getSuccessors(precessor);
+        private ValuationSet getValuationForBuyTrans(MojmirSlave.State predecessor, MojmirSlave.State successor) {
+            Map<Edge<MojmirSlave.State>, ValuationSet> successors = mojmir.getSuccessors(predecessor);
             ValuationSet result = valuationSetFactory.createEmptyValuationSet();
-            for (Entry<Edge<MojmirSlave.State>, ValuationSet> entry : successors.entrySet()) {
-                if (entry.getKey().successor.equals(successor)) {
-                    result.addAll(entry.getValue());
+
+            successors.forEach((k, v) -> {
+                if (k.successor.equals(successor)) {
+                    result.addAll(v);
                 }
-            }
+            });
+
             return result;
         }
     }

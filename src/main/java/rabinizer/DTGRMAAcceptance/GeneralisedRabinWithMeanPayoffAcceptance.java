@@ -28,11 +28,14 @@ import java.util.Set;
 
 import jhoafparser.ast.AtomAcceptance;
 import jhoafparser.ast.BooleanExpression;
+import omega_automaton.AutomatonState;
 import omega_automaton.acceptance.GeneralisedRabinAcceptance;
 import omega_automaton.acceptance.OmegaAcceptance;
 import omega_automaton.collections.TranSet;
 import omega_automaton.collections.Tuple;
+import omega_automaton.collections.valuationset.ValuationSet;
 import rabinizer.automata.FrequencySelfProductSlave;
+import rabinizer.automata.FrequencySelfProductSlave.State;
 import rabinizer.automata.Product;
 
 public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAcceptance<Product<FrequencySelfProductSlave.State>.ProductState> implements OmegaAcceptance {
@@ -40,9 +43,9 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
     /**
      * The difference between this class and Generalised Rabin Acceptance is
      * that each "Rabin pair" of this class has also a list of MDP-rewards,
-     * which are to be fullfilled.
+     * which are to be fullfilled. This is used by Prism
      */
-    public List<Collection<BoundAndReward>> acceptanceMDP;
+    List<Collection<BoundAndReward>> acceptanceMDP;
 
     public GeneralisedRabinWithMeanPayoffAcceptance(
             List<Tuple<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, List<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>>>> acceptance,
@@ -51,18 +54,9 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
         this.acceptanceMDP = acceptanceMDP;
     }
 
-    /**
-     * Used by Prism
-     */
-    public List<Collection<BoundAndReward>> getUnmodifiableAcceptanceMDP() {
-        return Collections.unmodifiableList(acceptanceMDP);
-    }
-
     @Override
     public String getName() {
-        return "generalized-Rabin"; // HOA does not support our acceptance type
-                                    // but this comes closest and it may help
-                                    // testing formulae without frequency-Gs by ltlcross
+        return null; // HOA does not support our acceptance type
     }
 
     @Override
@@ -82,8 +76,7 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
     }
 
     @Override
-    protected BooleanExpression<AtomAcceptance> addInfiniteSetsToConjunction(BooleanExpression<AtomAcceptance> conjunction,
-            int offset) {
+    protected BooleanExpression<AtomAcceptance> addInfiniteSetsToConjunction(BooleanExpression<AtomAcceptance> conjunction, int offset) {
         conjunction = super.addInfiniteSetsToConjunction(conjunction, offset);
         // add some information about acceptanceMDP to the conjunction
         // the information, which we add here are necessary but not sufficient
@@ -96,8 +89,9 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
                 BooleanExpression<AtomAcceptance> newSet = new BooleanExpression<>(new AtomAcceptance(AtomAcceptance.Type.TEMPORAL_INF, getTranSetId(entry.getValue()), false));
                 disjunction = (disjunction == null ? newSet : disjunction.or(newSet));
             }
-
-            conjunction = conjunction.and(disjunction);
+            if (disjunction != null) {
+                conjunction = conjunction.and(disjunction);
+            }
         }
         return conjunction;
 
@@ -111,7 +105,11 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
             for (BoundAndReward bound : set) {
                 String name = "boundary" + i++;
                 List<Object> attributes = new ArrayList<>();
-                attributes.add(bound.GOp.limes.toString() + bound.GOp.cmp.toString() + bound.GOp.bound);
+                StringBuilder attributeBuilder = new StringBuilder();
+                attributeBuilder.append(bound.GOp.limes);
+                attributeBuilder.append(bound.GOp.cmp);
+                attributeBuilder.append(bound.GOp.bound);
+                attributes.add(attributeBuilder.toString());
                 attributes.add("   In this context, the following sets have rewards. ");
                 Set<Entry<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>>> entries = bound.relevantEntries();
                 for (Entry<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> entry : entries) {
@@ -124,14 +122,38 @@ public class GeneralisedRabinWithMeanPayoffAcceptance extends GeneralisedRabinAc
     }
 
     @Override
-    public void removeIndices(Set<Integer> toRemove) {
-        super.removeIndices(toRemove);
-        toRemove.stream().mapToInt(i -> -i).sorted().map(i -> -i).forEachOrdered(i -> acceptanceMDP.remove(i));
+    public void removeIndices(Set<Integer> indices) {
+        super.removeIndices(indices);
+        indices.stream().sorted(Collections.reverseOrder()).forEachOrdered(index -> acceptanceMDP.remove(index.intValue()));
+    }
+
+    @Override
+    public void removeEach() {
+        super.removeEach();
+        acceptanceMDP.clear();
     }
 
     @Override
     public boolean implies(int premiseIndex, int conclusionIndex) {
-
         return super.implies(premiseIndex, conclusionIndex) && acceptanceMDP.get(premiseIndex).containsAll(acceptanceMDP.get(conclusionIndex));
+    }
+
+    public List<Collection<BoundAndReward>> getUnmodifiableAcceptanceMDP() {
+        return Collections.unmodifiableList(this.acceptanceMDP);
+    }
+
+    @Override
+    public Set<ValuationSet> getMaximallyMergedEdgesOfEdge(AutomatonState<?> currentState, ValuationSet initialValuation) {
+        Set<ValuationSet> result = super.getMaximallyMergedEdgesOfEdge(currentState, initialValuation);
+
+        for (Collection<BoundAndReward> boundSet : this.acceptanceMDP) {
+            for (BoundAndReward bound : boundSet) {
+                for (Entry<Integer, TranSet<Product<State>.ProductState>> entry : bound.relevantEntries()) {
+                    result = splitAccordingToAcceptanceSet(currentState, result, entry.getValue());
+                }
+            }
+        }
+
+        return result;
     }
 }

@@ -19,6 +19,7 @@ package rabinizer.frequencyLTL;
 
 import com.google.common.collect.Sets;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import ltl.*;
 import ltl.visitors.Visitor;
 
@@ -26,6 +27,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+@SuppressFBWarnings("dsoc")
 public class SkeletonVisitor implements Visitor<Set<Set<UnaryModalOperator>>> {
 
     public SkeletonVisitor() {
@@ -60,13 +62,21 @@ public class SkeletonVisitor implements Visitor<Set<Set<UnaryModalOperator>>> {
 
     @Override
     public Set<Set<UnaryModalOperator>> visit(Disjunction disjunction) {
-        Set<Set<UnaryModalOperator>> set = new HashSet<>();
+        Set<Set<UnaryModalOperator>> skeleton = new HashSet<>();
+        disjunction.children.forEach(e -> skeleton.addAll(e.accept(this)));
+        final Set<Set<Set<UnaryModalOperator>>> result = Sets.powerSet(skeleton);
 
-        for (Formula child : disjunction.children) {
-            set.addAll(child.accept(this));
+        Set<Set<UnaryModalOperator>> finalResult = new HashSet<>();
+        for (Set<Set<UnaryModalOperator>> s : result) {
+            if (s.isEmpty()) {
+                continue;
+            }
+
+            Set<UnaryModalOperator> union = new HashSet<>();
+            s.stream().forEach(union::addAll);
+            finalResult.add(union);
         }
-
-        return set;
+        return finalResult;
     }
 
     @Override

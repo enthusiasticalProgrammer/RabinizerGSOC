@@ -65,9 +65,9 @@ public final class FrequencySelfProductSlave extends AbstractSelfProductSlave<Fr
                 if (stateSet.size() != 1) {
                     throw new RuntimeException("The size of this set is not one. This means that the MojmirSlave is not acyclic, which means that there is a bug.");
                 }
-                stateSet.stream().forEach(s->{
-                    MojmirSlave.State succMojmir=s.getSuccessor(valuation).successor;
-                    if(!mojmir.isSink(succMojmir)){
+                stateSet.stream().forEach(s -> {
+                    MojmirSlave.State succMojmir = s.getSuccessor(valuation).successor;
+                    if (!mojmir.isSink(succMojmir)) {
                         succ.put(succMojmir, (this.get(s) == null ? 0 : this.get(s)) + (succ.get(succMojmir) == null ? 0 : succ.get(succMojmir)));
                     }
                     succ.put(s, 0);

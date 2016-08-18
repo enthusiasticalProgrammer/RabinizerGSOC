@@ -36,12 +36,12 @@ import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.automata.MojmirSlave.State;
 import rabinizer.frequencyLTL.SlaveSubformulaVisitor;
 
-class AccLocalRabinizer extends AccLocal<Map<UnaryModalOperator, Integer>, TranSet<Product<RabinSlave.State>.ProductState>, Map<Integer, Tuple<TranSet<Product<RabinSlave.State>.ProductState>, TranSet<Product<RabinSlave.State>.ProductState>>>, RabinSlave.State, ProductRabinizer> {
+class AccLocalRabinizer extends
+        AccLocal<Map<UnaryModalOperator, Integer>, TranSet<Product<RabinSlave.State>.ProductState>, Map<Integer, Tuple<TranSet<Product<RabinSlave.State>.ProductState>, TranSet<Product<RabinSlave.State>.ProductState>>>, RabinSlave.State, ProductRabinizer> {
 
     private final Map<UnaryModalOperator, Integer> maxRank = new HashMap<>();
 
-    public AccLocalRabinizer(ProductRabinizer product, ValuationSetFactory valuationSetFactory,
-            EquivalenceClassFactory equivalenceFactory, Collection<Optimisation> opts) {
+    public AccLocalRabinizer(ProductRabinizer product, ValuationSetFactory valuationSetFactory, EquivalenceClassFactory equivalenceFactory, Collection<Optimisation> opts) {
         super(product, valuationSetFactory, equivalenceFactory, opts);
         for (UnaryModalOperator gOperator : getOverallFormula().accept(new SlaveSubformulaVisitor())) {
             initialiseMaxRankOfSlaveOperator(gOperator);
@@ -72,8 +72,8 @@ class AccLocalRabinizer extends AccLocal<Map<UnaryModalOperator, Integer>, TranS
         }
     }
 
-    private final Collection<Map<UnaryModalOperator, Integer>> powersetRanks(Deque<UnaryModalOperator> gSet) {
-        UnaryModalOperator next = gSet.pollLast();
+    private final Collection<Map<UnaryModalOperator, Integer>> powersetRanks(Deque<UnaryModalOperator> gDeque) {
+        UnaryModalOperator next = gDeque.pollLast();
 
         if (next == null) {
             return Collections.singleton(Collections.emptyMap());
@@ -81,7 +81,7 @@ class AccLocalRabinizer extends AccLocal<Map<UnaryModalOperator, Integer>, TranS
 
         Collection<Map<UnaryModalOperator, Integer>> result = new ArrayList<>();
 
-        for (Map<UnaryModalOperator, Integer> ranking : powersetRanks(gSet)) {
+        for (Map<UnaryModalOperator, Integer> ranking : powersetRanks(gDeque)) {
             for (int rank = 1; rank <= maxRank.get(next); rank++) {
                 Map<UnaryModalOperator, Integer> rankingNew = new HashMap<>(ranking);
                 rankingNew.put(next, rank);

@@ -57,11 +57,11 @@ public class DTGRMAFactory extends AbstractAutomatonFactory<FrequencySelfProduct
 
         List<Tuple<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>, List<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>>>> genRabinCondition = new ArrayList<>();
         List<Collection<BoundAndReward>> mdpCondition = new ArrayList<>();
+        Map<FrequencyG, BoundAndReward> mdpAcceptance = new HashMap<>();
 
         for (Entry<Set<UnaryModalOperator>, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> entry : accLocal.computeAccMasterOptions().entrySet()) {
             Set<UnaryModalOperator> gSet = entry.getKey();
-
-            Map<FrequencyG, BoundAndReward> mdpAcceptance = new HashMap<>();
+            mdpAcceptance.clear();
 
             TranSet<Product<FrequencySelfProductSlave.State>.ProductState> Fin = new TranSet<>(valuationSetFactory);
             List<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> Infs = new ArrayList<>();
@@ -95,7 +95,7 @@ public class DTGRMAFactory extends AbstractAutomatonFactory<FrequencySelfProduct
             if (mdpAcceptance.values() == null) {
                 mdpCondition.add(Collections.emptySet());
             } else {
-                mdpCondition.add(mdpAcceptance.values());
+                mdpCondition.add(new HashSet<>(mdpAcceptance.values()));
             }
         }
         GeneralisedRabinWithMeanPayoffAcceptance acc = new GeneralisedRabinWithMeanPayoffAcceptance(genRabinCondition, mdpCondition);

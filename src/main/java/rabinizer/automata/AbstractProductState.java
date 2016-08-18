@@ -31,19 +31,19 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
-public abstract class AbstractProductState<P extends AutomatonState<P>, K, S extends AbstractSelfProductSlave<S>.State, T> extends ImmutableObject {
+abstract class AbstractProductState<P extends AutomatonState<P>, K, S extends AbstractSelfProductSlave<S>.State, T> extends ImmutableObject {
 
-    private static BitSet defaultBitSet = new BitSet(0);
+    private static final BitSet defaultBitSet = new BitSet(0);
 
-    protected final P primaryState;
-    protected final ImmutableMap<K, S> secondaryStates;
+    final P primaryState;
+    final ImmutableMap<K, S> secondaryStates;
 
-    protected AbstractProductState(P primaryState, ImmutableMap<K, S> secondaryStates) {
+    AbstractProductState(P primaryState, ImmutableMap<K, S> secondaryStates) {
         this.primaryState = primaryState;
         this.secondaryStates = secondaryStates;
     }
 
-    protected AbstractProductState(P primaryState, Iterable<K> keys, Function<K, S> constructor) {
+    AbstractProductState(P primaryState, Iterable<K> keys, Function<K, S> constructor) {
         this.primaryState = primaryState;
 
         ImmutableMap.Builder<K, S> builder = ImmutableMap.builder();
@@ -93,7 +93,7 @@ public abstract class AbstractProductState<P extends AutomatonState<P>, K, S ext
     public Map<Edge<T>, ValuationSet> getSuccessors() {
         Map<Edge<T>, ValuationSet> successors = new LinkedHashMap<>();
         Map<P, ValuationSet> primarySuccessors = new HashMap<>();
-        for(Map.Entry<Edge<P>,ValuationSet> entry :getPrimaryAutomaton().getSuccessors(primaryState).entrySet()){
+        for (Map.Entry<Edge<P>, ValuationSet> entry : getPrimaryAutomaton().getSuccessors(primaryState).entrySet()) {
             primarySuccessors.put(entry.getKey().successor, entry.getValue());
         }
 
@@ -130,8 +130,7 @@ public abstract class AbstractProductState<P extends AutomatonState<P>, K, S ext
     @Override
     protected boolean equals2(ImmutableObject o) {
         AbstractProductState<?, ?, ?, ?> that = (AbstractProductState<?, ?, ?, ?>) o;
-        return Objects.equals(primaryState, that.primaryState) &&
-                Objects.equals(secondaryStates, that.secondaryStates);
+        return Objects.equals(primaryState, that.primaryState) && Objects.equals(secondaryStates, that.secondaryStates);
     }
 
     protected abstract Automaton<P, ?> getPrimaryAutomaton();
@@ -145,7 +144,7 @@ public abstract class AbstractProductState<P extends AutomatonState<P>, K, S ext
 
     protected abstract T constructState(P primaryState, ImmutableMap<K, S> secondaryStates);
 
-    protected Iterable<Tuple<Map<K, S>, ValuationSet>> secondaryJointMove(Set<K> keys, ValuationSet maxVs) {
+    private Iterable<Tuple<Map<K, S>, ValuationSet>> secondaryJointMove(Set<K> keys, ValuationSet maxVs) {
         Map<K, ? extends Automaton<S, ?>> secondary = getSecondaryAutomata();
 
         Deque<Tuple<Map<K, S>, ValuationSet>> current = new ArrayDeque<>();
@@ -153,6 +152,7 @@ public abstract class AbstractProductState<P extends AutomatonState<P>, K, S ext
 
         current.add(new Tuple<>(Collections.emptyMap(), maxVs));
 
+        Map<S, ValuationSet> secondarySuccessors = new HashMap<>();
         for (K key : keys) {
             S state = secondaryStates.get(key);
 
@@ -160,7 +160,7 @@ public abstract class AbstractProductState<P extends AutomatonState<P>, K, S ext
                 state = getSecondaryAutomata().get(key).getInitialState();
             }
 
-            Map<S, ValuationSet> secondarySuccessors = new HashMap<>();
+            secondarySuccessors.clear();
             for (Map.Entry<Edge<S>, ValuationSet> entry : secondary.get(key).getSuccessors(state).entrySet()) {
                 secondarySuccessors.put(entry.getKey().successor, entry.getValue());
             }

@@ -17,6 +17,7 @@
 
 package rabinizer.DTGRMAAcceptance;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -26,8 +27,10 @@ import java.util.Set;
 
 import ltl.FrequencyG;
 import omega_automaton.collections.TranSet;
+import omega_automaton.collections.valuationset.ValuationSet;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 import rabinizer.automata.FrequencySelfProductSlave;
+import rabinizer.automata.FrequencySelfProductSlave.State;
 import rabinizer.automata.Product;
 
 /**
@@ -40,7 +43,7 @@ public class BoundAndReward {
     private final ValuationSetFactory valuationSetFactory;
 
     /**
-     * Both of the following attributes are used by Prism
+     * GOp is used by Prism
      */
     public final FrequencyG GOp;
     private final Map<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> reward;
@@ -62,29 +65,29 @@ public class BoundAndReward {
      * Increases the reward of the input-transitions by <amount>.
      */
     private void addRewards(TranSet<Product<FrequencySelfProductSlave.State>.ProductState> trans, int amount) {
+        final Integer zero = Integer.valueOf(0);
         Set<TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> transitionSplitted = splitIntoRelevantJunks(trans);
         Map<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> toRemove = new HashMap<>();
         Map<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> toAdd = new HashMap<>();
 
         // find out the new rewards
         for (TranSet<Product<FrequencySelfProductSlave.State>.ProductState> singleSet : transitionSplitted) {
-            reward.put(0, singleSet);
+            reward.put(zero, singleSet);
             for (Map.Entry<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> entry : reward.entrySet()) {
                 if (entry.getValue().containsAll(singleSet)) {
-                    if (entry.getKey() != 0) {
+                    if (!entry.getKey().equals(zero)) {
                         toRemove.put(entry.getKey(), singleSet);
                     }
                     toAdd.put(entry.getKey() + amount, singleSet);
                     break;
                 }
             }
-            reward.remove(0);
-
+            reward.remove(zero);
         }
 
         // adjust the rewards
         for (Entry<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> entry : toRemove.entrySet()) {
-            TranSet<Product<FrequencySelfProductSlave.State>.ProductState> temporary = reward.get(entry.getKey());
+            TranSet<Product<FrequencySelfProductSlave.State>.ProductState> temporary = reward.get(entry.getKey()).copy();
             temporary.removeAll(entry.getValue());
             reward.put(entry.getKey(), temporary);
         }
@@ -105,8 +108,9 @@ public class BoundAndReward {
             if (entry.getValue().intersects(trans)) {
                 TranSet<Product<FrequencySelfProductSlave.State>.ProductState> temp = new TranSet<>(valuationSetFactory);
                 entry.getValue().forEach(singleState -> {
-                    if (trans.asMap().containsKey(singleState)) {
-                        temp.addAll(singleState.getKey(), singleState.getValue().intersect(trans.asMap().get(singleState.getKey())));
+                    Map<Product<State>.ProductState, ValuationSet> transitionMap = trans.asMap();
+                    if (transitionMap.containsKey(singleState)) {
+                        temp.addAll(singleState.getKey(), singleState.getValue().intersect(transitionMap.get(singleState.getKey())));
                     }
 
                 });
@@ -127,9 +131,18 @@ public class BoundAndReward {
         return reward.keySet().size();
     }
 
+    /**
+     * used by Prism
+     */
     public Set<Entry<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>>> relevantEntries() {
+        if (reward.entrySet().isEmpty()) {
+            reward.put(0, new TranSet<>(valuationSetFactory));
+            HashMap<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> result = new HashMap<>(reward);
+            reward.clear();
+            return result.entrySet();
+        }
         HashMap<Integer, TranSet<Product<FrequencySelfProductSlave.State>.ProductState>> result = new HashMap<>(reward);
-        return result.entrySet();
+        return Collections.unmodifiableSet(result.entrySet());
     }
 
     @Override

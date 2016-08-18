@@ -21,12 +21,12 @@ import ltl.Formula;
 import ltl.equivalence.EquivalenceClass;
 import ltl.equivalence.EquivalenceClassFactory;
 import omega_automaton.Automaton;
-import omega_automaton.AutomatonState;
 import omega_automaton.Edge;
 import omega_automaton.acceptance.AllAcceptance;
 import omega_automaton.collections.valuationset.ValuationSetFactory;
 
 import javax.annotation.Nullable;
+
 import java.util.BitSet;
 import java.util.Collection;
 
@@ -37,13 +37,12 @@ class Master extends Automaton<Master.State, AllAcceptance> {
     final EquivalenceClass initialClazz;
 
     Master(@Nullable EquivalenceClass clazz, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
-        super(valuationSetFactory);
+        super(null, valuationSetFactory);
         initialClazz = clazz;
         eager = optimisations.contains(Optimisation.EAGER);
     }
 
-    Master(Formula formula, EquivalenceClassFactory equivalenceClassFactory,
-                  ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
+    Master(Formula formula, EquivalenceClassFactory equivalenceClassFactory, ValuationSetFactory valuationSetFactory, Collection<Optimisation> optimisations) {
         this(equivalenceClassFactory.createEquivalenceClass(formula), valuationSetFactory, optimisations);
     }
 
@@ -72,7 +71,7 @@ class Master extends Automaton<Master.State, AllAcceptance> {
         }
     }
 
-    public class State extends AbstractFormulaState implements AutomatonState<State> {
+    public class State extends AbstractFormulaState<State> {
 
         public State(EquivalenceClass clazz) {
             super(clazz);

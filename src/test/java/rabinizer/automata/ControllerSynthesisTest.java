@@ -20,20 +20,23 @@ package rabinizer.automata;
 import static org.junit.Assert.*;
 
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import jhoafparser.consumer.HOAConsumerNull;
+import jhoafparser.consumer.HOAConsumerPrint;
 import jhoafparser.consumer.HOAIntermediateCheckValidity;
 import ltl.Formula;
 import ltl.equivalence.EquivalenceClassFactory;
+import ltl.equivalence.FactoryRegistry.Backend;
 import omega_automaton.Edge;
 import omega_automaton.collections.valuationset.BDDValuationSetFactory;
 import omega_automaton.collections.valuationset.ValuationSet;
@@ -42,15 +45,10 @@ import rabinizer.Util;
 import rabinizer.DTGRMAAcceptance.BoundAndReward;
 import rabinizer.DTGRMAAcceptance.GeneralisedRabinWithMeanPayoffAcceptance;
 import rabinizer.automata.Master.State;
-import rabinizer.exec.Main;
+import rabinizer.frequencyLTL.MojmirOperatorVisitor;
 
 public class ControllerSynthesisTest {
     static final Set<Optimisation> standard = EnumSet.of(Optimisation.COMPUTE_ACC_CONDITION);
-
-    @Before
-    public final void setUp() {
-        Main.silent = true;
-    }
 
     // First of all the trivial tests:
 
@@ -68,9 +66,10 @@ public class ControllerSynthesisTest {
 
         GeneralisedRabinWithMeanPayoffAcceptance acc = (GeneralisedRabinWithMeanPayoffAcceptance) dtgra.getAcceptance();
 
-        assertEquals(1, acc.acceptanceMDP.size());
+        List<Collection<BoundAndReward>> unmodifiableMDP = acc.getUnmodifiableAcceptanceMDP();
+        assertEquals(1, unmodifiableMDP.size());
 
-        Set<BoundAndReward> accMDP = new HashSet<>(acc.acceptanceMDP.get(0));
+        Set<BoundAndReward> accMDP = new HashSet<>(unmodifiableMDP.get(0));
         assertEquals(1, accMDP.size());
 
         for (BoundAndReward reward : accMDP) {
@@ -184,9 +183,10 @@ public class ControllerSynthesisTest {
         ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
         GeneralisedRabinWithMeanPayoffAcceptance acc = (GeneralisedRabinWithMeanPayoffAcceptance) dtgra.getAcceptance();
 
-        assertEquals(1, acc.acceptanceMDP.get(0).size());
+        List<Collection<BoundAndReward>> accMDP = acc.getUnmodifiableAcceptanceMDP();
+        assertEquals(1, accMDP.get(0).size());
 
-        acc.acceptanceMDP.get(0).forEach(bound -> {
+        accMDP.get(0).forEach(bound -> {
             assertEquals(3, bound.getNumberOfRewardSets());
         });
     }
@@ -264,12 +264,50 @@ public class ControllerSynthesisTest {
 
         GeneralisedRabinWithMeanPayoffAcceptance acc = (GeneralisedRabinWithMeanPayoffAcceptance) dtgra.getAcceptance();
 
-        acc.acceptanceMDP.stream().forEach(set -> {
+        acc.getUnmodifiableAcceptanceMDP().stream().forEach(set -> {
             set.forEach(reward -> {
                 reward.relevantEntries().forEach(entry -> {
                     assertTrue(entry.getKey().equals(2) || entry.getKey().equals(1));
                 });
             });
         });
+    }
+
+    @Test
+    public void testNoNPEOccurring() {
+        Formula formula = Util.createFormula("G {sup >= 0.11} false");
+        EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(0);
+
+        DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
+        ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
+
+        dtgra.toHOA(new HOAConsumerPrint(System.out), null);
+    }
+
+    @Test
+    public void testNoEmptyInfSet() {
+        Formula formula = Util.createFormula("(F G {inf>=0.5} a)| (F G {inf>=0.09999999999999998} !b)");
+        formula = formula.accept(new MojmirOperatorVisitor());
+        EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(2);
+
+        DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
+        ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
+
+        assertTrue(dtgra.getAcceptance().unmodifiableCopyOfAcceptanceCondition().stream().allMatch(pair -> pair.right.stream().allMatch(inf -> !inf.isEmpty())));
+    }
+
+    @Test
+    public void testOnlyOnePair() {
+        Formula formula = Util.createFormula("(F G {inf>=0.5} a)");
+        formula = formula.accept(new MojmirOperatorVisitor());
+        EquivalenceClassFactory equivalenceClassFactory = ltl.equivalence.FactoryRegistry.createEquivalenceClassFactory(Backend.BDD, formula);
+        ValuationSetFactory valuationSetFactory = new BDDValuationSetFactory(2);
+
+        DTGRMAFactory automatonFactory = new DTGRMAFactory(formula, equivalenceClassFactory, valuationSetFactory, standard);
+        ProductControllerSynthesis dtgra = automatonFactory.constructAutomaton();
+
+        assertEquals(1, dtgra.getAcceptance().unmodifiableCopyOfAcceptanceCondition().size());
     }
 }
